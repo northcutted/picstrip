@@ -60,7 +60,7 @@ jobs:
     needs: release
     if: needs.release.outputs.released == 'true'
     outputs:
-      ipa-sha256: ${{ steps.digest.outputs.sha256 }}
+      ipa-hashes: ${{ steps.digest.outputs.hashes }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -110,9 +110,11 @@ jobs:
       - name: Compute SHA-256 of IPA
         id: digest
         run: |
-          SHA=$(shasum -a 256 build/PicStrip.ipa | awk '{print $1}')
-          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
-          echo "$SHA  PicStrip.ipa" > build/PicStrip.ipa.sha256
+          # sha256sum-style output (hash + filename), base64 encoded for SLSA
+          HASHES=$(shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' | base64 | tr -d '\n')
+          echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
+          # Also write a plain .sha256 file to attach to the release
+          shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' > build/PicStrip.ipa.sha256
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@v4
@@ -134,9 +136,10 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
     with:
-      base64-subjects: "${{ needs.build.outputs.ipa-sha256 }}  PicStrip.ipa"
+      base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
       upload-assets:   true
       upload-tag-name: "v${{ needs.release.outputs.version }}"
+      private-repository: true
 
   # ── 4. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
