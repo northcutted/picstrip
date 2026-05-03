@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/northcutted/picstrip/compare/v1.0.3...v1.0.4) (2026-05-03)
+
+
+### Bug Fixes
+
+* correct for SLSA generator workflow reference ([625e923](https://github.com/northcutted/picstrip/commit/625e923557bcb1ab6fca3d659bd72602fb11d77a))
+
 ## [1.0.3](https://github.com/northcutted/picstrip/compare/v1.0.2...v1.0.3) (2026-05-03)
 
 
