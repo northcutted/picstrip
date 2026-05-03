@@ -2,4 +2,3 @@ git_url "git@github.com:northcutted/picstrip-certs.git"
 storage_mode "git"
 type "appstore"
 app_identifier ["com.northcutt.PicStrip", "com.northcutt.PicStrip.ShareExtension"]
-api_key_path "fastlane/api_key.json"
