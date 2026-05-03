@@ -85,6 +85,8 @@ platform :ios do
       output_name:       IPA_NAME,
       export_method:     "app-store",
       export_options: {
+        method:               "app-store",
+        signingStyle:         "manual",
         provisioningProfiles: {
           APP_ID       => "match AppStore #{APP_ID}",
           EXTENSION_ID => "match AppStore #{EXTENSION_ID}"
