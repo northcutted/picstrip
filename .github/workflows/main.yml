@@ -24,15 +24,15 @@ jobs:
       release_id:      ${{ steps.semrel.outputs.new_release_id }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           fetch-depth: 0
           persist-credentials: false
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: "20"
+          node-version: "24"
           cache: "npm"
 
       - name: Install semantic-release
@@ -63,7 +63,7 @@ jobs:
       ipa-hashes: ${{ steps.digest.outputs.hashes }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: v${{ needs.release.outputs.version }}
 
@@ -71,7 +71,7 @@ jobs:
         run: sudo xcode-select -s /Applications/Xcode.app
 
       - name: Cache SPM dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: |
             ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
@@ -80,7 +80,7 @@ jobs:
             ${{ runner.os }}-spm-
 
       - name: Cache DerivedData
-        uses: actions/cache@v4
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
           key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
@@ -88,13 +88,13 @@ jobs:
             ${{ runner.os }}-deriveddata-
 
       - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
         with:
           ruby-version: "3.2"
           bundler-cache: true
 
       - name: Install Match SSH key
-        uses: webfactory/ssh-agent@v0.9.0
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
 
@@ -117,7 +117,7 @@ jobs:
           shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' > build/PicStrip.ipa.sha256
 
       - name: Upload IPA artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: PicStrip-${{ needs.release.outputs.version }}
           path: |
@@ -134,12 +134,11 @@ jobs:
       actions:  read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a # v2.1.0
     with:
       base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
       upload-assets:   true
       upload-tag-name: "v${{ needs.release.outputs.version }}"
-      private-repository: true
 
   # ── 4. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
@@ -149,7 +148,7 @@ jobs:
     if: needs.release.outputs.released == 'true'
     steps:
       - name: Download IPA artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: PicStrip-${{ needs.release.outputs.version }}
           path: artifacts/
