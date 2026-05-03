@@ -1,0 +1,47 @@
+# SwiftLint configuration for PicStrip
+
+# Enabled rules beyond defaults
+opt_in_rules:
+  - force_unwrapping
+  - implicitly_unwrapped_optional
+  - unused_import
+  - empty_count
+  - closure_spacing
+  - contains_over_filter_count
+  - contains_over_filter_is_empty
+  - contains_over_first_not_nil
+  - discouraged_optional_boolean
+  - fatal_error_message
+  - first_where
+  - last_where
+  - modifier_order
+  - prefer_self_type_over_type_of_self
+  - redundant_nil_coalescing
+  - sorted_imports
+  - toggle_bool
+  - unneeded_parentheses_in_closure_argument
+
+# Rules to disable — style bikeshedding not relevant for a solo project
+disabled_rules:
+  - trailing_whitespace
+  - line_length
+  - file_length
+  - type_body_length
+  - function_body_length
+  - cyclomatic_complexity
+  - identifier_name
+  - todo
+
+# Paths to exclude
+excluded:
+  - Pods
+  - DerivedData
+  - PicStripTests
+  - PicStripUITests
+  - fastlane
+
+# Force cast/try are errors — never suppress
+force_cast: error
+force_try: error
+force_unwrapping: warning
+implicitly_unwrapped_optional: warning

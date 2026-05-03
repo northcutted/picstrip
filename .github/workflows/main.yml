@@ -1,0 +1,136 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+permissions:
+  contents: write       # semantic-release needs to push tags + create releases
+  id-token: write       # SLSA provenance needs OIDC token
+  actions: read         # SLSA provenance needs to read workflow
+
+jobs:
+  # ── 1. Semantic Release ────────────────────────────────────────────────────
+  release:
+    name: Semantic Release
+    runs-on: ubuntu-latest
+    outputs:
+      released:        ${{ steps.semrel.outputs.new_release_published }}
+      version:         ${{ steps.semrel.outputs.new_release_version }}
+      release_id:      ${{ steps.semrel.outputs.new_release_id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install semantic-release
+        run: npm ci
+
+      - name: Run semantic-release
+        id: semrel
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  # ── 2. Build + Sign + Upload to TestFlight ─────────────────────────────────
+  build:
+    name: Build & Upload to TestFlight
+    runs-on: macos-15
+    needs: release
+    if: needs.release.outputs.released == 'true'
+    outputs:
+      ipa-sha256: ${{ steps.digest.outputs.sha256 }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: v${{ needs.release.outputs.version }}
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Install Match SSH key
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+
+      - name: Run Fastlane beta
+        env:
+          MATCH_PASSWORD:                       ${{ secrets.MATCH_PASSWORD }}
+          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          BUILD_NUMBER:                         ${{ github.run_number }}
+        run: bundle exec fastlane beta
+
+      - name: Compute SHA-256 of IPA
+        id: digest
+        run: |
+          SHA=$(shasum -a 256 build/PicStrip.ipa | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+          echo "$SHA  PicStrip.ipa" > build/PicStrip.ipa.sha256
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PicStrip-${{ needs.release.outputs.version }}
+          path: |
+            build/PicStrip.ipa
+            build/PicStrip.ipa.sha256
+          retention-days: 90
+
+  # ── 3. SLSA L3 Provenance ─────────────────────────────────────────────────
+  provenance:
+    name: SLSA Provenance
+    needs: [release, build]
+    if: needs.release.outputs.released == 'true'
+    permissions:
+      actions:  read
+      id-token: write
+      contents: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.0.0
+    with:
+      base64-subjects: "${{ needs.build.outputs.ipa-sha256 }}  PicStrip.ipa"
+      upload-assets:   true
+      upload-tag-name: "v${{ needs.release.outputs.version }}"
+
+  # ── 4. Attach artifacts to GitHub Release ─────────────────────────────────
+  attach-release-assets:
+    name: Attach Release Assets
+    runs-on: ubuntu-latest
+    needs: [release, build, provenance]
+    if: needs.release.outputs.released == 'true'
+    steps:
+      - name: Download IPA artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: PicStrip-${{ needs.release.outputs.version }}
+          path: artifacts/
+
+      - name: Attach IPA + digest to GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "v${{ needs.release.outputs.version }}" \
+            artifacts/PicStrip.ipa \
+            artifacts/PicStrip.ipa.sha256 \
+            --repo ${{ github.repository }} \
+            --clobber

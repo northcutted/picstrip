@@ -60,3 +60,44 @@ fastlane/report.xml
 fastlane/Preview.html
 fastlane/screenshots/**/*.png
 fastlane/test_output
+xcuserdata/
+*.xccheckout
+*.moved-aside
+*.xcuserstate
+*.xcscmblueprint
+DerivedData/
+build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output/
+
+# Artifacts
+*.ipa
+*.dSYM
+*.dSYM.zip
+*.app.dSYM.zip
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+fastlane/api_key.json
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Ruby
+vendor/bundle/
+.bundle/
+
+# Semantic release
+CHANGELOG.md

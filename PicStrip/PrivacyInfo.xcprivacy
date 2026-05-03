@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!--
+        PicStrip Privacy Manifest
+        ─────────────────────────
+        PicStrip processes images entirely on-device. It does not transmit any
+        data to external servers, does not use advertising or analytics SDKs,
+        and does not track users in any way.
+
+        Required reason API usage is documented below per Apple's mandate.
+    -->
+
+    <!-- No tracking of any kind. -->
+    <key>NSPrivacyTracking</key>
+    <false/>
+
+    <!-- No data is collected and sent off-device. -->
+    <key>NSPrivacyCollectedDataTypes</key>
+    <array/>
+
+    <!-- No tracking domains are contacted. -->
+    <key>NSPrivacyTrackingDomains</key>
+    <array/>
+
+    <!--
+        Required-reason APIs used by PicStrip:
+
+        File timestamp APIs (POSIX / Foundation) — used by ImageIO internally
+        when encoding image files. Reason: C617.1 (file creation/modification
+        date is written as part of standard image encoding; not used to derive
+        a fingerprint or identify the user).
+    -->
+    <key>NSPrivacyAccessedAPITypes</key>
+    <array>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryFileTimestamp</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>C617.1</string>
+            </array>
+        </dict>
+    </array>
+</dict>
+</plist>

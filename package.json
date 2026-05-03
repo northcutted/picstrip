@@ -1,0 +1,14 @@
+{
+  "name": "picstrip-release",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Semantic release config for PicStrip",
+  "devDependencies": {
+    "@semantic-release/changelog": "^6.0.3",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "@semantic-release/github": "^9.2.6",
+    "conventional-changelog-conventionalcommits": "^7.0.2",
+    "semantic-release": "^23.0.0"
+  }
+}

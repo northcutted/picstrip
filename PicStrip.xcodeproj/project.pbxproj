@@ -6,6 +6,17 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		426255EFB875BCE9328221E1 /* PhotosUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9034A5BE1516B0E23325C25A /* PhotosUI.framework */; };
+		6B740ED24E1DF0D6516F1684 /* ExportPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44713883EFA9A49425AFEFDF /* ExportPreset.swift */; };
+		A2B97CAA5A88F65AB3CD42BC /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279FA21610D3277B00823DAA /* ImageProcessor.swift */; };
+		A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AC5497DA1F98A34F0FF7A47C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E135E1B159D979239456E9F /* Foundation.framework */; };
+		C46ED0583BAA9E5C0457C69A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */; };
+		DC72DAD41244DA41A8058E94 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DFB22CCF819AC347B4E633F /* Photos.framework */; };
+		E7BA6DC40737014742CBA7DD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		2C0D1E252FA686B80032DDDA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -21,17 +32,77 @@
 			remoteGlobalIDString = 2C0D1E162FA686B60032DDDA;
 			remoteInfo = PicStrip;
 		};
+		7F88E12920BBCC28B4DA18DA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2C0D1E0F2FA686B60032DDDA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 2E929DD1036BB9AC3C815EB3;
+			remoteInfo = PicStripShareExtension;
+		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		BA5C2993E98D84B396A95A74 /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed App Extensions */,
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		279FA21610D3277B00823DAA /* ImageProcessor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ImageProcessor.swift; sourceTree = "<group>"; };
 		2C0D1E172FA686B60032DDDA /* PicStrip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PicStrip.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C0D1E242FA686B80032DDDA /* PicStripTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicStripTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C0D1E2E2FA686B80032DDDA /* PicStripUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicStripUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2C0D20162FA6E97A0032DDDA /* PicStripShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicStripShareExtension.entitlements; sourceTree = "<group>"; };
+		44713883EFA9A49425AFEFDF /* ExportPreset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ExportPreset.swift; sourceTree = "<group>"; };
+		4E135E1B159D979239456E9F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		8DFB22CCF819AC347B4E633F /* Photos.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Photos.framework; path = "$(SDKROOT)/System/Library/Frameworks/Photos.framework"; sourceTree = "<group>"; };
+		9034A5BE1516B0E23325C25A /* PhotosUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotosUI.framework; path = "$(SDKROOT)/System/Library/Frameworks/PhotosUI.framework"; sourceTree = "<group>"; };
+		A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PicStripShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E0B898439C4F2D32F734067A /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		2C0D1F862FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripTests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"draft-icon.png",
+			);
+			target = 2C0D1E232FA686B80032DDDA /* PicStripTests */;
+		};
+		2C0D1F872FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripUITests" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"draft-icon.png",
+			);
+			target = 2C0D1E2D2FA686B80032DDDA /* PicStripUITests */;
+		};
+		2C0D1F882FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"draft-icon.png",
+			);
+			target = 2E929DD1036BB9AC3C815EB3 /* PicStripShareExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		2C0D1E192FA686B60032DDDA /* PicStrip */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				2C0D1F862FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripTests" target */,
+				2C0D1F872FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripUITests" target */,
+				2C0D1F882FA6C45B0032DDDA /* Exceptions for "PicStrip" folder in "PicStripShareExtension" target */,
+			);
 			path = PicStrip;
 			sourceTree = "<group>";
 		};
@@ -69,9 +140,29 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		807416576A1D18FBEF9D22EE /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AC5497DA1F98A34F0FF7A47C /* Foundation.framework in Frameworks */,
+				DC72DAD41244DA41A8058E94 /* Photos.framework in Frameworks */,
+				426255EFB875BCE9328221E1 /* PhotosUI.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		1C5394BF318B2E4E12A4F86B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				6DE13DA752DA8AF65A8DD910 /* iOS */,
+				8DFB22CCF819AC347B4E633F /* Photos.framework */,
+				9034A5BE1516B0E23325C25A /* PhotosUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		2C0D1E0E2FA686B60032DDDA = {
 			isa = PBXGroup;
 			children = (
@@ -79,6 +170,8 @@
 				2C0D1E272FA686B80032DDDA /* PicStripTests */,
 				2C0D1E312FA686B80032DDDA /* PicStripUITests */,
 				2C0D1E182FA686B60032DDDA /* Products */,
+				1C5394BF318B2E4E12A4F86B /* Frameworks */,
+				8AC45FF1AD9A77DC0C1B8B5E /* PicStripShareExtension */,
 			);
 			sourceTree = "<group>";
 		};
@@ -88,8 +181,30 @@
 				2C0D1E172FA686B60032DDDA /* PicStrip.app */,
 				2C0D1E242FA686B80032DDDA /* PicStripTests.xctest */,
 				2C0D1E2E2FA686B80032DDDA /* PicStripUITests.xctest */,
+				A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		6DE13DA752DA8AF65A8DD910 /* iOS */ = {
+			isa = PBXGroup;
+			children = (
+				4E135E1B159D979239456E9F /* Foundation.framework */,
+			);
+			name = iOS;
+			sourceTree = "<group>";
+		};
+		8AC45FF1AD9A77DC0C1B8B5E /* PicStripShareExtension */ = {
+			isa = PBXGroup;
+			children = (
+				2C0D20162FA6E97A0032DDDA /* PicStripShareExtension.entitlements */,
+				236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */,
+				E0B898439C4F2D32F734067A /* Info.plist */,
+				279FA21610D3277B00823DAA /* ImageProcessor.swift */,
+				44713883EFA9A49425AFEFDF /* ExportPreset.swift */,
+				D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */,
+			);
+			path = PicStripShareExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -102,17 +217,17 @@
 				2C0D1E132FA686B60032DDDA /* Sources */,
 				2C0D1E142FA686B60032DDDA /* Frameworks */,
 				2C0D1E152FA686B60032DDDA /* Resources */,
+				BA5C2993E98D84B396A95A74 /* Embed App Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				165D6157BCF4A14D8B4C0963 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				2C0D1E192FA686B60032DDDA /* PicStrip */,
 			);
 			name = PicStrip;
-			packageProductDependencies = (
-			);
 			productName = PicStrip;
 			productReference = 2C0D1E172FA686B60032DDDA /* PicStrip.app */;
 			productType = "com.apple.product-type.application";
@@ -134,8 +249,6 @@
 				2C0D1E272FA686B80032DDDA /* PicStripTests */,
 			);
 			name = PicStripTests;
-			packageProductDependencies = (
-			);
 			productName = PicStripTests;
 			productReference = 2C0D1E242FA686B80032DDDA /* PicStripTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
@@ -157,11 +270,26 @@
 				2C0D1E312FA686B80032DDDA /* PicStripUITests */,
 			);
 			name = PicStripUITests;
-			packageProductDependencies = (
-			);
 			productName = PicStripUITests;
 			productReference = 2C0D1E2E2FA686B80032DDDA /* PicStripUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		2E929DD1036BB9AC3C815EB3 /* PicStripShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 4091C55CCA615BFA7652DAFF /* Build configuration list for PBXNativeTarget "PicStripShareExtension" */;
+			buildPhases = (
+				7D1DED12E16519E9FEBBF62C /* Sources */,
+				807416576A1D18FBEF9D22EE /* Frameworks */,
+				51D74E3517A24F6E45C87573 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PicStripShareExtension;
+			productName = PicStripShareExtension;
+			productReference = A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -203,6 +331,7 @@
 				2C0D1E162FA686B60032DDDA /* PicStrip */,
 				2C0D1E232FA686B80032DDDA /* PicStripTests */,
 				2C0D1E2D2FA686B80032DDDA /* PicStripUITests */,
+				2E929DD1036BB9AC3C815EB3 /* PicStripShareExtension */,
 			);
 		};
 /* End PBXProject section */
@@ -226,6 +355,14 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		51D74E3517A24F6E45C87573 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E7BA6DC40737014742CBA7DD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,9 +390,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7D1DED12E16519E9FEBBF62C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C46ED0583BAA9E5C0457C69A /* ShareViewController.swift in Sources */,
+				A2B97CAA5A88F65AB3CD42BC /* ImageProcessor.swift in Sources */,
+				6B740ED24E1DF0D6516F1684 /* ExportPreset.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		165D6157BCF4A14D8B4C0963 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 2E929DD1036BB9AC3C815EB3 /* PicStripShareExtension */;
+			targetProxy = 7F88E12920BBCC28B4DA18DA /* PBXContainerItemProxy */;
+		};
 		2C0D1E262FA686B80032DDDA /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 2C0D1E162FA686B60032DDDA /* PicStrip */;
@@ -269,6 +421,28 @@
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
+		23CC403EC12FF420C97B9BB1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = PicStripShareExtension/PicStripShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BDQ47H73HH;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PicStripShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStrip.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
 		2C0D1E362FA686B80032DDDA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -322,7 +496,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -380,7 +554,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -395,29 +569,33 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PicStrip/PicStrip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "PicStrip saves the scrubbed image to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PicStrip needs access to your photo library to replace the original image when requested.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStrip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStrip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -427,29 +605,33 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = PicStrip/PicStrip.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "PicStrip saves the scrubbed image to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PicStrip needs access to your photo library to replace the original image when requested.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStrip;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStrip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
@@ -462,15 +644,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStripTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStripTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PicStrip.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PicStrip";
 			};
@@ -484,15 +666,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.4;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStripTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStripTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/PicStrip.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/PicStrip";
 			};
@@ -505,14 +687,15 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStripUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStripUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = PicStrip;
 			};
@@ -525,18 +708,40 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = BDQ47H73HH;
 				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = northcutt.PicStripUITests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStripUITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 5.9;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = PicStrip;
 			};
 			name = Release;
+		};
+		8248D41B29ED86C025390848 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_WEAK = NO;
+				CODE_SIGN_ENTITLEMENTS = PicStripShareExtension/PicStripShareExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = BDQ47H73HH;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = PicStripShareExtension/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.northcutt.PicStrip.ShareExtension;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 /* End XCBuildConfiguration section */
 
@@ -573,6 +778,15 @@
 			buildConfigurations = (
 				2C0D1E3F2FA686B80032DDDA /* Debug */,
 				2C0D1E402FA686B80032DDDA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		4091C55CCA615BFA7652DAFF /* Build configuration list for PBXNativeTarget "PicStripShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				23CC403EC12FF420C97B9BB1 /* Release */,
+				8248D41B29ED86C025390848 /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

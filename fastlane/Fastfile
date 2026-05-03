@@ -1,0 +1,114 @@
+default_platform(:ios)
+
+platform :ios do
+  # ── Constants ────────────────────────────────────────────────────────────────
+  APP_ID         = "com.northcutt.PicStrip"
+  EXTENSION_ID   = "com.northcutt.PicStrip.ShareExtension"
+  SCHEME         = "PicStrip"
+  PROJECT        = "PicStrip.xcodeproj"
+  OUTPUT_DIR     = "build"
+  IPA_NAME       = "PicStrip.ipa"
+
+  # ── PR lanes (no signing) ────────────────────────────────────────────────────
+
+  desc "Run SwiftLint"
+  lane :lint do
+    swiftlint(
+      mode:          :lint,
+      config_file:   ".swiftlint.yml",
+      strict:        true,
+      raise_if_swiftlint_error: true
+    )
+  end
+
+  desc "Run xcodebuild analyze (static analysis)"
+  lane :analyze do
+    xcodebuild(
+      project:      PROJECT,
+      scheme:       SCHEME,
+      configuration: "Debug",
+      sdk:          "iphonesimulator",
+      destination:  "platform=iOS Simulator,name=iPhone 16,OS=latest",
+      analyze:      true,
+      buildlog_path: "build/logs"
+    )
+  end
+
+  desc "Run unit tests on simulator"
+  lane :test do
+    run_tests(
+      project:     PROJECT,
+      scheme:      "PicStripTests",
+      device:      "iPhone 16",
+      clean:       true,
+      output_dir:  "build/test_output",
+      output_files: "report.junit",
+      fail_build:  true
+    )
+  end
+
+  # ── Main lanes (signed) ──────────────────────────────────────────────────────
+
+  desc "Sync App Store distribution certificates (readonly on CI)"
+  lane :certificates do
+    api_key = app_store_connect_api_key(
+      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
+
+    match(
+      type:           "appstore",
+      app_identifier: [APP_ID, EXTENSION_ID],
+      readonly:       true,
+      api_key:        api_key
+    )
+  end
+
+  desc "Build and export IPA"
+  lane :build do
+    # Increment build number to CI run number
+    build_number = ENV.fetch("BUILD_NUMBER", "1")
+
+    increment_build_number(
+      build_number: build_number,
+      xcodeproj:    PROJECT
+    )
+
+    gym(
+      project:           PROJECT,
+      scheme:            SCHEME,
+      configuration:     "Release",
+      clean:             true,
+      output_directory:  OUTPUT_DIR,
+      output_name:       IPA_NAME,
+      export_method:     "app-store",
+      export_options: {
+        provisioningProfiles: {
+          APP_ID       => "match AppStore #{APP_ID}",
+          EXTENSION_ID => "match AppStore #{EXTENSION_ID}"
+        }
+      }
+    )
+  end
+
+  desc "Build and upload to TestFlight"
+  lane :beta do
+    certificates
+    build
+
+    api_key = app_store_connect_api_key(
+      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
+
+    upload_to_testflight(
+      ipa:              "#{OUTPUT_DIR}/#{IPA_NAME}",
+      api_key:          api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
