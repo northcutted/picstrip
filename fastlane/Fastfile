@@ -58,11 +58,25 @@ platform :ios do
       is_key_content_base64: false
     )
 
+    # Create a temporary keychain to avoid UI prompts on CI
+    if ENV["CI"]
+      create_keychain(
+        name:            "fastlane_tmp_keychain",
+        password:        "fastlane_tmp_keychain_password",
+        default_keychain: true,
+        unlock:          true,
+        timeout:         3600,
+        lock_when_sleeps: false
+      )
+    end
+
     match(
-      type:           "appstore",
-      app_identifier: [APP_ID, EXTENSION_ID],
-      readonly:       true,
-      api_key:        api_key
+      type:             "appstore",
+      app_identifier:   [APP_ID, EXTENSION_ID],
+      readonly:         true,
+      api_key:          api_key,
+      keychain_name:    ENV["CI"] ? "fastlane_tmp_keychain" : nil,
+      keychain_password: ENV["CI"] ? "fastlane_tmp_keychain_password" : nil
     )
   end
 
