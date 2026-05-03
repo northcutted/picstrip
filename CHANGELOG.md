@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/northcutted/picstrip/compare/v1.0.2...v1.0.3) (2026-05-03)
+
+
+### Bug Fixes
+
+* update action versions and add caching for SwiftLint in PR workflow ([37b41ce](https://github.com/northcutted/picstrip/commit/37b41ceb2b1b11e8d2c04d94f82ea653693a161f))
+
 ## [1.0.2](https://github.com/northcutted/picstrip/compare/v1.0.1...v1.0.2) (2026-05-03)
 
 
