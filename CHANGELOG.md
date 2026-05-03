@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/northcutted/picstrip/compare/v1.0.0...v1.0.1) (2026-05-03)
+
+
+### Bug Fixes
+
+* switch to macos-26 runner for iOS 26 SDK requirement ([61f175e](https://github.com/northcutted/picstrip/commit/61f175ea417f1a74797079bb1f021941da718a31))
+
 ## 1.0.0 (2026-05-03)
 
 
