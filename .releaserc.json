@@ -39,7 +39,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "sed -i '' 's/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${nextRelease.version}/' PicStrip.xcodeproj/project.pbxproj"
+        "prepareCmd": "sed -i 's/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${nextRelease.version}/' PicStrip.xcodeproj/project.pbxproj"
       }
     ],
     [
