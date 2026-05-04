@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/northcutted/picstrip/compare/v1.0.4...v1.1.0) (2026-05-04)
+
+
+### Features
+
+* add detection pipeline ([19c1611](https://github.com/northcutted/picstrip/commit/19c16118671d91943fe5e59d60e2ade6841691b6))
+
 ## [1.0.4](https://github.com/northcutted/picstrip/compare/v1.0.3...v1.0.4) (2026-05-03)
 
 
