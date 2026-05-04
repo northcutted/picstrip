@@ -58,6 +58,8 @@ struct MetadataBadgeRow: View {
     let metadata: StrippedMetadata
     var onPhoto: Bool = false
     var selectedCategory: Binding<String?>? = nil
+    /// Optional extra pill injected at the trailing end of the badge row.
+    var trailingPill: AnyView? = nil
 
     /// Categories present in the metadata, in canonical display order, with field counts.
     private var presentCategories: [(category: String, count: Int)] {
@@ -73,6 +75,9 @@ struct MetadataBadgeRow: View {
             HStack(spacing: 6) {
                 ForEach(presentCategories, id: \.category) { item in
                     badge(category: item.category, count: item.count)
+                }
+                if let pill = trailingPill {
+                    pill
                 }
             }
             .padding(.horizontal, 12)

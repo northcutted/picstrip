@@ -34,6 +34,20 @@ struct StripConfig {
         fieldOverrides: [:]
     )
 
+    /// Alias for batch processing — semantically identical to `.default` but
+    /// named for clarity at the call-site: "strip every known category".
+    static let allEnabled = StripConfig(
+        categoryEnabled: [
+            "GPS":              true,
+            "EXIF":             true,
+            "EXIF Auxiliary":   true,
+            "TIFF":             true,
+            "IPTC":             true,
+            "Apple Maker Note": true,
+        ],
+        fieldOverrides: [:]
+    )
+
     /// Returns `true` if `field` should be stripped given the current config.
     func shouldStrip(category: String, key: String) -> Bool {
         guard categoryEnabled[category] == true else { return false }
@@ -54,6 +68,18 @@ struct MetadataField: Identifiable {
     let key: String
     /// The original value rendered as a human-readable string.
     let value: String
+    /// `true` when this field is a structural rendering requirement (e.g. ColorSpace,
+    /// XResolution) that ImageIO re-synthesises unconditionally.  These fields are
+    /// displayed for transparency but cannot be stripped — the toggle is replaced with
+    /// a read-only lock indicator in the UI.
+    let isStructural: Bool
+
+    init(category: String, key: String, value: String, isStructural: Bool = false) {
+        self.category     = category
+        self.key          = key
+        self.value        = value
+        self.isStructural = isStructural
+    }
 }
 
 /// The complete set of metadata fields removed from a source image during a processing run.
@@ -121,6 +147,43 @@ enum ImageProcessor {
         (kCGImagePropertyTIFFDictionary,       "TIFF"),
         (kCGImagePropertyIPTCDictionary,       "IPTC"),
         (kCGImagePropertyMakerAppleDictionary, "Apple Maker Note"),
+    ]
+
+    /// Keys that ImageIO unconditionally re-synthesises into any JPEG/HEIC it produces,
+    /// regardless of `kCGImageDestinationMergeMetadata: false`.  These are structural
+    /// rendering requirements (colour space, dimensions, resolution, orientation) —
+    /// not privacy-sensitive data.  They are excluded from the UI catalogue so the
+    /// app never falsely claims it can strip them, and so an image with *only* these
+    /// fields correctly reports "0 fields to remove".
+    static let structuralKeys: Set<String> = [
+        // ── Root-level properties injected by the iOS encoder ──────────────────
+        // These live at the top of the CGImageSource dictionary, not inside any
+        // sub-dictionary.  They are format/rendering metadata, not personal data.
+        kCGImagePropertyPixelWidth   as String,  // "PixelWidth"
+        kCGImagePropertyPixelHeight  as String,  // "PixelHeight"
+        kCGImagePropertyColorModel   as String,  // "ColorModel"
+        kCGImagePropertyDepth        as String,  // "Depth"
+        kCGImagePropertyOrientation  as String,  // "Orientation"  (root alias)
+        kCGImagePropertyProfileName  as String,  // "ProfileName"
+        kCGImagePropertyDPIWidth     as String,  // "DPIWidth"
+        kCGImagePropertyDPIHeight    as String,  // "DPIHeight"
+        kCGImagePropertyFileSize     as String,  // "FileSize"
+        // ── TIFF sub-dictionary — strictly rendering requirements only ──────────
+        // kCGImagePropertyTIFFSoftware is intentionally excluded: it reveals
+        // the user's editing workflow ("PicMonkey.com", etc.) and is strippable.
+        kCGImagePropertyTIFFOrientation     as String,  // "Orientation"
+        kCGImagePropertyTIFFXResolution     as String,  // "XResolution"
+        kCGImagePropertyTIFFYResolution     as String,  // "YResolution"
+        kCGImagePropertyTIFFResolutionUnit  as String,  // "ResolutionUnit"
+        // ── EXIF sub-dictionary ─────────────────────────────────────────────────
+        kCGImagePropertyExifColorSpace           as String,  // "ColorSpace"
+        kCGImagePropertyExifPixelXDimension      as String,  // "PixelXDimension"
+        kCGImagePropertyExifPixelYDimension      as String,  // "PixelYDimension"
+        // OS-mandated EXIF version strings — ImageIO injects these unconditionally
+        // to keep the JPEG/HEIC container spec-valid.
+        kCGImagePropertyExifVersion              as String,  // "ExifVersion"
+        kCGImagePropertyExifFlashPixVersion      as String,  // "FlashPixVersion"
+        kCGImagePropertyExifComponentsConfiguration as String, // "ComponentsConfiguration"
     ]
 
     // MARK: - Public API
@@ -217,8 +280,17 @@ enum ImageProcessor {
             throw ProcessingError.destinationCreationFailed
         }
 
+        // "Hail Mary" encoder hardening: pass empty dictionaries for {Exif} and {TIFF}
+        // to signal ImageIO that these blocks should be zeroed out rather than
+        // auto-synthesised.  An empty dict is more aggressively respected than
+        // kCFNull for individual keys — it tells the encoder there is nothing to write
+        // in those sub-dictionaries at all.  Pass 2 (MergeMetadata: false) wipes
+        // whatever survives anyway, but belt-and-suspenders here minimises ghost fields
+        // in the intermediate firstBuffer that could be copied across unexpectedly.
         let encodeProps: [CFString: Any] = [
-            kCGImageDestinationLossyCompressionQuality: quality
+            kCGImageDestinationLossyCompressionQuality: quality,
+            kCGImagePropertyExifDictionary: [:] as [CFString: Any],
+            kCGImagePropertyTIFFDictionary: [:] as [CFString: Any],
         ]
         CGImageDestinationAddImage(firstDest, cgImage, encodeProps as CFDictionary)
         guard CGImageDestinationFinalize(firstDest) else {
@@ -231,47 +303,52 @@ enum ImageProcessor {
         //
         //    kCGImageDestinationMergeMetadata: false in pass 2 wipes everything ImageIO
         //    auto-synthesised, so we must explicitly re-inject anything we want to survive.
+        //
+        //    PNG optimisation: PNG has no native EXIF/TIFF block — keep metadata entirely
+        //    empty for PNG output so the file is as flat as possible.
         let outputMetadata = CGImageMetadataCreateMutable()
 
-        // a) Always write orientation 1 — pixels are display-oriented from UIImage.normalized().
-        if let tag = CGImageMetadataTagCreate(
-            kCGImageMetadataNamespaceTIFF as CFString,
-            kCGImageMetadataPrefixTIFF,
-            kCGImagePropertyTIFFOrientation as CFString,
-            .string,
-            "1" as CFTypeRef
-        ) {
-            CGImageMetadataSetTagWithPath(outputMetadata, nil, "tiff:Orientation" as CFString, tag)
-        }
+        if outputUTType != .png {
+            // a) Always write orientation 1 — pixels are display-oriented from UIImage.normalized().
+            if let tag = CGImageMetadataTagCreate(
+                kCGImageMetadataNamespaceTIFF as CFString,
+                kCGImageMetadataPrefixTIFF,
+                kCGImagePropertyTIFFOrientation as CFString,
+                .string,
+                "1" as CFTypeRef
+            ) {
+                CGImageMetadataSetTagWithPath(outputMetadata, nil, "tiff:Orientation" as CFString, tag)
+            }
 
-        // b) Re-inject any category the user chose to keep.
-        //    Walk categoryMap so we handle each dict in a consistent order.
-        if let props = existingProps {
-            for (dictKey, category) in categoryMap {
-                // If the category is enabled (strip it), skip — those fields are gone.
-                guard config.categoryEnabled[category] != true else { continue }
-                guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
+            // b) Re-inject any category the user chose to keep.
+            //    Walk categoryMap so we handle each dict in a consistent order.
+            if let props = existingProps {
+                for (dictKey, category) in categoryMap {
+                    // If the category is enabled (strip it), skip — those fields are gone.
+                    guard config.categoryEnabled[category] != true else { continue }
+                    guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
 
-                // Map each ImageIO property dict key to its XMP path components.
-                // CGImageMetadata uses XMP namespaces; we only need to handle the
-                // dicts users are likely to preserve (GPS is the main one).
-                guard let (namespace, prefix) = xmpNamespace(for: dictKey) else { continue }
+                    // Map each ImageIO property dict key to its XMP path components.
+                    // CGImageMetadata uses XMP namespaces; we only need to handle the
+                    // dicts users are likely to preserve (GPS is the main one).
+                    guard let (namespace, prefix) = xmpNamespace(for: dictKey) else { continue }
 
-                for (fieldKey, fieldValue) in subDict {
-                    // Skip per-field overrides that say "strip this individual field".
-                    let keyStr = fieldKey as String
-                    if config.fieldOverrides["\(category).\(keyStr)"] == true { continue }
+                    for (fieldKey, fieldValue) in subDict {
+                        // Skip per-field overrides that say "strip this individual field".
+                        let keyStr = fieldKey as String
+                        if config.fieldOverrides["\(category).\(keyStr)"] == true { continue }
 
-                    guard let tag = CGImageMetadataTagCreate(
-                        namespace as CFString,
-                        prefix as CFString,
-                        fieldKey,
-                        .string,
-                        "\(fieldValue)" as CFTypeRef
-                    ) else { continue }
+                        guard let tag = CGImageMetadataTagCreate(
+                            namespace as CFString,
+                            prefix as CFString,
+                            fieldKey,
+                            .string,
+                            "\(fieldValue)" as CFTypeRef
+                        ) else { continue }
 
-                    let path = "\(prefix):\(keyStr)" as CFString
-                    CGImageMetadataSetTagWithPath(outputMetadata, nil, path, tag)
+                        let path = "\(prefix):\(keyStr)" as CFString
+                        CGImageMetadataSetTagWithPath(outputMetadata, nil, path, tag)
+                    }
                 }
             }
         }
@@ -312,7 +389,75 @@ enum ImageProcessor {
 
     // MARK: - Metadata catalogue (public for preview use)
 
-    /// Walks the source properties dictionary and collects every key/value pair
+    /// Returns every metadata field present in `data` as decoded by ImageIO, with no
+    /// strip-config filtering.  Used to read the *output* file and compare it against
+    /// the source so the UI can identify encoder-injected fields.
+    ///
+    /// Two-pass walk:
+    ///   **Step A** — Root-level primitives (PixelWidth, ColorModel, Depth, etc.).
+    ///               The iOS encoder injects these directly into the top-level dict,
+    ///               bypassing any sub-dictionary.  They are filed under "General".
+    ///   **Step B** — Sub-dictionary properties (TIFF, EXIF, GPS, …) via `categoryMap`.
+    ///
+    /// - Parameter data: Any image bytes supported by ImageIO.
+    /// - Returns: All key/value pairs found in the image, with structural keys tagged
+    ///            `isStructural: true`.  Fields are sorted by key for stable display.
+    static func readAllFields(from data: Data) -> [MetadataField] {
+        guard
+            let source = CGImageSourceCreateWithData(data as CFData, nil),
+            let props  = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        else { return [] }
+
+        var fields: [MetadataField] = []
+
+        // ── Step A: Root-level primitives ──────────────────────────────────────
+        // Skip any value that is a dictionary — those belong to Step B.
+        // NSDictionary covers all CF/Swift dict bridge forms ([CFString: Any], etc.)
+        for (key, value) in props {
+            guard !(value is NSDictionary) else { continue }
+            let keyStr = key as String
+            fields.append(MetadataField(
+                category:     "General",
+                key:          keyStr,
+                value:        "\(value)",
+                isStructural: structuralKeys.contains(keyStr)
+            ))
+        }
+
+        // ── Step B: Sub-dictionary properties (TIFF, EXIF, GPS, …) ───────────
+        for (dictKey, category) in categoryMap {
+            guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
+            for (fieldKey, fieldValue) in subDict {
+                let keyStr = fieldKey as String
+                fields.append(MetadataField(
+                    category:     category,
+                    key:          keyStr,
+                    value:        "\(fieldValue)",
+                    isStructural: structuralKeys.contains(keyStr)
+                ))
+            }
+        }
+
+        // ── Deduplication ─────────────────────────────────────────────────────
+        // ImageIO mirrors some keys (e.g. "Orientation") into both the root dict
+        // and a sub-dictionary ({TIFF}).  Prefer the sub-dict version — it carries
+        // the correct category name.  Walk all fields and let sub-dict entries
+        // overwrite root ("General") entries for the same key string.
+        var byKey: [String: MetadataField] = [:]
+        for field in fields {
+            if byKey[field.key] == nil || field.category != "General" {
+                byKey[field.key] = field
+            }
+        }
+
+        // Stable display order: General first, then by category, then by key.
+        return byKey.values.sorted {
+            if $0.category != $1.category {
+                return $0.category == "General" || $0.category < $1.category
+            }
+            return $0.key < $1.key
+        }
+    }
     /// inside the metadata sub-dictionaries that *will* be stripped given `config`.
     ///
     /// This is also called by `ScrubberViewModel` to produce `pendingStrippedMetadata`
@@ -325,27 +470,63 @@ enum ImageProcessor {
 
         var fields: [MetadataField] = []
 
+        // ── Step A: Root-level primitives ──────────────────────────────────────
+        // PixelWidth, PixelHeight, ColorModel, Depth, etc. live at the top of the
+        // root dictionary — not inside any sub-dict.  They are always structural
+        // and never privacy-sensitive, so they are included unconditionally to
+        // ensure allSourceMetadata covers the same scope as readAllFields.
+        for (key, value) in props {
+            guard !(value is NSDictionary) else { continue }
+            let keyStr = key as String
+            fields.append(MetadataField(
+                category:     "General",
+                key:          keyStr,
+                value:        stringify(value),
+                isStructural: structuralKeys.contains(keyStr)
+            ))
+        }
+
+        // ── Step B: Sub-dictionary properties (TIFF, EXIF, GPS, …) ───────────
         for (dictKey, category) in categoryMap {
             // Skip this category entirely if it is disabled.
             guard config.categoryEnabled[category] == true else { continue }
 
             guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
             for (rawKey, rawValue) in subDict {
-                let keyString = rawKey as String
-                // Honour per-field overrides.
-                guard config.shouldStrip(category: category, key: keyString) else { continue }
-                let valueString = stringify(rawValue)
-                fields.append(MetadataField(category: category, key: keyString, value: valueString))
+                let keyString    = rawKey as String
+                let isStructural = structuralKeys.contains(keyString)
+                // Honour per-field overrides (structural fields are never in fieldOverrides,
+                // but the guard keeps the logic consistent).
+                guard config.shouldStrip(category: category, key: keyString) || isStructural else { continue }
+                fields.append(MetadataField(
+                    category:     category,
+                    key:          keyString,
+                    value:        stringify(rawValue),
+                    isStructural: isStructural
+                ))
             }
         }
 
-        // Sort within each category by key name for deterministic display order.
-        fields.sort {
-            if $0.category != $1.category { return $0.category < $1.category }
+        // ── Deduplication ─────────────────────────────────────────────────────
+        // Same strategy as readAllFields: sub-dict entries overwrite root ("General")
+        // entries for the same key string, so "TIFF.Orientation" wins over
+        // "General.Orientation".
+        var byKey: [String: MetadataField] = [:]
+        for field in fields {
+            if byKey[field.key] == nil || field.category != "General" {
+                byKey[field.key] = field
+            }
+        }
+
+        // Stable sort: General first, then by category, then by key — matches readAllFields.
+        let deduplicated = byKey.values.sorted {
+            if $0.category != $1.category {
+                return $0.category == "General" || $0.category < $1.category
+            }
             return $0.key < $1.key
         }
 
-        return StrippedMetadata(fields: fields)
+        return StrippedMetadata(fields: deduplicated)
     }
 
     // MARK: - Private helpers

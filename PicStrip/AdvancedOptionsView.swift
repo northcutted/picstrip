@@ -4,59 +4,71 @@ struct AdvancedOptionsView: View {
 
     @Bindable var viewModel: ScrubberViewModel
 
+    /// True when PII has been detected — used to surface the PNG recommendation.
+    var hasPII: Bool = false
+
     var body: some View {
         VStack(spacing: 0) {
-            ForEach(ExportPreset.allCases) { preset in
-                Button {
-                    viewModel.selectedPreset = preset
-                } label: {
-                    HStack(spacing: 12) {
-                        // Format icon
-                        Image(systemName: iconName(for: preset))
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(viewModel.selectedPreset == preset ? Color.accentColor : .secondary)
-                            .frame(width: 28)
+            ForEach(Array(ExportFormat.allCases.enumerated()), id: \.element.id) { index, format in
+                formatRow(format)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(preset.title)
-                                .font(.subheadline)
-                                .fontWeight(viewModel.selectedPreset == preset ? .semibold : .regular)
-                                .foregroundStyle(.primary)
-                            Text(preset.description)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-
-                        Spacer()
-
-                        if viewModel.selectedPreset == preset {
-                            Image(systemName: "checkmark")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.tint)
-                        }
-                    }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                }
-                .buttonStyle(.plain)
-
-                if preset != ExportPreset.allCases.last {
-                    Divider().padding(.leading, 52)
+                if index < ExportFormat.allCases.count - 1 {
+                    Divider()
+                        .padding(.leading, 44)
                 }
             }
         }
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 10))
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func iconName(for preset: ExportPreset) -> String {
-        switch preset {
-        case .matchSource:     return "doc.badge.arrow.up"
-        case .highQualityJPEG: return "photo"
-        case .webFriendlyJPEG: return "globe"
-        case .losslessPNG:     return "lasso.badge.sparkles"
-        case .heicOriginal:    return "apple.logo"
+    // MARK: - Row
+
+    @ViewBuilder
+    private func formatRow(_ format: ExportFormat) -> some View {
+        let isSelected = viewModel.selectedExportFormat == format
+        let showBadge  = format == .png && hasPII
+
+        Button {
+            viewModel.selectedExportFormat = format
+        } label: {
+            HStack(alignment: .top, spacing: 12) {
+
+                // Selection indicator
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.body)
+                    .foregroundStyle(isSelected ? Color.green : Color.secondary)
+                    .padding(.top, 1)
+
+                // Text stack
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 6) {
+                        Text(format.title)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.primary)
+
+                        if showBadge {
+                            Text("Recommended")
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.green, in: Capsule())
+                        }
+                    }
+
+                    Text(format.description)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 11)
+            .padding(.horizontal, 14)
         }
+        .buttonStyle(.plain)
     }
 }
 
@@ -64,8 +76,11 @@ struct AdvancedOptionsView: View {
 
 #Preview {
     ScrollView {
-        AdvancedOptionsView(viewModel: ScrubberViewModel())
-            .padding()
+        VStack(spacing: 20) {
+            AdvancedOptionsView(viewModel: ScrubberViewModel(), hasPII: false)
+            AdvancedOptionsView(viewModel: ScrubberViewModel(), hasPII: true)
+        }
+        .padding()
     }
     .background(Color(.systemGroupedBackground))
 }

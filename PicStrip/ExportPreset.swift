@@ -1,6 +1,48 @@
 import UniformTypeIdentifiers
 
-/// Defines the available export configurations for the image scrubbing engine.
+// MARK: - ExportFormat
+
+/// Simple four-way format choice exposed in the UI.
+/// Maps to an `ExportPreset` for the stripping engine.
+/// Cases are ordered for display: most private first.
+enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
+    case png      = "png"
+    case jpeg     = "jpeg"
+    case heic     = "heic"
+    case original = "original"
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .png:      return "PNG"
+        case .jpeg:     return "JPEG"
+        case .heic:     return "HEIC"
+        case .original: return "Match Original"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .png:      return "Maximum Privacy. Prevents OS from injecting format headers."
+        case .jpeg:     return "Reduced file size. Standard compatibility."
+        case .heic:     return "High efficiency. Apple OS may inject Maker data upon saving."
+        case .original: return "Keeps original format. OS may re-encode and inject basic headers."
+        }
+    }
+
+    /// Maps to the stripping engine's `ExportPreset`.
+    var exportPreset: ExportPreset {
+        switch self {
+        case .png:      return .losslessPNG
+        case .jpeg:     return .highQualityJPEG
+        case .heic:     return .heicOriginal
+        case .original: return .matchSource
+        }
+    }
+}
+
+// MARK: - ExportPreset
 enum ExportPreset: String, Identifiable, CaseIterable {
 
     /// Re-encode in the same format as the source image (default).

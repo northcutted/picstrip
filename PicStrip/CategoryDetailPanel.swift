@@ -39,7 +39,8 @@ struct CategoryDetailPanel: View {
                     Text(category)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
-                    Text("\(fields.count) field\(fields.count == 1 ? "" : "s") found")
+                    let strippableCount = fields.filter { !$0.isStructural }.count
+                    Text("\(strippableCount) field\(strippableCount == 1 ? "" : "s") found")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -112,7 +113,17 @@ struct CategoryDetailPanel: View {
 
     // MARK: - Field row
 
+    @ViewBuilder
     private func fieldRow(_ field: MetadataField) -> some View {
+        if field.isStructural {
+            structuralFieldRow(field)
+        } else {
+            strippableFieldRow(field)
+        }
+    }
+
+    /// A standard strippable field — shows a per-field toggle.
+    private func strippableFieldRow(_ field: MetadataField) -> some View {
         let compoundKey = "\(category).\(field.key)"
         let isStripping = stripConfig.fieldOverrides[compoundKey] != false
 
@@ -139,6 +150,34 @@ struct CategoryDetailPanel: View {
         }
         .tint(color)
         .padding(.horizontal, 14)
+    }
+
+    /// A structural field — read-only, lock icon, explanatory caption.
+    private func structuralFieldRow(_ field: MetadataField) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(field.key)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Text(field.value)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(2)
+                Text("Standard file format header required for display. Does not contain personal data.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 1)
+            }
+            .padding(.vertical, 8)
+
+            Spacer()
+
+            Image(systemName: "lock.fill")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal, 14)
+        .opacity(0.7)
     }
 
     // MARK: - Bulk segmented control
@@ -201,26 +240,28 @@ struct CategoryDetailPanel: View {
 
     // MARK: - Bulk helpers
 
+    private var strippableFields: [MetadataField] { fields.filter { !$0.isStructural } }
+
     private var allStripping: Bool {
-        fields.allSatisfy { field in
+        strippableFields.allSatisfy { field in
             stripConfig.fieldOverrides["\(category).\(field.key)"] != false
         }
     }
 
     private var noneStripping: Bool {
-        fields.allSatisfy { field in
+        strippableFields.allSatisfy { field in
             stripConfig.fieldOverrides["\(category).\(field.key)"] == false
         }
     }
 
     private func stripAll() {
-        for field in fields {
+        for field in strippableFields {
             stripConfig.fieldOverrides.removeValue(forKey: "\(category).\(field.key)")
         }
     }
 
     private func keepAll() {
-        for field in fields {
+        for field in strippableFields {
             stripConfig.fieldOverrides["\(category).\(field.key)"] = false
         }
     }
