@@ -130,7 +130,11 @@ platform :ios do
 
   desc "Capture App Store screenshots on simulator (reads fastlane/Snapfile)"
   lane :screenshots do
-    capture_ios_screenshots
+    capture_ios_screenshots(
+      # Disable code signing for simulator builds — avoids OCSP certificate
+      # validation hangs against Apple servers in headless CI environments.
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+    )
   end
 
   desc "Upload previously captured screenshots to App Store Connect (binary unchanged)"

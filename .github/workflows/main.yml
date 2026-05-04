@@ -151,7 +151,13 @@ jobs:
           xcrun simctl bootstatus "iPhone 17" -b
 
       - name: Capture screenshots
-        run: bundle exec fastlane screenshots
+        env:
+          # Prevent macOS from doing OCSP certificate revocation checks against
+          # Apple servers, which hang for minutes in CI before timing out.
+          FASTLANE_DISABLE_COLORS: "1"
+        run: |
+          sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
+          bundle exec fastlane screenshots
 
       - name: Upload screenshot artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
