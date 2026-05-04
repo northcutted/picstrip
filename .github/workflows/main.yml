@@ -143,6 +143,13 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
 
+      - name: Boot simulators
+        run: |
+          xcrun simctl boot "iPhone 17 Pro Max" || true
+          xcrun simctl boot "iPhone 17" || true
+          xcrun simctl bootstatus "iPhone 17 Pro Max" -b
+          xcrun simctl bootstatus "iPhone 17" -b
+
       - name: Capture screenshots
         run: bundle exec fastlane screenshots
 

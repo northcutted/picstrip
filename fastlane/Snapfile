@@ -24,14 +24,19 @@ output_directory("./fastlane/screenshots")
 # Wipe previous screenshots before each run so stale images never ship.
 clear_previous_screenshots(true)
 
-# Erase the simulator before each run for a clean state.
-erase_simulator(true)
+# Simulators are pre-booted by a CI step before fastlane runs.
+# erase_simulator is intentionally omitted — it boots from scratch and hangs
+# in headless CI. reinstall_app(true) gives equivalent cleanliness.
+reinstall_app(true)
 
 # Override status-bar to a clean, consistent look (9:41 AM, full signal/battery).
 override_status_bar(true)
 
-# Keep the simulator running between languages (faster on CI).
-reinstall_app(true)
+# Don't try to open a browser/HTML summary in headless CI.
+skip_open_summary(true)
+
+# Run one simulator at a time to avoid resource contention on CI runners.
+concurrent_simulators(false)
 
 # Stop on the first test failure rather than collecting broken screenshots.
 stop_after_first_error(true)
