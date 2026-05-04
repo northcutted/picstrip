@@ -14,7 +14,7 @@ languages([
 ])
 
 # The UI test scheme that contains snapshot() calls.
-scheme("PicStripUITests")
+scheme("PicStrip")
 
 app_identifier("com.northcutt.PicStrip")
 
