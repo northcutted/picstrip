@@ -1,43 +1,52 @@
-//
-//  PicStripUITests.swift
-//  PicStripUITests
-//
-//  Created by Eddie Northcutt on 5/2/26.
-//
-
 import XCTest
 
+/// Fastlane snapshot test suite for PicStrip.
+///
+/// Screens captured (v1):
+///   01_Home  — home screen with the two-pass hero animation visible
+///   02_About — About & Trust sheet
+///
+/// Future screens (requires seeding a test image into the simulator photo
+/// library via `xcrun simctl addmedia` in the CI job):
+///   03_Photo     — photo loaded, metadata badge row visible
+///   04_Review    — pre-save review / redaction list
+///   05_PIIDetail — PII details sheet
 final class PicStripUITests: XCTestCase {
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
         let app = XCUIApplication()
+        setupSnapshot(app)
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
     }
 
+    // MARK: - 01 Home screen
+
+    /// Captures the home screen with the scanner hero animation in mid-sweep.
+    /// We wait 1.2 s so the detection beam is clearly visible.
     @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
-        measure(metrics: [XCTApplicationLaunchMetric()]) {
-            XCUIApplication().launch()
-        }
+    func testScreenshot01Home() throws {
+        // The hero animation starts automatically; just wait for the first
+        // detection pass to be clearly under way.
+        Thread.sleep(forTimeInterval: 1.2)
+        snapshot("01_Home")
+    }
+
+    // MARK: - 02 About sheet
+
+    /// Taps the info button in the navigation bar and captures the About sheet.
+    @MainActor
+    func testScreenshot02About() throws {
+        // Let the app settle.
+        Thread.sleep(forTimeInterval: 0.6)
+
+        // Tap the info / question-mark button.
+        let infoButton = XCUIApplication().buttons["infoButton"]
+        XCTAssertTrue(infoButton.waitForExistence(timeout: 5))
+        infoButton.tap()
+
+        // Wait for the sheet to finish its presentation animation.
+        Thread.sleep(forTimeInterval: 0.6)
+        snapshot("02_About")
     }
 }

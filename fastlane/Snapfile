@@ -1,0 +1,37 @@
+# Snapfile — configuration for `fastlane snapshot` / `capture_ios_screenshots`
+# https://docs.fastlane.tools/actions/snapshot/
+
+# Target devices. App Store Connect requires at minimum the 6.9" and 6.7"
+# display classes; iPhone 17 Pro Max covers 6.9", iPhone 17 covers 6.1".
+devices([
+  "iPhone 17 Pro Max",
+  "iPhone 17",
+])
+
+# Languages / locales to capture.
+languages([
+  "en-US",
+])
+
+# The UI test scheme that contains snapshot() calls.
+scheme("PicStripUITests")
+
+app_identifier("com.northcutt.PicStrip")
+
+# Where captured PNGs are written. Relative to the repo root.
+output_directory("./fastlane/screenshots")
+
+# Wipe previous screenshots before each run so stale images never ship.
+clear_previous_screenshots(true)
+
+# Erase the simulator before each run for a clean state.
+erase_simulator(true)
+
+# Override status-bar to a clean, consistent look (9:41 AM, full signal/battery).
+override_status_bar(true)
+
+# Keep the simulator running between languages (faster on CI).
+reinstall_app(true)
+
+# Stop on the first test failure rather than collecting broken screenshots.
+stop_after_first_error(true)

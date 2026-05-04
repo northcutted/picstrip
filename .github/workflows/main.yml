@@ -14,14 +14,13 @@ permissions:
   actions: read         # SLSA provenance needs to read workflow
 
 jobs:
-  # ── 1. Semantic Release ────────────────────────────────────────────────────
-  release:
-    name: Semantic Release
+  # ── 1. Semantic Release dry run — determine next version ──────────────────
+  version:
+    name: Determine Next Version
     runs-on: ubuntu-latest
     outputs:
-      released:        ${{ steps.semrel.outputs.new_release_published }}
-      version:         ${{ steps.semrel.outputs.new_release_version }}
-      release_id:      ${{ steps.semrel.outputs.new_release_id }}
+      will_release: ${{ steps.semrel.outputs.will_release }}
+      version:      ${{ steps.semrel.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -38,34 +37,34 @@ jobs:
       - name: Install semantic-release
         run: npm ci
 
-      - name: Run semantic-release
+      - name: Dry-run semantic-release
         id: semrel
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OUTPUT=$(npx semantic-release 2>&1)
+          OUTPUT=$(npx semantic-release --dry-run 2>&1)
           echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -q "Published release"; then
-            VERSION=$(echo "$OUTPUT" | grep -oP 'Published release \K[^\s]+')
-            echo "new_release_published=true" >> "$GITHUB_OUTPUT"
-            echo "new_release_version=$VERSION" >> "$GITHUB_OUTPUT"
+          if echo "$OUTPUT" | grep -q "next release version"; then
+            VERSION=$(echo "$OUTPUT" | grep -oP 'next release version is \K[^\s]+')
+            echo "will_release=true"  >> "$GITHUB_OUTPUT"
+            echo "version=$VERSION"   >> "$GITHUB_OUTPUT"
           else
-            echo "new_release_published=false" >> "$GITHUB_OUTPUT"
+            echo "will_release=false" >> "$GITHUB_OUTPUT"
           fi
 
   # ── 2. Build + Sign + Upload to TestFlight ─────────────────────────────────
   build:
     name: Build & Upload to TestFlight
     runs-on: macos-26
-    needs: release
-    if: needs.release.outputs.released == 'true'
+    needs: version
+    if: needs.version.outputs.will_release == 'true'
     outputs:
       ipa-hashes: ${{ steps.digest.outputs.hashes }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: v${{ needs.release.outputs.version }}
+          ref: ${{ github.sha }}
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
@@ -110,26 +109,91 @@ jobs:
       - name: Compute SHA-256 of IPA
         id: digest
         run: |
-          # sha256sum-style output (hash + filename), base64 encoded for SLSA
           HASHES=$(shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' | base64 | tr -d '\n')
           echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
-          # Also write a plain .sha256 file to attach to the release
           shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' > build/PicStrip.ipa.sha256
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: PicStrip-${{ needs.release.outputs.version }}
+          name: PicStrip-${{ needs.version.outputs.version }}
           path: |
             build/PicStrip.ipa
             build/PicStrip.ipa.sha256
           retention-days: 90
 
-  # ── 3. SLSA L3 Provenance ─────────────────────────────────────────────────
+  # ── 3. Capture & Upload Screenshots ───────────────────────────────────────
+  screenshots:
+    name: Capture & Upload Screenshots
+    runs-on: macos-26
+    needs: version
+    if: needs.version.outputs.will_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Capture screenshots
+        run: bundle exec fastlane screenshots
+
+      - name: Upload screenshot artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: screenshots-${{ needs.version.outputs.version }}
+          path: fastlane/screenshots/
+          retention-days: 90
+
+      - name: Upload screenshots to App Store Connect
+        env:
+          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: bundle exec fastlane upload_screenshots
+
+  # ── 4. Publish GitHub Release + tag ───────────────────────────────────────
+  release:
+    name: Publish Release
+    runs-on: ubuntu-latest
+    needs: [version, build, screenshots]
+    if: needs.version.outputs.will_release == 'true'
+    outputs:
+      version: ${{ needs.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: "24"
+          cache: "npm"
+
+      - name: Install semantic-release
+        run: npm ci
+
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
+  # ── 5. SLSA L3 Provenance ─────────────────────────────────────────────────
   provenance:
     name: SLSA Provenance
-    needs: [release, build]
-    if: needs.release.outputs.released == 'true'
+    needs: [version, build, release]
+    if: needs.version.outputs.will_release == 'true'
     permissions:
       actions:  read
       id-token: write
@@ -138,26 +202,26 @@ jobs:
     with:
       base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
       upload-assets:   true
-      upload-tag-name: "v${{ needs.release.outputs.version }}"
+      upload-tag-name: "v${{ needs.version.outputs.version }}"
 
-  # ── 4. Attach artifacts to GitHub Release ─────────────────────────────────
+  # ── 6. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
     name: Attach Release Assets
     runs-on: ubuntu-latest
-    needs: [release, build, provenance]
-    if: needs.release.outputs.released == 'true'
+    needs: [version, build, release, provenance]
+    if: needs.version.outputs.will_release == 'true'
     steps:
       - name: Download IPA artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: PicStrip-${{ needs.release.outputs.version }}
+          name: PicStrip-${{ needs.version.outputs.version }}
           path: artifacts/
 
       - name: Attach IPA + digest to GitHub Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload "v${{ needs.release.outputs.version }}" \
+          gh release upload "v${{ needs.version.outputs.version }}" \
             artifacts/PicStrip.ipa \
             artifacts/PicStrip.ipa.sha256 \
             --repo ${{ github.repository }} \

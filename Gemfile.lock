@@ -330,6 +330,3 @@ CHECKSUMS
   xcodeproj (1.27.0)
   xcpretty (0.4.1)
   xcpretty-travis-formatter (1.0.1)
-
-BUNDLED WITH
-  4.0.10

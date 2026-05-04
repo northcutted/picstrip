@@ -77,6 +77,7 @@ struct ContentView: View {
                                         .font(.system(size: 18, weight: .medium))
                                         .foregroundStyle(.primary.opacity(0.7))
                                 }
+                                .accessibilityIdentifier("infoButton")
                             }
                         }
                         .sheet(isPresented: $showingAbout) {
@@ -193,6 +194,7 @@ struct ContentView: View {
                         prominent: true
                     )
                 }
+                .accessibilityIdentifier("selectPhotoButton")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.medium) })
 
                 PhotosPicker(
