@@ -11,6 +11,7 @@ import XCTest
 ///   03_Photo     — photo loaded, metadata badge row visible
 ///   04_Review    — pre-save review / redaction list
 ///   05_PIIDetail — PII details sheet
+@MainActor
 final class PicStripUITests: XCTestCase {
 
     override func setUpWithError() throws {
