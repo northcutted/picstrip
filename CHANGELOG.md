@@ -1,3 +1,10 @@
+## [1.1.2](https://github.com/northcutted/picstrip/compare/v1.1.1...v1.1.2) (2026-05-05)
+
+
+### Bug Fixes
+
+* Add UITests to TestAction in scheme configuration ([e1c1da5](https://github.com/northcutted/picstrip/commit/e1c1da57106432887df6fa07f5f2c77789ed2b4c))
+
 ## [1.1.1](https://github.com/northcutted/picstrip/compare/v1.1.0...v1.1.1) (2026-05-05)
 
 
