@@ -1,2 +1,2 @@
 Bug Fixes
-• Add UITests to TestAction in scheme configuration
+• Update iPad Pro device references to M5 in screenshot configurations

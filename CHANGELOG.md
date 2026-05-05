@@ -1,3 +1,10 @@
+## [1.1.3](https://github.com/northcutted/picstrip/compare/v1.1.2...v1.1.3) (2026-05-05)
+
+
+### Bug Fixes
+
+* Update iPad Pro device references to M5 in screenshot configurations ([b5a5e9e](https://github.com/northcutted/picstrip/commit/b5a5e9ebfe62420f67b5425a0e2f7a5295a79ad0))
+
 ## [1.1.2](https://github.com/northcutted/picstrip/compare/v1.1.1...v1.1.2) (2026-05-05)
 
 
