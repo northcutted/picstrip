@@ -41,6 +41,17 @@
                ReferencedContainer = "container:PicStrip.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "2C0D1E2D2FA686B80032DDDA"
+               BuildableName = "PicStripUITests.xctest"
+               BlueprintName = "PicStripUITests"
+               ReferencedContainer = "container:PicStrip.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
