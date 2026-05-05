@@ -10,6 +10,7 @@ struct BatchConfigView: View {
 
     @Bindable var viewModel: ScrubberViewModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     @State private var config = BatchConfig()
     @State private var showReplaceConfirm = false
@@ -65,6 +66,7 @@ struct BatchConfigView: View {
                     Image(systemName: "photo.stack")
                         .font(.title2)
                         .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text("\(viewModel.batchItems.count) Photos Selected")
                             .font(.headline)
@@ -150,7 +152,7 @@ struct BatchConfigView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .alert(
-                    "Replace \(viewModel.batchItems.count) Original Photo\(viewModel.batchItems.count == 1 ? "" : "s")?",
+                    "Replace ^[\(viewModel.batchItems.count) Original Photo](inflect: true)?",
                     isPresented: $showReplaceConfirm
                 ) {
                     Button("Replace", role: .destructive) {
@@ -182,7 +184,8 @@ struct BatchConfigView: View {
             Image(systemName: "photo.stack")
                 .font(.system(size: 56, weight: .thin))
                 .foregroundStyle(.tint)
-                .symbolEffect(.pulse)
+                .symbolEffect(.pulse, isActive: !reduceMotion)
+                .accessibilityHidden(true)
 
             VStack(spacing: 8) {
                 Text("Processing Photos")
@@ -201,6 +204,7 @@ struct BatchConfigView: View {
             .progressViewStyle(.linear)
             .padding(.horizontal, 40)
             .animation(.easeInOut(duration: 0.4), value: viewModel.batchProgress.current)
+            .accessibilityLabel("Processing photos, \(viewModel.batchProgress.current) of \(viewModel.batchProgress.total) complete")
 
             Text("Please keep the app open.")
                 .font(.caption)

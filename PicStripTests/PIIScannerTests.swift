@@ -1,6 +1,8 @@
 import XCTest
+import UIKit
 @testable import PicStrip
 
+@MainActor
 final class PIIScannerTests: XCTestCase {
 
     // MARK: - Bundle helper
@@ -13,6 +15,130 @@ final class PIIScannerTests: XCTestCase {
             throw XCTSkip("Missing test asset '\(name).\(ext)'.")
         }
         return try Data(contentsOf: url)
+    }
+
+    /// Renders a solid-colour UIImage and returns its PNG data.
+    private func solidColorImageData(color: UIColor = .white,
+                                     size: CGSize = CGSize(width: 100, height: 100)) -> Data {
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let image = renderer.image { ctx in
+            color.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+        }
+        return image.pngData()!
+    }
+
+    // MARK: - Error handling
+
+    /// Passing garbage bytes must throw `PIIScannerError.invalidImageData` rather
+    /// than crashing or silently returning an empty result.
+    func testInvalidImageDataThrows() async {
+        let garbage = Data("this is not an image".utf8)
+        do {
+            _ = try await PIIScanner().scanImage(data: garbage)
+            XCTFail("Expected PIIScannerError.invalidImageData to be thrown.")
+        } catch PIIScannerError.invalidImageData {
+            // Expected path — pass.
+        } catch {
+            XCTFail("Unexpected error type thrown: \(error)")
+        }
+    }
+
+    /// An empty `Data` value must also throw `invalidImageData`.
+    func testEmptyDataThrows() async {
+        do {
+            _ = try await PIIScanner().scanImage(data: Data())
+            XCTFail("Expected PIIScannerError.invalidImageData to be thrown.")
+        } catch PIIScannerError.invalidImageData {
+            // Expected path — pass.
+        } catch {
+            XCTFail("Unexpected error type thrown: \(error)")
+        }
+    }
+
+    // MARK: - Blank image (no text)
+
+    /// A plain white image contains no text; the scanner must return an empty array
+    /// rather than crashing or emitting false positives.
+    func testBlankImageReturnsNoResults() async throws {
+        let data = solidColorImageData()
+        let results = try await PIIScanner().scanImage(data: data)
+        XCTAssertTrue(results.isEmpty,
+            "A blank white image should produce zero detection results, got: \(results.map(\.type.description))")
+    }
+
+    // MARK: - Coordinate helpers (unit tests — no Vision pipeline required)
+
+    /// `swiftUIBox` must flip the Y axis: Vision's bottom-left origin becomes
+    /// SwiftUI's top-left origin.
+    ///
+    /// Given a Vision box at y=0.1, height=0.2, the flipped y should be:
+    ///   1.0 - 0.1 - 0.2 = 0.7
+    func testSwiftUIBoxFlipsYAxis() {
+        let visionBox = CGRect(x: 0.1, y: 0.1, width: 0.5, height: 0.2)
+        let result = PIIScanner.swiftUIBox(from: visionBox)
+
+        XCTAssertEqual(result.origin.x, 0.1, accuracy: 1e-6, "X must be unchanged.")
+        XCTAssertEqual(result.origin.y, 0.7, accuracy: 1e-6,
+            "Y must be flipped: 1 - 0.1 - 0.2 = 0.7")
+        XCTAssertEqual(result.width,  0.5, accuracy: 1e-6, "Width must be unchanged.")
+        XCTAssertEqual(result.height, 0.2, accuracy: 1e-6, "Height must be unchanged.")
+    }
+
+    /// A Vision box that sits at the very bottom of the image (y=0, height=0.1)
+    /// should flip to the very top (y=0.9).
+    func testSwiftUIBoxBottomEdge() {
+        let visionBox = CGRect(x: 0.0, y: 0.0, width: 1.0, height: 0.1)
+        let result = PIIScanner.swiftUIBox(from: visionBox)
+        XCTAssertEqual(result.origin.y, 0.9, accuracy: 1e-6,
+            "Bottom Vision rect (y=0) should become top SwiftUI rect (y=0.9).")
+    }
+
+    /// A Vision box filling the full image frame must round-trip to a full-frame
+    /// SwiftUI box.
+    func testSwiftUIBoxFullFrame() {
+        let visionBox = CGRect(x: 0.0, y: 0.0, width: 1.0, height: 1.0)
+        let result = PIIScanner.swiftUIBox(from: visionBox)
+        XCTAssertEqual(result, CGRect(x: 0, y: 0, width: 1, height: 1),
+            "A full-frame Vision box must produce a full-frame SwiftUI box.")
+    }
+
+    // MARK: - Snippet helpers (unit tests — no Vision pipeline required)
+
+    /// Strings within the limit must be returned verbatim (after trimming).
+    func testSnippetShortString() {
+        XCTAssertEqual(PIIScanner.snippet("hello"), "hello")
+        XCTAssertEqual(PIIScanner.snippet("  trimmed  "), "trimmed")
+    }
+
+    /// Strings longer than 60 characters must be truncated with a trailing ellipsis.
+    func testSnippetTruncation() {
+        let longString = String(repeating: "a", count: 70)
+        let result = PIIScanner.snippet(longString)
+        XCTAssertEqual(result.count, 60,
+            "Truncated snippet must be exactly 60 characters (59 chars + ellipsis).")
+        XCTAssertTrue(result.hasSuffix("…"),
+            "Truncated snippet must end with '…'.")
+    }
+
+    /// The default max is 60; passing a custom max must be respected.
+    func testSnippetCustomMax() {
+        let input = String(repeating: "x", count: 20)
+        let result = PIIScanner.snippet(input, max: 10)
+        XCTAssertEqual(result.count, 10)
+        XCTAssertTrue(result.hasSuffix("…"))
+    }
+
+    /// An NSRange with `NSNotFound` location must return an empty string gracefully.
+    func testSnippetFromInvalidRange() {
+        let result = PIIScanner.snippet(from: "some text", nsRange: NSRange(location: NSNotFound, length: 0))
+        XCTAssertEqual(result, "", "An invalid NSRange must produce an empty snippet, not a crash.")
+    }
+
+    /// An NSRange that extends beyond the string bounds must return empty gracefully.
+    func testSnippetFromOutOfBoundsRange() {
+        let result = PIIScanner.snippet(from: "short", nsRange: NSRange(location: 100, length: 5))
+        XCTAssertEqual(result, "", "An out-of-bounds NSRange must produce an empty snippet, not a crash.")
     }
 
     // MARK: - Whiteboard credential detection
@@ -81,6 +207,45 @@ final class PIIScannerTests: XCTestCase {
             XCTAssertGreaterThanOrEqual(box.minY, 0.0, "Box minY must be >= 0. Snippet: '\(instance.snippet)'")
             XCTAssertLessThanOrEqual(box.maxX, 1.0, "Box maxX must be <= 1. Snippet: '\(instance.snippet)'")
             XCTAssertLessThanOrEqual(box.maxY, 1.0, "Box maxY must be <= 1. Snippet: '\(instance.snippet)'")
+        }
+    }
+
+    // MARK: - Result deduplication
+
+    /// Running the scanner twice on the same image must not return more instances
+    /// than a single run — i.e. the internal deduplication logic is stable.
+    func testScannerResultsAreStable() async throws {
+        let data = try loadTestImageData(named: "test_list", extension: "png")
+        let run1 = try await PIIScanner().scanImage(data: data)
+        let run2 = try await PIIScanner().scanImage(data: data)
+
+        // Same types detected on both runs.
+        let types1 = Set(run1.map(\.type))
+        let types2 = Set(run2.map(\.type))
+        XCTAssertEqual(types1, types2, "Detected PII types must be deterministic across runs.")
+
+        // Instance counts must not grow between runs (deduplication must fire).
+        for type_ in types1 {
+            let count1 = run1.first(where: { $0.type == type_ })?.instances.count ?? 0
+            let count2 = run2.first(where: { $0.type == type_ })?.instances.count ?? 0
+            XCTAssertEqual(count1, count2,
+                "Instance count for \(type_.description) must be identical on every run (got \(count1) vs \(count2)).")
+        }
+    }
+
+    // MARK: - Score ordering
+
+    /// Results must be sorted highest-score first.
+    func testResultsAreSortedByScoreDescending() async throws {
+        let data = try loadTestImageData(named: "test_list", extension: "png")
+        let results = try await PIIScanner().scanImage(data: data)
+        guard results.count > 1 else { return }
+
+        for i in 0..<(results.count - 1) {
+            XCTAssertGreaterThanOrEqual(
+                results[i].score, results[i + 1].score,
+                "Result at index \(i) (score \(results[i].score)) must be >= result at index \(i+1) (score \(results[i+1].score))."
+            )
         }
     }
 

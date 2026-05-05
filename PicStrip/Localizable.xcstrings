@@ -1,0 +1,387 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "%@ %@ fields" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@ fields"
+          }
+        }
+      }
+    },
+    "%@, %lld field%@, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@, %2$lld field%3$@, %4$@"
+          }
+        }
+      }
+    },
+    "%@: %lld field%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lld field%3$@%4$@"
+          }
+        }
+      }
+    },
+    "%@%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@%2$@"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld of %lld" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld of %2$lld"
+          }
+        }
+      }
+    },
+    "%lld Photos Selected" : {
+
+    },
+    "%lld%%" : {
+
+    },
+    "%lld%% match" : {
+
+    },
+    "^[%lld field](inflect: true) found" : {
+
+    },
+    "^[%lld field](inflect: true) stripped · ^[%lld photo](inflect: true) cleaned" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "^[%1$lld field](inflect: true) stripped · ^[%2$lld photo](inflect: true) cleaned"
+          }
+        }
+      }
+    },
+    "^[%lld instance](inflect: true)" : {
+
+    },
+    "^[%lld photo](inflect: true) processed" : {
+
+    },
+    "^[%lld privacy field](inflect: true) stripped" : {
+
+    },
+    "^[%lld visual region](inflect: true) redacted" : {
+
+    },
+    "About" : {
+
+    },
+    "About PicStrip" : {
+
+    },
+    "About the Project" : {
+
+    },
+    "Add %@ to redaction list" : {
+
+    },
+    "Apply a single privacy policy to all of them." : {
+
+    },
+    "Batch Complete" : {
+
+    },
+    "Batch Process" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Clean Photos" : {
+
+    },
+    "Clean Photos with PicStrip" : {
+
+    },
+    "Cleaning & Redacting" : {
+
+    },
+    "Close %@ details" : {
+
+    },
+    "Deselect All" : {
+
+    },
+    "Detected Data" : {
+
+    },
+    "Detected PII: %lld item%@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Detected PII: %1$lld item%2$@"
+          }
+        }
+      }
+    },
+    "Detection limits are intentional. We only flag patterns specific enough to keep false positives rare." : {
+
+    },
+    "Developer" : {
+
+    },
+    "Dismiss photo" : {
+
+    },
+    "Done" : {
+
+    },
+    "Double tap to %@" : {
+
+    },
+    "Double tap to close" : {
+
+    },
+    "Double tap to review" : {
+
+    },
+    "Double tap to review detected sensitive content" : {
+
+    },
+    "Eddie Northcutt" : {
+
+    },
+    "Export Batch Audit Log (JSON)" : {
+
+    },
+    "Export Findings (JSON)" : {
+
+    },
+    "Export Format" : {
+
+    },
+    "EXPORT FORMAT" : {
+
+    },
+    "HEIC" : {
+
+    },
+    "High efficiency, Apple native" : {
+
+    },
+    "How It Works" : {
+
+    },
+    "Image is already clean" : {
+
+    },
+    "JPEG" : {
+
+    },
+    "Keeps original format" : {
+
+    },
+    "Locate %@ in photo, %lld%% match" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Locate %1$@ in photo, %2$lld%% match"
+          }
+        }
+      }
+    },
+    "Match Original" : {
+
+    },
+    "Maximum privacy — no format headers" : {
+
+    },
+    "Metadata found in this photo" : {
+
+    },
+    "Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history." : {
+
+    },
+    "Metadata Removed" : {
+
+    },
+    "MIT License" : {
+
+    },
+    "No Private Metadata Found" : {
+
+    },
+    "No sensitive data found" : {
+
+    },
+    "Open Source License" : {
+
+    },
+    "Opens PicStrip so you can select photos to clean. Strips privacy metadata and optionally redacts sensitive content before saving cleaned copies to your Photos library." : {
+
+    },
+    "Original Not Found" : {
+
+    },
+    "Original photos will be permanently deleted after cleaning." : {
+
+    },
+    "PicStrip" : {
+
+    },
+    "PicStrip was built on a single principle: your photos are yours. The app exists to give you back control of the data attached to and visible inside your images, silently, automatically, and entirely privately." : {
+
+    },
+    "PII %lld" : {
+
+    },
+    "Please keep the app open." : {
+
+    },
+    "PNG" : {
+
+    },
+    "Privacy" : {
+
+    },
+    "Privacy metadata is stripped automatically before saving." : {
+
+    },
+    "PRIVACY POLICY" : {
+
+    },
+    "Processing Photos" : {
+
+    },
+    "Processing photos, %lld of %lld complete" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Processing photos, %1$lld of %2$lld complete"
+          }
+        }
+      }
+    },
+    "Processing…" : {
+
+    },
+    "Recommended" : {
+
+    },
+    "Redact All" : {
+
+    },
+    "Redact Sensitive Visual Data" : {
+
+    },
+    "Reduced file size, standard compatibility" : {
+
+    },
+    "Remove %@ from redaction list" : {
+
+    },
+    "Replace" : {
+
+    },
+    "Replace ^[%lld Original Photo](inflect: true)?" : {
+
+    },
+    "Replace Original" : {
+
+    },
+    "Review & Save" : {
+
+    },
+    "Save as New" : {
+
+    },
+    "Save as New Photo" : {
+
+    },
+    "Save Mode" : {
+
+    },
+    "SAVE MODE" : {
+
+    },
+    "Saving…" : {
+
+    },
+    "Scrubbed Image" : {
+
+    },
+    "Select a Photo" : {
+
+    },
+    "Select a photo from your library" : {
+
+    },
+    "Share Image" : {
+
+    },
+    "Standard file format header required for display. Does not contain personal data." : {
+
+    },
+    "Start Batch Process" : {
+
+    },
+    "Strip %@" : {
+
+    },
+    "Strip Privacy Metadata" : {
+
+    },
+    "Successfully cleaned and saved ^[%lld photo](inflect: true)." : {
+
+    },
+    "Tap a row to locate the detection in the image. Selected items will be permanently blacked out on the exported image." : {
+
+    },
+    "Tap to review" : {
+
+    },
+    "The original photo could not be identified. It may be stored in iCloud and not yet downloaded. Would you like to save as a new photo instead?" : {
+
+    },
+    "The original photos will be permanently deleted after cleaning. This cannot be undone." : {
+
+    },
+    "This image contained no EXIF, GPS, or other private metadata." : {
+
+    },
+    "View Source on GitHub" : {
+
+    },
+    "Visual Redactions" : {
+
+    },
+    "Warning: Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history." : {
+
+    },
+    "What PicStrip Detects" : {
+
+    }
+  },
+  "version" : "1.0"
+}

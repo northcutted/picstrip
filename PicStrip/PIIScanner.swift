@@ -22,16 +22,27 @@ struct PIIScanner {
     func scanImage(data: Data) async throws -> [DetectionResult] {
         // Offload CPU-bound work off the calling thread.
         return try await Task.detached(priority: .userInitiated) {
-            // Stage 1: Image conversion
+            // Stage 1: Validate — ensures a meaningful error if the caller passes
+            // non-image bytes before we hand anything to Vision.
+            // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
+            // (it creates a source with zero images), so we additionally verify that
+            // at least one image frame is decodable. The decoded CGImage is discarded
+            // immediately; the actual OCR uses VNImageRequestHandler(data:) below.
             guard
                 let source = CGImageSourceCreateWithData(data as CFData, nil),
-                let cgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
+                CGImageSourceCreateImageAtIndex(source, 0, nil) != nil
             else {
                 throw PIIScannerError.invalidImageData
             }
 
             // Stage 2: OCR via Vision — returns raw observations, not joined text.
-            let observations = try Self.recognizeText(in: cgImage)
+            // Raw Data (not a pre-decoded CGImage) is passed so that
+            // VNImageRequestHandler can read the EXIF orientation tag and return
+            // bounding boxes in the visual coordinate space — the same space that
+            // UIKit's display pipeline uses. Passing a CGImage strips the
+            // orientation metadata, causing highlights to land in the wrong
+            // position on any photo that isn't already upright in its raw pixels.
+            let observations = try Self.recognizeText(in: data)
 
             // Stage 3: Per-observation two-stage PII analysis with state tracking.
             return try Self.detectPII(in: observations)
@@ -42,22 +53,54 @@ struct PIIScanner {
 
     /// Runs Vision OCR and returns the raw observation array so that each
     /// observation's `boundingBox` is still available for spatial highlighting.
-    private static func recognizeText(in cgImage: CGImage) throws -> [VNRecognizedTextObservation] {
-        let request = VNRecognizeTextRequest()
-        request.recognitionLevel = .accurate
-        // Disable language correction so Vision preserves raw password characters
-        // rather than autocorrecting them into dictionary words.
-        request.usesLanguageCorrection = false
+    ///
+    /// Accepts raw image `Data` rather than a `CGImage` so that
+    /// `VNImageRequestHandler` can read the EXIF orientation tag embedded in the
+    /// file. A pre-decoded `CGImage` carries no orientation metadata, which causes
+    /// bounding boxes to be in the wrong position for any photo whose raw pixels
+    /// aren't already stored upright (virtually every camera photo taken in
+    /// portrait mode on an iPhone).
+    ///
+    /// If the `.accurate` recogniser returns no observations — which can happen on
+    /// the simulator where the Neural Engine is unavailable — the method retries
+    /// with the `.fast` model as a safety net.
+    private nonisolated static func recognizeText(in data: Data) throws -> [VNRecognizedTextObservation] {
+        func makeRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
+            let req = VNRecognizeTextRequest()
+            req.recognitionLevel = level
+            // Disable language correction so Vision preserves raw credential
+            // characters rather than autocorrecting them into dictionary words.
+            req.usesLanguageCorrection = false
+            // Let Vision pick the best model for whatever language(s) appear in
+            // the image — important for passwords and non-English labels.
+            // Available since iOS 16 / VNRecognizeTextRequestRevision3; a no-op on
+            // earlier revisions (safe to set unconditionally on our iOS 17 target).
+            req.automaticallyDetectsLanguage = true
+            return req
+        }
 
-        let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-        try handler.perform([request])
+        // Primary pass — accurate model, highest quality.
+        let accurateRequest = makeRequest(level: .accurate)
+        let handler = VNImageRequestHandler(data: data, options: [:])
+        try handler.perform([accurateRequest])
+        let results = accurateRequest.results ?? []
 
-        return request.results ?? []
+        // Fallback pass — if accurate found nothing (e.g. simulator CPU path or
+        // a heavily compressed image), retry with the fast model. A fresh handler
+        // is required because VNImageRequestHandler is single-use.
+        if results.isEmpty {
+            let fastRequest = makeRequest(level: .fast)
+            let fallbackHandler = VNImageRequestHandler(data: data, options: [:])
+            try fallbackHandler.perform([fastRequest])
+            return fastRequest.results ?? []
+        }
+
+        return results
     }
 
     /// Analyses each OCR observation individually, preserving bounding-box
     /// associations and tracking heuristic credential state across observations.
-    private static func detectPII(
+    private nonisolated static func detectPII(
         in observations: [VNRecognizedTextObservation]
     ) throws -> [DetectionResult] {
 
@@ -257,7 +300,10 @@ struct PIIScanner {
 
     /// Converts a Vision bottom-left-origin normalised rect to a SwiftUI
     /// top-left-origin normalised rect.
-    private static func swiftUIBox(from visionBox: CGRect) -> CGRect {
+    ///
+    /// `internal` (not `private`) so the test suite can verify the Y-flip math
+    /// without going through the full Vision pipeline.
+    nonisolated static func swiftUIBox(from visionBox: CGRect) -> CGRect {
         CGRect(
             x:      visionBox.origin.x,
             y:      1.0 - visionBox.origin.y - visionBox.height,
@@ -276,7 +322,7 @@ struct PIIScanner {
     ///   - text:      The full string of the candidate.
     ///   - fallback:  The Vision-coordinate observation bounding box used when the
     ///                substring API fails.
-    private static func substringBox(
+    private nonisolated static func substringBox(
         candidate: VNRecognizedText,
         nsRange: NSRange,
         in text: String,
@@ -297,7 +343,9 @@ struct PIIScanner {
     // MARK: - Snippet helpers
 
     /// Extracts and truncates a substring identified by an `NSRange`.
-    private static func snippet(from text: String, nsRange: NSRange) -> String {
+    ///
+    /// `internal` for testability.
+    nonisolated static func snippet(from text: String, nsRange: NSRange) -> String {
         guard
             nsRange.location != NSNotFound,
             let swiftRange = Range(nsRange, in: text)
@@ -306,7 +354,9 @@ struct PIIScanner {
     }
 
     /// Truncates a raw string to at most `max` visible characters.
-    private static func snippet(_ raw: String, max: Int = 60) -> String {
+    ///
+    /// `internal` for testability.
+    nonisolated static func snippet(_ raw: String, max: Int = 60) -> String {
         let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
         guard trimmed.count > max else { return trimmed }
         return String(trimmed.prefix(max - 1)) + "…"

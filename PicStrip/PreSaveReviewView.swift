@@ -120,6 +120,7 @@ struct PreSaveReviewView: View {
                     .font(.title3)
                     .foregroundStyle(.green)
                     .padding(.top, 1)
+                    .accessibilityHidden(true)
 
                 if totalRemovalCount == 0 {
                     Text("No sensitive data found")
@@ -131,7 +132,7 @@ struct PreSaveReviewView: View {
 
                         if originalMetadataCount > 0 {
                             Label(
-                                "\(originalMetadataCount) privacy field\(originalMetadataCount == 1 ? "" : "s") stripped",
+                                "^[\(originalMetadataCount) privacy field](inflect: true) stripped",
                                 systemImage: "tag.slash"
                             )
                             .font(.caption)
@@ -140,7 +141,7 @@ struct PreSaveReviewView: View {
 
                         if visualRedactionCount > 0 {
                             Label(
-                                "\(visualRedactionCount) visual region\(visualRedactionCount == 1 ? "" : "s") redacted",
+                                "^[\(visualRedactionCount) visual region](inflect: true) redacted",
                                 systemImage: "eye.slash"
                             )
                             .font(.caption)
@@ -231,6 +232,22 @@ struct PreSaveReviewView: View {
                     .buttonStyle(.bordered)
                     .controlSize(.large)
                     .tint(.secondary)
+
+                    if originalMetadataCount > 0 {
+                        HStack(alignment: .top, spacing: 6) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .padding(.top, 1)
+                            Text("Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(.top, 2)
+                        .accessibilityElement(children: .ignore)
+                        .accessibilityLabel("Warning: Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history.")
+                    }
                 }
             }
         }
@@ -248,10 +265,11 @@ struct PreSaveReviewView: View {
             if isExpanded {
                 // Description callout — same as CategoryDetailPanel
                 HStack(alignment: .top, spacing: 10) {
-                    Image(systemName: "info.circle.fill")
-                        .font(.system(size: 14, weight: .semibold))
-                        .foregroundStyle(color)
-                        .padding(.top, 1)
+                        Image(systemName: "info.circle.fill")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundStyle(color)
+                            .padding(.top, 1)
+                            .accessibilityHidden(true)
                     Text(metadataCategoryDescription(for: category))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
@@ -297,13 +315,14 @@ struct PreSaveReviewView: View {
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(color)
                         .frame(width: 20)
+                        .accessibilityHidden(true)
 
                     Text(category)
-                        .font(.system(size: 13, weight: .semibold))
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(color)
 
                     Text("\(fields.count)")
-                        .font(.system(size: 11, weight: .bold))
+                        .font(.caption2.weight(.bold))
                         .foregroundStyle(color)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
@@ -316,12 +335,15 @@ struct PreSaveReviewView: View {
                         .foregroundStyle(.tertiary)
                         .rotationEffect(.degrees(isExpanded ? 90 : 0))
                         .animation(.spring(duration: 0.25), value: isExpanded)
+                        .accessibilityHidden(true)
                 }
                 .padding(.vertical, 4)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             .textCase(nil)
+            .accessibilityLabel("\(category), \(fields.count) field\(fields.count == 1 ? "" : "s"), \(isExpanded ? "expanded" : "collapsed")")
+            .accessibilityHint("Double tap to \(isExpanded ? "collapse" : "expand")")
         }
     }
 
@@ -334,6 +356,7 @@ struct PreSaveReviewView: View {
                 HStack(spacing: 12) {
                     Image(systemName: "shield.lefthalf.filled")
                         .foregroundStyle(.red)
+                        .accessibilityHidden(true)
                     Text(result.type.description)
                         .foregroundStyle(.primary)
                     Spacer()
@@ -343,7 +366,7 @@ struct PreSaveReviewView: View {
                         .padding(.horizontal, 7)
                         .padding(.vertical, 3)
                         .background(confidenceColor(result.confidence).opacity(0.10), in: Capsule())
-                    Text("\(result.matchCount) instance\(result.matchCount == 1 ? "" : "s")")
+                    Text("^[\(result.matchCount) instance](inflect: true)")
                         .foregroundStyle(.secondary)
                 }
             }

@@ -96,6 +96,8 @@ struct ScannerHeroView: View {
     /// Shutter panels meet at mid-line when true.
     @State private var shutterClosed: Bool = false
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     // MARK: Body
 
     var body: some View {
@@ -112,7 +114,11 @@ struct ScannerHeroView: View {
         .frame(width: frameW, height: frameH)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
-        .task { await runLoop() }
+        .accessibilityHidden(true) // decorative animation — no semantic content
+        .task(id: reduceMotion) {
+            if reduceMotion { return }
+            await runLoop()
+        }
     }
 
     // MARK: - Sub-layers

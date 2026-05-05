@@ -42,7 +42,7 @@ struct BatchSummaryView: View {
                 VStack(spacing: 6) {
                     Text("Batch Complete")
                         .font(.title2.weight(.bold))
-                    Text("Successfully cleaned and saved \(viewModel.batchItems.count) photo\(viewModel.batchItems.count == 1 ? "" : "s").")
+                    Text("Successfully cleaned and saved ^[\(viewModel.batchItems.count) photo](inflect: true).")
                         .font(.body)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -100,7 +100,7 @@ struct BatchSummaryView: View {
 
         return VStack(spacing: 12) {
             Label(
-                "\(photos) photo\(photos == 1 ? "" : "s") processed",
+                "^[\(photos) photo](inflect: true) processed",
                 systemImage: "photo.stack"
             )
             .font(.subheadline.weight(.medium))
@@ -112,7 +112,7 @@ struct BatchSummaryView: View {
 
             if fields > 0 {
                 Label(
-                    "\(fields) privacy field\(fields == 1 ? "" : "s") stripped",
+                    "^[\(fields) privacy field](inflect: true) stripped",
                     systemImage: "tag.slash"
                 )
                 .font(.caption)
@@ -121,7 +121,7 @@ struct BatchSummaryView: View {
 
             if redactions > 0 {
                 Label(
-                    "\(redactions) visual region\(redactions == 1 ? "" : "s") redacted",
+                    "^[\(redactions) visual region](inflect: true) redacted",
                     systemImage: "eye.slash"
                 )
                 .font(.caption)

@@ -1,0 +1,28 @@
+PicStrip removes hidden metadata from your photos before you share them — no account required, no data leaves your device.
+
+Every photo taken on an iPhone contains invisible EXIF data: exact GPS coordinates, the time it was taken, your camera model, and more. PicStrip strips all of it in one tap.
+
+WHAT GETS REMOVED
+• GPS location — precise coordinates embedded in every photo
+• Timestamps — when the photo was taken, edited, and digitized
+• Device info — camera make, model, lens, and software version
+• Personal identifiers — author name, copyright, and serial numbers
+• Face scan data — detected faces stored by Vision framework
+
+PRIVACY BY DESIGN
+• Runs entirely on-device — nothing is uploaded anywhere
+• No account, no login, no tracking
+• Open source — the code is public and auditable
+• No ads, no in-app purchases, no subscriptions
+
+HOW IT WORKS
+1. Tap to select a photo from your library
+2. PicStrip scans for all embedded metadata
+3. Review exactly what was found
+4. Strip it — your clean photo saves to your library instantly
+
+SHARE EXTENSION
+Strip metadata directly from the share sheet in Photos, Safari, or any app — without ever opening PicStrip.
+
+SHORTCUTS & AUTOMATION
+PicStrip includes a Shortcuts action so you can build automated workflows: strip metadata on import, process photos in bulk, or integrate with your existing shortcuts.

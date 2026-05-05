@@ -101,11 +101,12 @@ struct MetadataBadgeRow: View {
             HStack(spacing: 4) {
                 Image(systemName: metadataIconName(for: category))
                     .font(.system(size: 10, weight: .semibold))
+                    .accessibilityHidden(true)
                 Text(category)
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.caption2.weight(.semibold))
                 // Count bubble
                 Text("\(count)")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.caption2.weight(.bold))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
                     .background(
@@ -118,6 +119,7 @@ struct MetadataBadgeRow: View {
                 if isSelected {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 8, weight: .bold))
+                        .accessibilityHidden(true)
                 }
             }
             .foregroundStyle(onPhoto ? .white : (isSelected ? color : color))
@@ -139,6 +141,11 @@ struct MetadataBadgeRow: View {
         }
         .buttonStyle(.plain)
         .disabled(onPhoto)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityLabel("\(category): \(count) field\(count == 1 ? "" : "s")\(isSelected ? ", selected" : "")")
+        .accessibilityHint(interactive ? (isSelected ? "Double tap to close" : "Double tap to review") : "")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .animation(.spring(duration: 0.2), value: isSelected)
     }
 }

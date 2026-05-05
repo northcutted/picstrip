@@ -38,6 +38,7 @@ struct AdvancedOptionsView: View {
                     .font(.body)
                     .foregroundStyle(isSelected ? Color.green : Color.secondary)
                     .padding(.top, 1)
+                    .accessibilityHidden(true)
 
                 // Text stack
                 VStack(alignment: .leading, spacing: 3) {
@@ -69,6 +70,8 @@ struct AdvancedOptionsView: View {
             .padding(.horizontal, 14)
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(format.title)\(showBadge ? ", Recommended" : "")")
+        .accessibilityAddTraits(isSelected ? [.isSelected] : [])
     }
 }
 

@@ -28,7 +28,7 @@ enum DetectionRegistry {
     /// All regex-based detection rules, compiled once at first access.
     /// NSDataDetector handles .address, .phoneNumber, and plain .link natively;
     /// those types are intentionally absent here and remain in PIIScanner.
-    static let allRules: [DetectionRule] = build()
+    nonisolated static let allRules: [DetectionRule] = build()
 
     // MARK: - Private helpers
 

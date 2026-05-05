@@ -1,11 +1,15 @@
 # Snapfile — configuration for `fastlane snapshot` / `capture_ios_screenshots`
 # https://docs.fastlane.tools/actions/snapshot/
 
-# Target devices. App Store Connect requires at minimum the 6.9" and 6.7"
-# display classes; iPhone 17 Pro Max covers 6.9", iPhone 17 covers 6.1".
+# Target devices.
+# App Store Connect required size classes for iPhone + iPad submissions:
+#   6.9"  → iPhone 17 Pro Max  (required)
+#   6.7"  → iPhone Air         (required; 6.7" Super Retina class in Xcode 26)
+#  13.0"  → iPad Pro 13-inch (M4) (required for iPad support)
 devices([
   "iPhone 17 Pro Max",
-  "iPhone 17",
+  "iPhone Air",
+  "iPad Pro 13-inch (M4)",
 ])
 
 # Languages / locales to capture.

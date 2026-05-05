@@ -28,6 +28,7 @@ struct ContentView: View {
     @State private var bottomBlobPhase = false
 
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // Lifetime stats — written by ScrubberViewModel, read here via @AppStorage.
     @AppStorage("picstrip.lifetimePhotos") private var lifetimePhotos: Int = 0
@@ -78,6 +79,7 @@ struct ContentView: View {
                                         .foregroundStyle(.primary.opacity(0.7))
                                 }
                                 .accessibilityIdentifier("infoButton")
+                                .accessibilityLabel("About PicStrip")
                             }
                         }
                         .sheet(isPresented: $showingAbout) {
@@ -136,7 +138,7 @@ struct ContentView: View {
             // App title + rotating motto
             VStack(spacing: 8) {
                 Text("PicStrip")
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
+                    .font(.system(.largeTitle, design: .rounded).weight(.bold))
                     .foregroundStyle(.primary)
 
                 // Fixed-height clip zone keeps layout stable as motto length varies.
@@ -156,8 +158,10 @@ struct ContentView: View {
                 .clipped()
             }
             .padding(.top, 20)
-            .task {
+                .task {
                 // Cycle mottos every 3.5 s; task cancels automatically when view disappears.
+                // Skip cycling when Reduce Motion is on — show first motto statically.
+                guard !reduceMotion else { return }
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(5.5))
                     withAnimation(.easeInOut(duration: 0.45)) {
@@ -171,6 +175,7 @@ struct ContentView: View {
             // Hero animation
             ScannerHeroView()
                 .padding(.vertical, 8)
+                .accessibilityHidden(true)
 
             Spacer()
 
@@ -195,6 +200,7 @@ struct ContentView: View {
                     )
                 }
                 .accessibilityIdentifier("selectPhotoButton")
+                .accessibilityLabel("Select a photo from your library")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.medium) })
 
                 PhotosPicker(
@@ -226,7 +232,7 @@ struct ContentView: View {
 
             // Top-left accent blob — cycles every 4 s.
             RadialGradient(
-                colors: [Color.accentColor.opacity(topBlobPhase ? 0.20 : 0.05), .clear],
+                colors: [Color.accentColor.opacity(reduceMotion ? 0.12 : (topBlobPhase ? 0.20 : 0.05)), .clear],
                 center: .topLeading,
                 startRadius: 0,
                 endRadius: 420
@@ -235,14 +241,16 @@ struct ContentView: View {
             // Bottom-right indigo blob — cycles every 5.5 s, so the two blobs
             // are never in sync and the background never looks like it resets.
             RadialGradient(
-                colors: [Color.indigo.opacity(bottomBlobPhase ? 0.14 : 0.03), .clear],
+                colors: [Color.indigo.opacity(reduceMotion ? 0.08 : (bottomBlobPhase ? 0.14 : 0.03)), .clear],
                 center: .bottomTrailing,
                 startRadius: 0,
                 endRadius: 380
             )
         }
         .ignoresSafeArea()
+        .accessibilityHidden(true) // decorative background
         .onAppear {
+            guard !reduceMotion else { return }
             withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
                 topBlobPhase = true
             }
@@ -259,14 +267,17 @@ struct ContentView: View {
             Image(systemName: "checkmark.shield.fill")
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.green)
-            Text(statsText)
-                .font(.system(size: 13, weight: .medium))
+                .accessibilityHidden(true)
+            Text("^[\(lifetimeFields) field](inflect: true) stripped · ^[\(lifetimePhotos) photo](inflect: true) cleaned")
+                .font(.footnote.weight(.medium))
                 .foregroundStyle(.secondary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(.regularMaterial, in: Capsule())
         .overlay(Capsule().strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
+        .accessibilityLabel(statsText)
+        .accessibilityElement(children: .ignore)
     }
 
     private var statsText: String {
@@ -282,9 +293,10 @@ struct ContentView: View {
     private func pillLabel(icon: String, text: String, prominent: Bool) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.callout.weight(.semibold))
+                .accessibilityHidden(true)
             Text(text)
-                .font(.system(size: 16, weight: .semibold))
+                .font(.callout.weight(.semibold))
         }
         .foregroundStyle(prominent ? .white : .primary)
         .frame(maxWidth: .infinity)
@@ -399,6 +411,7 @@ struct ContentView: View {
                             .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Dismiss photo")
                     .padding(14)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .transition(.opacity.animation(.easeInOut(duration: 0.2)))
@@ -528,8 +541,9 @@ struct ContentView: View {
             HStack(spacing: 4) {
                 Image(systemName: "exclamationmark.triangle.fill")
                     .font(.system(size: 10, weight: .semibold))
+                    .accessibilityHidden(true)
                 Text("PII \(viewModel.detectedPII.count)")
-                    .font(.system(size: 11, weight: .semibold))
+                    .font(.caption2.weight(.semibold))
             }
             .foregroundStyle(.red)
             .padding(.horizontal, 9)
@@ -538,6 +552,10 @@ struct ContentView: View {
             .overlay(Capsule().strokeBorder(.red.opacity(0.3), lineWidth: 0.5))
         }
         .buttonStyle(.plain)
+        .frame(minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityLabel("Detected PII: \(viewModel.detectedPII.count) item\(viewModel.detectedPII.count == 1 ? "" : "s")")
+        .accessibilityHint("Double tap to review detected sensitive content")
     }
 
     // MARK: - Confidence helpers

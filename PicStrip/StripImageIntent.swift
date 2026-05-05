@@ -25,8 +25,8 @@ struct StripImageIntent: AppIntent {
     static var title: LocalizedStringResource = "Clean Photos with PicStrip"
 
     static var description = IntentDescription(
-        "Opens PicStrip so you can select photos to clean. Strips privacy metadata and optionally redacts sensitive content before saving cleaned copies to your Photos library.",
-        categoryName: "Privacy"
+        LocalizedStringResource("Opens PicStrip so you can select photos to clean. Strips privacy metadata and optionally redacts sensitive content before saving cleaned copies to your Photos library."),
+        categoryName: LocalizedStringResource("Privacy")
     )
 
     /// Bring the app to the foreground. All photo selection and processing

@@ -96,6 +96,7 @@ struct AboutView: View {
                                     .font(.system(size: 42, weight: .medium))
                                     .foregroundStyle(.white)
                             }
+                            .accessibilityHidden(true)
 
                             Text("PicStrip")
                                 .font(.title2.bold())
@@ -277,6 +278,7 @@ struct AboutView: View {
                 .foregroundStyle(.white)
                 .frame(width: 32, height: 32)
                 .background(color, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .accessibilityHidden(true)
 
             Text(text)
                 .font(.subheadline)
@@ -292,6 +294,7 @@ struct AboutView: View {
                 .foregroundStyle(.white)
                 .frame(width: 32, height: 32)
                 .background(color, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(title)
@@ -312,6 +315,7 @@ struct AboutView: View {
                 .foregroundStyle(.white)
                 .frame(width: 28, height: 28)
                 .background(color, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .accessibilityHidden(true)
 
             Text(title)
                 .font(.subheadline.weight(.medium))
@@ -336,6 +340,7 @@ struct AboutView: View {
                 .foregroundStyle(.white)
                 .frame(width: 26, height: 26)
                 .background(color, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

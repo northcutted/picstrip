@@ -13,7 +13,7 @@
 		572DDA7E191B9E7AF650B417 /* DetectionRule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80225CB43EDF78B9490D0E5D /* DetectionRule.swift */; };
 		6B740ED24E1DF0D6516F1684 /* ExportPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44713883EFA9A49425AFEFDF /* ExportPreset.swift */; };
 		A2B97CAA5A88F65AB3CD42BC /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279FA21610D3277B00823DAA /* ImageProcessor.swift */; };
-		A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AC5497DA1F98A34F0FF7A47C /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4E135E1B159D979239456E9F /* Foundation.framework */; };
 		B0451A9EEC9A351A9DAE05C4 /* DetectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C110F60F96DA85FC4F60BA89 /* DetectionModels.swift */; };
 		B360597FAE397DC5968611D2 /* PIIScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5429861B58D7DC967E80ED5 /* PIIScanner.swift */; };
@@ -48,15 +48,15 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		BA5C2993E98D84B396A95A74 /* Embed App Extensions */ = {
+		BA5C2993E98D84B396A95A74 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 13;
 			files = (
-				A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed App Extensions */,
+				A6541C434BC5E3ACC6ABA070 /* PicStripShareExtension.appex in Embed Foundation Extensions */,
 			);
-			name = "Embed App Extensions";
+			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -207,7 +207,7 @@
 				2C0D1E132FA686B60032DDDA /* Sources */,
 				2C0D1E142FA686B60032DDDA /* Frameworks */,
 				2C0D1E152FA686B60032DDDA /* Resources */,
-				BA5C2993E98D84B396A95A74 /* Embed App Extensions */,
+				BA5C2993E98D84B396A95A74 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
@@ -499,6 +499,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -556,6 +557,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				VALIDATE_PRODUCT = YES;
 			};
@@ -574,6 +576,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PicStrip;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "PicStrip saves the scrubbed image to your photo library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PicStrip needs access to your photo library to replace the original image when requested.";
@@ -614,6 +617,7 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = PicStrip;
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "PicStrip saves the scrubbed image to your photo library.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "PicStrip needs access to your photo library to replace the original image when requested.";

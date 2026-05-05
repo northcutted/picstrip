@@ -27,6 +27,7 @@ struct CategoryDetailPanel: View {
                 .frame(width: 36, height: 4)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
+                .accessibilityHidden(true)
 
             // Header
             HStack(spacing: 10) {
@@ -34,13 +35,14 @@ struct CategoryDetailPanel: View {
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundStyle(color)
                     .frame(width: 24)
+                    .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 1) {
                     Text(category)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
                     let strippableCount = fields.filter { !$0.isStructural }.count
-                    Text("\(strippableCount) field\(strippableCount == 1 ? "" : "s") found")
+                    Text("^[\(strippableCount) field](inflect: true) found")
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -54,6 +56,9 @@ struct CategoryDetailPanel: View {
                         .symbolRenderingMode(.hierarchical)
                 }
                 .buttonStyle(.plain)
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+                .accessibilityLabel("Close \(category) details")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -70,6 +75,7 @@ struct CategoryDetailPanel: View {
                             .font(.system(size: 15, weight: .semibold))
                             .foregroundStyle(color)
                             .padding(.top, 1)
+                            .accessibilityHidden(true)
                         Text(metadataCategoryDescription(for: category))
                             .font(.subheadline)
                             .foregroundStyle(.primary.opacity(0.75))
@@ -150,6 +156,7 @@ struct CategoryDetailPanel: View {
         }
         .tint(color)
         .padding(.horizontal, 14)
+        .accessibilityLabel("Strip \(field.key)")
     }
 
     /// A structural field — read-only, lock icon, explanatory caption.
@@ -175,6 +182,7 @@ struct CategoryDetailPanel: View {
             Image(systemName: "lock.fill")
                 .font(.system(size: 13, weight: .medium))
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
         }
         .padding(.horizontal, 14)
         .opacity(0.7)
@@ -192,8 +200,7 @@ struct CategoryDetailPanel: View {
                 .overlay(color.opacity(0.15))
             segment(title: "Keep All", icon: "checkmark", side: .right, active: noneStripping) {
                 keepAll()
-            }
-        }
+            }        }
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color(.tertiarySystemFill))
@@ -219,8 +226,9 @@ struct CategoryDetailPanel: View {
             HStack(spacing: 6) {
                 Image(systemName: icon)
                     .font(.system(size: 12, weight: .semibold))
+                    .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.footnote.weight(.semibold))
             }
             .foregroundStyle(active ? color : .secondary)
             .frame(maxWidth: .infinity)
@@ -236,6 +244,7 @@ struct CategoryDetailPanel: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel("\(title) \(category) fields")
     }
 
     // MARK: - Bulk helpers

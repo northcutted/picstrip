@@ -1,0 +1,1 @@
+No login or demo credentials required. The app works entirely with photos from the device library. Select any photo to begin.

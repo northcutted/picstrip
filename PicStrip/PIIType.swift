@@ -40,7 +40,7 @@ enum PIIType: String, Hashable, Identifiable, CaseIterable {
 
     // MARK: - Description
 
-    var description: String {
+    nonisolated var description: String {
         switch self {
         // Contact
         case .phoneNumber:              return "Phone Number"

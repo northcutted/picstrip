@@ -76,6 +76,7 @@ struct PIIDetailsView: View {
                         .font(.system(size: 20, weight: .semibold))
                         .foregroundStyle(confidenceColor(result.confidence))
                         .frame(width: 26)
+                        .accessibilityHidden(true)
 
                     // Labels
                     VStack(alignment: .leading, spacing: 3) {
@@ -116,11 +117,13 @@ struct PIIDetailsView: View {
                                 ? Color.accentColor
                                 : Color.secondary.opacity(0.4)
                         )
+                        .accessibilityHidden(true)
                 }
                 .padding(.vertical, 10)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityLabel("Locate \(result.type.description) in photo, \(result.scorePercent)% match")
 
             // ── Trailing: redaction checkmark ───────────────────────────
             Button {
@@ -135,6 +138,11 @@ struct PIIDetailsView: View {
                     .foregroundStyle(isRedacted ? .red : .secondary)
             }
             .buttonStyle(.plain)
+            .frame(minWidth: 44, minHeight: 44)
+            .contentShape(Rectangle())
+            .accessibilityLabel(isRedacted
+                ? "Remove \(result.type.description) from redaction list"
+                : "Add \(result.type.description) to redaction list")
             .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isRedacted)
         }
     }

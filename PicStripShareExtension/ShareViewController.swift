@@ -174,8 +174,9 @@ class ShareViewController: UIViewController {
                 inputData = Data()
             }
 
+            let completedCount = savedCount
             await MainActor.run {
-                if savedCount == 0 {
+                if completedCount == 0 {
                     self.showErrorThenCancel("No images could be saved to your library.")
                 } else {
                     // Completing with an empty array dismisses the extension
@@ -195,7 +196,7 @@ class ShareViewController: UIViewController {
     /// when handed an abstract UTI like `"public.image"` if the provider only
     /// registers concrete types (which Photos always does).  Resolving to the
     /// concrete type first guarantees the callback fires.
-    private static func bestTypeIdentifier(for provider: NSItemProvider) -> String {
+    private nonisolated static func bestTypeIdentifier(for provider: NSItemProvider) -> String {
         let preferredTypes: [String] = [
             UTType.jpeg.identifier,       // "public.jpeg"
             UTType.png.identifier,        // "public.png"
@@ -285,6 +286,7 @@ private struct ExtensionConfigView: View {
                 .frame(width: 36, height: 5)
                 .padding(.top, 10)
                 .padding(.bottom, 16)
+                .accessibilityHidden(true)
 
             if isProcessing {
                 processingBody
@@ -304,10 +306,11 @@ private struct ExtensionConfigView: View {
                 Image(systemName: "photo.badge.shield.checkmark")
                     .font(.title2)
                     .foregroundStyle(.tint)
+                    .accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Clean with PicStrip")
                         .font(.headline)
-                    Text("\(itemCount) photo\(itemCount == 1 ? "" : "s") selected")
+                    Text("^[\(itemCount) photo](inflect: true) selected")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

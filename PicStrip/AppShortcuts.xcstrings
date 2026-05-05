@@ -1,0 +1,53 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Clean photos with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean photos with ${applicationName}"
+          }
+        }
+      }
+    },
+    "Remove metadata with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove metadata with ${applicationName}"
+          }
+        }
+      }
+    },
+    "Scrub photos with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrub photos with ${applicationName}"
+          }
+        }
+      }
+    },
+    "Strip metadata with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip metadata with ${applicationName}"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
