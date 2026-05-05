@@ -140,7 +140,11 @@ platform :ios do
     capture_ios_screenshots(
       # Disable code signing for simulator builds — avoids OCSP certificate
       # validation hangs against Apple servers in headless CI environments.
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO",
+      # Only run the snapshot tests; skip the Xcode-generated launch test class
+      # (PicStripUITestsLaunchTests) which runs once per UI configuration and
+      # is not needed for App Store screenshots.
+      skip_testing: "PicStripUITests/PicStripUITestsLaunchTests"
     )
   end
 

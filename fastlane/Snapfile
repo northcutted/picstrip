@@ -33,8 +33,9 @@ clear_previous_screenshots(true)
 # in headless CI. reinstall_app(true) gives equivalent cleanliness.
 reinstall_app(true)
 
-# Override status-bar to a clean, consistent look (9:41 AM, full signal/battery).
-override_status_bar(true)
+# Status bar is overridden via `xcrun simctl status_bar` in the CI boot step
+# rather than via fastlane's built-in override_status_bar, which calls the same
+# command internally but with no timeout and has been known to hang in headless CI.
 
 # Don't try to open a browser/HTML summary in headless CI.
 skip_open_summary(true)
