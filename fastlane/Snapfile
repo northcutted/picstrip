@@ -5,11 +5,11 @@
 # App Store Connect required size classes for iPhone + iPad submissions:
 #   6.9"  → iPhone 17 Pro Max  (required)
 #   6.7"  → iPhone Air         (required; 6.7" Super Retina class in Xcode 26)
-#  13.0"  → iPad Pro 13-inch (M4) (required for iPad support)
+#  13.0"  → iPad Pro 13-inch (M5) (required for iPad support)
 devices([
   "iPhone 17 Pro Max",
   "iPhone Air",
-  "iPad Pro 13-inch (M4)",
+  "iPad Pro 13-inch (M5)",
 ])
 
 # Languages / locales to capture.
