@@ -1,1 +1,5 @@
-No login or account required. Select any photo from the library to see the strip flow.
+Bug Fixes
+• Enhance accessibility and improve user experience
+• fix ci pipeline and trigger new release
+• trigger new release
+• Update fastlane dependency version and add checksums for all dependencies

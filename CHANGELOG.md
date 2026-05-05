@@ -1,3 +1,13 @@
+## [1.1.1](https://github.com/northcutted/picstrip/compare/v1.1.0...v1.1.1) (2026-05-05)
+
+
+### Bug Fixes
+
+* Enhance accessibility and improve user experience ([fb4891c](https://github.com/northcutted/picstrip/commit/fb4891cdc005c5ed9db7e7de9d1565a359118ed1))
+* fix ci pipeline and trigger new release ([e6a3ca0](https://github.com/northcutted/picstrip/commit/e6a3ca0bd17013a653ba73246aab7a09f0116df8))
+* trigger new release ([299fdcd](https://github.com/northcutted/picstrip/commit/299fdcd3e03533c9e6448ed77294ae9844884da8))
+* Update fastlane dependency version and add checksums for all dependencies ([ffad3e0](https://github.com/northcutted/picstrip/commit/ffad3e08c4ae1064bc4954630d94168983bb8c35))
+
 ## [1.1.0](https://github.com/northcutted/picstrip/compare/v1.0.4...v1.1.0) (2026-05-04)
 
 
