@@ -1,2 +1,3 @@
 Bug Fixes
-• dummy edit from mobile to trigger release
+• add timeout to screenshot job to avoid burning actions mins
+• testing ci pipeline changes

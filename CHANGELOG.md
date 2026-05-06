@@ -1,3 +1,11 @@
+## [1.2.2](https://github.com/northcutted/picstrip/compare/v1.2.1...v1.2.2) (2026-05-06)
+
+
+### Bug Fixes
+
+* add timeout to screenshot job to avoid burning actions mins ([5ff7a5c](https://github.com/northcutted/picstrip/commit/5ff7a5c3ae7f638c76c4aa0f53ae7ee7f2f5dae6))
+* testing ci pipeline changes ([fe2f526](https://github.com/northcutted/picstrip/commit/fe2f5263bd023596b5c36bbabab2f40b342b8f69))
+
 ## [1.2.1](https://github.com/northcutted/picstrip/compare/v1.2.0...v1.2.1) (2026-05-06)
 
 
