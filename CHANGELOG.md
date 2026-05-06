@@ -1,3 +1,10 @@
+## [1.2.3](https://github.com/northcutted/picstrip/compare/v1.2.2...v1.2.3) (2026-05-06)
+
+
+### Bug Fixes
+
+* fix pipeline ([41a573b](https://github.com/northcutted/picstrip/commit/41a573b67546c99f804910dfc6ee65650438ba40))
+
 ## [1.2.2](https://github.com/northcutted/picstrip/compare/v1.2.1...v1.2.2) (2026-05-06)
 
 

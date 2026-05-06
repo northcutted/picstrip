@@ -1,3 +1,2 @@
 Bug Fixes
-• add timeout to screenshot job to avoid burning actions mins
-• testing ci pipeline changes
+• fix pipeline
