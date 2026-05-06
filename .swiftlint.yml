@@ -41,6 +41,7 @@ excluded:
   - PicStripTests
   - PicStripUITests
   - fastlane
+  - vendor
   - node_modules
   - scripts
 
