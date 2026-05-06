@@ -41,6 +41,8 @@ excluded:
   - PicStripTests
   - PicStripUITests
   - fastlane
+  - node_modules
+  - scripts
 
 # Force cast/try are errors — never suppress
 force_cast: error

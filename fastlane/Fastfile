@@ -14,7 +14,7 @@ platform :ios do
 
   desc "Run SwiftLint"
   lane :lint do
-    sh("swiftlint lint --strict --no-cache --config #{ROOT}/.swiftlint.yml #{ROOT}")
+    sh("cd #{ROOT} && swiftlint lint --strict --no-cache --config .swiftlint.yml")
   end
 
   desc "Run xcodebuild analyze (static analysis)"
@@ -37,7 +37,7 @@ platform :ios do
       scheme:      SCHEME,          # "PicStrip" — the only shared scheme; runs PicStripTests target
       device:      "iPhone 17",     # available on macos-26 / Xcode 26 runners
       clean:       true,
-      output_dir:  "build/test_output",
+      output_directory:  "build/test_output",
       output_files: "report.junit",
       fail_build:  true
     )
