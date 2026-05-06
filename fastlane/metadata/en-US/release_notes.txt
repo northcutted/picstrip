@@ -1,2 +1,5 @@
+Features
+• Refactor image processing and metadata handling
 Bug Fixes
-• Update iPad Pro device references to M5 in screenshot configurations
+• Add write permissions for semantic-release in version job
+• Update SwiftLint configuration and improve lint lane command

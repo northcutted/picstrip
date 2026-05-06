@@ -1,3 +1,16 @@
+## [1.2.0](https://github.com/northcutted/picstrip/compare/v1.1.3...v1.2.0) (2026-05-06)
+
+
+### Features
+
+* Refactor image processing and metadata handling ([60eab86](https://github.com/northcutted/picstrip/commit/60eab8683685f8ea8cec3f47614af63179731be4))
+
+
+### Bug Fixes
+
+* Add write permissions for semantic-release in version job ([d555a82](https://github.com/northcutted/picstrip/commit/d555a8286fc4c87b5c6e110fd9441827f6efbb0d))
+* Update SwiftLint configuration and improve lint lane command ([01ae1e0](https://github.com/northcutted/picstrip/commit/01ae1e09ebe2a7637c7682f1dec0dcf0c1fa7ae4))
+
 ## [1.1.3](https://github.com/northcutted/picstrip/compare/v1.1.2...v1.1.3) (2026-05-05)
 
 
