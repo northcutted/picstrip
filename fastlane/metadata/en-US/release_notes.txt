@@ -1,5 +1,2 @@
-Features
-• Refactor image processing and metadata handling
 Bug Fixes
-• Add write permissions for semantic-release in version job
-• Update SwiftLint configuration and improve lint lane command
+• dummy edit from mobile to trigger release

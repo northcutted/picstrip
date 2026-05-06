@@ -1,3 +1,10 @@
+## [1.2.1](https://github.com/northcutted/picstrip/compare/v1.2.0...v1.2.1) (2026-05-06)
+
+
+### Bug Fixes
+
+* dummy edit from mobile to trigger release ([a8d1ec0](https://github.com/northcutted/picstrip/commit/a8d1ec0604394a820b802ae7d3ec5624227898a7))
+
 ## [1.2.0](https://github.com/northcutted/picstrip/compare/v1.1.3...v1.2.0) (2026-05-06)
 
 
