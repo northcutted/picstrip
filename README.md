@@ -268,6 +268,10 @@ npm install
 - **Static Analysis** — `xcodebuild analyze`
 - **Unit Tests** — full suite on iPhone 17 simulator; JUnit XML uploaded as an artifact
 
+A fourth job runs only when the `screenshots` label is applied to the PR:
+
+- **PR Screenshots** — full 3-device App Store capture (iPhone 17 Pro Max, iPhone Air, iPad Pro 13-inch M5); results uploaded as a PR artifact for visual review. No upload to App Store Connect from PRs.
+
 ### On push to `main`
 
 `main.yml` runs seven sequential jobs. A semantic-release dry-run in the `version` job gates the entire pipeline — if no releasable commits exist, all downstream jobs are skipped.
@@ -285,9 +289,15 @@ version (ubuntu) ──► lint / analyze / test (macos-26, parallel)
                           │
                      ┌────┴────┐
                      ▼         ▼
-                provenance   submit
-                SLSA L3      Requires manual approval via the "production"
-                attestation  GitHub environment; submits for App Review
+                provenance   attach-release-assets
+                SLSA L3      Attaches IPA + SHA-256 digest to the GitHub Release
+                attestation       │
+                     └─────┬─────┘
+                           ▼
+                        submit
+                        Requires manual approval via the "production"
+                        GitHub environment; submits for App Review.
+                        Gates on SLSA provenance succeeding.
 ```
 
 ### Screenshot workflow

@@ -662,11 +662,16 @@ Network Inspector in Xcode will show zero outbound connections from the app.
 
 ### PR Workflow (`pr.yml`)
 
-Three jobs run in parallel on `macos-26`:
+Four jobs run on `macos-26`:
 
-- **lint** — `bundle exec fastlane lint` (SwiftLint strict mode)
-- **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`)
-- **test** — `bundle exec fastlane test` (unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact)
+- **lint** — `bundle exec fastlane lint` (SwiftLint strict mode); runs on every PR
+- **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`); runs on every PR
+- **test** — `bundle exec fastlane test` (unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact); runs on every PR
+- **screenshots** — full 3-device App Store capture; runs **only when the `screenshots` label is applied** to the PR
+
+#### PR Screenshots (`screenshots` label)
+
+Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same three devices used in `screenshots.yml` (iPhone 17 Pro Max, iPhone Air, iPad Pro 13-inch M5). Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs — that step is only performed by `screenshots.yml` when dispatched against `main`.
 
 ### Release Workflow (`main.yml`)
 
@@ -696,6 +701,9 @@ release (ubuntu-latest)
 
 provenance (reusable — slsa-framework/slsa-github-generator)
   └─ SLSA Level 3 attestation signed by Sigstore/Rekor
+     compile-generator: true — builds the generator binary from source at the
+     pinned SHA rather than downloading a prebuilt binary; required when the
+     workflow is referenced by commit SHA rather than a release tag
      Attached to the GitHub Release
 
 attach-release-assets (ubuntu-latest)
@@ -703,6 +711,8 @@ attach-release-assets (ubuntu-latest)
        PicStrip.ipa + PicStrip.ipa.sha256
 
 submit (ubuntu-latest, "production" environment — requires manual approval)
+  needs: [version, build, release, provenance, attach-release-assets]
+  ← approval gate appears only after SLSA provenance and asset attachment succeed
   └─ bundle exec fastlane submit
        ├─ upload_to_app_store (skip_binary_upload: true)
        ├─ submit_for_review: true
@@ -734,6 +744,8 @@ Manually dispatched (not part of the release pipeline). Key design decisions:
 - **`simctl status_bar override` in a dedicated CI step**: done after `bootstatus -b` rather than inside Fastlane's `override_status_bar(true)` which can hang without a timeout.
 - **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
 
+**PR label-gated screenshots (`pr.yml` — `screenshots` job)**: Adding the `screenshots` label to a PR triggers the same full 3-device capture in the PR pipeline. Results upload as a PR artifact (`pr-screenshots-<PR-number>`, retained 14 days). The App Store Connect upload step is skipped — it only runs when `screenshots.yml` is dispatched against `main`.
+
 ### Semantic Release
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/):
@@ -762,6 +774,12 @@ Every release is accompanied by a SLSA Level 3 provenance attestation, cryptogra
 | Ephemeral environment | Fresh runner per job; no persistent state |
 | Isolated build | No network calls from the build job beyond Apple APIs and GitHub |
 | Non-falsifiable provenance | Signed by Sigstore/Rekor (public, immutable transparency log) |
+
+### Generator Compilation (`compile-generator: true`)
+
+The `provenance` job pins the SLSA reusable workflow by commit SHA (`f7dd8c54…`) rather than a release tag. The upstream generator only downloads a prebuilt builder binary when its own ref is a `refs/tags/vX.Y.Z` tag. When pinned by SHA the prebuilt binary path does not exist, causing the job to fail with `No such file or directory`.
+
+Setting `compile-generator: true` instructs the workflow to build the generator binary from source at the pinned SHA instead of downloading a prebuilt artifact. This is correct behaviour for SHA pinning and does not weaken the SLSA guarantee — in fact it strengthens it, because the build toolchain itself is reproducible from source.
 
 ### Verify an IPA
 

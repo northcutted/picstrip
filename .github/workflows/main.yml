@@ -253,9 +253,10 @@ jobs:
       contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a
     with:
-      base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
-      upload-assets:   true
-      upload-tag-name: "v${{ needs.version.outputs.version }}"
+      base64-subjects:   "${{ needs.build.outputs.ipa-hashes }}"
+      compile-generator: true
+      upload-assets:     true
+      upload-tag-name:   "v${{ needs.version.outputs.version }}"
 
   # ── 6. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
@@ -294,7 +295,7 @@ jobs:
     name: Submit for App Review
     runs-on: ubuntu-latest
     environment: production
-    needs: [version, build, release]
+    needs: [version, build, release, provenance, attach-release-assets]
     if: needs.version.outputs.will_release == 'true'
     steps:
       - name: Checkout (post-release HEAD — includes release_notes.txt)
