@@ -31,14 +31,15 @@ output_directory("./fastlane/screenshots")
 # Wipe previous screenshots before each run so stale images never ship.
 clear_previous_screenshots(true)
 
-# Simulators are pre-booted by a CI step before fastlane runs.
-# erase_simulator is intentionally omitted — it boots from scratch and hangs
-# in headless CI. reinstall_app(true) gives equivalent cleanliness.
+# Let fastlane/xcodebuild boot each simulator only when it is needed. Pre-booting
+# all screenshot devices in CI has been slow and can stall before tests begin.
+# erase_simulator is intentionally omitted; reinstall_app(true) gives enough
+# cleanliness without triggering a full simulator reset.
 reinstall_app(true)
 
-# Status bar is overridden via `xcrun simctl status_bar` in the CI boot step
-# rather than via fastlane's built-in override_status_bar, which calls the same
-# command internally but with no timeout and has been known to hang in headless CI.
+# Status bar overrides are intentionally disabled. Both fastlane's built-in
+# override and direct `simctl status_bar` calls have been observed hanging on
+# macos-26 runners.
 
 # Don't try to open a browser/HTML summary in headless CI.
 skip_open_summary(true)

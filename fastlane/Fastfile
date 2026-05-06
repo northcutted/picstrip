@@ -136,7 +136,11 @@ platform :ios do
     capture_ios_screenshots(
       # Disable code signing for simulator builds — avoids OCSP certificate
       # validation hangs against Apple servers in headless CI environments.
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO",
+      buildlog_path: "./fastlane/screenshots/Logs",
+      disable_package_automatic_updates: true,
+      sdk: "iphonesimulator",
+      skip_package_dependencies_resolution: true
     )
   end
 

@@ -17,6 +17,12 @@ jobs:
     name: Capture Screenshots
     runs-on: macos-26
     timeout-minutes: 60
+    env:
+      FASTLANE_HIDE_CHANGELOG: "1"
+      FASTLANE_OPT_OUT_USAGE: "1"
+      FASTLANE_SKIP_UPDATE_CHECK: "1"
+      FASTLANE_XCODEBUILD_SETTINGS_RETRIES: "2"
+      FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "120"
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -30,42 +36,15 @@ jobs:
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-screenshots-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
+          key: ${{ runner.os }}-screenshots-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj', 'PicStrip.xcodeproj/xcshareddata/xcschemes/PicStripScreenshots.xcscheme', 'fastlane/Fastfile', 'fastlane/Snapfile') }}
           restore-keys: |
             ${{ runner.os }}-screenshots-
-            ${{ runner.os }}-deriveddata-
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
         with:
           ruby-version: "3.2"
           bundler-cache: true
-
-      - name: Boot simulators
-        run: |
-          xcrun simctl boot "iPhone 17 Pro Max"     || true
-          xcrun simctl boot "iPhone Air"            || true
-          xcrun simctl boot "iPad Pro 13-inch (M5)" || true
-          xcrun simctl bootstatus "iPhone 17 Pro Max"     -b
-          xcrun simctl bootstatus "iPhone Air"            -b
-          xcrun simctl bootstatus "iPad Pro 13-inch (M5)" -b
-
-      - name: Override status bars
-        # Set a clean 9:41 AM / full-bars status bar on each booted simulator.
-        # Done here rather than via fastlane's override_status_bar option, which
-        # wraps the same simctl call with no timeout and can hang in headless CI.
-        run: |
-          for device in "iPhone 17 Pro Max" "iPhone Air" "iPad Pro 13-inch (M5)"; do
-            xcrun simctl status_bar "$device" override \
-              --time "9:41" \
-              --dataNetwork wifi \
-              --wifiMode active \
-              --wifiBars 3 \
-              --cellularMode active \
-              --cellularBars 4 \
-              --batteryState charged \
-              --batteryLevel 100
-          done
 
       - name: Capture screenshots
         run: |
@@ -85,8 +64,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: snapshot-logs
-          # fastlane snapshot writes its xcodebuild log here by default
-          path: ~/Library/Logs/snapshot/
+          path: fastlane/screenshots/Logs/
           retention-days: 14
           if-no-files-found: ignore
 
