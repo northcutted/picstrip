@@ -9,6 +9,11 @@ platform :ios do
   PROJECT        = "PicStrip.xcodeproj"
   OUTPUT_DIR     = "build"
   IPA_NAME       = "PicStrip.ipa"
+  SCREENSHOT_DEVICES = [
+    "iPhone 17 Pro Max",
+    "iPhone Air",
+    "iPad Pro 13-inch (M5)"
+  ]
 
   # ── PR lanes (no signing) ────────────────────────────────────────────────────
 
@@ -141,20 +146,51 @@ platform :ios do
   end
 
   desc "Capture App Store screenshots on simulator (reads fastlane/Snapfile)"
-  lane :screenshots do
-    capture_ios_screenshots(
+  lane :screenshots do |options|
+    screenshot_options = {
       # Disable code signing for simulator builds — avoids OCSP certificate
       # validation hangs against Apple servers in headless CI environments.
       xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO",
-      buildlog_path: "./fastlane/screenshots/Logs",
+      buildlog_path: "./fastlane/screenshot_logs",
       disable_package_automatic_updates: true,
       sdk: "iphonesimulator",
       skip_package_dependencies_resolution: true
-    )
+    }
+
+    if options[:device]
+      screenshot_options[:devices] = [options[:device]]
+    elsif options[:devices]
+      screenshot_options[:devices] = options[:devices].split(",").map(&:strip)
+    end
+
+    capture_ios_screenshots(screenshot_options)
   end
 
   desc "Upload previously captured screenshots to App Store Connect (binary unchanged)"
-  lane :upload_screenshots do
+  lane :upload_screenshots do |options|
+    # Deliver validates every top-level directory under screenshots_path as a
+    # locale. Keep old captured log folders from breaking screenshot uploads.
+    sh("rm -rf ./fastlane/screenshots/Logs")
+
+    allow_partial = options[:allow_partial].to_s == "true"
+    unless allow_partial
+      image_paths = Dir.glob("./fastlane/screenshots/**/*.{png,jpg,jpeg}", File::FNM_CASEFOLD)
+      normalized_paths = image_paths.map { |path| path.downcase.gsub(/[^a-z0-9]/, "") }
+      missing_devices = SCREENSHOT_DEVICES.reject do |device|
+        normalized_device = device.downcase.gsub(/[^a-z0-9]/, "")
+        normalized_paths.any? { |path| path.include?(normalized_device) }
+      end
+
+      if image_paths.empty? || missing_devices.any?
+        UI.user_error!(
+          "Refusing to upload screenshots because the local screenshot set is incomplete. " \
+          "Missing device screenshots: #{missing_devices.join(', ')}. " \
+          "Run `bundle exec fastlane screenshots` for the full App Store set, " \
+          "or pass `allow_partial:true` if you intentionally want to replace App Store screenshots with this partial set."
+        )
+      end
+    end
+
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],

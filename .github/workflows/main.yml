@@ -63,7 +63,15 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install SwiftLint
-        run: brew install swiftlint
+        run: |
+          SWIFTLINT_VERSION="0.63.2"
+          SWIFTLINT_SHA256="c59a405c85f95b92ced677a500804e081596a4cae4a6a485af76065557d6ed29"
+          curl -sSL \
+            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip" \
+            -o /tmp/portable_swiftlint.zip
+          echo "${SWIFTLINT_SHA256}  /tmp/portable_swiftlint.zip" | shasum -a 256 -c
+          unzip -o /tmp/portable_swiftlint.zip -d /tmp/swiftlint_bin
+          sudo mv /tmp/swiftlint_bin/swiftlint /usr/local/bin/swiftlint
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
@@ -162,22 +170,24 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      - name: Cache SPM dependencies
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: |
-            ~/Library/Developer/Xcode/DerivedData/**/SourcePackages
-          key: ${{ runner.os }}-spm-${{ hashFiles('**/Package.resolved') }}
-          restore-keys: |
-            ${{ runner.os }}-spm-
-
-      - name: Cache DerivedData
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
+      # Record the exact toolchain state so it is captured in the attestation
+      # and SLSA provenance. Caches (DerivedData, SPM) are intentionally omitted
+      # from this job: gym runs with clean:true but restoring shared cache state
+      # from earlier runs would violate the SLSA L3 isolation requirement.
+      - name: Record build environment
+        run: |
+          mkdir -p build
+          {
+            printf 'xcode_version: '
+            xcodebuild -version | head -1 | awk '{print $2}'
+            printf 'xcode_build: '
+            xcodebuild -version | tail -1 | awk '{print $NF}'
+            printf 'macos_version: '
+            sw_vers -productVersion
+            printf 'sdk_iphoneos: '
+            xcodebuild -showsdks 2>/dev/null | grep 'iphoneos' | tail -1 | awk '{print $NF}'
+          } > build/build-env.txt
+          cat build/build-env.txt
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
@@ -189,6 +199,19 @@ jobs:
         uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555 # v0.10.0
         with:
           ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+
+      # Capture the exact commit of the Match certificate repo so that the
+      # signing inputs are recorded in the attestation alongside the IPA.
+      - name: Record signing material state
+        run: |
+          MATCH_HEAD=$(git ls-remote git@github.com:northcutted/picstrip-certs.git HEAD \
+            | cut -f1)
+          {
+            echo "match_repo: git@github.com:northcutted/picstrip-certs.git"
+            echo "match_head: ${MATCH_HEAD}"
+            echo "match_type: appstore"
+          } > build/signing-env.txt
+          cat build/signing-env.txt
 
       - name: Sync signing assets
         env:
@@ -204,17 +227,24 @@ jobs:
           MARKETING_VERSION:                    ${{ needs.version.outputs.version }}
         run: bundle exec fastlane build
 
-      - name: Compute SHA-256 of IPA
+      - name: Compute SHA-256 of IPA and build environment
         id: digest
         run: |
-          HASHES=$(shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' | base64 | tr -d '\n')
+          # Include the IPA plus both environment manifests so that the SLSA
+          # provenance covers toolchain and signing inputs, not just the binary.
+          HASHES=$(shasum -a 256 build/PicStrip.ipa build/build-env.txt build/signing-env.txt \
+            | awk '{n=split($2,a,"/"); print $1 "  " a[n]}' \
+            | base64 | tr -d '\n')
           echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
           shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' > build/PicStrip.ipa.sha256
 
       - name: Create GitHub artifact attestation
         uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
         with:
-          subject-path: build/PicStrip.ipa
+          subject-path: |
+            build/PicStrip.ipa
+            build/build-env.txt
+            build/signing-env.txt
 
       - name: Upload IPA artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -223,6 +253,8 @@ jobs:
           path: |
             build/PicStrip.ipa
             build/PicStrip.ipa.sha256
+            build/build-env.txt
+            build/signing-env.txt
           retention-days: 90
 
   # ── 3. Publish GitHub Release + tag ───────────────────────────────────────
@@ -235,6 +267,7 @@ jobs:
       contents: write
     outputs:
       version: ${{ needs.version.outputs.version }}
+      release_sha: ${{ steps.semrel.outputs.release_sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -252,9 +285,15 @@ jobs:
         run: npm ci
 
       - name: Publish release
+        id: semrel
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+          # Capture the post-release HEAD (includes the commit that
+          # semantic-release made for CHANGELOG/project.pbxproj/release_notes.txt)
+          # so downstream jobs can pin to this exact state instead of floating main.
+          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
 
   # ── 5. SLSA L3 Provenance ─────────────────────────────────────────────────
   provenance:
@@ -265,12 +304,11 @@ jobs:
       actions:  read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
-      base64-subjects:   "${{ needs.build.outputs.ipa-hashes }}"
-      compile-generator: true
-      upload-assets:     true
-      upload-tag-name:   "v${{ needs.version.outputs.version }}"
+      base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
+      upload-assets: true
+      upload-tag-name: "v${{ needs.version.outputs.version }}"
 
   # ── 6. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
@@ -346,8 +384,11 @@ jobs:
             --source-branch main \
             --print-provenance > verification/verified-provenance.json
 
-          jq -e --arg sha "${{ github.sha }}" \
-            '.. | scalars | select(tostring == $sha)' \
+          jq -e \
+            --arg sha "${{ github.sha }}" \
+            --arg repo "${{ github.repository }}" \
+            '.predicate.invocation.configSource.uri == ("git+https://github.com/" + $repo + "@refs/heads/main")
+              and .predicate.invocation.configSource.digest.sha1 == $sha' \
             verification/verified-provenance.json > /dev/null
 
   # ── 8. Upload the verified IPA to TestFlight ───────────────────────────────
@@ -396,13 +437,13 @@ jobs:
     name: Submit for App Review
     runs-on: ubuntu-latest
     environment: production
-    needs: [version, upload-testflight]
+    needs: [version, release, upload-testflight]
     if: needs.version.outputs.will_release == 'true'
     steps:
-      - name: Checkout (post-release HEAD — includes release_notes.txt)
+      - name: Checkout (post-release commit — includes release_notes.txt)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: main
+          ref: ${{ needs.release.outputs.release_sha }}
           fetch-depth: 1
 
       - name: Setup Ruby

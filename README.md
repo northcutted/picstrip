@@ -247,14 +247,19 @@ npm install
 
 | Command | What it does |
 |---------|--------------|
+| `make help` | Lists local helper commands |
+| `make test` | Runs `bundle exec fastlane test` |
+| `make build` | Runs `bundle exec fastlane build` |
+| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPhone Air"` for subsets |
+| `make upload-screenshots` | Uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
 | `bundle exec fastlane analyze` | `xcodebuild analyze` static analysis |
 | `bundle exec fastlane test` | `PicStripTests` unit tests on iPhone 17 simulator; outputs JUnit XML to `build/test_output/` |
 | `bundle exec fastlane build` | Signs + exports IPA (requires App Store certificates) |
 | `bundle exec fastlane beta` | `certificates` → `build` → TestFlight upload |
 | `bundle exec fastlane upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
-| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`) |
-| `bundle exec fastlane upload_screenshots` | Pushes captured screenshots to App Store Connect |
+| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 17 Pro Max"` for a one-device local smoke run |
+| `bundle exec fastlane upload_screenshots` | Pushes the full captured screenshot set to App Store Connect; refuses partial sets unless `allow_partial:true` is passed |
 | `bundle exec fastlane submit` | Submits the processed TestFlight build for App Review |
 
 ---
@@ -368,10 +373,12 @@ gh attestation verify PicStrip.ipa \
 
 ```bash
 slsa-verifier verify-artifact PicStrip.ipa \
-  --provenance-path PicStrip.ipa.attestation \
+  --provenance-path PicStrip.ipa.intoto.jsonl \
   --source-uri github.com/northcutted/picstrip \
   --source-branch main
 ```
+
+The source commit is verified from provenance, not inferred from the release tag.
 
 See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-build-provenance-level-3) for detailed verification steps.
 

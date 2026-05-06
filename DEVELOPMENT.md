@@ -703,9 +703,7 @@ release (ubuntu-latest)
 
 provenance (reusable — slsa-framework/slsa-github-generator)
   └─ SLSA Level 3 provenance signed by Sigstore/Rekor
-     compile-generator: true — builds the generator binary from source at the
-     pinned SHA rather than downloading a prebuilt binary; required when the
-     workflow is referenced by commit SHA rather than a release tag
+     Generator workflow referenced by release tag v2.1.0
      Attached to the GitHub Release
 
 attach-release-assets (ubuntu-latest)
@@ -746,8 +744,8 @@ submit (ubuntu-latest, "production" environment — requires manual approval)
 | `build` | Increments build number; `gym` with App Store export; outputs `build/PicStrip.ipa` |
 | `beta` | `certificates` → `build` → `upload_to_testflight` |
 | `upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
-| `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`) |
-| `upload_screenshots` | Pushes captured screenshots to App Store Connect |
+| `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`; accepts `device:"..."` or `devices:"a,b"` overrides for local runs) |
+| `upload_screenshots` | Pushes captured screenshots to App Store Connect; validates the full required device set unless `allow_partial:true` is passed |
 | `submit` | `upload_to_app_store` with `skip_binary_upload: true`; submits for App Review |
 
 ### Screenshot Workflow (`screenshots.yml`)
@@ -757,6 +755,8 @@ Manually dispatched (not part of the release pipeline). Key design decisions:
 - **Single `testAllScreenshots()` method**: all screenshots are captured in one XCTest method. Splitting across separate methods causes XCTest to terminate and relaunch the app between each method in headless CI, which fails with `Failed to terminate com.northcutt.PicStrip`.
 - **Dedicated `PicStripScreenshots` scheme**: excludes unit test bundles (`PicStripTests`, etc.) to avoid running the full test suite inside the screenshot job.
 - **Fastlane `test` lane excludes UI tests**: release and PR validation run `PicStripTests` only; screenshot UI tests stay isolated to screenshot jobs.
+- **Local device override**: run `bundle exec fastlane screenshots device:"iPhone 17 Pro Max"` to smoke-test one screenshot size before spending time on the full matrix.
+- **Upload guard**: `bundle exec fastlane upload_screenshots` refuses incomplete local screenshot sets by default so one-device smoke captures do not wipe the App Store Connect screenshot matrix.
 - **`number_of_retries(0)` in Snapfile**: screenshot failures are deterministic; retrying wastes a full macOS job cycle.
 - **No pre-boot/status bar override step**: Fastlane/Xcode boots each simulator when needed. Direct `simctl bootstatus` and `simctl status_bar` calls have hung on `macos-26` runners.
 - **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
@@ -822,11 +822,11 @@ gh attestation verify PicStrip.ipa \
 
 Because semantic-release creates the public tag after the IPA is built, the primary source identity for the attested IPA is the workflow source commit (`github.sha`), not the release tag commit.
 
-### Generator Compilation (`compile-generator: true`)
+### SLSA Generator Ref
 
-The `provenance` job pins the SLSA reusable workflow by commit SHA (`f7dd8c54…`) rather than a release tag. The upstream generator only downloads a prebuilt builder binary when its own ref is a `refs/tags/vX.Y.Z` tag. When pinned by SHA the prebuilt binary path does not exist, causing the job to fail with `No such file or directory`.
+The `provenance` job references the SLSA reusable workflow by upstream release tag (`v2.1.0`). That tag resolves to the previously pinned generator commit (`f7dd8c54…`), but the tag form is important for compatibility with `slsa-verifier`: provenance generated from a SHA-only reusable workflow ref can surface the generator identity as an untyped commit ref, which `slsa-verifier` rejects with `unexpected ref type`.
 
-Setting `compile-generator: true` instructs the workflow to build the generator binary from source at the pinned SHA instead of downloading a prebuilt artifact. This is correct behaviour for SHA pinning and does not weaken the SLSA guarantee — in fact it strengthens it, because the build toolchain itself is reproducible from source.
+PicStrip's app source identity remains commit-based. The release workflow verifies `refs/heads/main` plus the exact `github.sha` that built the IPA, so semantic-release's later tag creation does not become the trust anchor for the attested binary.
 
 ### Verify an IPA
 
@@ -848,7 +848,7 @@ Expected output includes a verified SLSA provenance predicate associated with `n
 brew install slsa-framework/slsa/slsa-verifier
 
 slsa-verifier verify-artifact PicStrip.ipa \
-  --provenance-path PicStrip.ipa.attestation \
+  --provenance-path PicStrip.ipa.intoto.jsonl \
   --source-uri github.com/northcutted/picstrip \
   --source-branch main
 ```
