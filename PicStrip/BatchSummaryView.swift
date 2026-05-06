@@ -10,7 +10,7 @@ struct BatchSummaryView: View {
     @Bindable var viewModel: ScrubberViewModel
     @Environment(\.dismiss) private var dismiss
 
-    @State private var auditURL: URL? = nil
+    @State private var auditURL: URL?
 
     // MARK: - Derived stats
 

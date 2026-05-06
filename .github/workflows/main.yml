@@ -9,9 +9,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: write       # semantic-release needs to push tags + create releases
-  id-token: write       # SLSA provenance needs OIDC token
-  actions: read         # SLSA provenance needs to read workflow
+  contents: read
 
 jobs:
   # ── 1. Semantic Release dry run — determine next version ──────────────────
@@ -52,11 +50,99 @@ jobs:
             echo "will_release=false" >> "$GITHUB_OUTPUT"
           fi
 
-  # ── 2. Build + Sign + Upload to TestFlight ─────────────────────────────────
+  # ── 2. Validate the exact release SHA ───────────────────────────────────────
+  lint:
+    name: SwiftLint
+    runs-on: macos-26
+    needs: version
+    if: needs.version.outputs.will_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install SwiftLint
+        run: brew install swiftlint
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Run SwiftLint
+        run: bundle exec fastlane lint
+
+  analyze:
+    name: Static Analysis
+    runs-on: macos-26
+    needs: version
+    if: needs.version.outputs.will_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Cache DerivedData
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Run xcodebuild analyze
+        run: bundle exec fastlane analyze
+
+  test:
+    name: Unit Tests
+    runs-on: macos-26
+    needs: version
+    if: needs.version.outputs.will_release == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Cache DerivedData
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
+          restore-keys: |
+            ${{ runner.os }}-deriveddata-
+
+      - name: Run Tests
+        run: bundle exec fastlane test
+
+      - name: Upload test results
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        if: always()
+        with:
+          name: release-test-results
+          path: build/test_output/
+          retention-days: 7
+
+  # ── 3. Build + Sign + Upload to TestFlight ─────────────────────────────────
   build:
     name: Build & Upload to TestFlight
     runs-on: macos-26
-    needs: version
+    needs: [version, lint, analyze, test]
     if: needs.version.outputs.will_release == 'true'
     outputs:
       ipa-hashes: ${{ steps.digest.outputs.hashes }}
@@ -129,6 +215,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [version, build]
     if: needs.version.outputs.will_release == 'true'
+    permissions:
+      contents: write
     outputs:
       version: ${{ needs.version.outputs.version }}
     steps:
@@ -152,7 +240,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
 
-  # ── 4. SLSA L3 Provenance ─────────────────────────────────────────────────
+  # ── 5. SLSA L3 Provenance ─────────────────────────────────────────────────
   provenance:
     name: SLSA Provenance
     needs: [version, build, release]
@@ -161,18 +249,20 @@ jobs:
       actions:  read
       id-token: write
       contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0 # f7dd8c54c2067bafc12ca7a55595d5ee9b75204a
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@f7dd8c54c2067bafc12ca7a55595d5ee9b75204a
     with:
       base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
       upload-assets:   true
       upload-tag-name: "v${{ needs.version.outputs.version }}"
 
-  # ── 5. Attach artifacts to GitHub Release ─────────────────────────────────
+  # ── 6. Attach artifacts to GitHub Release ─────────────────────────────────
   attach-release-assets:
     name: Attach Release Assets
     runs-on: ubuntu-latest
     needs: [version, build, release, provenance]
     if: needs.version.outputs.will_release == 'true'
+    permissions:
+      contents: write
     steps:
       - name: Download IPA artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -190,7 +280,7 @@ jobs:
             --repo ${{ github.repository }} \
             --clobber
 
-  # ── 6. Submit for App Review ───────────────────────────────────────────────
+  # ── 7. Submit for App Review ───────────────────────────────────────────────
   # Requires manual approval via the "production" GitHub environment.
   # To enable: Settings → Environments → production → add required reviewers.
   #

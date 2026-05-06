@@ -6,10 +6,10 @@ import UniformTypeIdentifiers
 /// Maps to an `ExportPreset` for the stripping engine.
 /// Cases are ordered for display: most private first.
 enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
-    case png      = "png"
-    case jpeg     = "jpeg"
-    case heic     = "heic"
-    case original = "original"
+    case png
+    case jpeg
+    case heic
+    case original
 
     var id: String { rawValue }
 

@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       ref:
-        description: "Branch, tag, or SHA to capture screenshots from"
+        description: "Branch, tag, or SHA to capture screenshots from. Only main uploads to App Store Connect."
         required: false
         default: "main"
 
@@ -73,22 +73,34 @@ jobs:
           bundle exec fastlane screenshots
 
       - name: Upload screenshots artifact
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: screenshots
           path: fastlane/screenshots/
           retention-days: 30
 
+      - name: Upload snapshot logs on failure
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: snapshot-logs
+          # fastlane snapshot writes its xcodebuild log here by default
+          path: ~/Library/Logs/snapshot/
+          retention-days: 14
+          if-no-files-found: ignore
+
   # ── 2. Upload to App Store Connect (Ubuntu — just an API call) ─────────────
   upload:
     name: Upload to App Store Connect
     runs-on: ubuntu-latest
     needs: capture
+    if: ${{ inputs.ref == 'main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ inputs.ref }}
+          ref: main
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0

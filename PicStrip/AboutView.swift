@@ -18,40 +18,40 @@ private struct MetadataEntry {
 
 private let visualEntries: [PIIEntry] = [
     // Contact
-    .init(type: .phoneNumber,             icon: "phone.fill",                        color: .green,   detail: "Detected via Apple's NLP text engine"),
-    .init(type: .email,                   icon: "envelope.fill",                     color: .blue,    detail: "RFC-compliant address regex + NLP"),
+    .init(type: .phoneNumber, icon: "phone.fill", color: .green, detail: "Detected via Apple's NLP text engine"),
+    .init(type: .email, icon: "envelope.fill", color: .blue, detail: "RFC-compliant address regex + NLP"),
     // Identity
-    .init(type: .address,                 icon: "map.fill",                          color: .orange,  detail: "Street addresses via Apple's NLP text engine"),
-    .init(type: .socialSecurityNumber,    icon: "person.text.rectangle.fill",        color: .red,     detail: "US SSN — 3-2-4 format with anti-zero guards"),
-    .init(type: .dateOfBirth,             icon: "calendar",                          color: .purple,  detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
-    .init(type: .nationalInsuranceNumber, icon: "person.badge.shield.checkmark.fill",color: .indigo,  detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
+    .init(type: .address, icon: "map.fill", color: .orange, detail: "Street addresses via Apple's NLP text engine"),
+    .init(type: .socialSecurityNumber, icon: "person.text.rectangle.fill", color: .red, detail: "US SSN — 3-2-4 format with anti-zero guards"),
+    .init(type: .dateOfBirth, icon: "calendar", color: .purple, detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
+    .init(type: .nationalInsuranceNumber, icon: "person.badge.shield.checkmark.fill", color: .indigo, detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
     // Web
-    .init(type: .ipAddress,               icon: "network",                           color: .cyan,    detail: "IPv4 (four 0-255 octets) and IPv6"),
-    .init(type: .macAddress,              icon: "wifi",                              color: .teal,    detail: "Colon or hyphen-separated hardware addresses"),
-    .init(type: .link,                    icon: "link",                              color: .blue,    detail: "URLs and web links"),
+    .init(type: .ipAddress, icon: "network", color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
+    .init(type: .macAddress, icon: "wifi", color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
+    .init(type: .link, icon: "link", color: .blue, detail: "URLs and web links"),
     // Financial
-    .init(type: .creditCard,              icon: "creditcard.fill",                   color: .pink,    detail: "Visa, Mastercard, Amex, Discover — with or without spaces"),
-    .init(type: .iban,                    icon: "building.columns.fill",             color: .brown,   detail: "International bank account numbers (2-letter country code + check digits)"),
-    .init(type: .cryptoWallet,            icon: "bitcoinsign.circle.fill",           color: .orange,  detail: "Ethereum (0x... 40 hex) and Bitcoin Bech32 (bc1...)"),
+    .init(type: .creditCard, icon: "creditcard.fill", color: .pink, detail: "Visa, Mastercard, Amex, Discover — with or without spaces"),
+    .init(type: .iban, icon: "building.columns.fill", color: .brown, detail: "International bank account numbers (2-letter country code + check digits)"),
+    .init(type: .cryptoWallet, icon: "bitcoinsign.circle.fill", color: .orange, detail: "Ethereum (0x... 40 hex) and Bitcoin Bech32 (bc1...)"),
     // Developer Secrets
-    .init(type: .awsAccessKey,            icon: "cloud.fill",                        color: .orange,  detail: "AWS Access Key IDs (AKIA... prefix)"),
-    .init(type: .githubToken,             icon: "chevron.left.forwardslash.chevron.right", color: .gray,    detail: "Classic ghp_, gho_, ghu_, ghs_, ghr_ tokens"),
-    .init(type: .googleAPIKey,            icon: "key.horizontal.fill",               color: .red,     detail: "Google Cloud API keys (AIza... prefix)"),
-    .init(type: .openAIKey,               icon: "sparkles",                          color: .purple,  detail: "OpenAI API keys (sk- and sk-proj- formats)"),
-    .init(type: .slackToken,              icon: "message.fill",                      color: .green,   detail: "Bot, user, and app tokens (xox... prefix)"),
-    .init(type: .stripeKey,               icon: "dollarsign.circle.fill",            color: .indigo,  detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
-    .init(type: .genericPrivateKey,       icon: "key.fill",                          color: .yellow,  detail: "PEM headers: RSA, EC, DSA, OPENSSH private keys"),
+    .init(type: .awsAccessKey, icon: "cloud.fill", color: .orange, detail: "AWS Access Key IDs (AKIA... prefix)"),
+    .init(type: .githubToken, icon: "chevron.left.forwardslash.chevron.right", color: .gray, detail: "Classic ghp_, gho_, ghu_, ghs_, ghr_ tokens"),
+    .init(type: .googleAPIKey, icon: "key.horizontal.fill", color: .red, detail: "Google Cloud API keys (AIza... prefix)"),
+    .init(type: .openAIKey, icon: "sparkles", color: .purple, detail: "OpenAI API keys (sk- and sk-proj- formats)"),
+    .init(type: .slackToken, icon: "message.fill", color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
+    .init(type: .stripeKey, icon: "dollarsign.circle.fill", color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
+    .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "PEM headers: RSA, EC, DSA, OPENSSH private keys"),
     // Unstructured
-    .init(type: .unstructuredCredential,  icon: "note.text",                         color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic"),
+    .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
 
 private let metadataEntries: [MetadataEntry] = [
-    .init(name: "GPS",              icon: "location.fill",    color: .red,    detail: "Coordinates, altitude, speed, heading, and the exact timestamp your shutter fired"),
-    .init(name: "EXIF",             icon: "camera.fill",      color: .blue,   detail: "Shutter speed, aperture, ISO, focal length, flash, white balance, and lens info"),
-    .init(name: "EXIF Auxiliary",   icon: "camera.aperture",  color: .cyan,   detail: "Lens serial number, lens ID, and flash compensation data"),
-    .init(name: "TIFF",             icon: "doc.fill",         color: .orange, detail: "Device make and model, editing software, copyright notice, author, and creation time"),
-    .init(name: "IPTC",             icon: "person.2.fill",    color: .purple, detail: "Press-agency fields: caption, keywords, creator credit, contact info, and copyright"),
-    .init(name: "Apple Maker Note", icon: "iphone.gen2",      color: .gray,   detail: "Private Apple metadata: face detection data, HDR analysis, scene classification, front/rear camera ID"),
+    .init(name: "GPS", icon: "location.fill", color: .red, detail: "Coordinates, altitude, speed, heading, and the exact timestamp your shutter fired"),
+    .init(name: "EXIF", icon: "camera.fill", color: .blue, detail: "Shutter speed, aperture, ISO, focal length, flash, white balance, and lens info"),
+    .init(name: "EXIF Auxiliary", icon: "camera.aperture", color: .cyan, detail: "Lens serial number, lens ID, and flash compensation data"),
+    .init(name: "TIFF", icon: "doc.fill", color: .orange, detail: "Device make and model, editing software, copyright notice, author, and creation time"),
+    .init(name: "IPTC", icon: "person.2.fill", color: .purple, detail: "Press-agency fields: caption, keywords, creator credit, contact info, and copyright"),
+    .init(name: "Apple Maker Note", icon: "iphone.gen2", color: .gray, detail: "Private Apple metadata: face detection data, HDR analysis, scene classification, front/rear camera ID")
 ]
 
 // MARK: - About view
@@ -145,9 +145,9 @@ struct AboutView: View {
                         VStack(spacing: 2) {
                             ForEach(visualEntries, id: \.type) { entry in
                                 detectionRow(
-                                    icon:   entry.icon,
-                                    color:  entry.color,
-                                    title:  entry.type.description,
+                                    icon: entry.icon,
+                                    color: entry.color,
+                                    title: entry.type.description,
                                     detail: entry.detail
                                 )
                             }
@@ -155,7 +155,7 @@ struct AboutView: View {
                         .padding(.vertical, 4)
                     } label: {
                         disclosureLabel(
-                            icon:  "eye.fill",
+                            icon: "eye.fill",
                             color: .blue,
                             title: "Visual Content",
                             count: "\(visualEntries.count) types"
@@ -167,9 +167,9 @@ struct AboutView: View {
                         VStack(spacing: 2) {
                             ForEach(metadataEntries, id: \.name) { entry in
                                 detectionRow(
-                                    icon:   entry.icon,
-                                    color:  entry.color,
-                                    title:  entry.name,
+                                    icon: entry.icon,
+                                    color: entry.color,
+                                    title: entry.name,
                                     detail: entry.detail
                                 )
                             }
@@ -177,7 +177,7 @@ struct AboutView: View {
                         .padding(.vertical, 4)
                     } label: {
                         disclosureLabel(
-                            icon:  "tag.fill",
+                            icon: "tag.fill",
                             color: .purple,
                             title: "Hidden Metadata",
                             count: "\(metadataEntries.count) categories"
@@ -214,12 +214,14 @@ struct AboutView: View {
 
                 // ── Section 5: Open Source & Developer ─────────────────────
                 Section(header: Text("About the Project")) {
-                    Link(destination: URL(string: "https://github.com/northcutted/picstrip")!) {
-                        Label {
-                            Text("View Source on GitHub")
-                        } icon: {
-                            Image(systemName: "chevron.left.forwardslash.chevron.right")
-                                .foregroundStyle(Color.accentColor)
+                    if let sourceURL = URL(string: "https://github.com/northcutted/picstrip") {
+                        Link(destination: sourceURL) {
+                            Label {
+                                Text("View Source on GitHub")
+                            } icon: {
+                                Image(systemName: "chevron.left.forwardslash.chevron.right")
+                                    .foregroundStyle(Color.accentColor)
+                            }
                         }
                     }
 

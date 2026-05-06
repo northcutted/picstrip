@@ -199,7 +199,7 @@ struct BatchConfigView: View {
 
             ProgressView(
                 value: Double(viewModel.batchProgress.current),
-                total:  Double(max(viewModel.batchProgress.total, 1))
+                total: Double(max(viewModel.batchProgress.total, 1))
             )
             .progressViewStyle(.linear)
             .padding(.horizontal, 40)

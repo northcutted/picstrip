@@ -57,9 +57,9 @@ struct MetadataBadgeRow: View {
 
     let metadata: StrippedMetadata
     var onPhoto: Bool = false
-    var selectedCategory: Binding<String?>? = nil
+    var selectedCategory: Binding<String?>?
     /// Optional extra pill injected at the trailing end of the badge row.
-    var trailingPill: AnyView? = nil
+    var trailingPill: AnyView?
 
     /// Categories present in the metadata, in canonical display order, with field counts.
     private var presentCategories: [(category: String, count: Int)] {
@@ -214,12 +214,12 @@ struct MetadataFieldListView: View {
 // MARK: - Previews
 
 #Preview("Badge row — interactive") {
-    @Previewable @State var selected: String? = nil
+    @Previewable @State var selected: String?
     let metadata = StrippedMetadata(fields: [
-        MetadataField(category: "GPS",  key: "GPSLatitude",      value: "37.33"),
-        MetadataField(category: "GPS",  key: "GPSLongitude",     value: "-122.03"),
+        MetadataField(category: "GPS", key: "GPSLatitude", value: "37.33"),
+        MetadataField(category: "GPS", key: "GPSLongitude", value: "-122.03"),
         MetadataField(category: "EXIF", key: "DateTimeOriginal", value: "2024:06:15"),
-        MetadataField(category: "TIFF", key: "Software",         value: "17.0"),
+        MetadataField(category: "TIFF", key: "Software", value: "17.0")
     ])
     VStack(spacing: 24) {
         MetadataBadgeRow(metadata: metadata, onPhoto: false, selectedCategory: $selected)
@@ -232,8 +232,8 @@ struct MetadataFieldListView: View {
     ZStack {
         Color.black
         MetadataBadgeRow(metadata: StrippedMetadata(fields: [
-            MetadataField(category: "GPS",  key: "GPSLatitude", value: "37.33"),
-            MetadataField(category: "EXIF", key: "Make",        value: "Apple"),
+            MetadataField(category: "GPS", key: "GPSLatitude", value: "37.33"),
+            MetadataField(category: "EXIF", key: "Make", value: "Apple")
         ]), onPhoto: true)
     }
     .frame(height: 60)
@@ -242,11 +242,11 @@ struct MetadataFieldListView: View {
 #Preview("Field list") {
     List {
         MetadataFieldListView(metadata: StrippedMetadata(fields: [
-            MetadataField(category: "GPS",  key: "GPSLatitude",      value: "37.3317"),
-            MetadataField(category: "GPS",  key: "GPSLongitude",     value: "-122.0307"),
+            MetadataField(category: "GPS", key: "GPSLatitude", value: "37.3317"),
+            MetadataField(category: "GPS", key: "GPSLongitude", value: "-122.0307"),
             MetadataField(category: "EXIF", key: "DateTimeOriginal", value: "2024:06:15 14:32:01"),
-            MetadataField(category: "EXIF", key: "Make",             value: "Apple"),
-            MetadataField(category: "TIFF", key: "Software",         value: "17.0"),
+            MetadataField(category: "EXIF", key: "Make", value: "Apple"),
+            MetadataField(category: "TIFF", key: "Software", value: "17.0")
         ]))
     }
     .listStyle(.insetGrouped)

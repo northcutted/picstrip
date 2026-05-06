@@ -4,7 +4,6 @@
 opt_in_rules:
   - force_unwrapping
   - implicitly_unwrapped_optional
-  - unused_import
   - empty_count
   - closure_spacing
   - contains_over_filter_count
@@ -20,6 +19,9 @@ opt_in_rules:
   - sorted_imports
   - toggle_bool
   - unneeded_parentheses_in_closure_argument
+
+analyzer_rules:
+  - unused_import
 
 # Rules to disable — style bikeshedding not relevant for a solo project
 disabled_rules:

@@ -16,6 +16,7 @@ struct CategoryDetailPanel: View {
     let onDismiss: () -> Void
 
     private var color: Color { metadataIconColor(for: category) }
+    private var supportsPreservation: Bool { ImageProcessor.canPreserveMetadata(category: category) }
 
     // MARK: - Body
 
@@ -92,8 +93,10 @@ struct CategoryDetailPanel: View {
                     .padding(.top, 12)
 
                     // Strip All / Keep All segmented control
-                    bulkSegmentedControl
-                        .padding(.horizontal, 16)
+                    if supportsPreservation {
+                        bulkSegmentedControl
+                            .padding(.horizontal, 16)
+                    }
 
                     // Per-field toggles
                     VStack(spacing: 0) {
@@ -123,6 +126,8 @@ struct CategoryDetailPanel: View {
     private func fieldRow(_ field: MetadataField) -> some View {
         if field.isStructural {
             structuralFieldRow(field)
+        } else if !supportsPreservation {
+            unsupportedPreservationFieldRow(field)
         } else {
             strippableFieldRow(field)
         }
@@ -188,6 +193,35 @@ struct CategoryDetailPanel: View {
         .opacity(0.7)
     }
 
+    /// A privacy field in a metadata dictionary ImageIO cannot safely re-inject.
+    private func unsupportedPreservationFieldRow(_ field: MetadataField) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(field.key)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Text(field.value)
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+                    .lineLimit(2)
+                Text("Cannot be preserved during safe re-encoding.")
+                    .font(.caption2)
+                    .foregroundStyle(.tertiary)
+                    .padding(.top, 1)
+            }
+            .padding(.vertical, 8)
+
+            Spacer()
+
+            Image(systemName: "lock.slash.fill")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+        }
+        .padding(.horizontal, 14)
+        .opacity(0.7)
+    }
+
     // MARK: - Bulk segmented control
 
     private var bulkSegmentedControl: some View {
@@ -236,10 +270,10 @@ struct CategoryDetailPanel: View {
             .background(
                 active ? color.opacity(0.13) : Color.clear,
                 in: UnevenRoundedRectangle(
-                    topLeadingRadius:    side == .left  ? 10 : 0,
+                    topLeadingRadius: side == .left  ? 10 : 0,
                     bottomLeadingRadius: side == .left  ? 10 : 0,
                     bottomTrailingRadius: side == .right ? 10 : 0,
-                    topTrailingRadius:   side == .right ? 10 : 0
+                    topTrailingRadius: side == .right ? 10 : 0
                 )
             )
         }
@@ -285,11 +319,11 @@ struct CategoryDetailPanel: View {
         CategoryDetailPanel(
             category: "GPS",
             fields: [
-                MetadataField(category: "GPS", key: "GPSLatitude",          value: "37.3317"),
-                MetadataField(category: "GPS", key: "GPSLongitude",         value: "-122.0307"),
-                MetadataField(category: "GPS", key: "GPSAltitude",          value: "25"),
-                MetadataField(category: "GPS", key: "GPSImgDirection",      value: "193.4"),
-                MetadataField(category: "GPS", key: "GPSHPositioningError", value: "4.7"),
+                MetadataField(category: "GPS", key: "GPSLatitude", value: "37.3317"),
+                MetadataField(category: "GPS", key: "GPSLongitude", value: "-122.0307"),
+                MetadataField(category: "GPS", key: "GPSAltitude", value: "25"),
+                MetadataField(category: "GPS", key: "GPSImgDirection", value: "193.4"),
+                MetadataField(category: "GPS", key: "GPSHPositioningError", value: "4.7")
             ],
             stripConfig: $config,
             onDismiss: {}

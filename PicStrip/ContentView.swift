@@ -1,5 +1,5 @@
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct ContentView: View {
 
@@ -16,7 +16,7 @@ struct ContentView: View {
         "Clean photos. Clear conscience.",
         "Your moment, minus the metadata.",
         "Photos without the fingerprints.",
-        "Strip the data. Keep the memory.",
+        "Strip the data. Keep the memory."
     ]
 
     /// Index of the currently displayed motto.
@@ -91,13 +91,13 @@ struct ContentView: View {
         }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
-        }) { sheet in
+        }, content: { sheet in
             switch sheet {
             case .pii:    PIIDetailsView(viewModel: viewModel)
             case .preSave: PreSaveReviewView(viewModel: viewModel)
             case .batch:  BatchConfigView(viewModel: viewModel)
             }
-        }
+        })
         .onChange(of: viewModel.activeSheet) { _, newSheet in
             if newSheet != nil { closePanel() }
         }
@@ -151,7 +151,7 @@ struct ContentView: View {
                         .id(mottoIndex)
                         .transition(.asymmetric(
                             insertion: .move(edge: .bottom).combined(with: .opacity),
-                            removal:   .move(edge: .top).combined(with: .opacity)
+                            removal: .move(edge: .top).combined(with: .opacity)
                         ))
                 }
                 .frame(height: 44)
@@ -366,7 +366,7 @@ struct ContentView: View {
                                                 .strokeBorder(Color.red, lineWidth: 2)
                                                 .background(Color.red.opacity(0.15))
                                                 .frame(
-                                                    width:  box.width  * geo.size.width,
+                                                    width: box.width  * geo.size.width,
                                                     height: box.height * geo.size.height
                                                 )
                                                 .offset(
@@ -504,13 +504,12 @@ struct ContentView: View {
                     selectedCategory: Binding(
                         get: { isPanelOpen ? visiblePanelCategory : nil },
                         set: { newValue in
-                            if let newValue { openPanel(category: newValue) }
-                            else            { closePanel() }
+                            if let newValue { openPanel(category: newValue) } else { closePanel() }
                         }
                     ),
                     trailingPill: !viewModel.detectedPII.isEmpty
                         ? AnyView(piiPill)
-                        : nil
+                        : viewModel.isScanningPII ? AnyView(scanningPIIPill) : nil
                 )
                 .padding(.horizontal, -4)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -522,17 +521,43 @@ struct ContentView: View {
                     haptic(.medium)
                     viewModel.requestSave()
                 } label: {
-                    pillLabel(icon: "square.and.arrow.down", text: "Save to Photos", prominent: true)
+                    pillLabel(
+                        icon: viewModel.isScanningPII ? "hourglass" : "square.and.arrow.down",
+                        text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos",
+                        prominent: true
+                    )
                 }
                 .padding(.horizontal, 4)
+                .disabled(viewModel.isScanningPII)
+                .opacity(viewModel.isScanningPII ? 0.75 : 1)
+                .accessibilityHint(viewModel.isScanningPII ? "Save is available after the visual privacy scan completes." : "")
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
         }
         .animation(.spring(duration: 0.3), value: hasPhoto)
         .animation(.easeInOut(duration: 0.35), value: viewModel.detectedPII)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
     }
 
     // MARK: - PII pill
+
+    private var scanningPIIPill: some View {
+        HStack(spacing: 6) {
+            ProgressView()
+                .controlSize(.mini)
+                .accessibilityHidden(true)
+            Text("Scanning")
+                .font(.caption2.weight(.semibold))
+        }
+        .foregroundStyle(.secondary)
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(.regularMaterial, in: Capsule())
+        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
+        .frame(minHeight: 44)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Scanning photo for sensitive visual content")
+    }
 
     private var piiPill: some View {
         Button {

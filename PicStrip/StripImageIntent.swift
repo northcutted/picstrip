@@ -58,7 +58,7 @@ struct PicStripShortcuts: AppShortcutsProvider {
                 "Clean photos with \(.applicationName)",
                 "Strip metadata with \(.applicationName)",
                 "Remove metadata with \(.applicationName)",
-                "Scrub photos with \(.applicationName)",
+                "Scrub photos with \(.applicationName)"
             ],
             shortTitle: "Clean Photos",
             systemImageName: "shield.checkmark"

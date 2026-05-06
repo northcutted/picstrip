@@ -98,6 +98,3 @@ npm-debug.log*
 # Ruby
 vendor/bundle/
 .bundle/
-
-# Semantic release
-CHANGELOG.md

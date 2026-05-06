@@ -1,7 +1,7 @@
 import Foundation
 import ImageIO
-import UniformTypeIdentifiers
 import UIKit
+import UniformTypeIdentifiers
 
 // MARK: - Strip configuration
 
@@ -24,12 +24,12 @@ struct StripConfig {
     /// Privacy-first default: strip everything.
     static let `default` = StripConfig(
         categoryEnabled: [
-            "GPS":              true,
-            "EXIF":             true,
-            "EXIF Auxiliary":   true,
-            "TIFF":             true,
-            "IPTC":             true,
-            "Apple Maker Note": true,
+            "GPS": true,
+            "EXIF": true,
+            "EXIF Auxiliary": true,
+            "TIFF": true,
+            "IPTC": true,
+            "Apple Maker Note": true
         ],
         fieldOverrides: [:]
     )
@@ -38,12 +38,12 @@ struct StripConfig {
     /// named for clarity at the call-site: "strip every known category".
     static let allEnabled = StripConfig(
         categoryEnabled: [
-            "GPS":              true,
-            "EXIF":             true,
-            "EXIF Auxiliary":   true,
-            "TIFF":             true,
-            "IPTC":             true,
-            "Apple Maker Note": true,
+            "GPS": true,
+            "EXIF": true,
+            "EXIF Auxiliary": true,
+            "TIFF": true,
+            "IPTC": true,
+            "Apple Maker Note": true
         ],
         fieldOverrides: [:]
     )
@@ -54,6 +54,17 @@ struct StripConfig {
         let compoundKey = "\(category).\(key)"
         // An explicit `false` override means "keep this field".
         return fieldOverrides[compoundKey] != false
+    }
+
+    /// Returns `true` when a source metadata field should be written back into
+    /// the output file. A disabled category preserves all supported fields; an
+    /// enabled category preserves only fields with an explicit "keep" override.
+    func shouldPreserve(category: String, key: String) -> Bool {
+        let compoundKey = "\(category).\(key)"
+        if categoryEnabled[category] == true {
+            return fieldOverrides[compoundKey] == false
+        }
+        return fieldOverrides[compoundKey] != true
     }
 }
 
@@ -95,12 +106,20 @@ struct StrippedMetadata {
                 order.append(field.category)
                 groups[field.category] = []
             }
-            groups[field.category]!.append(field)
+            groups[field.category, default: []].append(field)
         }
-        return order.map { (category: $0, fields: groups[$0]!) }
+        return order.compactMap { category in
+            groups[category].map { fields in (category: category, fields: fields) }
+        }
     }
 
     var isEmpty: Bool { fields.isEmpty }
+}
+
+struct ProcessedImage {
+    let data: Data
+    let sourceType: UTType
+    let stripped: StrippedMetadata
 }
 
 // MARK: - Processing engine
@@ -141,12 +160,12 @@ enum ImageProcessor {
     /// Ordered list of (ImageIO property dict key, human-readable category name) pairs.
     /// Order determines display order in the UI.
     static let categoryMap: [(key: CFString, category: String)] = [
-        (kCGImagePropertyGPSDictionary,        "GPS"),
-        (kCGImagePropertyExifDictionary,       "EXIF"),
-        (kCGImagePropertyExifAuxDictionary,    "EXIF Auxiliary"),
-        (kCGImagePropertyTIFFDictionary,       "TIFF"),
-        (kCGImagePropertyIPTCDictionary,       "IPTC"),
-        (kCGImagePropertyMakerAppleDictionary, "Apple Maker Note"),
+        (kCGImagePropertyGPSDictionary, "GPS"),
+        (kCGImagePropertyExifDictionary, "EXIF"),
+        (kCGImagePropertyExifAuxDictionary, "EXIF Auxiliary"),
+        (kCGImagePropertyTIFFDictionary, "TIFF"),
+        (kCGImagePropertyIPTCDictionary, "IPTC"),
+        (kCGImagePropertyMakerAppleDictionary, "Apple Maker Note")
     ]
 
     /// Keys that ImageIO unconditionally re-synthesises into any JPEG/HEIC it produces,
@@ -183,8 +202,30 @@ enum ImageProcessor {
         // to keep the JPEG/HEIC container spec-valid.
         kCGImagePropertyExifVersion              as String,  // "ExifVersion"
         kCGImagePropertyExifFlashPixVersion      as String,  // "FlashPixVersion"
-        kCGImagePropertyExifComponentsConfiguration as String, // "ComponentsConfiguration"
+        kCGImagePropertyExifComponentsConfiguration as String // "ComponentsConfiguration"
     ]
+
+    /// Returns `true` when a category can be written back through the XMP
+    /// metadata APIs used by the safe two-pass encoder.
+    static func canPreserveMetadata(category: String) -> Bool {
+        guard let entry = categoryMap.first(where: { $0.category == category }) else { return false }
+        return xmpNamespace(for: entry.key) != nil
+    }
+
+    /// Returns `true` when a field should be reported as stripped in review and
+    /// audit output. Unsupported categories remain reported even if the user tried
+    /// to keep them, because ImageIO cannot safely re-inject those dictionaries.
+    static func shouldReportStripped(
+        category: String,
+        key: String,
+        isStructural: Bool,
+        config: StripConfig
+    ) -> Bool {
+        guard !isStructural else { return false }
+        if config.shouldStrip(category: category, key: key) { return true }
+        let compoundKey = "\(category).\(key)"
+        return config.fieldOverrides[compoundKey] == false && !canPreserveMetadata(category: category)
+    }
 
     // MARK: - Public API
 
@@ -217,15 +258,55 @@ enum ImageProcessor {
         data: Data,
         preset: ExportPreset,
         config: StripConfig = .default
-    ) throws -> (data: Data, sourceType: UTType, stripped: StrippedMetadata) {
+    ) throws -> ProcessedImage {
+        guard let uiImage = UIImage(data: data),
+              let cgImage = uiImage.normalized().cgImage else {
+            throw ProcessingError.imageDecodingFailed
+        }
 
-        // 1. Create a CGImageSource from the input bytes.
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+        return try process(
+            cgImage: cgImage,
+            sourceData: data,
+            preset: preset,
+            config: config
+        )
+    }
+
+    /// Re-encodes an already-rendered image while using metadata from the
+    /// original source bytes. This is used after visual redaction so export
+    /// changes never fall back to the unredacted source image.
+    static func process(
+        image: UIImage,
+        sourceData: Data,
+        preset: ExportPreset,
+        config: StripConfig = .default
+    ) throws -> ProcessedImage {
+        guard let cgImage = image.normalized().cgImage else {
+            throw ProcessingError.imageDecodingFailed
+        }
+
+        return try process(
+            cgImage: cgImage,
+            sourceData: sourceData,
+            preset: preset,
+            config: config
+        )
+    }
+
+    private static func process(
+        cgImage: CGImage,
+        sourceData: Data,
+        preset: ExportPreset,
+        config: StripConfig
+    ) throws -> ProcessedImage {
+
+        // 1. Create a CGImageSource from the original bytes. The source supplies
+        //    both format selection for .matchSource and the metadata catalogue.
+        guard let source = CGImageSourceCreateWithData(sourceData as CFData, nil) else {
             throw ProcessingError.sourceCreationFailed
         }
 
         // 2. Resolve the output UTType.
-        //    For .matchSource, use the source image's type; fall back to JPEG.
         let outputUTType: UTType
         let sourceUTType: UTType
         if let cfType = CGImageSourceGetType(source),
@@ -238,15 +319,11 @@ enum ImageProcessor {
         if let explicitType = preset.utType {
             outputUTType = explicitType
         } else {
-            // .matchSource — mirror the source, but only use types we can encode.
-            // HEIC sources stay HEIC; everything else falls back to JPEG.
             outputUTType = (sourceUTType == .heic || sourceUTType == .jpeg || sourceUTType == .png)
                 ? sourceUTType
                 : .jpeg
         }
 
-        // Compression quality: for .matchSource use lossless-equivalent (1.0) so
-        // we don't degrade the image beyond what format conversion requires.
         let quality: Double
         if preset == .matchSource {
             quality = (outputUTType == .jpeg || outputUTType == .heic) ? 0.95 : 1.0
@@ -254,19 +331,10 @@ enum ImageProcessor {
             quality = preset.compressionQuality
         }
 
-        // 3. Read the full source properties — used for metadata diff.
+        // 3. Read the full source properties and catalogue every field that will
+        //    be stripped given the config.
         let existingProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-
-        // 4. Catalogue every field that will be stripped given the config.
         let stripped = catalogueStrippedMetadata(from: existingProps, config: config)
-
-        // 5. Decode via UIImage — this always applies the orientation transform,
-        //    giving us correctly-oriented pixels regardless of source format (HEIC, JPEG, PNG).
-        //    Then draw into a new CGContext to produce a canonical orientation=1 CGImage.
-        guard let uiImage = UIImage(data: data),
-              let cgImage = uiImage.normalized().cgImage else {
-            throw ProcessingError.imageDecodingFailed
-        }
 
         // 6. Pass 1: encode pixels with compression quality.
         //    ImageIO will auto-synthesise a minimal EXIF block; scrubbed in pass 2.
@@ -290,7 +358,7 @@ enum ImageProcessor {
         let encodeProps: [CFString: Any] = [
             kCGImageDestinationLossyCompressionQuality: quality,
             kCGImagePropertyExifDictionary: [:] as [CFString: Any],
-            kCGImagePropertyTIFFDictionary: [:] as [CFString: Any],
+            kCGImagePropertyTIFFDictionary: [:] as [CFString: Any]
         ]
         CGImageDestinationAddImage(firstDest, cgImage, encodeProps as CFDictionary)
         guard CGImageDestinationFinalize(firstDest) else {
@@ -320,12 +388,10 @@ enum ImageProcessor {
                 CGImageMetadataSetTagWithPath(outputMetadata, nil, "tiff:Orientation" as CFString, tag)
             }
 
-            // b) Re-inject any category the user chose to keep.
+            // b) Re-inject any category or individual field the user chose to keep.
             //    Walk categoryMap so we handle each dict in a consistent order.
             if let props = existingProps {
                 for (dictKey, category) in categoryMap {
-                    // If the category is enabled (strip it), skip — those fields are gone.
-                    guard config.categoryEnabled[category] != true else { continue }
                     guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
 
                     // Map each ImageIO property dict key to its XMP path components.
@@ -334,9 +400,8 @@ enum ImageProcessor {
                     guard let (namespace, prefix) = xmpNamespace(for: dictKey) else { continue }
 
                     for (fieldKey, fieldValue) in subDict {
-                        // Skip per-field overrides that say "strip this individual field".
                         let keyStr = fieldKey as String
-                        if config.fieldOverrides["\(category).\(keyStr)"] == true { continue }
+                        guard config.shouldPreserve(category: category, key: keyStr) else { continue }
 
                         guard let tag = CGImageMetadataTagCreate(
                             namespace as CFString,
@@ -369,9 +434,9 @@ enum ImageProcessor {
         }
 
         let copyOptions: [CFString: Any] = [
-            kCGImageDestinationMetadata:                outputMetadata,
-            kCGImageDestinationMergeMetadata:           false,
-            kCGImageDestinationLossyCompressionQuality: quality,
+            kCGImageDestinationMetadata: outputMetadata,
+            kCGImageDestinationMergeMetadata: false,
+            kCGImageDestinationLossyCompressionQuality: quality
         ]
 
         var copyError: Unmanaged<CFError>?
@@ -384,7 +449,7 @@ enum ImageProcessor {
             throw ProcessingError.finalizationFailed
         }
 
-        return (data: finalBuffer as Data, sourceType: sourceUTType, stripped: stripped)
+        return ProcessedImage(data: finalBuffer as Data, sourceType: sourceUTType, stripped: stripped)
     }
 
     // MARK: - Metadata catalogue (public for preview use)
@@ -417,9 +482,9 @@ enum ImageProcessor {
             guard !(value is NSDictionary) else { continue }
             let keyStr = key as String
             fields.append(MetadataField(
-                category:     "General",
-                key:          keyStr,
-                value:        "\(value)",
+                category: "General",
+                key: keyStr,
+                value: "\(value)",
                 isStructural: structuralKeys.contains(keyStr)
             ))
         }
@@ -430,9 +495,9 @@ enum ImageProcessor {
             for (fieldKey, fieldValue) in subDict {
                 let keyStr = fieldKey as String
                 fields.append(MetadataField(
-                    category:     category,
-                    key:          keyStr,
-                    value:        "\(fieldValue)",
+                    category: category,
+                    key: keyStr,
+                    value: "\(fieldValue)",
                     isStructural: structuralKeys.contains(keyStr)
                 ))
             }
@@ -479,9 +544,9 @@ enum ImageProcessor {
             guard !(value is NSDictionary) else { continue }
             let keyStr = key as String
             fields.append(MetadataField(
-                category:     "General",
-                key:          keyStr,
-                value:        stringify(value),
+                category: "General",
+                key: keyStr,
+                value: stringify(value),
                 isStructural: structuralKeys.contains(keyStr)
             ))
         }
@@ -497,11 +562,18 @@ enum ImageProcessor {
                 let isStructural = structuralKeys.contains(keyString)
                 // Honour per-field overrides (structural fields are never in fieldOverrides,
                 // but the guard keeps the logic consistent).
-                guard config.shouldStrip(category: category, key: keyString) || isStructural else { continue }
+                guard isStructural ||
+                        shouldReportStripped(
+                            category: category,
+                            key: keyString,
+                            isStructural: isStructural,
+                            config: config
+                        )
+                else { continue }
                 fields.append(MetadataField(
-                    category:     category,
-                    key:          keyString,
-                    value:        stringify(rawValue),
+                    category: category,
+                    key: keyString,
+                    value: stringify(rawValue),
                     isStructural: isStructural
                 ))
             }

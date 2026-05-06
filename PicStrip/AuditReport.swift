@@ -33,7 +33,7 @@ struct MetadataCategoryReport: Codable {
 /// Top-level container for a multi-photo batch audit log.
 /// Wraps one `AuditReport` per processed image alongside batch-level metadata.
 struct BatchAuditReport: Codable {
-    let batchDate:  Date
+    let batchDate: Date
     let photoCount: Int
-    let reports:    [AuditReport]
+    let reports: [AuditReport]
 }

@@ -1,6 +1,6 @@
-# PicStrip Developer Documentation
+# PicStrip — Developer Documentation
 
-This document provides comprehensive architecture details, data flows, service descriptions, and contributing guidelines for PicStrip developers.
+Architecture details, data flows, service reference, CI/CD documentation, and contributing guidelines.
 
 ---
 
@@ -12,12 +12,12 @@ This document provides comprehensive architecture details, data flows, service d
 4. [Services Reference](#services-reference)
 5. [Image Processing Deep Dive](#image-processing-deep-dive)
 6. [PII Detection Engine](#pii-detection-engine)
-7. [Batch Processing](#batch-processing)
-8. [Share Extension](#share-extension)
-9. [App Intent & Siri](#app-intent--siri)
-10. [Persistence Model](#persistence-model)
-11. [Privacy & Security](#privacy--security)
-12. [CI/CD Pipeline](#cicd-pipeline)
+7. [Share Extension](#share-extension)
+8. [App Intent & Siri](#app-intent--siri)
+9. [Persistence Model](#persistence-model)
+10. [Privacy & Security](#privacy--security)
+11. [CI/CD Pipeline](#cicd-pipeline)
+12. [SLSA Provenance Level 3](#slsa-provenance-level-3)
 13. [Contributing: Adding a New PII Type](#contributing-adding-a-new-pii-type)
 14. [Known Constraints](#known-constraints)
 
@@ -27,67 +27,76 @@ This document provides comprehensive architecture details, data flows, service d
 
 ```
 PicStrip/
-├── PicStrip.xcodeproj/          # Xcode project (main app + share extension)
-├── README.md                     # Public-facing documentation
-├── DEVELOPMENT.md                # This file
-├── .swiftlint.yml               # SwiftLint configuration
-├── .releaserc.json              # Semantic release configuration
-├── Fastfile                      # Fastlane build automation
-├── Snapfile                      # Fastlane screenshot configuration
+├── PicStrip.xcodeproj/
+├── README.md
+├── DEVELOPMENT.md              # this file
+├── PRIVACY.md
+├── CHANGELOG.md
+├── LICENSE
+├── .swiftlint.yml
+├── .releaserc.json             # semantic-release config
+├── .ruby-version               # Ruby version pin for rbenv
+├── Gemfile                     # gem "fastlane", "~> 2.233"
+├── Gemfile.lock
+├── package.json                # semantic-release + plugins
+├── package-lock.json
 │
 ├── .github/workflows/
-│   ├── pr.yml                    # PR checks: lint, analyze, test
-│   └── main.yml                  # Main branch: build, screenshots, release, provenance
+│   ├── pr.yml                  # PR checks: lint, analyze, test
+│   ├── main.yml                # Release pipeline (7 jobs)
+│   └── screenshots.yml         # Manual: App Store screenshot capture
 │
-├── PicStrip/                    # Main app target
-│   ├── PicStripApp.swift         # @main entry point
-│   ├── ContentView.swift         # Root view with navigation stack & sheets
-│   ├── ScrubberViewModel.swift   # Core @Observable state machine (687 lines)
-│   ├── About/                    # AboutView & license screens
-│   ├── Components/
-│   │   ├── ScannerHeroView.swift       # Animated decorative blob gradient
-│   │   ├── MetadataBadgeRow.swift      # Category pills (GPS, EXIF, TIFF, etc.)
-│   │   ├── CategoryDetailPanel.swift   # Sliding panel over image with per-field toggles
-│   │   └── ...
-│   ├── Models/
-│   │   ├── MetadataField.swift         # Single EXIF/TIFF/IPTC key-value + category
-│   │   ├── StrippedMetadata.swift      # Collection of fields with grouping
-│   │   ├── StripConfig.swift           # User toggles: per-category + per-field overrides
-│   │   ├── PIITypes.swift              # Enum: Email, Phone, SSN, etc. (20 types)
-│   │   ├── DetectionResult.swift       # Aggregated findings for one PII type
-│   │   ├── AuditReport.swift           # Codable summary for JSON export
-│   │   ├── ExportPreset.swift          # Format (PNG/JPEG/HEIC) + quality settings
-│   │   └── ...
-│   ├── Services/
-│   │   ├── ImageProcessor.swift        # Static EXIF/metadata stripping (two-pass ImageIO)
-│   │   ├── PIIScanner.swift            # Async OCR + regex + NSDataDetector
-│   │   ├── ImageRedactor.swift         # UIGraphicsImageRenderer black-box burn
-│   │   └── DetectionRegistry.swift     # Regex patterns compiled at startup
-│   ├── Extensions/
-│   │   ├── Image+Extensions.swift      # Image normalization, coordinate flipping
-│   │   └── ...
-│   └── Resources/
-│       └── PrivacyInfo.xcprivacy      # Zero-data-collection privacy manifest
+├── fastlane/
+│   ├── Fastfile                # Lane definitions
+│   ├── Snapfile                # Screenshot capture config
+│   └── metadata/               # App Store metadata (title, description, keywords, release notes)
 │
-├── PicStripShareExtension/          # Share Extension target (separate from main app)
-│   ├── ShareViewController.swift     # UIKit host for extension UI
-│   ├── ExtensionConfigView.swift     # SwiftUI embedded via UIHostingController
-│   ├── ExtensionViewModel.swift      # @Observable state machine
-│   ├── ImageProcessor.swift          # ⚠️ Duplicate: shared logic, not linked
-│   ├── ExportPreset.swift            # ⚠️ Duplicate: shared logic, not linked
-│   └── Resources/
-│       └── PrivacyInfo.xcprivacy     # Zero-data-collection privacy manifest
+├── scripts/                    # Utility scripts (e.g., release_notes generator)
 │
-└── PicStripTests/                   # Unit tests
-    ├── ImageProcessorTests.swift     # Metadata stripping verification
-    ├── PIIScannerTests.swift         # OCR + detection accuracy
-    └── ...
+├── PicStrip/                   # Main app target (iOS 17+, Swift 5.9)
+│   ├── PicStripApp.swift       # @main entry point
+│   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
+│   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
+│   ├── ImageProcessor.swift    # Stateless enum; two-pass ImageIO metadata stripping
+│   ├── PIIScanner.swift        # Stateless struct; async Vision OCR + rule matching
+│   ├── ImageRedactor.swift     # Stateless struct; UIGraphicsImageRenderer redaction
+│   ├── DetectionRule.swift     # DetectionRule struct + DetectionRegistry enum
+│   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
+│   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
+│   ├── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
+│   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
+│   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
+│   ├── AboutView.swift         # PII catalogue + metadata category entries
+│   ├── PreSaveReviewView.swift # Final review screen; permanent-removal warning
+│   ├── StripImageIntent.swift  # AppIntent for Siri / Shortcuts
+│   └── PrivacyInfo.xcprivacy  # Zero-data-collection privacy manifest
+│
+├── PicStripShareExtension/     # Share Extension target (separate binary)
+│   ├── ShareViewController.swift    # UIKit host; embeds ExtensionConfigView via UIHostingController
+│   ├── ImageProcessor.swift         # Duplicate — extensions cannot link to main app binary
+│   ├── PIIScanner.swift             # Duplicate
+│   ├── ImageRedactor.swift          # Duplicate
+│   ├── ExportPreset.swift           # Duplicate
+│   ├── DetectionRule.swift          # Duplicate
+│   ├── PIIType.swift                # Duplicate
+│   └── PrivacyInfo.xcprivacy       # Independent privacy manifest
+│
+├── PicStripTests/              # Unit tests
+│   ├── PIIScannerTests.swift
+│   ├── ImageProcessorTests.swift
+│   └── DetectionRegistryTests.swift
+│
+└── PicStripUITests/            # UI / screenshot tests
+    ├── PicStripUITests.swift   # Single testAllScreenshots() method
+    └── SnapshotHelper.swift    # Fastlane snapshot helpers (@MainActor)
 ```
 
-**Key Notes:**
-- `ImageProcessor.swift` and `ExportPreset.swift` are **duplicated** in both targets; they are not shared frameworks because the Share Extension cannot link to the main app's binary.
-- `ExportFormat+AppEnum.swift` is compiled **only in the main app target** (it imports `AppIntents`).
-- `PrivacyInfo.xcprivacy` is duplicated in both targets for independent privacy declarations.
+**Key notes:**
+
+- `ImageProcessor.swift`, `PIIScanner.swift`, `ImageRedactor.swift`, `ExportPreset.swift`, `DetectionRule.swift`, and `PIIType.swift` are **duplicated** into `PicStripShareExtension/`. iOS extensions cannot link to the main app's binary. There is no shared framework.
+- `ExportFormat+AppEnum.swift` is compiled **only in the main app target** because it imports `AppIntents`, which is not available in extensions.
+- Both targets have independent `PrivacyInfo.xcprivacy` declarations.
+- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target.
 
 ---
 
@@ -95,63 +104,54 @@ PicStrip/
 
 ### Design Pattern: MVVM
 
-PicStrip uses **Model–View–ViewModel (MVVM)** with modern Swift concurrency patterns.
-
 ```
-┌─────────────────────────────────────────┐
-│          SwiftUI Views Layer            │
-│  (ContentView, PreSaveReviewView, etc.) │
-└──────────────────┬──────────────────────┘
-                   │ @State, @Binding
-                   │ observes changes
-                   ↓
-┌──────────────────────────────────────────┐
-│   ScrubberViewModel (@Observable)        │
-│  ├─ isProcessing: Bool                   │
-│  ├─ errorMessage: String?                │
-│  ├─ activeSheet: ActiveSheet?            │
-│  ├─ loadedImage: UIImage?                │
-│  ├─ detectionResult: DetectionResult?    │
-│  ├─ strippedMetadata: StrippedMetadata?  │
-│  ├─ stripConfig: StripConfig             │
-│  └─ processSinglePhoto()                 │
-│     processBatch()                       │
-│     processForExport()                   │
-└──────────────────┬──────────────────────┘
-                   │ calls (no coupling)
-                   ↓
-┌──────────────────────────────────────────┐
-│   Services (stateless structs/enums)     │
-│  ├─ ImageProcessor.process()             │
-│  ├─ PIIScanner.scanImage()               │
-│  └─ ImageRedactor.redact()               │
-└──────────────────┬──────────────────────┘
-                   │ uses
-                   ↓
-┌──────────────────────────────────────────┐
-│     Apple Frameworks (ImageIO, Vision,   │
-│     Photos, PhotosUI, AppIntents)        │
-└──────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────┐
+│  SwiftUI Views                                      │
+│  ContentView · PreSaveReviewView · BatchConfigView  │
+└───────────────────────┬─────────────────────────────┘
+                        │ observes via @Observable
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  ScrubberViewModel   @Observable @MainActor         │
+│  ├─ selectedItem: PhotosPickerItem?                 │
+│  ├─ inputImage: Image?                              │
+│  ├─ sourceUIImage: UIImage?                         │
+│  ├─ processedData: Data?                            │
+│  ├─ outputFileFields: [MetadataField]               │
+│  ├─ stripConfig: StripConfig                        │
+│  ├─ detectionResults: [DetectionResult]             │
+│  ├─ activeSheet: ActiveSheet?                       │
+│  └─ processSinglePhoto() / processBatch()           │
+└───────────────────────┬─────────────────────────────┘
+                        │ calls (no coupling)
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  Stateless Services                                 │
+│  ├─ ImageProcessor  (enum, static methods)         │
+│  ├─ PIIScanner      (struct, async)                 │
+│  └─ ImageRedactor   (struct, async)                 │
+└───────────────────────┬─────────────────────────────┘
+                        │ uses
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│  Apple Frameworks                                   │
+│  ImageIO · Vision · Photos · PhotosUI · AppIntents  │
+│  CoreGraphics · UIKit · SwiftUI                     │
+└─────────────────────────────────────────────────────┘
 ```
-
-### Why MVVM?
-
-1. **Testable:** Services are pure functions; ViewModels can be tested in isolation.
-2. **Reusable:** Same ViewModels power both the main app and Share Extension.
-3. **Lightweight:** Swift `@Observable` (iOS 17+) eliminates Combine boilerplate.
-4. **No Third-Party Deps:** Zero runtime dependencies on reactive frameworks.
-5. **Async-First:** Native `async/await` integration from the ground up.
 
 ### Key Design Decisions
 
 | Decision | Rationale |
 |----------|-----------|
-| No Core Data / SwiftData | Metadata is ephemeral; only lifetime stats need persistence (UserDefaults suffices) |
-| Stateless services | Photo processing is deterministic; no mutable state needed |
-| Two-pass ImageIO | Defeats auto-synthesis of minimal EXIF; ensures truly clean output |
-| Sequential batch processing | Avoids OOM on device; each image is explicitly dereferenced |
-| Vision + Regex + NSDataDetector | Layered detection: Vision for arbitrary text, NSDataDetector for OS-native patterns, Regex for high-confidence structure |
-| App Group `group.com.northcutt.PicStrip` | Single-flag IPC from App Intent to main app (batch picker trigger) |
+| Stateless services (no instances) | Photo processing is a pure function of inputs; no mutable service state needed |
+| Two-pass ImageIO | Single-pass re-encode still triggers iOS auto-synthesis of EXIF; two-pass defeats it |
+| `VNImageRequestHandler(data:)` instead of `(cgImage:)` | Preserves EXIF orientation so bounding boxes land on the correct pixels |
+| Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
+| `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
+| `DetectionRegistry` as `static let` | Compiles all regexes once at startup; reused on every scan |
+| No Core Data / SwiftData | Metadata is ephemeral; only lifetime stats need persistence (UserDefaults) |
+| App Group for Shortcuts IPC | Single boolean flag from the AppIntent to trigger batch picker |
 
 ---
 
@@ -162,69 +162,74 @@ PicStrip uses **Model–View–ViewModel (MVVM)** with modern Swift concurrency 
 ```
 User taps PhotosPicker
     ↓
-ContentView.onPhotoPickerChange()
+ContentView.selectedItem.didSet → ScrubberViewModel.handleItemChange()
     ↓
-ScrubberViewModel.processSinglePhoto(photoData, itemProvider)
-    ├─ Decode: PHAsset → UIImage(data:).normalized()
-    ├─ Scan (async): PIIScanner.scanImage()
-    │  └─ Task.detached { Vision OCR + Regex + NSDataDetector }
-    ├─ Extract: ImageProcessor.process(.extract) → StrippedMetadata
-    ├─ @MainActor update: detectionResult, strippedMetadata, stripConfig
-    └─ Set isProcessing = false
+ScrubberViewModel.processSinglePhoto()
+    ├─ Load: PhotosPickerItem → Data
+    ├─ Decode: UIImage(data:).normalized() → sourceUIImage
+    ├─ Scan (async, Task.detached):
+    │     PIIScanner.scanImage(data:) → [DetectionResult]
+    │     └─ Vision OCR + DetectionRegistry regex + NSDataDetector
+    ├─ Catalogue: ImageProcessor.catalogueStrippedMetadata() → pendingStrippedMetadata
+    ├─ @MainActor update:
+    │     inputImage, sourceUIImage, detectionResults, stripConfig, pendingStrippedMetadata
+    └─ isProcessing = false
     ↓
-User views metadata and PII overlays
+User views metadata panel + red PII overlays
     ↓
-User adjusts stripConfig (toggle categories, fields, PII redaction)
+User adjusts stripConfig (toggle categories, fields, PII types)
     ↓
 User taps "Save to Photos" or "Share"
+    ├─ Await in-flight OCR scan (prevents stale empty detection racing save)
+    ├─ Prepare review bytes:
+    │     Optional: ImageRedactor.redact() if redaction enabled
+    │     ImageProcessor.process(image:sourceData:preset:config:)
+    │     → processedData, outputFileFields
     ├─ presentSheet(.preSave)
-    └─ PreSaveReviewView shows summary + export options
+    └─ PreSaveReviewView shows format picker + stripped-field summary
     ↓
 User taps "Save as New" / "Replace Original" / "Share"
-    ├─ Call ScrubberViewModel.processForExport()
-    │  ├─ Optional: ImageRedactor.redact() if PII redaction enabled
-    │  ├─ Call: ImageProcessor.process(.export, config, redactedImage)
-    │  └─ Returns clean JPEG/PNG/HEIC bytes
-    ├─ Save to Photos library via PHPhotoLibrary.shared()
+    ├─ PHPhotoLibrary.shared().performChanges { PHAssetCreationRequest }
     ├─ Update lifetime stats in UserDefaults
-    ├─ Generate + share AuditReport JSON
+    ├─ Generate AuditReport JSON → FileManager.tmp
     └─ Dismiss sheet → home screen
 ```
 
 ### Batch-Photo Flow
 
 ```
-User taps "Pick Multiple"
+User taps "Pick Multiple" (or Shortcut fires StripImageIntent)
     ↓
-ContentView.batch(PhotosPicker)
+ContentView presents BatchConfigView (stripMetadata, redactPII, outputFormat, saveMode)
     ↓
-ScrubberViewModel.processBatch(assets, config)
-    ├─ for each asset (sequential loop):
-    │  ├─ Decode: UIImage(data:).normalized()
-    │  ├─ Scan (async): PIIScanner.scanImage()
-    │  ├─ Extract: ImageProcessor.process(.extract)
-    │  ├─ Optional: ImageRedactor.redact()
-    │  ├─ Encode: ImageProcessor.process(.export)
-    │  ├─ Save to Photos
-    │  ├─ Append BatchAuditReport
-    │  ├─ Explicitly zero Data and UIImage references (ARC pressure relief)
-    │  └─ Update UI progress
-    └─ Generate batch summary JSON
+ScrubberViewModel.processBatch(items, config)
+    ├─ for each PhotosPickerItem (sequential — never concurrent):
+    │     ├─ Load: PhotosPickerItem → Data
+    │     ├─ Decode: UIImage(data:)
+    │     ├─ Scan: PIIScanner.scanImage(data:)
+    │     ├─ Optional: ImageRedactor.redact()
+    │     ├─ Strip: ImageProcessor.process(image:sourceData:preset:config:)
+    │     ├─ Save: PHPhotoLibrary.performChanges
+    │     ├─ Append to batchReports only after Photos accepts the write
+    │     ├─ Explicit nil of Data + UIImage (ARC pressure relief)
+    │     └─ @MainActor progress update
+    └─ Generate BatchAuditReport JSON
     ↓
-BatchSummaryView displays total processed, errors, and downloadable audit
+BatchSummaryView shows total processed, errors, and downloadable audit JSON
 ```
 
 ### Data Ownership
 
 | Data | Owner | Lifetime |
 |------|-------|----------|
-| `loadedImage: UIImage?` | ScrubberViewModel | Single-photo session or nil |
-| `detectionResult: DetectionResult?` | ScrubberViewModel | Single-photo session or nil |
-| `strippedMetadata: StrippedMetadata?` | ScrubberViewModel | Single-photo session or nil |
-| `stripConfig: StripConfig` | ScrubberViewModel | Per-session; user edits persist across images in same session |
-| `batchItems: [BatchItem]` | ScrubberViewModel | Batch session only |
-| Lifetime stats | UserDefaults.standard | App lifetime |
-| Audit JSON | FileManager.tmp | Session; user can download/share; deleted after session |
+| `sourceUIImage: UIImage?` | ScrubberViewModel | Single-photo session; nil'd on new pick |
+| `processedData: Data?` | ScrubberViewModel | Set during pre-save prep; nil'd on dismiss |
+| `detectionResults: [DetectionResult]` | ScrubberViewModel | Single-photo session |
+| `pendingStrippedMetadata: StrippedMetadata?` | ScrubberViewModel | Single-photo session |
+| `stripConfig: StripConfig` | ScrubberViewModel | Per-session; persists across format changes |
+| `outputFileFields: [MetadataField]` | ScrubberViewModel | Set after each encode pass |
+| Lifetime stats | `UserDefaults.standard` | App lifetime |
+| Audit JSON | `FileManager.default.temporaryDirectory` | Session; user can share/download; deleted after |
 
 ---
 
@@ -232,406 +237,265 @@ BatchSummaryView displays total processed, errors, and downloadable audit
 
 ### ImageProcessor
 
-**File:** `PicStrip/Services/ImageProcessor.swift`
+**File:** `PicStrip/ImageProcessor.swift`
 
-A **namespace** of static methods for metadata extraction and stripping.
+A **stateless enum** (namespace of static methods) responsible for metadata extraction, cataloguing, and two-pass privacy stripping.
+
+#### Public API
 
 ```swift
 enum ImageProcessor {
-    // Mode: extract metadata, export with stripping, etc.
-    enum Mode { case extract, export }
-    
-    static func process(
-        imageData: Data,
-        mode: Mode,
-        config: StripConfig = .default,
-        outputFormat: ExportFormat = .jpeg
-    ) -> Result<Data, ImageProcessorError>
-    
-    static var availableCategories: [MetadataCategory]
-    static var structuralFields: [String]  // Cannot be stripped
+    // Strip metadata from raw Data, re-encode with preset.
+    static func process(data: Data, preset: ExportPreset, config: StripConfig = .default) throws -> ProcessedImage
+
+    // Strip metadata from an already-rendered UIImage (post-redaction path).
+    static func process(image: UIImage, sourceData: Data, preset: ExportPreset, config: StripConfig = .default) throws -> ProcessedImage
+
+    // Catalogue all fields present in data (used for the output-file diff after encoding).
+    static func readAllFields(from data: Data) -> [MetadataField]
+
+    // Catalogue fields that will be stripped given config (used for pre-save preview).
+    static func catalogueStrippedMetadata(from props: [CFString: Any]?, config: StripConfig) -> StrippedMetadata
 }
 ```
 
-#### Two-Pass Encoding Strategy
+#### StripConfig
 
-The core privacy guarantee rests on a deliberate **two-pass re-encode**:
-
-**Pass 1: Normalize orientation**
 ```swift
-let uiImage = UIImage(data: imageData).normalized()
-// Forces orientation=1 (canonical), discards all metadata except pixels
-let cgImage = uiImage.cgImage
+struct StripConfig {
+    var categoryEnabled: [String: Bool]    // "GPS": true = strip the whole GPS dict
+    var fieldOverrides: [String: Bool]     // "GPS.GPSLatitude": false = keep this field
+
+    static let `default`  // strip all 6 categories
+    static let allEnabled // semantic alias of .default for batch call sites
+}
 ```
-
-**Pass 2: Selective re-apply via CGImageDestination**
-```swift
-let destination = CGImageDestinationCreateWithData(...)
-// Merge only the metadata the user permitted
-let metadata = selectedMetadata()  // User's StripConfig applied
-CGImageDestinationSetProperties(destination, [
-    kCGImagePropertyExifDictionary: metadata.exif,
-    kCGImagePropertyTIFFDictionary: metadata.tiff,
-    // ... other categories
-])
-CGImageDestinationFinalize(destination)
-```
-
-**Why two passes?**
-- **Single-pass re-encode** with empty metadata hints still triggers ImageIO's auto-synthesis of minimal EXIF (e.g., minimal ColorModel, PixelDimensions).
-- **Two-pass** forces a fresh pixel decode, breaking the link to the original file's metadata template.
-- Result: truly clean output with zero auto-synthesised fields.
-
-#### Structural Fields (Cannot Be Stripped)
-
-These fields are unconditionally re-injected by the iOS encoder and are marked `isStructural: true`:
-
-- `PixelWidth`, `PixelHeight` (image dimensions)
-- `Orientation` (1 = canonical)
-- `ColorModel` (RGB, CMYK, etc.)
-- `XResolution`, `YResolution` (DPI)
-- `ResolutionUnit`
-
-The UI displays a lock icon and explains: "Structural fields contain no personal data and cannot be removed."
 
 #### Metadata Categories
 
-Extracted and categorized as:
+| Category | ImageIO key |
+|----------|-------------|
+| GPS | `kCGImagePropertyGPSDictionary` |
+| EXIF | `kCGImagePropertyExifDictionary` |
+| EXIF Auxiliary | `kCGImagePropertyExifAuxDictionary` |
+| TIFF | `kCGImagePropertyTIFFDictionary` |
+| IPTC | `kCGImagePropertyIPTCDictionary` |
+| Apple Maker Note | `kCGImagePropertyMakerAppleDictionary` |
 
-| Category | Example Fields |
-|----------|---|
-| **GPS** | `GPSLatitude`, `GPSLongitude`, `GPSAltitude` |
-| **EXIF** | `DateTimeOriginal`, `CameraModel`, `LensMake`, `ExposureTime`, `FNumber` |
-| **EXIF Auxiliary** | `LensInfo`, `InternalSerialNumber` |
-| **TIFF** | `ImageDescription`, `Make`, `Model`, `Orientation` |
-| **IPTC** | `Keywords`, `Copyright`, `Creator`, `CaptionAbstract` |
-| **Apple Maker Note** | Private Apple camera tuning data |
+#### Structural Fields (Cannot Be Stripped)
+
+The iOS encoder unconditionally re-synthesises these fields into any JPEG or HEIC output:
+
+- Root level: `PixelWidth`, `PixelHeight`, `ColorModel`, `Depth`, `Orientation`, `ProfileName`, `DPIWidth`, `DPIHeight`, `FileSize`
+- TIFF dict: `Orientation`, `XResolution`, `YResolution`, `ResolutionUnit`
+- EXIF dict: `ColorSpace`, `PixelXDimension`, `PixelYDimension`, `ExifVersion`, `FlashPixVersion`, `ComponentsConfiguration`
+
+The UI marks these with a lock icon and explains they contain no personal data.
 
 ---
 
 ### PIIScanner
 
-**File:** `PicStrip/Services/PIIScanner.swift`
+**File:** `PicStrip/PIIScanner.swift`
 
-On-device OCR + rule-based detection for 20 PII types.
+A **stateless struct** that runs async Vision OCR followed by layered rule matching.
 
 ```swift
 struct PIIScanner {
-    static func scanImage(
-        _ cgImage: CGImage
-    ) async -> DetectionResult
+    func scanImage(data: Data) async throws -> [DetectionResult]
 }
 ```
 
-#### Detection Pipeline
-
-```
-CGImage input
-    ↓
-[1] Vision VNRecognizeTextRequest (accurate, language correction disabled)
-    ↓
-for each VNRecognizedTextObservation:
-    │
-    ├─ [2a] DetectionRegistry.allRules regex sweep
-    │        └─ Each regex has a baseScore (0.7–1.0 depending on pattern strength)
-    │
-    └─ [2b] NSDataDetector (phone, address, link, URL)
-            └─ If a rule matched earlier with higher score, keep that
-            └─ Otherwise, record NSDataDetector result
-    ↓
-[3] Bounding box coordinate flip: Vision (bottom-left origin) → SwiftUI (top-left)
-    ↓
-[4] Orphan-label heuristic:
-    └─ If an observation matches bare "password:" with no value,
-       treat the next observation as the password value
-    ↓
-DetectionResult { [.email: [instances...], .ssn: [instances...], ...] }
-```
-
-#### PII Types (20 total)
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| **Email** | RFC 5322 email regex | `user@example.com` |
-| **Phone** | NSDataDetector | `(555) 123-4567` |
-| **SSN** | `XXX-XX-XXXX` | `123-45-6789` |
-| **Credit Card** | `XXXX-XXXX-XXXX-XXXX` | `4532 1234 5678 9010` |
-| **API Key** | `api_[a-zA-Z0-9_]{20,}` | `api_sk_live_abc123...` |
-| **JWT** | `eyJ...` (base64 pattern) | JWT token |
-| **Private Key** | `-----BEGIN PRIVATE KEY-----` | PEM-encoded key |
-| **Password** | `password[:\s=]+\S+` | `password: MyP@ssw0rd` |
-| **Database Connection** | `(mysql\|postgres)://...` | Connection string |
-| **AWS Key** | `AKIA[0-9A-Z]{16}` | AWS access key |
-| **OAuth Token** | `oauth_.*\s*=` | OAuth credential |
-| **Slack Token** | `xox[baprs]-\d+-\w+` | Slack API token |
-| **GitHub Token** | `ghp_[A-Za-z0-9_]{36,255}` | GitHub PAT |
-| **License Key** | Alphanumeric with hyphens, 20+ chars | Software license |
-| **UUID** | `[0-9a-f]{8}-[0-9a-f]{4}...` | Unique identifier |
-| **URLs** | NSDataDetector | `https://example.com/path` |
-| **Addresses** | NSDataDetector | `123 Main St, City, ST 12345` |
-| **Blockchain Address** | `0x[a-fA-F0-9]{40}` | Ethereum address |
-| **Social Security Card** | Alternative format | SSN variants |
-| **Date of Birth** | `MM/DD/YYYY` or `YYYY-MM-DD` | `01/15/1990` |
-
-#### Scoring & Confidence
-
-```swift
-let score = baseScore × ocrConfidence
-// baseScore: 0.7 (weak, e.g., bare "password:") to 1.0 (strong, e.g., "api_" prefix)
-// ocrConfidence: Vision's per-character confidence (typically 0.8–0.99)
-// Result: 0.56–0.99 range, user is alerted only if score > threshold (default 0.6)
-```
-
-#### Coordinate System
-
-Vision framework returns bounding boxes in **bottom-left origin** (normalized 0–1):
-```swift
-// Vision box: (x: 0.5, y: 0.8) = 50% from left, 80% from bottom
-// Flip to SwiftUI (top-left origin):
-swiftUIBox.origin.y = 1.0 - visionBox.origin.y - visionBox.size.height
-```
-
-This flip happens **at detection time** so that red overlay boxes and black redaction boxes land on identical pixels.
-
-#### Orphan-Label Heuristic
-
-If an observation matches a bare credential label with no value:
-```
-"password:" with no following colon-separated value
-    ↓ is treated as an orphan label
-    ↓
-Next observation is treated as the password value
-    ↓
-Both are marked as `.password` type and grouped
-```
-
-This handles common patterns like:
-```
-Username: john.doe
-Password: MySecureP@ss123
-```
-
-Instead of `Username:` and `Password:` being separate detections, the values are recognized as part of the PII.
+The method offloads all CPU work to `Task.detached(priority: .userInitiated)`. See [PII Detection Engine](#pii-detection-engine) for the full pipeline.
 
 ---
 
 ### ImageRedactor
 
-**File:** `PicStrip/Services/ImageRedactor.swift`
+**File:** `PicStrip/ImageRedactor.swift`
 
-Burns opaque black rectangles over detected PII regions.
+Burns opaque black rectangles over detected PII instances using `UIGraphicsImageRenderer`.
 
 ```swift
 struct ImageRedactor {
-    static func redact(
-        image: UIImage,
-        over detectionResult: DetectionResult,
-        selectedTypes: [PIIType]
-    ) async -> UIImage
+    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage
 }
 ```
 
-#### Implementation
+Bounding boxes stored in `DetectedInstance.boundingBox` are normalised SwiftUI coordinates (top-left origin, 0–1 range). The renderer multiplies them by `image.size` to get pixel-space coordinates. Runs in an async context (off the main thread) to avoid UI jank on large images.
+
+---
+
+### DetectionRegistry
+
+**File:** `PicStrip/DetectionRule.swift`
 
 ```swift
-let renderer = UIGraphicsImageRenderer(size: image.size)
-let redactedImage = renderer.image { context in
-    image.draw(in: CGRect(origin: .zero, size: image.size))
-    
-    UIColor.black.setFill()
-    for (type, result) in detectionResult {
-        guard selectedTypes.contains(type) else { continue }
-        for instance in result.allInstances {
-            let rect = instance.boundingBox
-            context.cgContext.fill(rect)
-        }
-    }
+enum DetectionRegistry {
+    nonisolated static let allRules: [DetectionRule]  // compiled once at first access
 }
 ```
 
-**Runs in:** `Task.detached` (off the main thread) to avoid UI jank on large images.
-
-**Coordinate System:** Bounding boxes are already in SwiftUI normalized coordinates; they're multiplied by `image.size` to get renderer-space pixel coordinates.
+All `NSRegularExpression` objects are constructed in the `static let` initialiser — once per app process, never per scan. A `fatalError` fires during development if any pattern is invalid.
 
 ---
 
 ## Image Processing Deep Dive
 
-### Metadata Extraction Flow
+### Why Two Passes?
+
+A single-pass `CGImageDestinationAddImage` call still triggers the iOS JPEG/HEIC encoder to auto-synthesise a minimal EXIF block containing `ColorSpace`, `PixelXDimension`, `PixelYDimension`, and version strings. Passing empty `{}` dictionaries for `kCGImagePropertyExifDictionary` and `kCGImagePropertyTIFFDictionary` suppresses most of this, but not all — the encoder treats empty dicts as "nothing to merge" and still writes its own required fields.
+
+The two-pass strategy defeats auto-synthesis reliably:
+
+**Pass 1 — Pixel normalisation + compression**
 
 ```swift
-// Step 1: Create image source
-let source = CGImageSourceCreateWithData(imageData, nil)!
+// Orient pixels canonically (UIImage.normalized() redraws into a fresh CGContext)
+guard let uiImage = UIImage(data: data),
+      let cgImage = uiImage.normalized().cgImage else { ... }
 
-// Step 2: Get metadata
-let metadata = CGImageSourceCopyMetadataAtIndex(source, 0, nil)
-let metadataDict = CGImageMetadataCreateMutableCopy(metadata)
-
-// Step 3: Iterate all tags and extract key-value pairs
-let tags = CGImageMetadataEnumerateTagsUnderPath(metadataDict, nil, nil, nil) as! [CGImageMetadataTag]
-
-for tag in tags {
-    let category = categorizeTag(tag)  // GPS, EXIF, TIFF, IPTC, etc.
-    let key = extractKey(tag)
-    let value = extractValue(tag)
-    metadataFields.append(MetadataField(category: category, key: key, value: value, isStructural: isStructural(key)))
-}
-```
-
-### Metadata Stripping Flow (Two-Pass)
-
-```swift
-// PASS 1: Normalize orientation and discard old metadata
-let uiImage = UIImage(data: imageData).normalized()  // Forces orientation=1
-let cgImage = uiImage.cgImage!
-
-// PASS 2: Re-encode with selective metadata
-let destination = CGImageDestinationCreateWithData(outputData, format, 1, nil)!
-
-// Build filtered metadata based on StripConfig
-let filteredMetadata = config.apply(to: strippedMetadata)
-// filteredMetadata includes:
-//   - Any categories user toggled ON
-//   - Any individual fields user toggled ON
-//   - Structural fields (always included)
-
-let properties: [String: Any] = [
-    kCGImagePropertyExifDictionary: filteredMetadata.exif,
-    kCGImagePropertyExifAuxiliaryDictionary: filteredMetadata.exifAux,
-    kCGImagePropertyTIFFDictionary: filteredMetadata.tiff,
-    kCGImagePropertyIPTCDictionary: filteredMetadata.iptc,
-    kCGImagePropertyMakerAppleDictionary: filteredMetadata.appleMN,
+// Encode with "hail-mary" empty dicts to zero out EXIF/TIFF as aggressively as possible
+let encodeProps: [CFString: Any] = [
+    kCGImageDestinationLossyCompressionQuality: quality,
+    kCGImagePropertyExifDictionary: [:] as [CFString: Any],
+    kCGImagePropertyTIFFDictionary: [:] as [CFString: Any]
 ]
-
-CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
-CGImageDestinationFinalize(destination)
+CGImageDestinationAddImage(firstDest, cgImage, encodeProps)
+CGImageDestinationFinalize(firstDest)  // → firstBuffer
 ```
+
+**Pass 2 — Controlled metadata replacement**
+
+```swift
+// Build only the metadata the user chose to keep (plus Orientation = 1)
+let outputMetadata = CGImageMetadataCreateMutable()
+// Always inject orientation = 1 (pixels are already display-oriented)
+// Re-inject any category/field the user chose to preserve via fieldOverrides
+
+// Replace the entire metadata tree — MergeMetadata: false wipes everything
+// that Pass 1 auto-synthesised
+let copyOptions: [CFString: Any] = [
+    kCGImageDestinationMetadata: outputMetadata,
+    kCGImageDestinationMergeMetadata: false,
+    kCGImageDestinationLossyCompressionQuality: quality
+]
+CGImageDestinationCopyImageSource(finalDest, cleanSource, copyOptions, &copyError)
+```
+
+**PNG output:** The `outputMetadata` object is left empty for PNG — PNG has no native EXIF/TIFF block, so re-injecting orientation metadata is unnecessary and produces a flatter, cleaner file.
+
+### Metadata Re-injection (User-Kept Fields)
+
+When a user disables a metadata category (or sets a per-field "keep" override), `ImageProcessor` re-injects those fields using `CGImageMetadata` XMP paths:
+
+| ImageIO key | XMP namespace | Prefix |
+|-------------|---------------|--------|
+| `kCGImagePropertyGPSDictionary` | `http://ns.adobe.com/exif/1.0/gps/` | `exifGPS` |
+| `kCGImagePropertyExifDictionary` | `kCGImageMetadataNamespaceExif` | `exif` |
+| `kCGImagePropertyTIFFDictionary` | `kCGImageMetadataNamespaceTIFF` | `tiff` |
+| `kCGImagePropertyIPTCDictionary` | `kCGImageMetadataNamespaceIPTCCore` | `Iptc4xmpCore` |
+| EXIF Auxiliary | — | not writable via XMP |
+| Apple Maker Note | — | not writable via XMP |
+
+EXIF Auxiliary and Apple Maker Note cannot be re-injected through the XMP path API. If a user "keeps" one of these categories, the app reports the fields as stripped regardless.
 
 ---
 
 ## PII Detection Engine
 
-### DetectionRegistry
+### PIIScanner Pipeline
 
-**File:** `PicStrip/Services/DetectionRegistry.swift`
-
-A centralized registry of all PII detection rules.
-
-```swift
-enum DetectionRegistry {
-    static let allRules: [DetectionRule] = [
-        // Compiled once at app startup
-        DetectionRule(
-            type: .email,
-            pattern: try! NSRegularExpression(pattern: emailRegex, options: []),
-            baseScore: 0.95
-        ),
-        DetectionRule(
-            type: .ssn,
-            pattern: try! NSRegularExpression(pattern: "\\d{3}-\\d{2}-\\d{4}", options: []),
-            baseScore: 0.98
-        ),
-        // ... 18 more rules
-    ]
-}
+```
+scanImage(data:)
+    │
+    ├─ [Stage 1] Validate — CGImageSourceCreateWithData + CreateImageAtIndex
+    │               ensures a meaningful error before Vision receives bad data
+    │
+    ├─ [Stage 2] Vision OCR
+    │   VNImageRequestHandler(data:)  ← raw Data, not CGImage, to preserve EXIF orientation
+    │   VNRecognizeTextRequest
+    │     .recognitionLevel = .accurate
+    │     .usesLanguageCorrection = false  ← preserve raw credential characters
+    │     .automaticallyDetectsLanguage = true
+    │   → [VNRecognizedTextObservation]
+    │
+    │   If results.isEmpty → retry with fresh handler at .fast level
+    │
+    └─ [Stage 3] Per-observation analysis
+        for each observation:
+            ├─ Coordinate flip: Vision bottom-left → SwiftUI top-left
+            │     flippedY = 1 - originY - height
+            │
+            ├─ [Stage B] DetectionRegistry regex sweep  (runs FIRST)
+            │     for each rule in allRules:
+            │         regex.matches(in: text)
+            │         → record(type, baseScore, ocrConfidence, instance)
+            │     Tight substring box via candidate.boundingBox(for: swiftRange)
+            │     Falls back to observation-level box if API returns nil
+            │
+            ├─ [Stage A] NSDataDetector  (runs AFTER regex)
+            │     Types: .phoneNumber, .address, .link (mailto: → .email)
+            │     record() will NOT downgrade a stronger score already set
+            │     by the regex pass for overlapping types (e.g., email)
+            │
+            └─ Orphan-label heuristic
+                If neither stage matched AND observation matches bare credential
+                keyword ("password:", "login:", garbled OCR variants):
+                    stash label → treat NEXT observation as the password value
+                    record(.unstructuredCredential, baseScore: 0.65)
 ```
 
-**Design Notes:**
-- All regexes are compiled **once** at startup (in the `static let` initializer).
-- Each rule has a `baseScore` reflecting pattern confidence (0.7–1.0).
-- No regex compilation on each text observation — O(n) OCR text → O(1) per-rule matching.
+### Scoring
 
-### Scoring Algorithm
+```
+instanceScore = baseScore × ocrConfidence
 
-```swift
-func scoreObservation(_ text: String, _ rule: DetectionRule, _ ocrConfidence: Double) -> Double {
-    let regexMatches = rule.pattern.matches(in: text, range: NSRange(text.startIndex..., in: text))
-    if regexMatches.isEmpty { return 0.0 }
-    return rule.baseScore * ocrConfidence
-}
+baseScore:  calibrated per rule (see table below)
+            reflects pattern specificity — how likely a match is to be a true positive
+ocrConfidence: Vision's per-candidate float (0.0–1.0)
+               reflects OCR certainty — how reliably Vision read those characters
 
-// Record logic: keep the highest score for each PII type
-var detectionResult: [PIIType: DetectionResult] = [:]
-for (type, score, instance) in candidatesWithScores {
-    let currentBest = detectionResult[type]?.bestScore ?? 0.0
-    if score > currentBest {
-        detectionResult[type] = DetectionResult(
-            type: type,
-            bestScore: score,
-            allInstances: [instance],
-            matchCount: 1
-        )
-    }
-}
+result-level score: upgraded when a later match for the same type is stronger
+                    ensures the regex pass (higher baseScores) wins over NSDataDetector
+                    for overlapping types such as email
 ```
 
----
+### PII Type Catalog
 
-## Batch Processing
+| Category | Type | Detection | Base score |
+|----------|------|-----------|------------|
+| Contact | Phone Number | `NSDataDetector` | 0.72 |
+| Contact | Email Address | Regex + `NSDataDetector` | 0.93 / 0.75 |
+| Web | Link / URL | `NSDataDetector` | 0.52 |
+| Web | IP Address (IPv4) | Regex | 0.90 |
+| Web | IP Address (IPv6) | Regex | 0.76 |
+| Web | MAC Address | Regex | 0.72 |
+| Identity | Address | `NSDataDetector` | 0.68 |
+| Identity | Social Security Number | Regex | 0.94 |
+| Identity | Date of Birth | Regex | 0.48 |
+| Identity | National Insurance Number | Regex | 0.91 |
+| Financial | Credit Card (compact) | Regex | 0.94 |
+| Financial | Credit Card (spaced/dashed) | Regex | 0.80 |
+| Financial | IBAN | Regex | 0.93 |
+| Financial | Crypto Wallet (Ethereum) | Regex | 0.87 |
+| Financial | Crypto Wallet (Bitcoin Bech32) | Regex | 0.88 |
+| Developer Secrets | AWS Access Key | Regex | 0.98 |
+| Developer Secrets | GitHub Token | Regex | 0.97 |
+| Developer Secrets | Google API Key | Regex | 0.98 |
+| Developer Secrets | OpenAI API Key | Regex | 0.97 |
+| Developer Secrets | Slack Token | Regex | 0.97 |
+| Developer Secrets | Stripe Key | Regex | 0.97 |
+| Developer Secrets | Private Key (PEM) | Regex | 0.96 |
+| Unstructured | Physical Credential / Password | Cross-observation heuristic | 0.68 |
 
-### Sequential Design
+**Why `usesLanguageCorrection = false`:** Vision's language correction normalises "AIzaSy..." into dictionary words. Disabled to preserve raw credential characters.
 
-Batch processing runs **one image at a time**, never concurrently, to avoid OOM on devices with limited memory (e.g., iPhone SE).
+**Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. A fresh `VNImageRequestHandler` is required for the retry because handlers are single-use.
 
-```swift
-func processBatch(_ assets: [PHAsset], _ config: BatchConfig) async {
-    var batchReports: [BatchAuditReport] = []
-    
-    for (index, asset) in assets.enumerated() {
-        isProcessing = true
-        currentBatchIndex = index
-        
-        do {
-            // Load image
-            let data = try await loadImageData(asset)
-            var image = UIImage(data: data).normalized()
-            
-            // Scan for PII
-            let detectionResult = await PIIScanner.scanImage(image.cgImage!)
-            
-            // Redact if enabled
-            if config.redactPII {
-                image = await ImageRedactor.redact(image, over: detectionResult, ...)
-            }
-            
-            // Strip metadata
-            let cleanData = ImageProcessor.process(
-                imageData: image.jpegData(...),
-                mode: .export,
-                config: config.stripConfig
-            )
-            
-            // Save to library
-            try await saveToPhotos(cleanData)
-            
-            // Record audit
-            batchReports.append(BatchAuditReport(...))
-            
-        } catch {
-            batchErrors.append((asset: asset, error: error))
-        }
-        
-        // Explicit cleanup for ARC pressure relief
-        data = nil
-        image = nil
-        detectionResult = nil
-    }
-    
-    isProcessing = false
-    showBatchSummary(batchReports, batchErrors)
-}
-```
+### Duplicate Detection
 
-### Memory Management
-
-Between iterations, we explicitly nil out large references:
-```swift
-var data: Data? = ...
-// ... use data ...
-data = nil  // ARC immediately deallocates
-```
-
-This prevents the OS from paging 10 high-resolution images into swap on low-memory devices.
+`DetectedInstance` conforms to `Equatable` on `(snippet, boundingBox)`. When both the regex pass and `NSDataDetector` fire on the same text span, `record()` silently drops the duplicate and only upgrades the score if the new instance is stronger.
 
 ---
 
@@ -639,110 +503,103 @@ This prevents the OS from paging 10 high-resolution images into swap on low-memo
 
 ### Architecture
 
-The Share Extension (`PicStripShareExtension` target) is a separate Xcode target that **does not link** to the main app binary. It includes **duplicate copies** of shared files.
-
 ```
-ShareViewController (UIKit)
-    ↓ UIHostingController
-ExtensionConfigView (SwiftUI)
-    ├─ Embedded SwiftUI view
-    └─ Calls ExtensionViewModel
-        ├─ Uses ImageProcessor.swift (duplicate)
-        ├─ Uses PIIScanner.swift (shared logic, re-implemented in extension)
-        └─ Uses ImageRedactor.swift (shared logic, re-implemented)
+ShareViewController (UIKit — UIViewController)
+    │
+    └─ UIHostingController<ExtensionConfigView>
+           │
+           └─ ExtensionConfigView (SwiftUI, private)
+                  └─ observes ExtensionViewModel (@Observable)
+                         phase: .configuring | .processing
 ```
 
-### Why Duplication?
+`ExtensionViewModel` is a minimal two-phase state machine. The full processing pipeline lives in `ShareViewController.runProcessingPipeline()`.
 
-iOS Share Extensions cannot link to the main app's `.app` binary. Instead:
-1. `ImageProcessor.swift` and `ExportPreset.swift` are **copied** to the extension target.
-2. A compiler-time check prevents linking `ExportFormat+AppEnum.swift` (which imports `AppIntents`) to the extension.
-3. Both targets have independent `PrivacyInfo.xcprivacy` declarations.
+### Processing Pipeline (Extension)
+
+```
+User taps "Process & Save to Photos"
+    ↓
+ShareViewController.runProcessingPipeline(stripMetadata:redactPII:)
+    │
+    ├─ Request PHPhotoLibrary .addOnly authorization
+    │
+    └─ for each NSItemProvider (sequential):
+          ├─ Resolve best concrete UTI
+          │     preferredTypes: [jpeg, png, heic, com.apple.heic, rawImage, public.image]
+          │     Photos only registers concrete types; "public.image" abstract causes
+          │     loadDataRepresentation to silently drop its callback
+          │
+          ├─ Load raw Data via continuation bridge
+          │
+          ├─ Optional: PIIScanner().scanImage(data:) → redact with ImageRedactor
+          │
+          ├─ Optional: ImageProcessor.process(data:preset:config:)
+          │     or      ImageProcessor.process(image:sourceData:preset:config:)
+          │
+          └─ PHPhotoLibrary.shared().performChanges {
+                 PHAssetCreationRequest.forAsset()
+                     .addResource(with: .photo, data: finalData)
+             }
+    ↓
+extensionContext?.completeRequest(returningItems: [])
+```
+
+### Why Duplication Instead of a Shared Framework?
+
+iOS extensions are separate processes. An extension binary cannot dynamically link to the `.app` binary's code. A proper solution would be a shared framework target; the current approach duplicates the six files that contain no UIKit view code, keeping the extension self-contained without introducing a framework build phase.
+
+`ExportFormat+AppEnum.swift` is **not** duplicated — it imports `AppIntents`, which is unavailable in extensions. The extension uses `ExportPreset` directly.
 
 ### 120 MB Memory Ceiling
 
-iOS imposes a **~120 MB memory limit** on Share Extension processes. To stay under this:
-- Images are processed one at a time.
-- Large `Data` buffers are explicitly deallocated after use.
-- UIImage memory is released immediately after encoding.
+iOS kills extension processes that exceed ~120 MB without warning. Mitigations:
 
-Comments in `ExtensionViewModel.swift` document this constraint.
+- Images are processed sequentially — never concurrently.
+- `UIImage` and `Data` references are released immediately after each encode.
+- The extension saves directly to Photos (no in-memory accumulation of processed images).
 
 ---
 
 ## App Intent & Siri
 
-### StripImageIntent
-
-**File:** `PicStrip/Services/StripImageIntent.swift`
-
-Registers the **"Clean Photos with PicStrip"** intent for Siri, Shortcuts, and Spotlight.
+**File:** `PicStrip/StripImageIntent.swift`
 
 ```swift
 struct StripImageIntent: AppIntent {
     static let title: LocalizedStringResource = "Clean Photos with PicStrip"
     static let openAppWhenRun: Bool = true
-    
+
     @MainActor
     func perform() async throws -> some IntentResult {
-        // Signal the main app to open the batch picker
         UserDefaults(suiteName: "group.com.northcutt.PicStrip")?
             .set(true, forKey: "picstrip.openBatchPicker")
-        
         return .result()
     }
 }
 ```
 
-### IPC via App Group
+When the intent fires:
 
-When the intent is invoked:
-1. `UserDefaults(suiteName: "group.com.northcutt.PicStrip")` is written with flag `picstrip.openBatchPicker = true`.
-2. The main app's `ContentView` observes `@AppStorage("picstrip.openBatchPicker", store: UserDefaults(suiteName: "group.com.northcutt.PicStrip"))`.
-3. On observing `true`, `ContentView` immediately presents `BatchConfigView` instead of home screen.
+1. A boolean flag is written to the shared App Group suite (`group.com.northcutt.PicStrip`).
+2. The main app's `ContentView` observes `@AppStorage("picstrip.openBatchPicker", store: ...)`.
+3. On `true`, `ContentView` immediately presents `BatchConfigView` instead of the home screen.
 
-### Siri/Shortcuts Registration
-
-```swift
-struct PicStripShortcuts: AppShortcutsProvider {
-    static var appShortcuts: [AppShortcut] = [
-        AppShortcut(
-            intent: StripImageIntent(),
-            phrases: ["Clean photos with PicStrip"],
-            shortTitle: "Clean Photos",
-            systemImageName: "photo"
-        )
-    ]
-}
-```
-
-This registers the intent in:
-- Siri voice command: "Clean photos with PicStrip"
-- Shortcuts app: appears in the library for automation
-- Spotlight search: "Clean Photos"
+Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in Shortcuts app and Spotlight.
 
 ---
 
 ## Persistence Model
 
-### What Is Stored
+| Data | Storage | Key | Scope |
+|------|---------|-----|-------|
+| Lifetime photos cleaned | `UserDefaults.standard` | `picstrip.lifetimePhotos` | App |
+| Lifetime metadata fields stripped | `UserDefaults.standard` | `picstrip.lifetimeFields` | App |
+| Batch picker flag | `UserDefaults(suiteName: "group.com.northcutt.PicStrip")` | `picstrip.openBatchPicker` | App Group |
+| Audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_Audit_<UUID>.json` | Session |
+| Batch audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_BatchAudit_<UUID>.json` | Session |
 
-| Data | Storage | Key | Scope | Notes |
-|------|---------|-----|-------|-------|
-| Lifetime photos cleaned | `UserDefaults.standard` | `picstrip.lifetimePhotos` | App | Incremented after each save |
-| Lifetime metadata fields stripped | `UserDefaults.standard` | `picstrip.lifetimeFields` | App | Incremented per field |
-| Batch picker flag | `UserDefaults(suiteName: "group...")` | `picstrip.openBatchPicker` | App Group | IPC from App Intent to main app |
-| Audit JSON (temporary) | `FileManager.default.temporaryDirectory` | `PicStrip_Audit_<UUID>.json` | Session | Auto-deleted after session or export |
-| Batch audit JSON (temporary) | `FileManager.default.temporaryDirectory` | `PicStrip_BatchAudit_<UUID>.json` | Session | Auto-deleted after session or export |
-
-### Why Minimal Persistence?
-
-- **Photo metadata:** Always re-extracted from the current image (no cache).
-- **User preferences:** Toggles are ephemeral (reset between sessions); advanced options are specified per-export.
-- **Scanned images:** Not stored; only detection results exist in memory.
-- **Settings:** No user configuration beyond the above stats.
-
-This **privacy-first design** ensures no historical data persists about what photos users have processed or what PII was detected.
+No photo metadata, no detection results, no user preferences beyond stats are ever persisted. This is intentional — nothing about which photos were processed or what PII was found survives a session.
 
 ---
 
@@ -750,330 +607,224 @@ This **privacy-first design** ensures no historical data persists about what pho
 
 ### PrivacyInfo.xcprivacy
 
-Both the main app and Share Extension declare:
+Both the main app and share extension declare:
 
 ```xml
-<key>NSPrivacyTracking</key>
-<false/>
-
-<key>NSPrivacyCollectedDataTypes</key>
-<array/>
-
-<key>NSPrivacyTrackingDomains</key>
-<array/>
+<key>NSPrivacyTracking</key><false/>
+<key>NSPrivacyCollectedDataTypes</key><array/>
+<key>NSPrivacyTrackingDomains</key><array/>
 ```
 
-**Zero data collection.** No analytics, no crash reporting, no telemetry.
+Zero data collection. No analytics, no crash reporting, no telemetry.
 
 ### Required-Reason APIs
 
-Only **one required-reason API** is declared:
+| API category | Reason code | Why |
+|-------------|-------------|-----|
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1` | ImageIO reads file timestamps during metadata extraction — not for fingerprinting |
 
-| API | Reason | Why |
-|-----|--------|-----|
-| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1` | ImageIO reads file timestamps during metadata extraction (not for fingerprinting) |
+All other frameworks (Vision for OCR, Photos for saving, ImageIO for encoding) do not trigger required-reason APIs.
 
-All other frameworks (Vision, ImageIO for encoding, Photos) do not trigger required-reason APIs.
+### Permissions
 
-### Permissions Model
+| Permission | Level | When |
+|-----------|-------|------|
+| `NSPhotoLibraryAddUsageDescription` | Add-only | Saving a new cleaned asset |
+| `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" — needs read access to delete the source asset |
 
-| Permission | Scope | When Used |
-|-----------|-------|-----------|
-| `NSPhotoLibraryAddUsageDescription` | Add-only | Saving cleaned photos (new asset) |
-| `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" option (requires read access to delete original) |
-
-The app defaults to **add-only** access (`.addOnly` in `PHAccessLevel`). Users must explicitly grant read+write if they want "Replace Original."
+The app defaults to `.addOnly` authorization. Users must explicitly grant read+write if they want "Replace Original."
 
 ### On-Device Processing Guarantee
 
-Every step of the pipeline runs locally:
-1. **Image load:** `UIImage(data:)` (native iOS)
-2. **Metadata extraction:** ImageIO (native iOS)
-3. **OCR:** Vision framework (on-device, local model)
-4. **Regex matching:** `NSRegularExpression` (native iOS)
-5. **Image encoding:** ImageIO + CoreGraphics (native iOS)
+```
+UIImage(data:)          native iOS — no network
+CGImageSourceCreateWithData  ImageIO — native iOS
+VNRecognizeTextRequest  Vision — on-device model, no network
+NSRegularExpression     Foundation — native iOS
+UIGraphicsImageRenderer CoreGraphics — native iOS
+CGImageDestinationCopyImageSource  ImageIO — native iOS
+PHPhotoLibrary.performChanges       Photos — native iOS
+```
 
-**Zero network calls.** Network Inspector (in Xcode) will show zero outbound connections from the app.
+Network Inspector in Xcode will show zero outbound connections from the app.
 
 ---
 
 ## CI/CD Pipeline
 
-### Workflows Overview
+### Workflows at a Glance
 
-#### 1. PR Workflow (`pr.yml`)
+| File | Trigger | Purpose |
+|------|---------|---------|
+| `pr.yml` | PR to `main` | Lint, static analysis, unit tests |
+| `main.yml` | Push to `main` | Release pipeline (7 jobs) |
+| `screenshots.yml` | Manual dispatch | App Store screenshot capture |
 
-Runs on every pull request targeting `main`:
+### PR Workflow (`pr.yml`)
 
-```yaml
-jobs:
-  lint:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: fastlane lint
+Three jobs run in parallel on `macos-26`:
 
-  analyze:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: fastlane analyze
+- **lint** — `bundle exec fastlane lint` (SwiftLint strict mode)
+- **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`)
+- **test** — `bundle exec fastlane test` (unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact)
 
-  test:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: fastlane test
-      - uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: fastlane/test_output/report.junit
+### Release Workflow (`main.yml`)
+
 ```
+version (ubuntu-latest)
+  └─ semantic-release --dry-run
+     If no releasable commits → all downstream jobs are skipped
 
-#### 2. Main Workflow (`main.yml`)
+lint + analyze + test (macos-26, parallel)
 
-Runs on every push to `main`. Six sequential jobs:
+build (macos-26)
+  └─ bundle exec fastlane beta
+       ├─ fastlane match appstore (readonly, SSH key from secret)
+       ├─ gym (Release config, App Store export method, manual signing)
+       │     MARKETING_VERSION injected from semantic-release dry-run output
+       │     BUILD_NUMBER = github.run_number
+       ├─ upload_to_testflight
+       └─ shasum -a 256 build/PicStrip.ipa → PicStrip.ipa.sha256
+     Outputs: ipa-hashes (base64 SHA-256 for SLSA subject)
 
-| Job | Command | Output |
-|-----|---------|--------|
-| **version** | `semantic-release --dry-run` | Determines if release warranted |
-| **build** | `fastlane beta` | Signs, builds, uploads to TestFlight; computes IPA SHA-256 |
-| **screenshots** | `fastlane screenshots` | Captures App Store screenshots |
-| **release** | `semantic-release` | Publishes release, tags, updates CHANGELOG, patches version |
-| **provenance** | SLSA generator | Generates SLSA Level 3 attestation |
-| **attach-release-assets** | Upload to release | Attaches IPA + .sha256 to GitHub Release |
+release (ubuntu-latest)
+  └─ npx semantic-release
+       ├─ Patches MARKETING_VERSION in project.pbxproj via sed
+       ├─ Generates release_notes.txt (prepareCmd) → committed to main
+       ├─ Creates GitHub Release + git tag
+       └─ Updates CHANGELOG.md
+
+provenance (reusable — slsa-framework/slsa-github-generator)
+  └─ SLSA Level 3 attestation signed by Sigstore/Rekor
+     Attached to the GitHub Release
+
+attach-release-assets (ubuntu-latest)
+  └─ gh release upload v<version>
+       PicStrip.ipa + PicStrip.ipa.sha256
+
+submit (ubuntu-latest, "production" environment — requires manual approval)
+  └─ bundle exec fastlane submit
+       ├─ upload_to_app_store (skip_binary_upload: true)
+       ├─ submit_for_review: true
+       ├─ automatic_release: true  (rolls out on approval)
+       └─ phased_release: true     (7-day staged rollout)
+```
 
 ### Fastlane Lanes
 
 | Lane | Purpose |
 |------|---------|
-| `lint` | SwiftLint strict mode; fails on warnings |
-| `analyze` | `xcodebuild analyze` static analysis; flags potential bugs |
-| `test` | Runs unit tests on iPhone 16 simulator; outputs JUnit XML |
-| `certificates` | `fastlane match appstore` for code signing (readonly on CI) |
-| `build` | Increments build number, exports IPA with App Store signing |
-| `beta` | `certificates` + `build` + `pilot` (TestFlight upload) |
-| `screenshots` | `capture_ios_screenshots` using Snapfile configuration |
-| `upload_screenshots` | Uploads screenshots to App Store Connect |
+| `lint` | SwiftLint strict mode; fails on any warning |
+| `analyze` | `xcodebuild analyze`; flags potential bugs |
+| `test` | Unit tests on `iPhone 17` simulator; JUnit XML to `build/test_output/` |
+| `certificates` | `fastlane match appstore` readonly sync (creates temp keychain on CI) |
+| `build` | Increments build number; `gym` with App Store export; outputs `build/PicStrip.ipa` |
+| `beta` | `certificates` → `build` → `upload_to_testflight` |
+| `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`) |
+| `upload_screenshots` | Pushes captured screenshots to App Store Connect |
+| `submit` | `upload_to_app_store` with `skip_binary_upload: true`; submits for App Review |
+
+### Screenshot Workflow (`screenshots.yml`)
+
+Manually dispatched (not part of the release pipeline). Key design decisions:
+
+- **Single `testAllScreenshots()` method**: all screenshots are captured in one XCTest method. Splitting across separate methods causes XCTest to terminate and relaunch the app between each method in headless CI, which fails with `Failed to terminate com.northcutt.PicStrip`.
+- **Dedicated `PicStripScreenshots` scheme**: excludes unit test bundles (`PicStripTests`, etc.) to avoid running the full test suite inside the screenshot job.
+- **`number_of_retries(0)` in Snapfile**: screenshot failures are deterministic; retrying wastes a full macOS job cycle.
+- **`simctl status_bar override` in a dedicated CI step**: done after `bootstatus -b` rather than inside Fastlane's `override_status_bar(true)` which can hang without a timeout.
+- **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
 
 ### Semantic Release
 
-Commits follow **Conventional Commits**:
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/):
 
-```
-feat: Add dark mode toggle
-fix: Correct metadata stripping for HEIC format
-perf: Optimize OCR performance
-BREAKING CHANGE: Remove support for iOS 16
-```
+| Commit prefix | Version bump |
+|---------------|-------------|
+| `feat:` | minor (1.0.0 → 1.1.0) |
+| `fix:` / `perf:` / `revert:` | patch (1.0.0 → 1.0.1) |
+| `BREAKING CHANGE:` anywhere | major (1.0.0 → 2.0.0) |
 
-Rules:
-- `feat:` → minor version bump (e.g., 1.0.0 → 1.1.0)
-- `fix:` / `perf:` / `revert:` → patch bump (e.g., 1.0.0 → 1.0.1)
-- `BREAKING CHANGE:` anywhere → major bump (e.g., 1.0.0 → 2.0.0)
+On release, semantic-release runs a `prepareCmd` that generates `fastlane/metadata/en-US/release_notes.txt` from the commit log, then commits `release_notes.txt` and the updated `project.pbxproj` (MARKETING_VERSION patch) back to `main`.
 
-On release, a `sed` command patches `MARKETING_VERSION` in `project.pbxproj`:
-```sh
-sed -i 's/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${nextRelease.version}/' PicStrip.xcodeproj/project.pbxproj
-```
+---
 
-### SLSA Provenance (Level 3)
+## SLSA Provenance Level 3
 
-PicStrip generates a **SLSA Level 3 provenance attestation** for every IPA release using the `slsa-framework/slsa-github-generator` action. This cryptographically proves that the binary you download was built by our CI/CD pipeline with no manual modifications or post-build tampering.
+Every release is accompanied by a SLSA Level 3 provenance attestation, cryptographically proving the IPA was produced by GitHub Actions.
 
-#### What Is SLSA?
+### What SLSA Level 3 Guarantees
 
-**SLSA** (Supply Chain Levels for Software Artifacts) is a security framework developed by Google and the Linux Foundation that establishes increasing levels of confidence in software artifact provenance.
+| Requirement | How PicStrip satisfies it |
+|-------------|--------------------------|
+| Source version controlled | GitHub-hosted repository |
+| Hosted build platform | GitHub Actions (`macos-26` ephemeral runner) |
+| Build-as-code | `main.yml` checked into the repo |
+| Ephemeral environment | Fresh runner per job; no persistent state |
+| Isolated build | No network calls from the build job beyond Apple APIs and GitHub |
+| Non-falsifiable provenance | Signed by Sigstore/Rekor (public, immutable transparency log) |
 
-| Level | Requirements | Security Guarantee |
-|-------|--------------|-------------------|
-| **Level 0** | No provenance | No assurances |
-| **Level 1** | Provenance exists | Proof of existence (basic metadata) |
-| **Level 2** | Version control + hosted CI | Proof of source and build environment |
-| **Level 3** | Hardened CI + hermetic builds | Protection against tampering by insider threats |
-| **Level 4** | Cryptographic verification | Protection against tampering by CI/CD admins |
+### Verify an IPA
 
-**PicStrip achieves Level 3**, which means:
-- ✅ Source code is hosted on GitHub with signed commits
-- ✅ Builds run on GitHub Actions infrastructure (not a developer's local machine)
-- ✅ Build process is deterministic and can be audited
-- ✅ Attestation is cryptographically signed by GitHub
-- ✅ IPA SHA-256 checksum is cryptographically bound to the build
+**Option 1 — slsa-verifier**
 
-#### SLSA Level 3 Attestation Structure
-
-Every release generates a Rekor-signed SLSA v0.2 provenance attestation:
-
-```json
-{
-  "subject": [
-    {
-      "name": "PicStrip.ipa",
-      "digest": {
-        "sha256": "abc123def456789..."
-      }
-    }
-  ],
-  "predicateType": "https://slsa.dev/provenance/v0.2",
-  "predicate": {
-    "builder": {
-      "id": "https://github.com/slsa-framework/slsa-github-generator@v1.9.0"
-    },
-    "buildType": "https://github.com/slsa-framework/slsa-github-generator/blob/main/internal/builders/github/github.go",
-    "invocation": {
-      "configSource": {
-        "uri": "git+https://github.com/northcutt-dev/picstrip.git@refs/heads/main",
-        "digest": { "sha1": "abc123..." }
-      },
-      "parameters": {
-        "workflow": "main.yml",
-        "ref": "refs/tags/v1.2.3"
-      }
-    },
-    "materials": [
-      {
-        "uri": "git+https://github.com/northcutt-dev/picstrip.git",
-        "digest": { "sha1": "abc123..." }
-      }
-    ],
-    "metadata": {
-      "buildStartedOn": "2024-05-04T12:30:00Z",
-      "buildFinishedOn": "2024-05-04T12:45:00Z",
-      "completeness": {
-        "parameters": true,
-        "environment": true,
-        "materials": true
-      },
-      "reproducible": false
-    },
-    "byproducts": []
-  }
-}
-```
-
-#### What Each Field Proves
-
-| Field | What It Proves |
-|-------|---|
-| `subject.name` | The exact IPA filename |
-| `subject.digest.sha256` | Cryptographic fingerprint of the IPA (prevents tampering) |
-| `builder.id` | The build system identity (SLSA generator + version) |
-| `buildType` | The canonical build recipe/workflow |
-| `invocation.configSource.uri` | The GitHub repo URL and branch/tag |
-| `invocation.configSource.digest` | Commit SHA of the build workflow |
-| `invocation.parameters.workflow` | The workflow file name (main.yml) |
-| `materials` | The exact git commit of the source code built |
-| `metadata.buildStartedOn/FinishedOn` | Precise timestamps (auditable timing) |
-| `metadata.completeness` | Attestation is complete (all required fields present) |
-
-#### How SLSA Prevents Tampering
-
-1. **Post-Build Tampering**: The SHA-256 in the attestation cryptographically commits to the IPA. Any byte change → different SHA-256 → attestation invalid.
-2. **Insider Threats**: The attestation is signed by Rekor (a public transparency log), making it immutable even if the GitHub repo is compromised.
-3. **Build Injection**: The workflow file is pinned to a specific commit SHA; if the workflow is modified, the digest no longer matches.
-4. **Source Tampering**: The source materials list includes the exact commit SHA of the code that was compiled.
-
-#### How to Verify the Attestation
-
-##### Option 1: Manual Verification Using `slsa-verifier`
-
-Install `slsa-verifier`:
 ```bash
-# macOS
 brew install slsa-framework/slsa/slsa-verifier
 
-# Or build from source
-go install github.com/slsa-framework/slsa-verifier/cmd/slsa-verifier@v2.0.1
-```
-
-Download the IPA and attestation from the GitHub Release:
-```bash
-# From the release page, download:
-# - PicStrip.ipa
-# - PicStrip.ipa.attestation (or PicStrip.ipa.slsaprovenance.json)
-```
-
-Verify the IPA:
-```bash
 slsa-verifier verify-artifact PicStrip.ipa \
   --provenance-path PicStrip.ipa.attestation \
-  --source-uri github.com/northcutt-dev/picstrip \
+  --source-uri github.com/northcutted/picstrip \
   --source-tag v1.2.3
 ```
 
 Expected output:
 ```
 Verified SLSA provenance for PicStrip.ipa
-Verified that PicStrip.ipa was built by github.com/slsa-framework/slsa-github-generator
-Verified that the source code was built from the GitHub branch main
-Verified that the build was run using the GitHub Actions workflow main.yml
 ```
 
-##### Option 2: Verify SHA-256 Checksum
-
-Every release includes a `.sha256` file with the IPA checksum:
+**Option 2 — SHA-256 checksum**
 
 ```bash
-# Download both PicStrip.ipa and PicStrip.ipa.sha256
+# Both files are attached to every GitHub Release
 shasum -a 256 PicStrip.ipa > computed.sha256
 diff computed.sha256 PicStrip.ipa.sha256
-# If no output, checksums match ✅
+# No output = checksums match
 ```
 
-##### Option 3: Check Rekor Transparency Log
-
-The attestation is logged on Rekor (a public, immutable ledger):
+**Option 3 — Rekor transparency log**
 
 ```bash
-# Verify via Rekor
 rekor-cli search \
   --artifact PicStrip.ipa \
   --pki-format=x509 \
   --public-key=/path/to/github-public-key.pem
 ```
 
-Or view in the web UI: https://search.sigstore.dev/?logIndex=<index>
+Or browse: `https://search.sigstore.dev/?logIndex=<index>`
 
-#### Integration with App Store & TestFlight
+### References
 
-- **TestFlight**: The signed IPA + attestation are uploaded to App Store Connect, providing proof of origin.
-- **App Store**: Once approved, the app is notarized by Apple; the SLSA attestation remains as proof of the original source.
-- **Users**: Although end users receive the app through Apple's official channels, transparency-conscious users and security auditors can verify the provenance chain.
-
-#### Practical Workflow for Developers
-
-1. **Every Release:** GitHub Actions automatically generates and attaches the attestation to the release.
-2. **CI/CD Transparency:** The workflow log is public; anyone can see the exact build command, environment, and output.
-3. **Artifact Immutability:** Once published, the SHA-256 + attestation binding is immutable (Rekor transparency log).
-4. **Audit Trail:** All commits, tags, and workflow runs are auditable on GitHub.
-
-#### References
-
-- **SLSA Specification:** https://slsa.dev/
-- **SLSA GitHub Generator:** https://github.com/slsa-framework/slsa-github-generator
-- **slsa-verifier:** https://github.com/slsa-framework/slsa-verifier
-- **Rekor Transparency Log:** https://transparency.sigstore.dev/
-- **Sigstore:** https://sigstore.dev/ (end-to-end provenance & signing)
+- SLSA Specification: https://slsa.dev/
+- SLSA GitHub Generator: https://github.com/slsa-framework/slsa-github-generator
+- slsa-verifier: https://github.com/slsa-framework/slsa-verifier
+- Rekor: https://transparency.sigstore.dev/
 
 ---
 
 ## Contributing: Adding a New PII Type
 
-### Step 1: Define the PII Type
+### Step 1 — Define the type
 
-Add to `PIITypes.swift`:
+Add a case to `PIIType.swift`:
 
 ```swift
-enum PIIType: String, CaseIterable {
-    case email, phone, ssn, creditCard, apiKey, jwt, privateKey, password, databaseConnection, awsKey, oauthToken, slackToken, githubToken, licenseKey, uuid, urls, addresses, blockchainAddress, socialSecurityCard, dateOfBirth
-    
-    // ADD HERE:
-    case bankRoutingNumber  // New type
-    
-    var displayName: String {
+enum PIIType: String, Hashable, Identifiable, CaseIterable {
+    // ... existing cases ...
+
+    // MARK: - Financial
+    case bankRoutingNumber  // new
+
+    nonisolated var description: String {
         switch self {
-        case .email: return "Email Address"
-        case .phone: return "Phone Number"
         // ...
         case .bankRoutingNumber: return "Bank Routing Number"
         }
@@ -1081,124 +832,73 @@ enum PIIType: String, CaseIterable {
 }
 ```
 
-### Step 2: Add a Detection Rule
+### Step 2 — Add a detection rule
 
-In `DetectionRegistry.swift`, add a new `DetectionRule`:
+In `DetectionRule.swift` (inside the `build()` function):
 
 ```swift
-enum DetectionRegistry {
-    static let allRules: [DetectionRule] = [
-        // ... existing rules ...
-        
-        DetectionRule(
-            type: .bankRoutingNumber,
-            pattern: try! NSRegularExpression(
-                pattern: "\\d{9}",  // US routing numbers are 9 digits
-                options: []
-            ),
-            baseScore: 0.85  // High confidence, but not as high as credit card (SSN-like)
-        ),
-    ]
+// US routing numbers: exactly 9 digits, common in financial docs
+rule(.bankRoutingNumber,
+     #"\b\d{9}\b"#,
+     0.70)
+```
+
+Choose a `baseScore` that reflects how many false positives the pattern is likely to produce:
+- `≥ 0.95` — globally unique prefix (AWS key, GitHub token)
+- `0.85–0.94` — strong structure (SSN, credit card, IBAN)
+- `0.70–0.84` — good structure but ambiguous in some contexts
+- `0.50–0.69` — heuristic / contextual; use sparingly
+
+### Step 3 — Update AboutView (optional)
+
+`AboutView.swift` contains a static PII catalogue displayed in the app's About screen. Add a row for the new type if it should be visible to users.
+
+### Step 4 — Write tests
+
+In `PicStripTests/PIIScannerTests.swift`:
+
+```swift
+func testDetectsBankRoutingNumber() async throws {
+    let image = try createTestImage(withText: "Routing: 021000021")
+    let results = try await PIIScanner().scanImage(data: image)
+    let hit = try XCTUnwrap(results.first { $0.type == .bankRoutingNumber })
+    XCTAssertGreaterThan(hit.score, 0.6)
+    XCTAssertFalse(hit.instances.isEmpty)
 }
 ```
 
-### Step 3: Update the UI
+### Step 5 — Test end-to-end
 
-In `PIIDetailsView.swift`, the detection result already iterates all `PIIType` cases, so the new type will automatically appear in the list.
-
-Optional: Add a custom color in `CategoryBadgeView.swift`:
-
-```swift
-func badgeColor(for type: PIIType) -> Color {
-    switch type {
-    case .email: return Color.blue
-    case .phone: return Color.green
-    // ...
-    case .bankRoutingNumber: return Color.purple
-    }
-}
-```
-
-### Step 4: Write Tests
-
-In `PIIScannerTests.swift`, add a test case:
-
-```swift
-func testDetectsBankRoutingNumbers() async {
-    let image = createTestImage(withText: "Routing: 021000021")
-    let result = await PIIScanner.scanImage(image.cgImage!)
-    
-    XCTAssertTrue(result[.bankRoutingNumber]!.matchCount > 0)
-    XCTAssertGreaterThan(result[.bankRoutingNumber]!.bestScore, 0.7)
-}
-```
-
-### Step 5: Test End-to-End
-
-1. Rebuild the app: **Cmd + B**
-2. Create a test image (or screenshot) containing a bank routing number.
-3. Run the app, pick the test image.
-4. Verify the routing number is detected and highlighted in red.
-5. Verify the "Bank Routing Number" category appears in the metadata badge row.
-6. Toggle redaction and verify the black box lands on the number in the saved image.
+1. `bundle exec fastlane test` — verify the new test passes in the `32/32` suite.
+2. Run the app; open a photo containing a routing number.
+3. Confirm the red overlay lands on the correct region.
+4. Toggle redaction; confirm the black box covers the number in the saved image.
+5. Check the audit JSON — the new type should appear under `visualRedactions`.
 
 ---
 
 ## Known Constraints
 
-### Share Extension Memory Ceiling
+### Structural Metadata Cannot Be Stripped
 
-The Share Extension process has a **~120 MB memory limit** imposed by iOS. Mitigations:
-- Sequential image processing (no concurrent Tasks).
-- Explicit buffer deallocation between images.
-- Smaller image resolution for preview/processing.
-
-If processing large burst photos, users may see out-of-memory errors. Document this in the app's help text.
-
-### Structural Metadata Fields
-
-These fields **cannot be stripped** because the iOS encoder unconditionally re-injects them:
-- `PixelWidth`, `PixelHeight` (dimensions)
-- `Orientation` (1 = canonical, required by format spec)
-- `ColorModel`, `XResolution`, `YResolution` (format metadata)
-
-The UI marks these with a lock icon and explains they contain no personal data. Users cannot toggle them off.
-
-### OCR Language Correction
-
-Vision's `VNRecognizeTextRequest` has a `usesLanguageCorrection` option. PicStrip sets it to **false** because:
-- If an image contains a password or API key, language correction might "normalize" it incorrectly.
-- E.g., `api_sk_live_abc123xyz` might be auto-corrected to English-like words.
-
-This trade-off prioritizes **raw accuracy** over readability.
+The iOS JPEG/HEIC encoder unconditionally re-synthesises structural rendering fields regardless of what `CGImageDestinationCopyImageSource` is asked to omit. The UI marks these with a lock icon. Do not attempt to remove the two-pass logic in hopes of stripping them — it will not work and will introduce correctness regressions.
 
 ### Two-Pass Encoding Overhead
 
-The two-pass ImageIO strategy adds ~50–100 ms to export time (negligible on modern devices). It is **not optional** because:
-- Single-pass re-encode still triggers auto-synthesis of minimal EXIF on iOS.
-- Two-pass defeats this by force-reloading pixels.
+The two-pass strategy adds ~50–100 ms to export time on current hardware. This is not optimisable without breaking the privacy guarantee. Profile with Instruments before proposing changes.
 
-If performance becomes a bottleneck, profile with Xcode Instruments; do not remove the two-pass logic.
+### Share Extension Memory Ceiling
 
-### Batch Processing Sequential Design
+iOS kills extension processes at ~120 MB without warning. The sequential processing model and explicit deallocation between images are not optional micro-optimisations — they are the budget constraint. Do not introduce concurrent image processing inside the extension.
 
-Batch processing is deliberately **sequential** (not concurrent) to avoid OOM. On a device with limited memory:
-- Concurrent processing of 10 4 MP photos = 10 × (4 MB + Vision overhead) = 40+ MB peak.
-- Sequential processing = ~4 MB peak.
+### OCR Language Correction Must Stay Disabled
 
-The trade-off is slower batch processing on modern devices (each image takes 2–5 seconds). This is acceptable for privacy-critical use cases.
+`VNRecognizeTextRequest.usesLanguageCorrection = true` normalises OCR output toward dictionary words. For credentials (`AIzaSyD...`, `sk-live-...`, `AKIAIOSFODNN7EXAMPLE`) this destroys the pattern structure the regex rules depend on. It must remain `false`.
 
----
+### `.fast` Fallback Requires a Fresh Handler
 
-## Summary
+`VNImageRequestHandler` is single-use. The `.accurate` + `.fast` retry pattern in `PIIScanner.recognizeText(in:)` correctly creates a new handler for the retry. Do not attempt to reuse the first handler — the `perform()` call will throw.
 
-PicStrip is a minimal, privacy-focused app built with:
-- **MVVM architecture** using Swift `@Observable` and `async/await`.
-- **Zero third-party dependencies.**
-- **Entirely on-device processing** with no network calls.
-- **Comprehensive metadata extraction and stripping** via two-pass ImageIO encoding.
-- **Multi-stage PII detection** combining Vision OCR, regex, and NSDataDetector.
-- **Batch processing** with sequential, memory-conscious design.
-- **Automated CI/CD** with semantic versioning, SLSA provenance, and TestFlight distribution.
+### Batch Processing Must Remain Sequential
 
-For questions or contributions, see the main [README.md](README.md) and open an issue on GitHub.
+Concurrent batch processing would require holding multiple decoded `UIImage` objects in memory simultaneously. On a device processing ten 12 MP photos, this exceeds available memory. The sequential loop with explicit `nil` assignments is not defensive programming overhead — it is the memory model.

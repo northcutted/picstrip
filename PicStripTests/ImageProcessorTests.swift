@@ -2,6 +2,7 @@ import XCTest
 import ImageIO
 import CoreFoundation
 import UniformTypeIdentifiers
+import UIKit
 @testable import PicStrip
 
 /// Contract tests for `ImageProcessor`.
@@ -164,11 +165,6 @@ final class ImageProcessorTests: XCTestCase {
         var config = StripConfig.default
         config.categoryEnabled["GPS"] = false
 
-        // --- Act ---
-        // Note: GPS preservation requires Pass 2 to re-inject the GPS dict into the output
-        // metadata, which the current engine does not yet do (it only re-injects orientation).
-        // This test documents the expected behaviour and will be used to drive that enhancement.
-        // For now we verify that the stripped catalogue does NOT include GPS fields.
         let result = try ImageProcessor.process(data: inputData, preset: .highQualityJPEG, config: config)
 
         // --- Assert: GPS fields must not appear in the stripped catalogue ---
@@ -176,6 +172,79 @@ final class ImageProcessorTests: XCTestCase {
         XCTAssertTrue(
             gpsFields.isEmpty,
             "Stripped metadata catalogue must not include GPS fields when GPS category is disabled."
+        )
+    }
+
+    /// **Config: per-field keep.**
+    ///
+    /// When a single field override says "keep", the stripped catalogue must
+    /// exclude that field while still reporting other fields in the same category.
+    func testProcess_honorsPerFieldKeepOverrideInStrippedCatalogue() throws {
+        // --- Arrange ---
+        let inputData = try makeTestImageData()
+
+        var config = StripConfig.default
+        config.fieldOverrides["EXIF.DateTimeOriginal"] = false
+
+        // --- Act ---
+        let result = try ImageProcessor.process(data: inputData, preset: .highQualityJPEG, config: config)
+
+        // --- Assert ---
+        let strippedEXIFKeys = Set(
+            result.stripped.fields
+                .filter { $0.category == "EXIF" && !$0.isStructural }
+                .map(\.key)
+        )
+        XCTAssertFalse(
+            strippedEXIFKeys.contains("DateTimeOriginal"),
+            "DateTimeOriginal has an explicit keep override and must not be reported as stripped."
+        )
+        XCTAssertTrue(
+            strippedEXIFKeys.contains("UserComment"),
+            "Other EXIF fields in the same category must still be stripped."
+        )
+    }
+
+    func testShouldReportStripped_keepsUnsupportedCategoriesVisible() {
+        var config = StripConfig.default
+        config.fieldOverrides["Apple Maker Note.SomePrivateKey"] = false
+
+        XCTAssertTrue(
+            ImageProcessor.shouldReportStripped(
+                category: "Apple Maker Note",
+                key: "SomePrivateKey",
+                isStructural: false,
+                config: config
+            ),
+            "Unsupported categories must stay visible in review even if the user tries to keep them."
+        )
+    }
+
+    /// **Redacted image path.**
+    ///
+    /// Re-encoding a rendered image with separate source bytes must still use the
+    /// source metadata for stripping decisions. This protects the redaction flow,
+    /// where pixels come from `ImageRedactor` but metadata policy comes from the
+    /// original photo.
+    func testProcessRenderedImage_usesSourceDataForMetadataCatalogue() throws {
+        // --- Arrange ---
+        let sourceData = try makeTestImageData()
+        let renderedImage = try XCTUnwrap(UIImage(data: sourceData))
+
+        // --- Act ---
+        let result = try ImageProcessor.process(
+            image: renderedImage,
+            sourceData: sourceData,
+            preset: .losslessPNG,
+            config: .default
+        )
+
+        // --- Assert ---
+        XCTAssertFalse(result.data.isEmpty, "Rendered-image output must not be empty.")
+        XCTAssertEqual(result.sourceType, .jpeg, "Source type must be read from sourceData, not rendered pixels.")
+        XCTAssertTrue(
+            result.stripped.fields.contains { $0.category == "GPS" },
+            "Rendered-image processing must still report metadata stripped from the original source."
         )
     }
 

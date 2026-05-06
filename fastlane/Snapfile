@@ -17,8 +17,11 @@ languages([
   "en-US",
 ])
 
-# The UI test scheme that contains snapshot() calls.
-scheme("PicStrip")
+# Dedicated screenshots-only scheme — contains only PicStripUITests.
+# Using the full PicStrip scheme would also run all unit test bundles
+# (PIIScannerTests, DetectionRegistryTests, etc.) inside the screenshot job,
+# wasting ~5 min per device on work that belongs in the PR/main CI pipeline.
+scheme("PicStripScreenshots")
 
 app_identifier("com.northcutt.PicStrip")
 
@@ -45,3 +48,8 @@ concurrent_simulators(false)
 
 # Stop on the first test failure rather than collecting broken screenshots.
 stop_after_first_error(true)
+
+# Do not retry on failure. The screenshot tests are deterministic; retrying a
+# broken test just burns another full build+test cycle (~12 min) on the macOS
+# runner with no chance of a different outcome.
+number_of_retries(0)

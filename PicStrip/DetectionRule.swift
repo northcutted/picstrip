@@ -36,10 +36,12 @@ enum DetectionRegistry {
     /// ambiguity inside array literals.
     private static func build() -> [DetectionRule] {
         func rule(_ type: PIIType, _ pattern: String, _ baseScore: Double) -> DetectionRule {
-            // try! is intentional: a bad pattern is a programmer error, not a runtime condition.
-            // These are compiled once at startup; any regex mistake must fail fast during development.
-            let regex = try! NSRegularExpression(pattern: pattern, options: [])
-            return DetectionRule(type: type, regex: regex, baseScore: baseScore)
+            do {
+                let regex = try NSRegularExpression(pattern: pattern, options: [])
+                return DetectionRule(type: type, regex: regex, baseScore: baseScore)
+            } catch {
+                fatalError("Invalid detection regex for \(type): \(error)")
+            }
         }
 
         return [
@@ -186,7 +188,7 @@ enum DetectionRegistry {
             // is ultimately heuristic.
             rule(.unstructuredCredential,
                  #"(?i)(?:[a-z0-9 ]{0,12}(?:login|log ?in|pass(?:word)?|pwd|user(?:name)?|cred(?:ential)?s?|ha[sś][łl]o|haslo|islo|iso|g?in|ogin|0g ?in|min))\s*[*•:.\-=]\s*([^\n]{2,})"#,
-                 0.68),
+                 0.68)
         ]
     }
 }

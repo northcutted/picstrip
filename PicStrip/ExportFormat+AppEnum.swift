@@ -14,22 +14,22 @@ extension ExportFormat: AppEnum {
 
     nonisolated static var caseDisplayRepresentations: [ExportFormat: DisplayRepresentation] {
         [
-            .png:      DisplayRepresentation(
+            .png: DisplayRepresentation(
                 title: "PNG",
                 subtitle: "Maximum privacy — no format headers"
             ),
-            .jpeg:     DisplayRepresentation(
+            .jpeg: DisplayRepresentation(
                 title: "JPEG",
                 subtitle: "Reduced file size, standard compatibility"
             ),
-            .heic:     DisplayRepresentation(
+            .heic: DisplayRepresentation(
                 title: "HEIC",
                 subtitle: "High efficiency, Apple native"
             ),
             .original: DisplayRepresentation(
                 title: "Match Original",
                 subtitle: "Keeps original format"
-            ),
+            )
         ]
     }
 }

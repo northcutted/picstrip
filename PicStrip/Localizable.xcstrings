@@ -115,6 +115,9 @@
     "Cancel" : {
 
     },
+    "Cannot be preserved during safe re-encoding." : {
+
+    },
     "Clean Photos" : {
 
     },
@@ -319,6 +322,9 @@
     "Save as New Photo" : {
 
     },
+    "Save is available after the visual privacy scan completes." : {
+
+    },
     "Save Mode" : {
 
     },
@@ -326,6 +332,12 @@
 
     },
     "Saving…" : {
+
+    },
+    "Scanning" : {
+
+    },
+    "Scanning photo for sensitive visual content" : {
 
     },
     "Scrubbed Image" : {

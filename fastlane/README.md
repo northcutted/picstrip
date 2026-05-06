@@ -63,6 +63,30 @@ Build and export IPA
 
 Build and upload to TestFlight
 
+### ios screenshots
+
+```sh
+[bundle exec] fastlane ios screenshots
+```
+
+Capture App Store screenshots on simulator (reads fastlane/Snapfile)
+
+### ios upload_screenshots
+
+```sh
+[bundle exec] fastlane ios upload_screenshots
+```
+
+Upload previously captured screenshots to App Store Connect (binary unchanged)
+
+### ios submit
+
+```sh
+[bundle exec] fastlane ios submit
+```
+
+Upload metadata + submit the processed TestFlight build for App Review
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.

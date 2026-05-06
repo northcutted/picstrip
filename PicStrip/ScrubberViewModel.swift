@@ -1,7 +1,7 @@
-import SwiftUI
-import PhotosUI
-import Photos
 import CoreImage
+import Photos
+import PhotosUI
+import SwiftUI
 import UniformTypeIdentifiers
 
 // MARK: - ActiveSheet
@@ -82,7 +82,11 @@ final class ScrubberViewModel {
     var selectedPreset: ExportPreset = .matchSource {
         didSet {
             guard rawImageData != nil else { return }
-            processCurrentImage()
+            if activeSheet == .preSave {
+                Task { await prepareAndReview(presentSheet: false) }
+            } else {
+                processCurrentImage()
+            }
         }
     }
 
@@ -112,6 +116,9 @@ final class ScrubberViewModel {
     /// `true` while an async load, processing, or save operation is in flight.
     var isProcessing: Bool = false
 
+    /// `true` while the current image's OCR pass is still running.
+    var isScanningPII: Bool = false
+
     /// Populated when any step throws; `nil` on success.
     var errorMessage: String?
 
@@ -120,7 +127,7 @@ final class ScrubberViewModel {
     /// Controls which bottom sheet (if any) is currently presented.
     /// Only one sheet can be open at a time — assigning a new value safely
     /// replaces whatever is currently showing.
-    var activeSheet: ActiveSheet? = nil
+    var activeSheet: ActiveSheet?
 
     /// Shown when the user chose "Replace Original" but no asset identifier is available.
     var showReplaceUnavailableAlert: Bool = false
@@ -136,7 +143,7 @@ final class ScrubberViewModel {
 
     /// The result whose bounding boxes are currently highlighted on the image.
     /// `nil` means no row is selected and no boxes are drawn.
-    var selectedPIIResult: DetectionResult? = nil
+    var selectedPIIResult: DetectionResult?
 
     /// The set of `PIIType`s whose instances will be burned black on export.
     /// Auto-populated with every detected type when a scan completes (privacy by
@@ -146,7 +153,7 @@ final class ScrubberViewModel {
     /// The redacted `UIImage` produced by `ImageRedactor`, cached so `requestSave()`
     /// and the share sheet both use the same rendered output without re-running the
     /// renderer twice.  Cleared whenever a new image is loaded.
-    var redactedUIImage: UIImage? = nil
+    var redactedUIImage: UIImage?
 
     // MARK: - Batch state
 
@@ -166,13 +173,15 @@ final class ScrubberViewModel {
     var batchReports: [AuditReport] = []
 
     /// Non-nil when the batch encounters a fatal error (e.g. photo library access denied).
-    var batchErrorMessage: String? = nil
+    var batchErrorMessage: String?
 
     // MARK: - Private
 
     private let piiScanner = PIIScanner()
 
     private var isClearing: Bool = false
+    private var piiScanTask: Task<Void, Never>?
+    private var piiScanToken = UUID()
 
     /// The unprocessed image bytes retained so preset / config changes can re-process
     /// without requiring the user to re-pick the image.
@@ -201,6 +210,10 @@ final class ScrubberViewModel {
         pendingStrippedMetadata = nil
         sourceUTType = nil
         rawSourceProps = nil
+        piiScanTask?.cancel()
+        piiScanTask = nil
+        piiScanToken = UUID()
+        isScanningPII     = false
         detectedPII       = []
         imageSize         = .zero
         activeSheet       = nil
@@ -227,24 +240,7 @@ final class ScrubberViewModel {
                 imageSize = uiImage.size
             }
 
-            // Fire PII scan concurrently — does not block export pipeline.
-            // Errors are caught silently; a failed scan is non-fatal.
-            let capturedData = data
-            Task {
-                do {
-                    let result = try await piiScanner.scanImage(data: capturedData)
-                    await MainActor.run {
-                        self.detectedPII = result
-                        // Privacy by default: pre-select every detected type for redaction.
-                        self.typesToRedact = Set(result.map(\.type))
-                    }
-                } catch {
-                    await MainActor.run {
-                        self.detectedPII = []
-                        self.typesToRedact = []
-                    }
-                }
-            }
+            startPIIScan(data: data)
 
             processCurrentImage()
         } catch {
@@ -261,6 +257,36 @@ final class ScrubberViewModel {
         isProcessing = true
         defer { isProcessing = false }
         processImage()
+    }
+
+    private func startPIIScan(data: Data) {
+        piiScanTask?.cancel()
+        let token = UUID()
+        piiScanToken = token
+        isScanningPII = true
+
+        piiScanTask = Task { [piiScanner] in
+            let result: [DetectionResult]
+            do {
+                result = try await piiScanner.scanImage(data: data)
+            } catch {
+                result = []
+            }
+
+            await MainActor.run {
+                guard self.piiScanToken == token, !Task.isCancelled else { return }
+                self.detectedPII = result
+                // Privacy by default: pre-select every detected type for redaction.
+                self.typesToRedact = Set(result.map(\.type))
+                self.isScanningPII = false
+                self.piiScanTask = nil
+            }
+        }
+    }
+
+    private func waitForCurrentPIIScan() async {
+        let task = piiScanTask
+        await task?.value
     }
 
     /// Recomputes `pendingStrippedMetadata` from cached source props without re-encoding.
@@ -286,9 +312,11 @@ final class ScrubberViewModel {
         Task { await prepareAndReview() }
     }
 
-    private func prepareAndReview() async {
+    private func prepareAndReview(presentSheet: Bool = true) async {
         isProcessing = true
         defer { isProcessing = false }
+
+        await waitForCurrentPIIScan()
 
         // Redaction path: burn only the instances whose type is in typesToRedact.
         let instancesToRedact = detectedPII
@@ -301,20 +329,20 @@ final class ScrubberViewModel {
 
             if let burned = await ImageRedactor().redact(image: uiImage, instances: instancesToRedact) {
                 redactedUIImage = burned
-                if let redactedData = burned.jpegData(compressionQuality: 0.92) {
-                    processImage(overridingRawData: redactedData)
-                } else {
-                    processCurrentImage()
-                }
+                processImage(overridingImage: burned)
             } else {
-                processCurrentImage()
+                errorMessage = "Could not render redactions for this image."
+                processedData = nil
+                return
             }
         } else {
             redactedUIImage = nil
-            processCurrentImage()
+            processImage()
         }
 
-        activeSheet = .preSave
+        if presentSheet {
+            activeSheet = .preSave
+        }
     }
 
     /// Processes `override` data (or `rawImageData` when nil) through the EXIF
@@ -323,13 +351,23 @@ final class ScrubberViewModel {
     /// `rawSourceProps` and `allSourceMetadata` are derived from the *original*
     /// image only — they must never be overwritten by intermediate redacted data,
     /// which carries ghost iOS-injected TIFF/EXIF fields.
-    private func processImage(overridingRawData override: Data? = nil) {
+    private func processImage(overridingRawData override: Data? = nil, overridingImage imageOverride: UIImage? = nil) {
         guard let raw = override ?? rawImageData else { return }
 
         errorMessage = nil
 
         do {
-            let result = try ImageProcessor.process(data: raw, preset: selectedPreset, config: stripConfig)
+            let result: ProcessedImage
+            if let imageOverride, let sourceData = rawImageData {
+                result = try ImageProcessor.process(
+                    image: imageOverride,
+                    sourceData: sourceData,
+                    preset: selectedPreset,
+                    config: stripConfig
+                )
+            } else {
+                result = try ImageProcessor.process(data: raw, preset: selectedPreset, config: stripConfig)
+            }
             processedData           = result.data
             sourceUTType            = result.sourceType
             pendingStrippedMetadata = result.stripped
@@ -339,7 +377,7 @@ final class ScrubberViewModel {
 
             // Only update source props and display metadata when processing the
             // original image — not when processing redacted intermediate data.
-            if override == nil {
+            if override == nil && imageOverride == nil {
                 if let source = CGImageSourceCreateWithData(raw as CFData, nil) {
                     rawSourceProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
                 }
@@ -454,8 +492,8 @@ final class ScrubberViewModel {
     func generateAuditJSON() -> URL? {
         // 1. Visual redactions — only types the user has opted to redact.
         let visualRedactions: [RedactionReport] = detectedPII
-            .filter  { typesToRedact.contains($0.type) }
-            .map     { RedactionReport(type: $0.type.description, instanceCount: $0.matchCount) }
+            .filter { typesToRedact.contains($0.type) }
+            .map { RedactionReport(type: $0.type.description, instanceCount: $0.matchCount) }
 
         // 2. Metadata stripped — non-structural fields grouped by category,
         //    respecting the current strip config (disabled categories are excluded).
@@ -463,7 +501,12 @@ final class ScrubberViewModel {
             guard let source = allSourceMetadata else { return [] }
             var grouped: [String: [String: String]] = [:]
             for field in source.fields where !field.isStructural {
-                guard stripConfig.categoryEnabled[field.category] != false else { continue }
+                guard ImageProcessor.shouldReportStripped(
+                    category: field.category,
+                    key: field.key,
+                    isStructural: field.isStructural,
+                    config: stripConfig
+                ) else { continue }
                 grouped[field.category, default: [:]][field.key] = field.value
             }
             return grouped
@@ -531,8 +574,10 @@ final class ScrubberViewModel {
             guard var imageData = try? await item.loadTransferable(type: Data.self) else {
                 continue
             }
+            let sourceData = imageData
 
             var visualRedactions: [RedactionReport] = []
+            var redactedImage: UIImage?
 
             // ── Step 2: Visual PII redaction ────────────────────────────────
             // Sequential scan + render — no concurrent Tasks to avoid OOM.
@@ -542,9 +587,8 @@ final class ScrubberViewModel {
                     if !allInstances.isEmpty {
                         var localImage: UIImage? = UIImage(data: imageData)
                         if let img = localImage,
-                           let burned = await ImageRedactor().redact(image: img, instances: allInstances),
-                           let redactedData = burned.jpegData(compressionQuality: 0.92) {
-                            imageData = redactedData
+                           let burned = await ImageRedactor().redact(image: img, instances: allInstances) {
+                            redactedImage = burned
                         }
                         localImage = nil   // explicit release before metadata step
                     }
@@ -560,14 +604,28 @@ final class ScrubberViewModel {
 
             if config.stripMetadata {
                 let preset = config.outputFormat.exportPreset
-                if let result = try? ImageProcessor.process(
-                    data: imageData, preset: preset, config: .allEnabled
-                ) {
+                let result: ProcessedImage?
+                if let redactedImage {
+                    result = try? ImageProcessor.process(
+                        image: redactedImage,
+                        sourceData: sourceData,
+                        preset: preset,
+                        config: .allEnabled
+                    )
+                } else {
+                    result = try? ImageProcessor.process(
+                        data: sourceData,
+                        preset: preset,
+                        config: .allEnabled
+                    )
+                }
+
+                if let result {
                     finalData = result.data
 
                     // Build the per-category report from the *pre-strip* source props.
-                    var rawProps: [CFString: Any]? = nil
-                    if let src = CGImageSourceCreateWithData(imageData as CFData, nil) {
+                    var rawProps: [CFString: Any]?
+                    if let src = CGImageSourceCreateWithData(sourceData as CFData, nil) {
                         rawProps = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any]
                     }
                     let sourceMeta = ImageProcessor.catalogueStrippedMetadata(
@@ -581,42 +639,69 @@ final class ScrubberViewModel {
                         .map { MetadataCategoryReport(category: $0.key, strippedFields: $0.value) }
                         .sorted { $0.category < $1.category }
                 }
+            } else if let redactedImage,
+                      let result = try? ImageProcessor.process(
+                        image: redactedImage,
+                        sourceData: sourceData,
+                        preset: config.outputFormat.exportPreset,
+                        config: StripConfig(categoryEnabled: [:], fieldOverrides: [:])
+                      ) {
+                finalData = result.data
             }
 
             // ── Step 4: Save to Photo Library ───────────────────────────────
             let dataToSave = finalData
+            var saveSucceeded = false
             switch config.saveMode {
             case .saveAsNew:
-                try? await PHPhotoLibrary.shared().performChanges {
-                    let request = PHAssetCreationRequest.forAsset()
-                    request.addResource(with: .photo, data: dataToSave, options: nil)
+                do {
+                    try await PHPhotoLibrary.shared().performChanges {
+                        let request = PHAssetCreationRequest.forAsset()
+                        request.addResource(with: .photo, data: dataToSave, options: nil)
+                    }
+                    saveSucceeded = true
+                } catch {
+                    batchErrorMessage = "Some photos could not be saved."
                 }
             case .replaceOriginal:
                 if let identifier = item.itemIdentifier,
                    let asset = PHAsset.fetchAssets(
                        withLocalIdentifiers: [identifier], options: nil
                    ).firstObject {
-                    try? await PHPhotoLibrary.shared().performChanges {
-                        let createRequest = PHAssetCreationRequest.forAsset()
-                        createRequest.addResource(with: .photo, data: dataToSave, options: nil)
-                        PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+                    do {
+                        try await PHPhotoLibrary.shared().performChanges {
+                            let createRequest = PHAssetCreationRequest.forAsset()
+                            createRequest.addResource(with: .photo, data: dataToSave, options: nil)
+                            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
+                        }
+                        saveSucceeded = true
+                    } catch {
+                        batchErrorMessage = "Some photos could not be replaced."
                     }
                 } else {
                     // Fallback: original not found (e.g. not yet downloaded from iCloud).
-                    try? await PHPhotoLibrary.shared().performChanges {
-                        let request = PHAssetCreationRequest.forAsset()
-                        request.addResource(with: .photo, data: dataToSave, options: nil)
+                    do {
+                        try await PHPhotoLibrary.shared().performChanges {
+                            let request = PHAssetCreationRequest.forAsset()
+                            request.addResource(with: .photo, data: dataToSave, options: nil)
+                        }
+                        saveSucceeded = true
+                        batchErrorMessage = "Some originals could not be identified, so cleaned copies were saved instead."
+                    } catch {
+                        batchErrorMessage = "Some photos could not be saved."
                     }
                 }
             }
 
             // ── Step 5: Accumulate audit entry ──────────────────────────────
-            batchReports.append(AuditReport(
-                scanDate: Date(),
-                formatSelected: config.outputFormat.title,
-                visualRedactions: visualRedactions,
-                metadataStripped: metadataStripped
-            ))
+            if saveSucceeded {
+                batchReports.append(AuditReport(
+                    scanDate: Date(),
+                    formatSelected: config.outputFormat.title,
+                    visualRedactions: visualRedactions,
+                    metadataStripped: metadataStripped
+                ))
+            }
 
             // OOM prevention: release large buffers before the next iteration.
             imageData = Data()
@@ -637,9 +722,9 @@ final class ScrubberViewModel {
     /// pretty-printed JSON, writes it to a temp file, and returns the URL.
     func generateBatchAuditJSON() -> URL? {
         let batch = BatchAuditReport(
-            batchDate:  Date(),
+            batchDate: Date(),
             photoCount: batchItems.count,
-            reports:    batchReports
+            reports: batchReports
         )
         let encoder = JSONEncoder()
         encoder.outputFormatting     = .prettyPrinted
@@ -683,5 +768,9 @@ final class ScrubberViewModel {
         redactedUIImage         = nil
         typesToRedact           = []
         stripConfig             = .default
+        piiScanTask?.cancel()
+        piiScanTask             = nil
+        piiScanToken            = UUID()
+        isScanningPII           = false
     }
 }

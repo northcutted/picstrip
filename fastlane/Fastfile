@@ -2,6 +2,7 @@ default_platform(:ios)
 
 platform :ios do
   # ── Constants ────────────────────────────────────────────────────────────────
+  ROOT          = File.expand_path("..", __dir__)
   APP_ID         = "com.northcutt.PicStrip"
   EXTENSION_ID   = "com.northcutt.PicStrip.ShareExtension"
   SCHEME         = "PicStrip"
@@ -13,12 +14,7 @@ platform :ios do
 
   desc "Run SwiftLint"
   lane :lint do
-    swiftlint(
-      mode:          :lint,
-      config_file:   ".swiftlint.yml",
-      strict:        true,
-      raise_if_swiftlint_error: true
-    )
+    sh("swiftlint lint --strict --no-cache --config #{ROOT}/.swiftlint.yml #{ROOT}")
   end
 
   desc "Run xcodebuild analyze (static analysis)"
@@ -131,7 +127,7 @@ platform :ios do
     upload_to_testflight(
       ipa:              "#{OUTPUT_DIR}/#{IPA_NAME}",
       api_key:          api_key,
-      skip_waiting_for_build_processing: true
+      skip_waiting_for_build_processing: false
     )
   end
 
@@ -140,11 +136,7 @@ platform :ios do
     capture_ios_screenshots(
       # Disable code signing for simulator builds — avoids OCSP certificate
       # validation hangs against Apple servers in headless CI environments.
-      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO",
-      # Only run the snapshot tests; skip the Xcode-generated launch test class
-      # (PicStripUITestsLaunchTests) which runs once per UI configuration and
-      # is not needed for App Store screenshots.
-      skip_testing: "PicStripUITests/PicStripUITestsLaunchTests"
+      xcargs: "CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO"
     )
   end
 

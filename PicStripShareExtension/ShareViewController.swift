@@ -1,6 +1,6 @@
-import UIKit
-import SwiftUI
 import Photos
+import SwiftUI
+import UIKit
 import UniformTypeIdentifiers
 
 // MARK: - ExtensionViewModel
@@ -9,7 +9,7 @@ import UniformTypeIdentifiers
 final class ExtensionViewModel {
     enum Phase { case configuring, processing }
     var phase: Phase = .configuring
-    var errorMessage: String? = nil
+    var errorMessage: String?
 }
 
 // MARK: - ShareViewController
@@ -73,7 +73,7 @@ class ShareViewController: UIViewController {
             host.view.topAnchor.constraint(equalTo: view.topAnchor),
             host.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             host.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            host.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
         host.didMove(toParent: self)
     }
@@ -134,44 +134,50 @@ class ShareViewController: UIViewController {
                 }
 
                 // ── Optional PII scan + redaction ─────────────────────────
-                var inputData: Data = rawData
+                var redactedImage: UIImage?
                 if redactPII {
-                    if let redacted = await self.redact(data: rawData) {
-                        inputData = redacted
-                    }
+                    redactedImage = await self.redact(data: rawData)
                 }
 
-                // ── Metadata strip ────────────────────────────────────────
+                // ── Re-encode only when stripping or redaction requires it ─
                 let stripConfig: StripConfig = stripMetadata ? .allEnabled : StripConfig(
                     categoryEnabled: [:], fieldOverrides: [:]
                 )
-                let result = try? ImageProcessor.process(
-                    data: inputData,
-                    preset: .losslessPNG,
-                    config: stripConfig
-                )
-                let finalData: Data = result?.data ?? inputData
+                let finalData: Data
+                if let redactedImage {
+                    let preset: ExportPreset = stripMetadata ? .losslessPNG : .matchSource
+                    let result = try? ImageProcessor.process(
+                        image: redactedImage,
+                        sourceData: rawData,
+                        preset: preset,
+                        config: stripConfig
+                    )
+                    finalData = result?.data ?? rawData
+                } else if stripMetadata {
+                    let result = try? ImageProcessor.process(
+                        data: rawData,
+                        preset: .losslessPNG,
+                        config: stripConfig
+                    )
+                    finalData = result?.data ?? rawData
+                } else {
+                    finalData = rawData
+                }
 
                 // ── Save cleaned image to Photos library ───────────────────
-                // We convert to UIImage rather than writing a tmp file URL so
-                // there is no sandbox-scoped path that the OS can revoke while
-                // PHPhotoLibrary.performChanges is still executing.
-                guard let image = UIImage(data: finalData) else {
-                    inputData = Data()
+                guard UIImage(data: finalData) != nil else {
                     continue
                 }
 
                 do {
                     try await PHPhotoLibrary.shared().performChanges {
-                        PHAssetCreationRequest.creationRequestForAsset(from: image)
+                        let request = PHAssetCreationRequest.forAsset()
+                        request.addResource(with: .photo, data: finalData, options: nil)
                     }
                     savedCount += 1
                 } catch {
                     // Non-fatal: log and continue with remaining images.
                 }
-
-                // ── Aggressively release intermediates ────────────────────
-                inputData = Data()
             }
 
             let completedCount = savedCount
@@ -196,14 +202,14 @@ class ShareViewController: UIViewController {
     /// when handed an abstract UTI like `"public.image"` if the provider only
     /// registers concrete types (which Photos always does).  Resolving to the
     /// concrete type first guarantees the callback fires.
-    private nonisolated static func bestTypeIdentifier(for provider: NSItemProvider) -> String {
+    nonisolated private static func bestTypeIdentifier(for provider: NSItemProvider) -> String {
         let preferredTypes: [String] = [
             UTType.jpeg.identifier,       // "public.jpeg"
             UTType.png.identifier,        // "public.png"
             UTType.heic.identifier,       // "public.heic"
             "com.apple.heic",             // legacy HEIC registration
             UTType.rawImage.identifier,   // "public.camera-raw-image"
-            UTType.image.identifier,      // "public.image" — abstract fallback
+            UTType.image.identifier      // "public.image" — abstract fallback
         ]
         return preferredTypes.first { provider.hasItemConformingToTypeIdentifier($0) }
             ?? UTType.image.identifier
@@ -221,14 +227,7 @@ class ShareViewController: UIViewController {
 
     // MARK: - Redaction helper
 
-    private func redact(data: Data) async -> Data? {
-        guard
-            let cgSource = CGImageSourceCreateWithData(data as CFData, nil),
-            let cgImage  = CGImageSourceCreateImageAtIndex(cgSource, 0, nil)
-        else { return nil }
-
-        let uiImage = UIImage(cgImage: cgImage)
-
+    private func redact(data: Data) async -> UIImage? {
         let results: [DetectionResult]
         do {
             results = try await PIIScanner().scanImage(data: data)
@@ -238,12 +237,9 @@ class ShareViewController: UIViewController {
 
         let instances = results.flatMap(\.instances)
         guard !instances.isEmpty else { return nil }
+        guard let uiImage = UIImage(data: data) else { return nil }
 
-        guard let redactedImage = await ImageRedactor().redact(image: uiImage, instances: instances) else {
-            return nil
-        }
-
-        return redactedImage.pngData()
+        return await ImageRedactor().redact(image: uiImage, instances: instances)
     }
 
     // MARK: - Error path
@@ -272,10 +268,10 @@ private struct ExtensionConfigView: View {
     let itemCount: Int
     let viewModel: ExtensionViewModel
     let onProcess: (Bool, Bool) -> Void
-    let onCancel:  () -> Void
+    let onCancel: () -> Void
 
     @State private var stripMetadata: Bool = true
-    @State private var redactPII:     Bool = true
+    @State private var redactPII: Bool = true
 
     private var isProcessing: Bool { viewModel.phase == .processing }
 

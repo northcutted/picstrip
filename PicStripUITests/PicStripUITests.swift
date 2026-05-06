@@ -2,6 +2,11 @@ import XCTest
 
 /// Fastlane snapshot test suite for PicStrip.
 ///
+/// All screenshots are captured in a single test method after one app.launch()
+/// call. Splitting captures across multiple test methods causes XCTest to
+/// terminate and relaunch the app between methods, which fails with
+/// "Failed to terminate com.northcutt.PicStrip" in headless CI.
+///
 /// Screens captured (v1):
 ///   01_Home  — home screen with the two-pass hero animation visible
 ///   02_About — About & Trust sheet
@@ -16,33 +21,28 @@ final class PicStripUITests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+    }
+
+    // MARK: - All screenshots — single launch
+
+    /// Captures every App Store screenshot in one continuous session.
+    /// One app.launch() → navigate → snapshot → navigate → snapshot …
+    @MainActor
+    func testAllScreenshots() throws {
         let app = XCUIApplication()
         setupSnapshot(app)
         app.launch()
-    }
 
-    // MARK: - 01 Home screen
-
-    /// Captures the home screen with the scanner hero animation in mid-sweep.
-    /// We wait 1.2 s so the detection beam is clearly visible.
-    @MainActor
-    func testScreenshot01Home() throws {
-        // The hero animation starts automatically; just wait for the first
+        // ── 01 Home ────────────────────────────────────────────────────────
+        // The hero animation starts automatically; wait for the first
         // detection pass to be clearly under way.
         Thread.sleep(forTimeInterval: 1.2)
         snapshot("01_Home")
-    }
 
-    // MARK: - 02 About sheet
-
-    /// Taps the info button in the navigation bar and captures the About sheet.
-    @MainActor
-    func testScreenshot02About() throws {
-        // Let the app settle.
+        // ── 02 About sheet ─────────────────────────────────────────────────
+        // Let the app settle, then tap the info button.
         Thread.sleep(forTimeInterval: 0.6)
-
-        // Tap the info / question-mark button.
-        let infoButton = XCUIApplication().buttons["infoButton"]
+        let infoButton = app.buttons["infoButton"]
         XCTAssertTrue(infoButton.waitForExistence(timeout: 5))
         infoButton.tap()
 

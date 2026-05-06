@@ -9,7 +9,7 @@ struct PreSaveReviewView: View {
     /// Tracks which categories are expanded — all start collapsed.
     @State private var expandedCategories: Set<String> = []
     @State private var showAdvanced: Bool = false
-    @State private var auditURL: URL? = nil
+    @State private var auditURL: URL?
 
     // MARK: - Derived counts (source of truth: original image only)
 
@@ -19,8 +19,16 @@ struct PreSaveReviewView: View {
     private var originalOrdered: [(category: String, fields: [MetadataField])] {
         guard let source = viewModel.allSourceMetadata, !source.isEmpty else { return [] }
         return ImageProcessor.categoryMap.compactMap { entry in
-            guard viewModel.stripConfig.categoryEnabled[entry.category] != false else { return nil }
-            let fields = source.fields.filter { $0.category == entry.category && !$0.isStructural }
+            let fields = source.fields.filter {
+                $0.category == entry.category &&
+                !$0.isStructural &&
+                ImageProcessor.shouldReportStripped(
+                    category: $0.category,
+                    key: $0.key,
+                    isStructural: $0.isStructural,
+                    config: viewModel.stripConfig
+                )
+            }
             return fields.isEmpty ? nil : (entry.category, fields)
         }
     }
@@ -413,4 +421,3 @@ struct ActivityView: UIViewControllerRepresentable {
 #Preview {
     PreSaveReviewView(viewModel: ScrubberViewModel())
 }
-

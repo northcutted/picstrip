@@ -1,6 +1,6 @@
 import Foundation
-import Vision
 import ImageIO
+import Vision
 
 // MARK: - Errors
 
@@ -64,7 +64,7 @@ struct PIIScanner {
     /// If the `.accurate` recogniser returns no observations — which can happen on
     /// the simulator where the Neural Engine is unavailable — the method retries
     /// with the `.fast` model as a safety net.
-    private nonisolated static func recognizeText(in data: Data) throws -> [VNRecognizedTextObservation] {
+    nonisolated private static func recognizeText(in data: Data) throws -> [VNRecognizedTextObservation] {
         func makeRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
             let req = VNRecognizeTextRequest()
             req.recognitionLevel = level
@@ -100,7 +100,7 @@ struct PIIScanner {
 
     /// Analyses each OCR observation individually, preserving bounding-box
     /// associations and tracking heuristic credential state across observations.
-    private nonisolated static func detectPII(
+    nonisolated private static func detectPII(
         in observations: [VNRecognizedTextObservation]
     ) throws -> [DetectionResult] {
 
@@ -169,7 +169,7 @@ struct PIIScanner {
 
         // Cross-observation state: non-nil when we have seen a bare credential
         // keyword and are waiting for the next observation to supply the value.
-        var pendingCredentialLabel: String? = nil
+        var pendingCredentialLabel: String?
 
         for observation in observations {
             guard let candidate = observation.topCandidates(1).first else { continue }
@@ -305,9 +305,9 @@ struct PIIScanner {
     /// without going through the full Vision pipeline.
     nonisolated static func swiftUIBox(from visionBox: CGRect) -> CGRect {
         CGRect(
-            x:      visionBox.origin.x,
-            y:      1.0 - visionBox.origin.y - visionBox.height,
-            width:  visionBox.width,
+            x: visionBox.origin.x,
+            y: 1.0 - visionBox.origin.y - visionBox.height,
+            width: visionBox.width,
             height: visionBox.height
         )
     }
@@ -322,7 +322,7 @@ struct PIIScanner {
     ///   - text:      The full string of the candidate.
     ///   - fallback:  The Vision-coordinate observation bounding box used when the
     ///                substring API fails.
-    private nonisolated static func substringBox(
+    nonisolated private static func substringBox(
         candidate: VNRecognizedText,
         nsRange: NSRange,
         in text: String,

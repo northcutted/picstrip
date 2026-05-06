@@ -40,9 +40,9 @@ struct ImageRedactor {
                     // boundingBox is normalised, top-left origin.
                     // Multiply by point size — the renderer's coordinate space.
                     let rect = CGRect(
-                        x:      box.minX   * size.width,
-                        y:      box.minY   * size.height,
-                        width:  box.width  * size.width,
+                        x: box.minX   * size.width,
+                        y: box.minY   * size.height,
+                        width: box.width  * size.width,
                         height: box.height * size.height
                     )
                     UIRectFill(rect)

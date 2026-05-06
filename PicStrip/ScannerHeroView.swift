@@ -9,6 +9,13 @@ private enum PIIState: Equatable {
     case redacted   // solid black fill — scrubbed
 }
 
+private struct PIIBox {
+    let x: CGFloat
+    let y: CGFloat
+    let width: CGFloat
+    let height: CGFloat
+}
+
 // MARK: - ScannerHeroView
 
 /// Looping two-pass privacy-scanner hero animation shown on the home screen.
@@ -38,10 +45,10 @@ struct ScannerHeroView: View {
 
     // MARK: PII boxes — fractions of frame dimensions (x, y, w, h)
 
-    private let boxes: [(x: CGFloat, y: CGFloat, w: CGFloat, h: CGFloat)] = [
-        (0.10, 0.16, 0.52, 0.12),  // name   — centreY ≈ 35 px
-        (0.10, 0.41, 0.64, 0.11),  // email  — centreY ≈ 74 px
-        (0.10, 0.66, 0.38, 0.11),  // phone  — centreY ≈114 px
+    private let boxes: [PIIBox] = [
+        PIIBox(x: 0.10, y: 0.16, width: 0.52, height: 0.12),  // name   — centreY ≈ 35 px
+        PIIBox(x: 0.10, y: 0.41, width: 0.64, height: 0.11),  // email  — centreY ≈ 74 px
+        PIIBox(x: 0.10, y: 0.66, width: 0.38, height: 0.11)  // phone  — centreY ≈114 px
     ]
 
     /// Simulated document text-line widths as fractions of frame width.
@@ -71,12 +78,12 @@ struct ScannerHeroView: View {
     /// Arranged in a single vertical column in the right margin to evoke a
     /// structured file manifest embedded in the image.
     private let dots: [DotSpec] = [
-        DotSpec(cx: 196, cy:  12, color: .red),     // GPS
-        DotSpec(cx: 196, cy:  39, color: .blue),    // EXIF
-        DotSpec(cx: 196, cy:  66, color: .indigo),  // EXIF Auxiliary
-        DotSpec(cx: 196, cy:  93, color: .orange),  // TIFF
+        DotSpec(cx: 196, cy: 12, color: .red),     // GPS
+        DotSpec(cx: 196, cy: 39, color: .blue),    // EXIF
+        DotSpec(cx: 196, cy: 66, color: .indigo),  // EXIF Auxiliary
+        DotSpec(cx: 196, cy: 93, color: .orange),  // TIFF
         DotSpec(cx: 196, cy: 120, color: .purple),  // IPTC
-        DotSpec(cx: 196, cy: 147, color: .primary), // Apple Maker Note
+        DotSpec(cx: 196, cy: 147, color: .primary) // Apple Maker Note
     ]
 
     // MARK: Animation state
@@ -152,7 +159,7 @@ struct ScannerHeroView: View {
                             style: StrokeStyle(lineWidth: 1.5, dash: [4, 3])
                         )
                 )
-                .frame(width: box.w * frameW, height: box.h * frameH)
+                .frame(width: box.width * frameW, height: box.height * frameH)
                 .offset(x: box.x * frameW, y: box.y * frameH)
                 .opacity(state == .clear ? 0 : 1)
                 .animation(.easeIn(duration: 0.18), value: state)
@@ -183,9 +190,9 @@ struct ScannerHeroView: View {
             .fill(
                 LinearGradient(
                     stops: [
-                        .init(color: .clear,                          location: 0.0),
+                        .init(color: .clear, location: 0.0),
                         .init(color: Color.accentColor.opacity(0.85), location: 0.5),
-                        .init(color: .clear,                          location: 1.0),
+                        .init(color: .clear, location: 1.0)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -202,9 +209,9 @@ struct ScannerHeroView: View {
             .fill(
                 LinearGradient(
                     stops: [
-                        .init(color: .clear,                          location: 0.0),
+                        .init(color: .clear, location: 0.0),
                         .init(color: Color.accentColor.opacity(0.90), location: 0.5),
-                        .init(color: .clear,                          location: 1.0),
+                        .init(color: .clear, location: 1.0)
                     ],
                     startPoint: .top,
                     endPoint: .bottom
@@ -280,7 +287,7 @@ struct ScannerHeroView: View {
         let detectEvents: [(yFrac: Double, fire: () -> Void)] = {
             var evts: [(Double, () -> Void)] = []
             for i in boxes.indices {
-                let yf = Double(boxes[i].y + boxes[i].h / 2)
+                let yf = Double(boxes[i].y + boxes[i].height / 2)
                 evts.append((yf, {
                     withAnimation(.easeIn(duration: 0.18)) { piiStates[i] = .outlined }
                 }))
@@ -317,7 +324,7 @@ struct ScannerHeroView: View {
         let scrubEvents: [(yFrac: Double, fire: () -> Void)] = {
             var evts: [(Double, () -> Void)] = []
             for i in boxes.indices {
-                let yf = Double(boxes[i].y + boxes[i].h / 2)
+                let yf = Double(boxes[i].y + boxes[i].height / 2)
                 evts.append((yf, {
                     withAnimation(.easeIn(duration: 0.15)) { piiStates[i] = .redacted }
                 }))
