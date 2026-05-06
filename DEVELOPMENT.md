@@ -17,7 +17,7 @@ Architecture details, data flows, service reference, CI/CD documentation, and co
 9. [Persistence Model](#persistence-model)
 10. [Privacy & Security](#privacy--security)
 11. [CI/CD Pipeline](#cicd-pipeline)
-12. [SLSA Provenance Level 3](#slsa-provenance-level-3)
+12. [SLSA Build Provenance Level 3](#slsa-build-provenance-level-3)
 13. [Contributing: Adding a New PII Type](#contributing-adding-a-new-pii-type)
 14. [Known Constraints](#known-constraints)
 
@@ -666,7 +666,7 @@ Four jobs run on `macos-26`:
 
 - **lint** — `bundle exec fastlane lint` (SwiftLint strict mode); runs on every PR
 - **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`); runs on every PR
-- **test** — `bundle exec fastlane test` (unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact); runs on every PR
+- **test** — `bundle exec fastlane test` (`PicStripTests` unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact); runs on every PR
 - **screenshots** — full 3-device App Store capture; runs **only when the `screenshots` label is applied** to the PR
 
 #### PR Screenshots (`screenshots` label)
@@ -683,14 +683,16 @@ version (ubuntu-latest)
 lint + analyze + test (macos-26, parallel)
 
 build (macos-26)
-  └─ bundle exec fastlane beta
+  └─ bundle exec fastlane certificates
+     bundle exec fastlane build
        ├─ fastlane match appstore (readonly, SSH key from secret)
        ├─ gym (Release config, App Store export method, manual signing)
        │     MARKETING_VERSION injected from semantic-release dry-run output
        │     BUILD_NUMBER = github.run_number
-       ├─ upload_to_testflight
        └─ shasum -a 256 build/PicStrip.ipa → PicStrip.ipa.sha256
      Outputs: ipa-hashes (base64 SHA-256 for SLSA subject)
+     Creates GitHub artifact attestation for build/PicStrip.ipa
+     Restores DerivedData/SPM caches to reduce release build time
 
 release (ubuntu-latest)
   └─ npx semantic-release
@@ -700,7 +702,7 @@ release (ubuntu-latest)
        └─ Updates CHANGELOG.md
 
 provenance (reusable — slsa-framework/slsa-github-generator)
-  └─ SLSA Level 3 attestation signed by Sigstore/Rekor
+  └─ SLSA Level 3 provenance signed by Sigstore/Rekor
      compile-generator: true — builds the generator binary from source at the
      pinned SHA rather than downloading a prebuilt binary; required when the
      workflow is referenced by commit SHA rather than a release tag
@@ -710,9 +712,22 @@ attach-release-assets (ubuntu-latest)
   └─ gh release upload v<version>
        PicStrip.ipa + PicStrip.ipa.sha256
 
+verify-provenance (ubuntu-latest)
+  ├─ gh attestation verify PicStrip.ipa
+  │    --source-digest = github.sha
+  │    --source-ref = refs/heads/main
+  └─ slsa-verifier verify-artifact PicStrip.ipa
+       --source-uri github.com/northcutted/picstrip
+       --source-branch main
+       plus exact github.sha check in the verified provenance JSON
+
+upload-testflight (macos-26)
+  └─ bundle exec fastlane upload_testflight
+       Uploads the already-built and verified IPA artifact
+
 submit (ubuntu-latest, "production" environment — requires manual approval)
-  needs: [version, build, release, provenance, attach-release-assets]
-  ← approval gate appears only after SLSA provenance and asset attachment succeed
+  needs: [version, upload-testflight]
+  ← approval gate appears only after provenance verification and TestFlight upload succeed
   └─ bundle exec fastlane submit
        ├─ upload_to_app_store (skip_binary_upload: true)
        ├─ submit_for_review: true
@@ -730,6 +745,7 @@ submit (ubuntu-latest, "production" environment — requires manual approval)
 | `certificates` | `fastlane match appstore` readonly sync (creates temp keychain on CI) |
 | `build` | Increments build number; `gym` with App Store export; outputs `build/PicStrip.ipa` |
 | `beta` | `certificates` → `build` → `upload_to_testflight` |
+| `upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
 | `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`) |
 | `upload_screenshots` | Pushes captured screenshots to App Store Connect |
 | `submit` | `upload_to_app_store` with `skip_binary_upload: true`; submits for App Review |
@@ -740,8 +756,9 @@ Manually dispatched (not part of the release pipeline). Key design decisions:
 
 - **Single `testAllScreenshots()` method**: all screenshots are captured in one XCTest method. Splitting across separate methods causes XCTest to terminate and relaunch the app between each method in headless CI, which fails with `Failed to terminate com.northcutt.PicStrip`.
 - **Dedicated `PicStripScreenshots` scheme**: excludes unit test bundles (`PicStripTests`, etc.) to avoid running the full test suite inside the screenshot job.
+- **Fastlane `test` lane excludes UI tests**: release and PR validation run `PicStripTests` only; screenshot UI tests stay isolated to screenshot jobs.
 - **`number_of_retries(0)` in Snapfile**: screenshot failures are deterministic; retrying wastes a full macOS job cycle.
-- **`simctl status_bar override` in a dedicated CI step**: done after `bootstatus -b` rather than inside Fastlane's `override_status_bar(true)` which can hang without a timeout.
+- **No pre-boot/status bar override step**: Fastlane/Xcode boots each simulator when needed. Direct `simctl bootstatus` and `simctl status_bar` calls have hung on `macos-26` runners.
 - **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
 
 **PR label-gated screenshots (`pr.yml` — `screenshots` job)**: Adding the `screenshots` label to a PR triggers the same full 3-device capture in the PR pipeline. Results upload as a PR artifact (`pr-screenshots-<PR-number>`, retained 14 days). The App Store Connect upload step is skipped — it only runs when `screenshots.yml` is dispatched against `main`.
@@ -760,9 +777,16 @@ On release, semantic-release runs a `prepareCmd` that generates `fastlane/metada
 
 ---
 
-## SLSA Provenance Level 3
+## SLSA Build Provenance Level 3
 
-Every release is accompanied by a SLSA Level 3 provenance attestation, cryptographically proving the IPA was produced by GitHub Actions.
+Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was produced by GitHub Actions.
+
+This claim is intentionally scoped to the IPA built and attested by GitHub Actions. It does not claim that the same digest identifies the App Store-installed application, because Apple may re-sign, encrypt, thin, or otherwise transform apps during distribution.
+
+The release pipeline creates two complementary provenance records:
+
+- **GitHub artifact attestation**: the `build` job runs `actions/attest-build-provenance` against `build/PicStrip.ipa`, which uploads provenance to GitHub's repository Attestations API so the release shows attestation coverage in GitHub.
+- **Release-attached SLSA provenance**: the `provenance` job runs the SLSA GitHub Generator reusable workflow and attaches the SLSA Level 3 provenance file to the GitHub Release.
 
 ### What SLSA Level 3 Guarantees
 
@@ -772,8 +796,31 @@ Every release is accompanied by a SLSA Level 3 provenance attestation, cryptogra
 | Hosted build platform | GitHub Actions (`macos-26` ephemeral runner) |
 | Build-as-code | `main.yml` checked into the repo |
 | Ephemeral environment | Fresh runner per job; no persistent state |
-| Isolated build | No network calls from the build job beyond Apple APIs and GitHub |
+| Isolated build | Hosted GitHub runner; provenance verification gates distribution |
 | Non-falsifiable provenance | Signed by Sigstore/Rekor (public, immutable transparency log) |
+| Distribution gate | TestFlight upload waits for GitHub attestation and SLSA release provenance verification |
+
+### GitHub Artifact Attestations
+
+The `build` job grants only the extra permissions required for native artifact attestations:
+
+- `id-token: write` to mint the OIDC token used for Sigstore signing
+- `attestations: write` to persist the attestation in GitHub
+- `artifact-metadata: write` to create the linked artifact metadata record
+
+The attestation action is pinned by immutable commit SHA (`a2bbfa25…`, `actions/attest-build-provenance@v4.1.0`) and runs after the IPA and SHA-256 digest are created, before the workflow artifact is uploaded.
+
+The release workflow verifies this attestation before TestFlight upload using:
+
+```bash
+gh attestation verify PicStrip.ipa \
+  --repo northcutted/picstrip \
+  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
+  --source-ref refs/heads/main \
+  --source-digest <release-workflow-source-commit>
+```
+
+Because semantic-release creates the public tag after the IPA is built, the primary source identity for the attested IPA is the workflow source commit (`github.sha`), not the release tag commit.
 
 ### Generator Compilation (`compile-generator: true`)
 
@@ -783,7 +830,19 @@ Setting `compile-generator: true` instructs the workflow to build the generator 
 
 ### Verify an IPA
 
-**Option 1 — slsa-verifier**
+**Option 1 — GitHub artifact attestation**
+
+```bash
+gh attestation verify PicStrip.ipa \
+  --repo northcutted/picstrip \
+  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
+  --source-ref refs/heads/main \
+  --source-digest <release-workflow-source-commit>
+```
+
+Expected output includes a verified SLSA provenance predicate associated with `northcutted/picstrip`.
+
+**Option 2 — slsa-verifier**
 
 ```bash
 brew install slsa-framework/slsa/slsa-verifier
@@ -791,15 +850,17 @@ brew install slsa-framework/slsa/slsa-verifier
 slsa-verifier verify-artifact PicStrip.ipa \
   --provenance-path PicStrip.ipa.attestation \
   --source-uri github.com/northcutted/picstrip \
-  --source-tag v1.2.3
+  --source-branch main
 ```
+
+The release workflow also checks that the verified provenance JSON contains the exact workflow source commit SHA.
 
 Expected output:
 ```
 Verified SLSA provenance for PicStrip.ipa
 ```
 
-**Option 2 — SHA-256 checksum**
+**Option 3 — SHA-256 checksum**
 
 ```bash
 # Both files are attached to every GitHub Release
@@ -808,7 +869,7 @@ diff computed.sha256 PicStrip.ipa.sha256
 # No output = checksums match
 ```
 
-**Option 3 — Rekor transparency log**
+**Option 4 — Rekor transparency log**
 
 ```bash
 rekor-cli search \
@@ -887,7 +948,7 @@ func testDetectsBankRoutingNumber() async throws {
 
 ### Step 5 — Test end-to-end
 
-1. `bundle exec fastlane test` — verify the new test passes in the `32/32` suite.
+1. `bundle exec fastlane test` — verify the new test passes in the unit test suite.
 2. Run the app; open a photo containing a routing number.
 3. Confirm the red overlay lands on the correct region.
 4. Toggle redaction; confirm the black box covers the number in the saved image.

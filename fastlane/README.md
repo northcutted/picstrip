@@ -63,6 +63,14 @@ Build and export IPA
 
 Build and upload to TestFlight
 
+### ios upload_testflight
+
+```sh
+[bundle exec] fastlane ios upload_testflight
+```
+
+Upload an already-built IPA to TestFlight
+
 ### ios screenshots
 
 ```sh

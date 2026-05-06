@@ -249,9 +249,10 @@ npm install
 |---------|--------------|
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
 | `bundle exec fastlane analyze` | `xcodebuild analyze` static analysis |
-| `bundle exec fastlane test` | Unit tests on iPhone 17 simulator; outputs JUnit XML to `build/test_output/` |
+| `bundle exec fastlane test` | `PicStripTests` unit tests on iPhone 17 simulator; outputs JUnit XML to `build/test_output/` |
 | `bundle exec fastlane build` | Signs + exports IPA (requires App Store certificates) |
 | `bundle exec fastlane beta` | `certificates` → `build` → TestFlight upload |
+| `bundle exec fastlane upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
 | `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`) |
 | `bundle exec fastlane upload_screenshots` | Pushes captured screenshots to App Store Connect |
 | `bundle exec fastlane submit` | Submits the processed TestFlight build for App Review |
@@ -266,7 +267,7 @@ npm install
 
 - **Lint** — SwiftLint strict mode
 - **Static Analysis** — `xcodebuild analyze`
-- **Unit Tests** — full suite on iPhone 17 simulator; JUnit XML uploaded as an artifact
+- **Unit Tests** — `PicStripTests` only on iPhone 17 simulator; JUnit XML uploaded as an artifact. Screenshot UI tests run only in the screenshot workflow.
 
 A fourth job runs only when the `screenshots` label is applied to the PR:
 
@@ -281,7 +282,8 @@ version (ubuntu) ──► lint / analyze / test (macos-26, parallel)
                           │
                           ▼
                      build (macos-26)
-                    Signs + exports IPA; uploads to TestFlight; computes SHA-256
+                    Restores build caches; signs + exports IPA;
+                    computes SHA-256; creates GitHub artifact attestation
                           │
                           ▼
                      release (ubuntu)
@@ -291,18 +293,27 @@ version (ubuntu) ──► lint / analyze / test (macos-26, parallel)
                      ▼         ▼
                 provenance   attach-release-assets
                 SLSA L3      Attaches IPA + SHA-256 digest to the GitHub Release
-                attestation       │
+                release provenance │
                      └─────┬─────┘
+                           ▼
+                        verify
+                        Verifies GitHub attestation and release provenance
+                        against the workflow source commit before distribution
+                           │
+                           ▼
+                     upload-testflight
+                    Uploads the verified IPA to TestFlight
+                           │
                            ▼
                         submit
                         Requires manual approval via the "production"
                         GitHub environment; submits for App Review.
-                        Gates on SLSA provenance succeeding.
+                        Gates on provenance verification and TestFlight upload.
 ```
 
 ### Screenshot workflow
 
-`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It boots three simulators (iPhone 16 Pro Max, iPhone 16 Plus, iPhone SE 3rd generation), overrides the status bar, runs a single `testAllScreenshots()` test method, and uploads results as artifacts. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
+`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode to avoid macOS runner hangs. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
 
 ---
 
@@ -332,22 +343,37 @@ Both the main app and the share extension declare zero data collection and zero 
 
 ## Supply Chain Security (SLSA Level 3)
 
-Every release is accompanied by a SLSA Level 3 provenance attestation, cryptographically proving the binary was built by GitHub Actions — not a developer's machine — with no post-build tampering.
+Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was built by GitHub Actions — not a developer's machine — with no post-build tampering.
 
 - Verifiable proof of origin: built by GitHub Actions infrastructure
 - Immutable audit trail: every build is logged and timestamped
 - Tamper detection: SHA-256 checksum cryptographically binds the attestation to the IPA
-- Transparent: all build logs are publicly auditable
+- GitHub-native attestations: `actions/attest-build-provenance` uploads provenance to the repository Attestations API for the IPA
+- Distribution gate: TestFlight upload happens only after GitHub and SLSA provenance verification pass
+- Transparent: all build logs and provenance are publicly auditable
 
-**Verify an IPA:**
+This claim applies to the GitHub-built IPA attached to the release. It does not claim that the same digest identifies the App Store-installed app, because Apple may re-sign, encrypt, thin, or otherwise transform the distributed binary.
+
+**Verify an IPA with GitHub artifact attestations:**
+
+```bash
+gh attestation verify PicStrip.ipa \
+  --repo northcutted/picstrip \
+  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
+  --source-ref refs/heads/main \
+  --source-digest <release-workflow-source-commit>
+```
+
+**Verify the release-attached SLSA provenance:**
 
 ```bash
 slsa-verifier verify-artifact PicStrip.ipa \
   --provenance-path PicStrip.ipa.attestation \
-  --source-uri github.com/northcutted/picstrip
+  --source-uri github.com/northcutted/picstrip \
+  --source-branch main
 ```
 
-See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-provenance-level-3) for detailed verification steps.
+See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-build-provenance-level-3) for detailed verification steps.
 
 ---
 
