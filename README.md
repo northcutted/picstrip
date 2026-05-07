@@ -77,11 +77,11 @@ Every framework is Apple-native: `ImageIO`, `Vision`, `Photos`, `PhotosUI`, `App
 
 ```mermaid
 graph TD
-    A[SwiftUI Views<br/>ContentView · PreSaveReviewView · BatchConfigView] -->|observes| B[ScrubberViewModel<br/>@Observable @MainActor]
-    B -->|calls| C[ImageProcessor<br/>stateless enum]
-    B -->|calls| D[PIIScanner<br/>stateless struct]
-    B -->|calls| E[ImageRedactor<br/>stateless struct]
-    C -->|ImageIO| F[Apple Frameworks<br/>ImageIO · Vision · Photos · AppIntents]
+    A["SwiftUI Views\nContentView · PreSaveReviewView · BatchConfigView"] -->|observes| B["ScrubberViewModel\n@Observable @MainActor"]
+    B -->|calls| C["ImageProcessor\nstateless enum"]
+    B -->|calls| D["PIIScanner\nstateless struct"]
+    B -->|calls| E["ImageRedactor\nstateless struct"]
+    C -->|ImageIO| F["Apple Frameworks\nImageIO · Vision · Photos · AppIntents"]
     D -->|Vision + NSDataDetector| F
     E -->|CoreGraphics| F
 ```
