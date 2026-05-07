@@ -1,172 +1,18 @@
-name: Screenshots
+name: Upload Screenshots
 
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: "Branch, tag, or SHA to capture screenshots from. Only main uploads to App Store Connect."
-        required: false
-        default: "main"
 
 permissions:
-  contents: write  # needed to push screenshot cache updates back to the repo
+  contents: read
 
 jobs:
-  # ── 1. Capture screenshots on macOS (simulator required) ──────────────────
-  capture:
-    name: Capture Screenshots
-    runs-on: macos-26
-    timeout-minutes: 60
-    env:
-      FASTLANE_HIDE_CHANGELOG: "1"
-      FASTLANE_OPT_OUT_USAGE: "1"
-      FASTLANE_SKIP_UPDATE_CHECK: "1"
-      FASTLANE_XCODEBUILD_SETTINGS_RETRIES: "2"
-      FASTLANE_XCODEBUILD_SETTINGS_TIMEOUT: "120"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ inputs.ref }}
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      # Hash the files whose content determines what the screenshots look like.
-      # Any Swift file change, fixture update, or Snapfile device-list change
-      # will produce a different hash and trigger a fresh capture.
-      - name: Compute inputs hash
-        id: hash
-        run: |
-          HASH=$(git ls-files -s -- \
-            PicStrip/ \
-            PicStripUITests/PicStripUITests.swift \
-            PicStripUITests/test_list.png \
-            fastlane/Snapfile \
-            | shasum -a 256 | cut -d' ' -f1)
-          echo "hash=$HASH" >> $GITHUB_OUTPUT
-
-      # Cache hit: manifest exists, hash matches, and every expected file is
-      # present on disk (committed in the repo). On a hit we skip the
-      # simulator run entirely.
-      - name: Check screenshot cache
-        id: cache
-        env:
-          CURRENT_HASH: ${{ steps.hash.outputs.hash }}
-        run: |
-          HIT=$(python3 << 'PYEOF'
-          import json, os
-          m_path = 'fastlane/screenshots/manifest.json'
-          if not os.path.exists(m_path):
-              print('false')
-              exit()
-          m = json.load(open(m_path))
-          stored  = m.get('inputs_sha', '')
-          current = os.environ.get('CURRENT_HASH', '')
-          files   = m.get('expected_files', [])
-          all_present = all(
-              os.path.exists('fastlane/screenshots/en-US/' + fn)
-              for fn in files)
-          print('true' if stored == current and files and all_present else 'false')
-          PYEOF
-          )
-          echo "hit=$HIT" >> $GITHUB_OUTPUT
-
-      # DerivedData cache is only useful when we are about to run xcodebuild.
-      - name: Cache DerivedData
-        if: steps.cache.outputs.hit != 'true'
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-screenshots-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj', 'PicStrip.xcodeproj/xcshareddata/xcschemes/PicStripScreenshots.xcscheme', 'fastlane/Fastfile', 'fastlane/Snapfile') }}
-          restore-keys: |
-            ${{ runner.os }}-screenshots-
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Capture screenshots
-        if: steps.cache.outputs.hit != 'true'
-        run: |
-          sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
-          bundle exec fastlane screenshots
-
-      # Frame, copy to docs/screenshots/, and write a fresh manifest so the
-      # next run can detect the cache hit without rebuilding.
-      - name: Frame and update cache
-        if: steps.cache.outputs.hit != 'true'
-        env:
-          INPUTS_HASH: ${{ steps.hash.outputs.hash }}
-        run: |
-          bundle exec fastlane frame_screenshots
-
-          mkdir -p docs/screenshots
-          cp fastlane/screenshots/en-US/*_framed.png docs/screenshots/
-
-          python3 << 'PYEOF'
-          import json, os
-          from datetime import datetime, timezone
-          en_us = 'fastlane/screenshots/en-US'
-          files = sorted(
-              f for f in os.listdir(en_us)
-              if f.endswith('.png') and '_framed' not in f)
-          m = {
-              'inputs_sha':    os.environ['INPUTS_HASH'],
-              'generated_at':  datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-              'expected_files': files,
-          }
-          fh = open('fastlane/screenshots/manifest.json', 'w')
-          json.dump(m, fh, indent=2)
-          fh.write('\n')
-          PYEOF
-
-      # Push updated screenshots + manifest back to the branch so the next
-      # run can reuse them without spinning up a simulator.
-      # Only commits when running on main; PRs skip this step.
-      # [skip ci] prevents the push from re-triggering this workflow.
-      - name: Commit screenshot cache
-        if: steps.cache.outputs.hit != 'true' && inputs.ref == 'main'
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add fastlane/screenshots/en-US/ \
-                  fastlane/screenshots/manifest.json \
-                  docs/screenshots/
-          git diff --cached --quiet && exit 0
-          git commit -m "chore: update screenshots [skip ci]"
-          git push origin HEAD:main
-
-      - name: Upload screenshots artifact
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: screenshots
-          path: fastlane/screenshots/
-          retention-days: 30
-
-      - name: Upload snapshot logs on failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: snapshot-logs
-          path: fastlane/screenshot_logs/
-          retention-days: 14
-          if-no-files-found: ignore
-
-  # ── 2. Upload to App Store Connect (Ubuntu — just an API call) ─────────────
   upload:
     name: Upload to App Store Connect
     runs-on: ubuntu-latest
-    needs: capture
-    if: ${{ inputs.ref == 'main' }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: main
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
@@ -174,16 +20,9 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
 
-      - name: Verify screenshots on disk
-        run: |
-          echo "=== fastlane/screenshots/en-US/ ==="
-          ls -la fastlane/screenshots/en-US/ || echo "DIRECTORY NOT FOUND"
-          echo "=== PNG count ==="
-          find fastlane/screenshots -name "*.png" | wc -l
-
       - name: Upload to App Store Connect
         env:
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-        run: bundle exec fastlane upload_screenshots
+          APP_STORE_CONNECT_API_KEY_ID:        ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT:   ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+        run: bundle exec fastlane upload_screenshots allow_partial:true
