@@ -54,20 +54,22 @@ jobs:
         env:
           CURRENT_HASH: ${{ steps.hash.outputs.hash }}
         run: |
-          HIT=$(python3 -c "
-import json, os
-m_path = 'fastlane/screenshots/manifest.json'
-if not os.path.exists(m_path):
-    print('false'); exit()
-m = json.load(open(m_path))
-stored  = m.get('inputs_sha', '')
-current = os.environ.get('CURRENT_HASH', '')
-files   = m.get('expected_files', [])
-all_present = all(
-    os.path.exists(f'fastlane/screenshots/en-US/{fn}')
-    for fn in files)
-print('true' if stored == current and files and all_present else 'false')
-")
+          HIT=$(python3 << 'PYEOF'
+          import json, os
+          m_path = 'fastlane/screenshots/manifest.json'
+          if not os.path.exists(m_path):
+              print('false')
+              exit()
+          m = json.load(open(m_path))
+          stored  = m.get('inputs_sha', '')
+          current = os.environ.get('CURRENT_HASH', '')
+          files   = m.get('expected_files', [])
+          all_present = all(
+              os.path.exists('fastlane/screenshots/en-US/' + fn)
+              for fn in files)
+          print('true' if stored == current and files and all_present else 'false')
+          PYEOF
+          )
           echo "hit=$HIT" >> $GITHUB_OUTPUT
 
       # DerivedData cache is only useful when we are about to run xcodebuild.
@@ -104,22 +106,22 @@ print('true' if stored == current and files and all_present else 'false')
           mkdir -p docs/screenshots
           cp fastlane/screenshots/en-US/*_framed.png docs/screenshots/
 
-          python3 -c "
-import json, os
-from datetime import datetime, timezone
-en_us = 'fastlane/screenshots/en-US'
-files = sorted(
-    f for f in os.listdir(en_us)
-    if f.endswith('.png') and '_framed' not in f)
-m = {
-    'inputs_sha':    os.environ['INPUTS_HASH'],
-    'generated_at':  datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
-    'expected_files': files,
-}
-fh = open('fastlane/screenshots/manifest.json', 'w')
-json.dump(m, fh, indent=2)
-fh.write('\n')
-"
+          python3 << 'PYEOF'
+          import json, os
+          from datetime import datetime, timezone
+          en_us = 'fastlane/screenshots/en-US'
+          files = sorted(
+              f for f in os.listdir(en_us)
+              if f.endswith('.png') and '_framed' not in f)
+          m = {
+              'inputs_sha':    os.environ['INPUTS_HASH'],
+              'generated_at':  datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+              'expected_files': files,
+          }
+          fh = open('fastlane/screenshots/manifest.json', 'w')
+          json.dump(m, fh, indent=2)
+          fh.write('\n')
+          PYEOF
 
       # Push updated screenshots + manifest back to the branch so the next
       # run can reuse them without spinning up a simulator.
