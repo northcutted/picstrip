@@ -221,7 +221,13 @@ platform :ios do
 
     allow_partial = options[:allow_partial].to_s == "true"
     unless allow_partial
-      image_paths = Dir.glob("./fastlane/screenshots/**/*.{png,jpg,jpeg}", File::FNM_CASEFOLD)
+      # Use shell find (runs from project root via sh) rather than Dir.glob to
+      # avoid Ruby CWD / FNM_CASEFOLD cross-platform differences on Linux CI.
+      raw_find = sh(
+        "find ./fastlane/screenshots -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null || true",
+        log: false
+      ).strip
+      image_paths = raw_find.empty? ? [] : raw_find.split("\n")
       normalized_paths = image_paths.map { |path| path.downcase.gsub(/[^a-z0-9]/, "") }
       missing_devices = SCREENSHOT_DEVICES.reject do |device|
         normalized_device = device.downcase.gsub(/[^a-z0-9]/, "")
