@@ -36,7 +36,7 @@ jobs:
       # Any Swift file change, fixture update, or Snapfile device-list change
       # will produce a different hash and trigger a fresh capture.
       - name: Compute inputs hash
-        id: inputs
+        id: hash
         run: |
           HASH=$(git ls-files -s -- \
             PicStrip/ \
@@ -52,7 +52,7 @@ jobs:
       - name: Check screenshot cache
         id: cache
         env:
-          CURRENT_HASH: ${{ steps.inputs.outputs.hash }}
+          CURRENT_HASH: ${{ steps.hash.outputs.hash }}
         run: |
           HIT=$(python3 -c "
 import json, os
@@ -97,7 +97,7 @@ print('true' if stored == current and files and all_present else 'false')
       - name: Frame and update cache
         if: steps.cache.outputs.hit != 'true'
         env:
-          INPUTS_HASH: ${{ steps.inputs.outputs.hash }}
+          INPUTS_HASH: ${{ steps.hash.outputs.hash }}
         run: |
           bundle exec fastlane frame_screenshots
 
