@@ -84,6 +84,16 @@ graph TD
     C -->|ImageIO| F["Apple Frameworks\nImageIO · Vision · Photos · AppIntents"]
     D -->|Vision + NSDataDetector| F
     E -->|CoreGraphics| F
+
+    classDef views   fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
+    classDef vm      fill:#1f7a61,stroke:#0a2a22,color:#ffffff
+    classDef service fill:#a8e6cc,stroke:#1f7a61,color:#0a2a22
+    classDef system  fill:#0a2a22,stroke:#000000,color:#3db87f
+
+    class A views
+    class B vm
+    class C,D,E service
+    class F system
 ```
 
 ### Design pattern: MVVM
@@ -117,6 +127,18 @@ flowchart TD
     J --> K
     K --> L[PHPhotoLibrary save\nor UIActivityViewController share]
     L --> M[AuditReport JSON\ngenerated + available for export]
+
+    classDef input    fill:#1f7a61,stroke:#0a2a22,color:#ffffff
+    classDef process  fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
+    classDef decision fill:#e0e7ff,stroke:#4338ca,color:#1e1b4b
+    classDef ui       fill:#a8e6cc,stroke:#1f7a61,color:#0a2a22
+    classDef output   fill:#0a2a22,stroke:#000000,color:#3db87f
+
+    class A,B input
+    class D,E,J,K process
+    class C,G,I decision
+    class F,H ui
+    class L,M output
 ```
 
 ---
@@ -322,10 +344,10 @@ flowchart TD
     verify --> testflight
     testflight --> submit
 
-    classDef ubuntu fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
-    classDef macos  fill:#dcfce7,stroke:#22c55e,color:#14532d
-    classDef slsa   fill:#f3e8ff,stroke:#a855f7,color:#3b0764
-    classDef manual fill:#fef3c7,stroke:#f59e0b,color:#78350f
+    classDef ubuntu fill:#e0e7ff,stroke:#4338ca,color:#1e1b4b
+    classDef macos  fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
+    classDef slsa   fill:#1f7a61,stroke:#0a2a22,color:#ffffff
+    classDef manual fill:#fef3c7,stroke:#d97706,color:#78350f
 
     class version,release,attach,verify ubuntu
     class lint,analyze,test,build,testflight macos
