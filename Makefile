@@ -3,7 +3,7 @@ DEVICE ?=
 DEVICES ?=
 ALLOW_PARTIAL ?= false
 
-.PHONY: help lint analyze test build screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
+.PHONY: help lint analyze test build screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices frame-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -17,6 +17,7 @@ help:
 	@echo "                                    Generate one-device screenshots"
 	@echo "  make screenshots DEVICES=\"iPhone 17 Pro Max,iPhone Air\""
 	@echo "                                    Generate a comma-separated device subset"
+	@echo "  make frame-screenshots            Add device frames (for GitHub/marketing use)"
 	@echo "  make upload-screenshots           Upload full screenshot set to App Store Connect"
 	@echo "  make upload-screenshots ALLOW_PARTIAL=true"
 	@echo "                                    Force upload of an incomplete screenshot set"
@@ -66,6 +67,9 @@ upload-screenshots:
 	else \
 		$(FASTLANE) upload_screenshots; \
 	fi
+
+frame-screenshots:
+	$(FASTLANE) frame_screenshots
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs

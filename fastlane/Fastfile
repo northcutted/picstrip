@@ -163,6 +163,53 @@ platform :ios do
       screenshot_options[:devices] = options[:devices].split(",").map(&:strip)
     end
 
+    # Work around fastlane/snapshot emitting OS=26.4 when Xcode needs OS=26.4.1.
+    # `xcrun simctl list devices` labels the runtime header "-- iOS 26.4 --"
+    # (no patch version), so DeviceManager#simulators sets device.os_version to
+    # "26.4".  TestCommandGenerator then builds:
+    #   -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.4'
+    # which Xcode rejects because it only registers destinations as OS=26.4.1.
+    # Switching to id=<UDID> bypasses the version string entirely and is always
+    # unambiguous.  Remove this block once fastlane ships a fix for the simctl
+    # text-parse regression (fastlane/fastlane#22xxx).
+    # Fix the HTML report so iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5)
+    # all appear correctly.  The upstream device-name map in reports_generator.rb has no
+    # entry for these models; the generic 'iPad Pro' key incidentally matches iPad but
+    # the two iPhone rows are invisible.  We prepend three specific entries *before*
+    # the broad 'iPad Pro' substring so the lookup breaks on the right key.
+    require 'snapshot/reports_generator'
+    Snapshot::ReportsGenerator.prepend(Module.new do
+      def xcode_9_and_above_device_name_mappings
+        {
+          'iPhone 17 Pro Max'     => 'iPhone 17 Pro Max',
+          'iPhone Air'            => 'iPhone Air',
+          'iPad Pro 13-inch (M5)' => 'iPad Pro 13-inch (M5)'
+        }.merge(super)
+      end
+    end)
+
+    require 'snapshot/test_command_generator'
+    Snapshot::TestCommandGenerator.singleton_class.prepend(Module.new do
+      def destination(devices)
+        return ["-destination 'platform=macOS'"] if devices.first.to_s =~ /^Mac/
+
+        os = case devices.first.to_s
+             when /^Apple TV/ then 'tvOS'
+             when /^Apple Watch/ then 'watchOS'
+             else 'iOS'
+             end
+
+        os_version = Snapshot.config[:ios_version] || Snapshot::LatestOsVersion.version(os)
+
+        destinations = devices.map do |d|
+          device = find_device(d, os_version)
+          UI.user_error!("No simulator found named '#{d}' for #{os}") if device.nil?
+          "-destination 'platform=#{os} Simulator,id=#{device.udid}'"
+        end
+        [destinations.join(' ')]
+      end
+    end)
+
     capture_ios_screenshots(screenshot_options)
   end
 
@@ -207,6 +254,14 @@ platform :ios do
       run_precheck_before_submit:   false,  # API key can't check IAP; skip it
       precheck_include_in_app_purchases: false,
       force:                        true    # skip interactive HTML diff preview
+    )
+  end
+
+  desc "Add device frames to screenshots (for GitHub / marketing use, not App Store upload)"
+  lane :frame_screenshots do
+    frame_screenshots(
+      path:   "./fastlane/screenshots",
+      resume: true
     )
   end
 

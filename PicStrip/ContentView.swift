@@ -126,6 +126,16 @@ struct ContentView: View {
                 viewModel.activeSheet = .batch
             }
         }
+        // ── UITest fixture injection ───────────────────────────────────────
+        // When PICSTRIP_FIXTURE is set in launchEnvironment (by the snapshot
+        // test), load the image bytes directly so the full photo UI is visible
+        // without needing to automate the system Photos picker.
+        .task {
+            guard let path = ProcessInfo.processInfo.environment["PICSTRIP_FIXTURE"],
+                  let data = try? Data(contentsOf: URL(fileURLWithPath: path))
+            else { return }
+            await viewModel.loadData(data)
+        }
     }
 
     // MARK: - Home screen
@@ -530,6 +540,7 @@ struct ContentView: View {
                 .padding(.horizontal, 4)
                 .disabled(viewModel.isScanningPII)
                 .opacity(viewModel.isScanningPII ? 0.75 : 1)
+                .accessibilityIdentifier("saveButton")
                 .accessibilityHint(viewModel.isScanningPII ? "Save is available after the visual privacy scan completes." : "")
                 .transition(.opacity.combined(with: .scale(scale: 0.95)))
             }
@@ -579,6 +590,7 @@ struct ContentView: View {
         .buttonStyle(.plain)
         .frame(minHeight: 44)
         .contentShape(Rectangle())
+        .accessibilityIdentifier("piiPill")
         .accessibilityLabel("Detected PII: \(viewModel.detectedPII.count) item\(viewModel.detectedPII.count == 1 ? "" : "s")")
         .accessibilityHint("Double tap to review detected sensitive content")
     }

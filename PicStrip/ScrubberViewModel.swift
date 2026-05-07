@@ -201,6 +201,45 @@ final class ScrubberViewModel {
 
     // MARK: - Async load pipeline
 
+    /// Loads image bytes directly — bypasses `PhotosPickerItem`.
+    ///
+    /// Used by UITest fixture injection: the test writes a known PNG to `/tmp`,
+    /// sets `PICSTRIP_FIXTURE` in `launchEnvironment`, and the app calls this on
+    /// startup so the review screen is reachable without automating the Photos picker.
+    func loadData(_ data: Data) async {
+        isProcessing = true
+        errorMessage = nil
+        processedData = nil
+        inputImage = nil
+        sourceUIImage = nil
+        pendingStrippedMetadata = nil
+        sourceUTType = nil
+        rawSourceProps = nil
+        piiScanTask?.cancel()
+        piiScanTask = nil
+        piiScanToken = UUID()
+        isScanningPII = false
+        detectedPII = []
+        imageSize = .zero
+        activeSheet = nil
+        selectedPIIResult = nil
+        redactedUIImage = nil
+        typesToRedact = []
+
+        defer { isProcessing = false }
+
+        rawImageData = data
+
+        if let uiImage = UIImage(data: data) {
+            inputImage = Image(uiImage: uiImage)
+            sourceUIImage = uiImage
+            imageSize = uiImage.size
+        }
+
+        startPIIScan(data: data)
+        processCurrentImage()
+    }
+
     private func loadAndProcess(item: PhotosPickerItem) async {
         isProcessing = true
         errorMessage = nil

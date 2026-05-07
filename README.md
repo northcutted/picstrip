@@ -1,4 +1,6 @@
-# PicStrip 
+<img src="docs/AppIcon.png" width="80" alt="PicStrip app icon"/>
+
+# PicStrip
 
 [![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue.svg)](https://www.apple.com/ios/)
 [![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
@@ -13,17 +15,22 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 
 ## Screenshots
 
-> **[Screenshot 1: Home Screen]**
->
-> Animated gradient background with "PicStrip" title and rotating tagline carousel. Lifetime stats capsule shows total photos cleaned and metadata fields stripped.
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-01_Home_framed.png" width="160" alt="Home Screen"/><br/><sub><b>Home</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-02_About_framed.png" width="160" alt="About"/><br/><sub><b>About</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-03_PhotoLoaded_framed.png" width="160" alt="Photo Loaded"/><br/><sub><b>Photo Loaded</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-04_MetadataDetail_framed.png" width="160" alt="Metadata Detail"/><br/><sub><b>Metadata Detail</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-05_ReviewAndSave_framed.png" width="160" alt="Review &amp; Save"/><br/><sub><b>Review &amp; Save</b></sub></td>
+  </tr>
+</table>
 
-> **[Screenshot 2: Photo with Metadata & PII]**
->
-> Full-screen image with red bounding boxes highlighting detected PII regions. Bottom panel shows categorized metadata (GPS, EXIF, TIFF, IPTC, etc.) ready for stripping.
-
-> **[Screenshot 3: Redaction Preview]**
->
-> Same photo with opaque black redaction boxes burned over sensitive regions. Per-field and per-category toggles visible in the sliding detail panel.
+<table>
+  <tr>
+    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-03_PhotoLoaded_framed.png" width="360" alt="iPad Pro — Photo Loaded"/><br/><sub><b>iPad Pro — Photo Loaded</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-04_MetadataDetail_framed.png" width="360" alt="iPad Pro — Metadata Detail"/><br/><sub><b>iPad Pro — Metadata Detail</b></sub></td>
+  </tr>
+</table>
 
 ---
 
@@ -178,7 +185,14 @@ PicStrip/
 ├── fastlane/
 │   ├── Fastfile             # Lane definitions
 │   ├── Snapfile             # Screenshot configuration
+│   ├── screenshots/
+│   │   ├── Framefile.json   # force_device_type overrides for 2025 device names
+│   │   ├── manifest.json    # Inputs SHA + expected file list (screenshot cache key)
+│   │   └── en-US/           # Raw App Store screenshots (committed as cache)
 │   └── metadata/            # App Store metadata (title, description, keywords, release notes)
+│
+├── docs/
+│   └── screenshots/         # Framed device-bezel previews (committed; used in this README)
 │
 ├── PicStrip/                # Main app target
 │   ├── PicStripApp.swift
@@ -319,6 +333,8 @@ version (ubuntu) ──► lint / analyze / test (macos-26, parallel)
 ### Screenshot workflow
 
 `screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode to avoid macOS runner hangs. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
+
+**Cache behaviour:** on each run the workflow computes a SHA-256 hash of all inputs that affect screenshot appearance (`PicStrip/`, `PicStripUITests/PicStripUITests.swift`, `PicStripUITests/test_list.png`, `fastlane/Snapfile`). If the hash matches `fastlane/screenshots/manifest.json` and all 15 expected PNGs are present in the repo, the simulator is skipped entirely and the existing screenshots are uploaded directly. On a cache miss the workflow recaptures, frames, updates `manifest.json`, and commits the new cache back to `main` with `[skip ci]`.
 
 ---
 

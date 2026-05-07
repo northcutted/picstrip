@@ -1,0 +1,18 @@
+{
+  "device_frame_version": "latest",
+  "default": {},
+  "data": [
+    {
+      "filter": "iPhone 17 Pro Max",
+      "force_device_type": "iPhone 14 Pro Max"
+    },
+    {
+      "filter": "iPhone Air",
+      "force_device_type": "iPhone 14 Plus"
+    },
+    {
+      "filter": "iPad Pro 13-inch",
+      "force_device_type": "iPad Pro (12.9-inch) (4th generation)"
+    }
+  ]
+}

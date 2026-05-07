@@ -9,7 +9,7 @@ on:
         default: "main"
 
 permissions:
-  contents: read
+  contents: write  # needed to push screenshot cache updates back to the repo
 
 jobs:
   # ── 1. Capture screenshots on macOS (simulator required) ──────────────────
@@ -32,7 +32,47 @@ jobs:
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
+      # Hash the files whose content determines what the screenshots look like.
+      # Any Swift file change, fixture update, or Snapfile device-list change
+      # will produce a different hash and trigger a fresh capture.
+      - name: Compute inputs hash
+        id: inputs
+        run: |
+          HASH=$(git ls-files -s -- \
+            PicStrip/ \
+            PicStripUITests/PicStripUITests.swift \
+            PicStripUITests/test_list.png \
+            fastlane/Snapfile \
+            | shasum -a 256 | cut -d' ' -f1)
+          echo "hash=$HASH" >> $GITHUB_OUTPUT
+
+      # Cache hit: manifest exists, hash matches, and every expected file is
+      # present on disk (committed in the repo). On a hit we skip the
+      # simulator run entirely.
+      - name: Check screenshot cache
+        id: cache
+        env:
+          CURRENT_HASH: ${{ steps.inputs.outputs.hash }}
+        run: |
+          HIT=$(python3 -c "
+import json, os
+m_path = 'fastlane/screenshots/manifest.json'
+if not os.path.exists(m_path):
+    print('false'); exit()
+m = json.load(open(m_path))
+stored  = m.get('inputs_sha', '')
+current = os.environ.get('CURRENT_HASH', '')
+files   = m.get('expected_files', [])
+all_present = all(
+    os.path.exists(f'fastlane/screenshots/en-US/{fn}')
+    for fn in files)
+print('true' if stored == current and files and all_present else 'false')
+")
+          echo "hit=$HIT" >> $GITHUB_OUTPUT
+
+      # DerivedData cache is only useful when we are about to run xcodebuild.
       - name: Cache DerivedData
+        if: steps.cache.outputs.hit != 'true'
         uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
           path: ~/Library/Developer/Xcode/DerivedData
@@ -47,9 +87,55 @@ jobs:
           bundler-cache: true
 
       - name: Capture screenshots
+        if: steps.cache.outputs.hit != 'true'
         run: |
           sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
           bundle exec fastlane screenshots
+
+      # Frame, copy to docs/screenshots/, and write a fresh manifest so the
+      # next run can detect the cache hit without rebuilding.
+      - name: Frame and update cache
+        if: steps.cache.outputs.hit != 'true'
+        env:
+          INPUTS_HASH: ${{ steps.inputs.outputs.hash }}
+        run: |
+          bundle exec fastlane frame_screenshots
+
+          mkdir -p docs/screenshots
+          cp fastlane/screenshots/en-US/*_framed.png docs/screenshots/
+
+          python3 -c "
+import json, os
+from datetime import datetime, timezone
+en_us = 'fastlane/screenshots/en-US'
+files = sorted(
+    f for f in os.listdir(en_us)
+    if f.endswith('.png') and '_framed' not in f)
+m = {
+    'inputs_sha':    os.environ['INPUTS_HASH'],
+    'generated_at':  datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+    'expected_files': files,
+}
+fh = open('fastlane/screenshots/manifest.json', 'w')
+json.dump(m, fh, indent=2)
+fh.write('\n')
+"
+
+      # Push updated screenshots + manifest back to the branch so the next
+      # run can reuse them without spinning up a simulator.
+      # Only commits when running on main; PRs skip this step.
+      # [skip ci] prevents the push from re-triggering this workflow.
+      - name: Commit screenshot cache
+        if: steps.cache.outputs.hit != 'true' && inputs.ref == 'main'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add fastlane/screenshots/en-US/ \
+                  fastlane/screenshots/manifest.json \
+                  docs/screenshots/
+          git diff --cached --quiet && exit 0
+          git commit -m "chore: update screenshots [skip ci]"
+          git push origin HEAD:main
 
       - name: Upload screenshots artifact
         if: always()

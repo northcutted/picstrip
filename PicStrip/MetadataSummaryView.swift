@@ -144,6 +144,7 @@ struct MetadataBadgeRow: View {
         .frame(minHeight: 44)
         .contentShape(Rectangle())
         .accessibilityLabel("\(category): \(count) field\(count == 1 ? "" : "s")\(isSelected ? ", selected" : "")")
+        .accessibilityIdentifier("badge_\(category)")
         .accessibilityHint(interactive ? (isSelected ? "Double tap to close" : "Double tap to review") : "")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .animation(.spring(duration: 0.2), value: isSelected)

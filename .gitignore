@@ -50,16 +50,9 @@ playground.xcworkspace
 Carthage/Build/
 
 # fastlane
-#
-# It is recommended to not store the screenshots in the git repo.
-# Instead, use fastlane to re-generate the screenshots whenever they are needed.
-# For more information about the recommended setup visit:
-# https://docs.fastlane.tools/best-practices/source-control/#source-control
-
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots/**/*.png
-fastlane/test_output
+fastlane/test_output/
 xcuserdata/
 *.xccheckout
 *.moved-aside
@@ -68,11 +61,13 @@ xcuserdata/
 DerivedData/
 build/
 
-# Fastlane
-fastlane/report.xml
-fastlane/Preview.html
+# Screenshots: ignore all PNGs under fastlane/screenshots except the committed
+# raw App Store screenshots in en-US/ (used as a pipeline cache). Framed
+# variants (*_framed.png) stay ignored everywhere — they live in docs/screenshots/.
 fastlane/screenshots/**/*.png
-fastlane/test_output/
+!fastlane/screenshots/en-US/*.png
+fastlane/screenshots/en-US/*_framed.png
+fastlane/screenshots/**/*.html
 
 # Artifacts
 *.ipa

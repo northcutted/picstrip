@@ -1,0 +1,21 @@
+{
+  "inputs_sha": "65b66bbe32b81bcc6eaac13dca33d19566e2f93aab8e00124394b792ea484358",
+  "generated_at": "2026-05-07T01:07:31Z",
+  "expected_files": [
+    "iPad Pro 13-inch (M5)-01_Home.png",
+    "iPad Pro 13-inch (M5)-02_About.png",
+    "iPad Pro 13-inch (M5)-03_PhotoLoaded.png",
+    "iPad Pro 13-inch (M5)-04_MetadataDetail.png",
+    "iPad Pro 13-inch (M5)-05_ReviewAndSave.png",
+    "iPhone 17 Pro Max-01_Home.png",
+    "iPhone 17 Pro Max-02_About.png",
+    "iPhone 17 Pro Max-03_PhotoLoaded.png",
+    "iPhone 17 Pro Max-04_MetadataDetail.png",
+    "iPhone 17 Pro Max-05_ReviewAndSave.png",
+    "iPhone Air-01_Home.png",
+    "iPhone Air-02_About.png",
+    "iPhone Air-03_PhotoLoaded.png",
+    "iPhone Air-04_MetadataDetail.png",
+    "iPhone Air-05_ReviewAndSave.png"
+  ]
+}
