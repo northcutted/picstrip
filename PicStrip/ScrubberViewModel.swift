@@ -141,8 +141,8 @@ final class ScrubberViewModel {
     /// image inside its container, so PII highlight boxes land on the right pixels.
     var imageSize: CGSize = .zero
 
-    /// The result whose bounding boxes are currently highlighted on the image.
-    /// `nil` means no row is selected and no boxes are drawn.
+    /// The result whose bounding boxes are temporarily emphasized on the image.
+    /// `nil` means the image falls back to the subtle all-redactions overlay.
     var selectedPIIResult: DetectionResult?
 
     /// The set of `PIIType`s whose instances will be burned black on export.
@@ -150,10 +150,41 @@ final class ScrubberViewModel {
     /// default).  The user can remove individual types in the PII details sheet.
     var typesToRedact: Set<PIIType> = []
 
+    /// Detected visual results that are currently selected for redaction.
+    /// Used by the photo preview to show subtle always-on redaction outlines.
+    var redactionPreviewResults: [DetectionResult] {
+        detectedPII.filter { result in
+            typesToRedact.contains(result.type) && !result.instances.isEmpty
+        }
+    }
+
     /// The redacted `UIImage` produced by `ImageRedactor`, cached so `requestSave()`
     /// and the share sheet both use the same rendered output without re-running the
     /// renderer twice.  Cleared whenever a new image is loaded.
     var redactedUIImage: UIImage?
+
+    /// Image shown in the review sheet preview.
+    ///
+    /// Prefer the rendered redaction image whenever selected visual redactions
+    /// exist so the user can inspect blacked-out regions before saving. Saving
+    /// and sharing still use `processedData`, which has passed through metadata
+    /// stripping.
+    var reviewPreviewUIImage: UIImage? {
+        let hasSelectedRedactions = detectedPII.contains { result in
+            typesToRedact.contains(result.type) && !result.instances.isEmpty
+        }
+
+        if hasSelectedRedactions, let redactedUIImage {
+            return redactedUIImage
+        }
+
+        if let processedData,
+           let image = UIImage(data: processedData) {
+            return image
+        }
+
+        return sourceUIImage
+    }
 
     // MARK: - Batch state
 
@@ -182,6 +213,7 @@ final class ScrubberViewModel {
     private var isClearing: Bool = false
     private var piiScanTask: Task<Void, Never>?
     private var piiScanToken = UUID()
+    private var piiFocusTask: Task<Void, Never>?
 
     /// The unprocessed image bytes retained so preset / config changes can re-process
     /// without requiring the user to re-pick the image.
@@ -217,6 +249,8 @@ final class ScrubberViewModel {
         rawSourceProps = nil
         piiScanTask?.cancel()
         piiScanTask = nil
+        piiFocusTask?.cancel()
+        piiFocusTask = nil
         piiScanToken = UUID()
         isScanningPII = false
         detectedPII = []
@@ -251,6 +285,8 @@ final class ScrubberViewModel {
         rawSourceProps = nil
         piiScanTask?.cancel()
         piiScanTask = nil
+        piiFocusTask?.cancel()
+        piiFocusTask = nil
         piiScanToken = UUID()
         isScanningPII     = false
         detectedPII       = []
@@ -326,6 +362,21 @@ final class ScrubberViewModel {
     private func waitForCurrentPIIScan() async {
         let task = piiScanTask
         await task?.value
+    }
+
+    func focusPIIResult(_ result: DetectionResult) {
+        selectedPIIResult = result
+        piiFocusTask?.cancel()
+        piiFocusTask = Task {
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                if self.selectedPIIResult == result {
+                    self.selectedPIIResult = nil
+                }
+                self.piiFocusTask = nil
+            }
+        }
     }
 
     /// Recomputes `pendingStrippedMetadata` from cached source props without re-encoding.
@@ -809,6 +860,8 @@ final class ScrubberViewModel {
         stripConfig             = .default
         piiScanTask?.cancel()
         piiScanTask             = nil
+        piiFocusTask?.cancel()
+        piiFocusTask            = nil
         piiScanToken            = UUID()
         isScanningPII           = false
     }

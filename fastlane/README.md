@@ -87,6 +87,14 @@ Capture App Store screenshots on simulator (reads fastlane/Snapfile)
 
 Upload previously captured screenshots to App Store Connect (binary unchanged)
 
+### ios frame_screenshots
+
+```sh
+[bundle exec] fastlane ios frame_screenshots
+```
+
+Add device frames to screenshots (for GitHub / marketing use, not App Store upload)
+
 ### ios submit
 
 ```sh
@@ -94,6 +102,14 @@ Upload previously captured screenshots to App Store Connect (binary unchanged)
 ```
 
 Upload metadata + submit the processed TestFlight build for App Review
+
+### ios accessibility
+
+```sh
+[bundle exec] fastlane ios accessibility
+```
+
+Sync App Store Accessibility Nutrition Label declarations
 
 ----
 

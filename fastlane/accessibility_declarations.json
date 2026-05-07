@@ -1,0 +1,28 @@
+{
+  "declarations": [
+    {
+      "deviceFamily": "IPHONE",
+      "supportsVoiceover": true,
+      "supportsVoiceControl": false,
+      "supportsLargerText": false,
+      "supportsDarkInterface": true,
+      "supportsDifferentiateWithoutColorAlone": true,
+      "supportsSufficientContrast": false,
+      "supportsReducedMotion": true,
+      "supportsCaptions": false,
+      "supportsAudioDescriptions": false
+    },
+    {
+      "deviceFamily": "IPAD",
+      "supportsVoiceover": true,
+      "supportsVoiceControl": false,
+      "supportsLargerText": false,
+      "supportsDarkInterface": true,
+      "supportsDifferentiateWithoutColorAlone": true,
+      "supportsSufficientContrast": false,
+      "supportsReducedMotion": true,
+      "supportsCaptions": false,
+      "supportsAudioDescriptions": false
+    }
+  ]
+}

@@ -36,6 +36,17 @@ struct ContentView: View {
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
 
+    private var sourceHasPrivacyMetadata: Bool {
+        viewModel.allSourceMetadata?.fields.contains {
+            ImageProcessor.shouldReportStripped(
+                category: $0.category,
+                key: $0.key,
+                isStructural: $0.isStructural,
+                config: viewModel.stripConfig
+            )
+        } == true
+    }
+
     /// Controls presentation of the About / Trust sheet.
     @State private var showingAbout = false
 
@@ -358,44 +369,20 @@ struct ContentView: View {
         GeometryReader { geo in
             ZStack(alignment: .bottom) {
                 // Photo or placeholder — never moves
-                if let uiImage = viewModel.sourceUIImage,
-                   viewModel.imageSize != .zero {
-                    Color.clear
-                        .aspectRatio(viewModel.imageSize, contentMode: .fit)
-                        .overlay(
-                            Image(uiImage: uiImage)
-                                .resizable()
-                        )
-                        .overlay(
-                            GeometryReader { geo in
-                                ZStack(alignment: .topLeading) {
-                                    if let selected = viewModel.selectedPIIResult {
-                                        ForEach(selected.instances) { instance in
-                                            let box = instance.boundingBox
-                                            Rectangle()
-                                                .strokeBorder(Color.red, lineWidth: 2)
-                                                .background(Color.red.opacity(0.15))
-                                                .frame(
-                                                    width: box.width  * geo.size.width,
-                                                    height: box.height * geo.size.height
-                                                )
-                                                .offset(
-                                                    x: box.minX * geo.size.width,
-                                                    y: box.minY * geo.size.height
-                                                )
-                                        }
-                                    }
-                                }
-                                .animation(.spring(response: 0.4, dampingFraction: 0.7),
-                                           value: viewModel.selectedPIIResult)
-                            }
-                        )
-                        .padding()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .transition(.opacity.animation(.easeInOut(duration: 0.25)))
-                        .onTapGesture {
+                if let uiImage = viewModel.sourceUIImage {
+                    ZoomableImagePreview(
+                        image: uiImage,
+                        highlightedResults: viewModel.redactionPreviewResults,
+                        focusedResult: viewModel.selectedPIIResult,
+                        isScanning: viewModel.isScanningPII,
+                        showZoomHint: hasPhoto,
+                        onTap: {
                             if isPanelOpen { closePanel() }
                         }
+                    )
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .transition(.opacity.animation(.easeInOut(duration: 0.25)))
                 } else {
                     placeholder
                 }
@@ -492,8 +479,13 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            // Badge row — only when photo loaded
-            if let metadata = viewModel.allSourceMetadata, !metadata.isEmpty, hasPhoto {
+            if hasPhoto, viewModel.isScanningPII || !viewModel.detectedPII.isEmpty {
+                sensitiveDataSection
+                    .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // Metadata row — only when photo loaded
+            if let metadata = viewModel.allSourceMetadata, sourceHasPrivacyMetadata, hasPhoto {
 
                 // Label row
                 HStack {
@@ -517,11 +509,20 @@ struct ContentView: View {
                             if let newValue { openPanel(category: newValue) } else { closePanel() }
                         }
                     ),
-                    trailingPill: !viewModel.detectedPII.isEmpty
-                        ? AnyView(piiPill)
-                        : viewModel.isScanningPII ? AnyView(scanningPIIPill) : nil
+                    trailingPill: nil
                 )
                 .padding(.horizontal, -4)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            } else if hasPhoto, viewModel.allSourceMetadata != nil {
+                HStack(spacing: 8) {
+                    Label("No hidden metadata found", systemImage: "checkmark.seal.fill")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(.secondary)
+
+                    Spacer()
+                }
+                .padding(.horizontal, 4)
+                .accessibilityIdentifier("noMetadataBanner")
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
@@ -550,49 +551,66 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
     }
 
-    // MARK: - PII pill
+    // MARK: - Sensitive data section
 
-    private var scanningPIIPill: some View {
-        HStack(spacing: 6) {
-            ProgressView()
-                .controlSize(.mini)
-                .accessibilityHidden(true)
-            Text("Scanning")
-                .font(.caption2.weight(.semibold))
-        }
-        .foregroundStyle(.secondary)
-        .padding(.horizontal, 9)
-        .padding(.vertical, 5)
-        .background(.regularMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.12), lineWidth: 0.5))
-        .frame(minHeight: 44)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel("Scanning photo for sensitive visual content")
-    }
+    private var sensitiveDataSection: some View {
+        let typeCount = viewModel.detectedPII.count
+        let redactionCount = viewModel.redactionPreviewResults.reduce(0) { $0 + $1.matchCount }
 
-    private var piiPill: some View {
-        Button {
-            viewModel.activeSheet = .pii
-        } label: {
-            HStack(spacing: 4) {
-                Image(systemName: "exclamationmark.triangle.fill")
-                    .font(.system(size: 10, weight: .semibold))
+        return HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(Color.red.opacity(0.14))
+                Image(systemName: viewModel.isScanningPII ? "hourglass" : "eye.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundStyle(.red)
                     .accessibilityHidden(true)
-                Text("PII \(viewModel.detectedPII.count)")
-                    .font(.caption2.weight(.semibold))
             }
-            .foregroundStyle(.red)
-            .padding(.horizontal, 9)
-            .padding(.vertical, 5)
-            .background(.red.opacity(0.12), in: Capsule())
-            .overlay(Capsule().strokeBorder(.red.opacity(0.3), lineWidth: 0.5))
+            .frame(width: 38, height: 38)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(viewModel.isScanningPII ? "Scanning for sensitive data" : "Sensitive data found")
+                    .font(.subheadline.weight(.semibold))
+
+                Text(viewModel.isScanningPII
+                    ? "Checking visible text before save"
+                    : "\(typeCount) type\(typeCount == 1 ? "" : "s") found • \(redactionCount) region\(redactionCount == 1 ? "" : "s") will redact")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(2)
+            }
+
+            Spacer(minLength: 8)
+
+            if viewModel.isScanningPII {
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityHidden(true)
+            } else {
+                Button {
+                    viewModel.activeSheet = .pii
+                } label: {
+                    Label("Review", systemImage: "scope")
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                .tint(.red)
+                .accessibilityIdentifier("reviewSensitiveDataButton")
+            }
         }
-        .buttonStyle(.plain)
-        .frame(minHeight: 44)
-        .contentShape(Rectangle())
-        .accessibilityIdentifier("piiPill")
-        .accessibilityLabel("Detected PII: \(viewModel.detectedPII.count) item\(viewModel.detectedPII.count == 1 ? "" : "s")")
-        .accessibilityHint("Double tap to review detected sensitive content")
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
+        )
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("sensitiveDataSection")
+        .accessibilityLabel(viewModel.isScanningPII
+            ? "Scanning for sensitive data"
+            : "Sensitive data found: \(typeCount) type\(typeCount == 1 ? "" : "s"), \(redactionCount) region\(redactionCount == 1 ? "" : "s") will redact")
     }
 
     // MARK: - Confidence helpers

@@ -60,6 +60,16 @@
     "%lld Photos Selected" : {
 
     },
+    "%lld type%@ found • %lld region%@ will redact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld type%2$@ found • %3$lld region%4$@ will redact"
+          }
+        }
+      }
+    },
     "%lld%%" : {
 
     },
@@ -118,6 +128,9 @@
     "Cannot be preserved during safe re-encoding." : {
 
     },
+    "Checking visible text before save" : {
+
+    },
     "Clean Photos" : {
 
     },
@@ -132,19 +145,6 @@
     },
     "Deselect All" : {
 
-    },
-    "Detected Data" : {
-
-    },
-    "Detected PII: %lld item%@" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Detected PII: %1$lld item%2$@"
-          }
-        }
-      }
     },
     "Detection limits are intentional. We only flag patterns specific enough to keep false positives rare." : {
 
@@ -164,10 +164,10 @@
     "Double tap to close" : {
 
     },
-    "Double tap to review" : {
+    "Double tap to reset" : {
 
     },
-    "Double tap to review detected sensitive content" : {
+    "Double tap to review" : {
 
     },
     "Eddie Northcutt" : {
@@ -231,6 +231,9 @@
     "MIT License" : {
 
     },
+    "No hidden metadata found" : {
+
+    },
     "No Private Metadata Found" : {
 
     },
@@ -249,19 +252,31 @@
     "Original photos will be permanently deleted after cleaning." : {
 
     },
+    "Photo preview" : {
+
+    },
     "PicStrip" : {
 
     },
     "PicStrip was built on a single principle: your photos are yours. The app exists to give you back control of the data attached to and visible inside your images, silently, automatically, and entirely privately." : {
 
     },
-    "PII %lld" : {
+    "Pinch to zoom" : {
+
+    },
+    "Pinch to zoom and drag to pan" : {
 
     },
     "Please keep the app open." : {
 
     },
     "PNG" : {
+
+    },
+    "Preview" : {
+
+    },
+    "Preview with redactions" : {
 
     },
     "Privacy" : {
@@ -313,6 +328,9 @@
     "Replace Original" : {
 
     },
+    "Review" : {
+
+    },
     "Review & Save" : {
 
     },
@@ -334,10 +352,7 @@
     "Saving…" : {
 
     },
-    "Scanning" : {
-
-    },
-    "Scanning photo for sensitive visual content" : {
+    "Scanning for sensitive data" : {
 
     },
     "Scrubbed Image" : {
@@ -348,6 +363,22 @@
     },
     "Select a photo from your library" : {
 
+    },
+    "Sensitive Data" : {
+
+    },
+    "Sensitive data found" : {
+
+    },
+    "Sensitive data found: %lld type%@, %lld region%@ will redact" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sensitive data found: %1$lld type%2$@, %3$lld region%4$@ will redact"
+          }
+        }
+      }
     },
     "Share Image" : {
 
@@ -367,7 +398,7 @@
     "Successfully cleaned and saved ^[%lld photo](inflect: true)." : {
 
     },
-    "Tap a row to locate the detection in the image. Selected items will be permanently blacked out on the exported image." : {
+    "Tap a row to locate it in the image. Selected items will be permanently blacked out on the exported image." : {
 
     },
     "Tap to review" : {

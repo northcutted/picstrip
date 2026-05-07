@@ -49,6 +49,10 @@ struct PreSaveReviewView: View {
 
     private var hasPII: Bool { !viewModel.detectedPII.isEmpty }
 
+    private var previewImage: UIImage? {
+        viewModel.reviewPreviewUIImage
+    }
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
@@ -161,6 +165,29 @@ struct PreSaveReviewView: View {
                 Spacer()
             }
 
+            if let previewImage {
+                VStack(alignment: .leading, spacing: 8) {
+                    Label(
+                        visualRedactionCount > 0 ? "Preview with redactions" : "Preview",
+                        systemImage: visualRedactionCount > 0 ? "eye.slash" : "photo"
+                    )
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                    ZoomableImagePreview(
+                        image: previewImage,
+                        showZoomHint: false,
+                        accessibilityIdentifier: "savePreviewImage"
+                    )
+                    .frame(height: 150)
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                    )
+                }
+            }
+
             if viewModel.isProcessing {
                 HStack {
                     Spacer()
@@ -216,7 +243,7 @@ struct PreSaveReviewView: View {
                             item: processed,
                             preview: SharePreview(
                                 "Scrubbed Image",
-                                image: viewModel.inputImage ?? Image(systemName: "photo")
+                                image: previewImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo")
                             )
                         ) {
                             Label("Share Image", systemImage: "square.and.arrow.up")

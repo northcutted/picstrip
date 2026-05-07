@@ -220,6 +220,34 @@ final class ImageProcessorTests: XCTestCase {
         )
     }
 
+    func testReadAllFields_treatsAlphaOnlyPNGMetadataAsStructural() throws {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 32))
+        let image = renderer.image { context in
+            UIColor.systemGreen.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 32, height: 32))
+        }
+        let data = try XCTUnwrap(image.pngData(), "Clean PNG fixture should encode.")
+
+        let fields = ImageProcessor.readAllFields(from: data)
+        let alphaField = try XCTUnwrap(
+            fields.first { $0.key == "HasAlpha" },
+            "PNG fixtures with alpha should expose the ImageIO HasAlpha property."
+        )
+
+        XCTAssertTrue(alphaField.isStructural, "Alpha is rendering metadata, not hidden private metadata.")
+        XCTAssertTrue(
+            fields.filter {
+                ImageProcessor.shouldReportStripped(
+                    category: $0.category,
+                    key: $0.key,
+                    isStructural: $0.isStructural,
+                    config: .default
+                )
+            }.isEmpty,
+            "A generated PNG with only encoder/rendering metadata should not report hidden metadata."
+        )
+    }
+
     /// **Redacted image path.**
     ///
     /// Re-encoding a rendered image with separate source bytes must still use the

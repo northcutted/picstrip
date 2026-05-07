@@ -182,6 +182,7 @@ enum ImageProcessor {
         kCGImagePropertyPixelHeight  as String,  // "PixelHeight"
         kCGImagePropertyColorModel   as String,  // "ColorModel"
         kCGImagePropertyDepth        as String,  // "Depth"
+        kCGImagePropertyHasAlpha     as String,  // "HasAlpha"
         kCGImagePropertyOrientation  as String,  // "Orientation"  (root alias)
         kCGImagePropertyProfileName  as String,  // "ProfileName"
         kCGImagePropertyDPIWidth     as String,  // "DPIWidth"

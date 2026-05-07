@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Half-sheet presenting all detected PII results.
+/// Half-sheet presenting all detected sensitive visual data.
 ///
 /// Each row has two independent interaction zones:
 ///   - Leading/middle content area: tap to highlight bounding boxes on the image.
@@ -26,7 +26,7 @@ struct PIIDetailsView: View {
                         viewModel.typesToRedact.contains($0.type)
                     }
                     HStack {
-                        Text("Detected Data")
+                        Text("Sensitive Data")
                         Spacer()
                         Button(allSelected ? "Deselect All" : "Redact All") {
                             if allSelected {
@@ -39,11 +39,11 @@ struct PIIDetailsView: View {
                         .foregroundStyle(.red)
                     }
                 } footer: {
-                    Text("Tap a row to locate the detection in the image. Selected items will be permanently blacked out on the exported image.")
+                    Text("Tap a row to locate it in the image. Selected items will be permanently blacked out on the exported image.")
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Detected Data")
+            .navigationTitle("Sensitive Data")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
@@ -66,7 +66,7 @@ struct PIIDetailsView: View {
             // ── Leading: content area (tap → spatial highlight) ─────────
             Button {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
-                    viewModel.selectedPIIResult = (viewModel.selectedPIIResult == result) ? nil : result
+                    viewModel.focusPIIResult(result)
                 }
             } label: {
                 HStack(spacing: 12) {
@@ -123,6 +123,7 @@ struct PIIDetailsView: View {
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("sensitiveDataRow_\(result.type.id)")
             .accessibilityLabel("Locate \(result.type.description) in photo, \(result.scorePercent)% match")
 
             // ── Trailing: redaction checkmark ───────────────────────────
