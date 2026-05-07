@@ -287,55 +287,65 @@ npm install
 
 `pr.yml` runs three parallel jobs on every PR targeting `main`:
 
-- **Lint** — SwiftLint strict mode
-- **Static Analysis** — `xcodebuild analyze`
-- **Unit Tests** — `PicStripTests` only on iPhone 17 simulator; JUnit XML uploaded as an artifact. Screenshot UI tests run only in the screenshot workflow.
+- **Lint** — SwiftLint strict mode; downloads a pinned `portable_swiftlint.zip` and verifies its SHA-256 before use
+- **Static Analysis** — `xcodebuild analyze`; caches DerivedData keyed on `project.pbxproj`
+- **Unit Tests** — `PicStripTests` on iPhone 17 simulator; JUnit XML uploaded as an artifact (7-day retention)
 
 A fourth job runs only when the `screenshots` label is applied to the PR:
 
-- **PR Screenshots** — full 3-device App Store capture (iPhone 17 Pro Max, iPhone Air, iPad Pro 13-inch M5); results uploaded as a PR artifact for visual review. No upload to App Store Connect from PRs.
+- **PR Screenshots** — boots all three simulators explicitly, overrides status bars to a clean state (9:41, full Wi-Fi/cellular/battery), runs the full 3-device capture, and uploads results as a PR artifact (14-day retention). Snapshot logs are uploaded separately on failure. No upload to App Store Connect from PRs.
 
 ### On push to `main`
 
-`main.yml` runs seven sequential jobs. A semantic-release dry-run in the `version` job gates the entire pipeline — if no releasable commits exist, all downstream jobs are skipped.
+`main.yml` runs 11 jobs across 9 sequential stages. A semantic-release dry-run in the `version` job gates the entire pipeline — if no releasable commits exist, all downstream jobs are skipped.
 
 ```
-version (ubuntu) ──► lint / analyze / test (macos-26, parallel)
-                          │
-                          ▼
-                     build (macos-26)
-                    Restores build caches; signs + exports IPA;
-                    computes SHA-256; creates GitHub artifact attestation
-                          │
-                          ▼
-                     release (ubuntu)
-                    semantic-release: tags commit, publishes GitHub release, updates CHANGELOG
-                          │
-                     ┌────┴────┐
-                     ▼         ▼
-                provenance   attach-release-assets
-                SLSA L3      Attaches IPA + SHA-256 digest to the GitHub Release
-                release provenance │
-                     └─────┬─────┘
-                           ▼
-                        verify
-                        Verifies GitHub attestation and release provenance
-                        against the workflow source commit before distribution
-                           │
-                           ▼
-                     upload-testflight
-                    Uploads the verified IPA to TestFlight
-                           │
-                           ▼
-                        submit
-                        Requires manual approval via the "production"
-                        GitHub environment; submits for App Review.
-                        Gates on provenance verification and TestFlight upload.
+version (ubuntu)
+Semantic-release dry-run; determines next version.
+Skips all downstream jobs if no releasable commits.
+  │
+  ▼
+lint / analyze / test  (macos-26, parallel)
+SwiftLint · xcodebuild analyze · PicStripTests
+  │
+  ▼
+build (macos-26)
+Records toolchain + signing environment; syncs certificates via Match;
+signs + exports IPA with clean build (no DerivedData cache — SLSA L3
+isolation requirement); computes SHA-256; creates GitHub artifact attestation
+  │
+  ▼
+release (ubuntu)
+semantic-release: tags commit, publishes GitHub release, updates CHANGELOG,
+commits release_notes.txt back to main; outputs release_sha
+  │
+  ▼
+provenance
+SLSA Build Level 3 provenance via slsa-github-generator;
+covers IPA + build-env.txt + signing-env.txt
+  │
+  ▼
+attach-release-assets (ubuntu)
+Attaches IPA + SHA-256 digest to the GitHub Release
+  │
+  ▼
+verify-provenance (ubuntu)
+Verifies GitHub artifact attestation and SLSA provenance
+against the exact workflow source commit before distribution
+  │
+  ▼
+upload-testflight (macos-26)
+Downloads the verified IPA artifact; uploads to TestFlight
+  │
+  ▼
+submit (ubuntu)  ← requires manual approval: "production" environment
+Checks out at release_sha (includes updated release_notes.txt);
+submits the processed TestFlight build for App Review
 ```
 
 ### Screenshot workflow
 
-`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode to avoid macOS runner hangs. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
+`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
 
 **Cache behaviour:** on each run the workflow computes a SHA-256 hash of all inputs that affect screenshot appearance (`PicStrip/`, `PicStripUITests/PicStripUITests.swift`, `PicStripUITests/test_list.png`, `fastlane/Snapfile`). If the hash matches `fastlane/screenshots/manifest.json` and all 15 expected PNGs are present in the repo, the simulator is skipped entirely and the existing screenshots are uploaded directly. On a cache miss the workflow recaptures, frames, updates `manifest.json`, and commits the new cache back to `main` with `[skip ci]`.
 
