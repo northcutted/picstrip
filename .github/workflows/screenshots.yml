@@ -174,15 +174,6 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
 
-      - name: Download screenshots artifact
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: screenshots
-          path: fastlane/screenshots/
-
-      - name: Remove non-locale screenshot folders
-        run: rm -rf fastlane/screenshots/Logs
-
       - name: Upload to App Store Connect
         env:
           APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
