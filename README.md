@@ -5,7 +5,7 @@
 
 [![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue.svg)](https://www.apple.com/ios/)
 [![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
-[![CI](https://github.com/northcutted/picstrip/actions/workflows/pr.yml/badge.svg)](https://github.com/northcutted/picstrip/actions)
+[![CI](https://github.com/northcutted/picstrip/actions/workflows/main.yml/badge.svg)](https://github.com/northcutted/picstrip/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Your photos, your privacy. Strip metadata and redact sensitive text — 100% on your device.**
