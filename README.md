@@ -1,4 +1,5 @@
-<img src="docs/AppIcon.png" width="80" alt="PicStrip app icon"/>
+<div align="center">
+  <img src="docs/icons/PicStrip%20Exports/PicStrip-iOS-Default-1024x1024%401x.png" width="120" alt="PicStrip app icon"/>
 
 # PicStrip
 
@@ -8,6 +9,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Your photos, your privacy. Strip metadata and redact sensitive text — 100% on your device.**
+
+</div>
 
 PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Every byte of processing happens locally using Apple frameworks. No network calls, no analytics, no third-party code.
 
