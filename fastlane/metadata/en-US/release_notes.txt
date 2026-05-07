@@ -1,2 +1,3 @@
-Bug Fixes
-• fix pipeline
+Initial release of PicStrip.
+
+Strip hidden photo metadata on-device, review what was found before saving, redact detected sensitive text, process batches, and clean images directly from the iOS share sheet or Shortcuts.

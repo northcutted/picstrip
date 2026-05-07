@@ -7,7 +7,7 @@ WHAT GETS REMOVED
 • Timestamps — when the photo was taken, edited, and digitized
 • Device info — camera make, model, lens, and software version
 • Personal identifiers — author name, copyright, and serial numbers
-• Face scan data — detected faces stored by Vision framework
+• Private camera analysis — Apple maker-note data where present
 
 PRIVACY BY DESIGN
 • Runs entirely on-device — nothing is uploaded anywhere

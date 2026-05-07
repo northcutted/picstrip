@@ -31,6 +31,10 @@
         when encoding image files. Reason: C617.1 (file creation/modification
         date is written as part of standard image encoding; not used to derive
         a fingerprint or identify the user).
+
+        UserDefaults — used for app-local lifetime counters and the App Group
+        handoff that lets App Shortcuts open the batch picker in PicStrip.
+        Reasons: CA92.1 (app-only defaults) and 1C8F.1 (same App Group).
     -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
@@ -40,6 +44,15 @@
             <key>NSPrivacyAccessedAPITypeReasons</key>
             <array>
                 <string>C617.1</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSPrivacyAccessedAPIType</key>
+            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+            <key>NSPrivacyAccessedAPITypeReasons</key>
+            <array>
+                <string>CA92.1</string>
+                <string>1C8F.1</string>
             </array>
         </dict>
     </array>
