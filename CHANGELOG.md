@@ -1,3 +1,27 @@
+## [1.2.4](https://github.com/northcutted/picstrip/compare/v1.2.3...v1.2.4) (2026-05-07)
+
+
+### Bug Fixes
+
+* **ci:** convert inline python3 -c to heredocs in screenshots.yml ([04853fc](https://github.com/northcutted/picstrip/commit/04853fc421121b504e9454277dcd4a11317b06b6))
+* **ci:** remove duplicate contents: key from pr.yml permissions block ([6af7227](https://github.com/northcutted/picstrip/commit/6af7227a758fe85a7a8906f5de133cd2edb47ca6))
+* finalize submission ([1b2582e](https://github.com/northcutted/picstrip/commit/1b2582eda0de615ee003bfc98555f2898c610459))
+* rename step id from 'inputs' to 'hash' to avoid reserved context conflict ([218a585](https://github.com/northcutted/picstrip/commit/218a5855f689f3a9a73206dd037ed515b0efab5b))
+* replace <br/> with \n in Mermaid graph TD node labels ([8ce2e3c](https://github.com/northcutted/picstrip/commit/8ce2e3cad94f98ce15a41eb9fe9f299fef67e706))
+* simplify screenshots workflow to a single manual upload job ([ef78e25](https://github.com/northcutted/picstrip/commit/ef78e2535cd22868516224318dfd9324bb874a0b))
+* upload job reads screenshots from checkout, not artifact download ([84b53d5](https://github.com/northcutted/picstrip/commit/84b53d5a1de14430478057411735aea5d66f978e))
+* use shell find for screenshot validation + add upload job diagnostics ([8595a0a](https://github.com/northcutted/picstrip/commit/8595a0a8e4be1f5da473f6ef700829fd87d6b94b))
+
+
+### Documentation
+
+* add app icon and framed screenshots to README ([1da4aec](https://github.com/northcutted/picstrip/commit/1da4aec92667ab37f63ca7fc51c4460c5b0ebe65))
+* apply app brand palette to all Mermaid diagrams ([ed0bae3](https://github.com/northcutted/picstrip/commit/ed0bae38066715fb6e71c5d5e51e7d3110a0d746))
+* correct CI/CD pipeline description to match actual workflow files ([4343c5b](https://github.com/northcutted/picstrip/commit/4343c5b7ecdbb2f6add6baaa13082ec41d7d14aa))
+* replace ASCII pipeline diagram with Mermaid flowchart ([1d028f1](https://github.com/northcutted/picstrip/commit/1d028f12b515bd8ae3c18df95955d5ed747dbf26))
+* update CI badge to point to the correct workflow file ([19085f5](https://github.com/northcutted/picstrip/commit/19085f53a0ccf3420c4c313789118e863a4a1a95))
+* use rendered icon from Icon Composer as README logo, centered ([9c2ecac](https://github.com/northcutted/picstrip/commit/9c2ecacce4c1785d7a6b64cf59295dc09843cc68))
+
 ## [1.2.3](https://github.com/northcutted/picstrip/compare/v1.2.2...v1.2.3) (2026-05-06)
 
 
