@@ -264,7 +264,7 @@ platform :ios do
   end
 
   desc "Add device frames to screenshots (for GitHub / marketing use, not App Store upload)"
-  lane :frame_screenshots do
+  lane :apply_frames do
     frame_screenshots(
       path:   "./fastlane/screenshots",
       resume: true

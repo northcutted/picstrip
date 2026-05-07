@@ -23,7 +23,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
     <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-01_Home_framed.png" width="160" alt="Home Screen"/><br/><sub><b>Home</b></sub></td>
     <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-02_About_framed.png" width="160" alt="About"/><br/><sub><b>About</b></sub></td>
     <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-03_PhotoLoaded_framed.png" width="160" alt="Photo Loaded"/><br/><sub><b>Photo Loaded</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-04_MetadataDetail_framed.png" width="160" alt="Metadata Detail"/><br/><sub><b>Metadata Detail</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-04_SensitiveData_framed.png" width="160" alt="Sensitive Data"/><br/><sub><b>Sensitive Data</b></sub></td>
     <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-05_ReviewAndSave_framed.png" width="160" alt="Review &amp; Save"/><br/><sub><b>Review &amp; Save</b></sub></td>
   </tr>
 </table>
@@ -31,7 +31,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 <table>
   <tr>
     <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-03_PhotoLoaded_framed.png" width="360" alt="iPad Pro — Photo Loaded"/><br/><sub><b>iPad Pro — Photo Loaded</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-04_MetadataDetail_framed.png" width="360" alt="iPad Pro — Metadata Detail"/><br/><sub><b>iPad Pro — Metadata Detail</b></sub></td>
+    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-04_SensitiveData_framed.png" width="360" alt="iPad Pro — Sensitive Data"/><br/><sub><b>iPad Pro — Sensitive Data</b></sub></td>
   </tr>
 </table>
 

@@ -1,21 +1,21 @@
 {
-  "inputs_sha": "3ed0419b96a733e38e9565e7e478b7b3e1a2072abd7d196e5afee4a0b4146c6a",
-  "generated_at": "2026-05-07T02:15:41Z",
+  "inputs_sha": "e56c6b20bf7dc747cfe4b15032052e3dd3aaa8b1",
+  "generated_at": "2026-05-07T18:57:02Z",
   "expected_files": [
     "iPad Pro 13-inch (M5)-01_Home.png",
     "iPad Pro 13-inch (M5)-02_About.png",
     "iPad Pro 13-inch (M5)-03_PhotoLoaded.png",
-    "iPad Pro 13-inch (M5)-04_MetadataDetail.png",
+    "iPad Pro 13-inch (M5)-04_SensitiveData.png",
     "iPad Pro 13-inch (M5)-05_ReviewAndSave.png",
     "iPhone 17 Pro Max-01_Home.png",
     "iPhone 17 Pro Max-02_About.png",
     "iPhone 17 Pro Max-03_PhotoLoaded.png",
-    "iPhone 17 Pro Max-04_MetadataDetail.png",
+    "iPhone 17 Pro Max-04_SensitiveData.png",
     "iPhone 17 Pro Max-05_ReviewAndSave.png",
     "iPhone Air-01_Home.png",
     "iPhone Air-02_About.png",
     "iPhone Air-03_PhotoLoaded.png",
-    "iPhone Air-04_MetadataDetail.png",
+    "iPhone Air-04_SensitiveData.png",
     "iPhone Air-05_ReviewAndSave.png"
   ]
 }

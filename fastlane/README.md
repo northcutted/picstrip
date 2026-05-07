@@ -87,10 +87,10 @@ Capture App Store screenshots on simulator (reads fastlane/Snapfile)
 
 Upload previously captured screenshots to App Store Connect (binary unchanged)
 
-### ios frame_screenshots
+### ios apply_frames
 
 ```sh
-[bundle exec] fastlane ios frame_screenshots
+[bundle exec] fastlane ios apply_frames
 ```
 
 Add device frames to screenshots (for GitHub / marketing use, not App Store upload)

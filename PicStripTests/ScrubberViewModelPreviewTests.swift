@@ -5,7 +5,7 @@ import XCTest
 @MainActor
 final class ScrubberViewModelPreviewTests: XCTestCase {
 
-    func testReviewPreview_prefersRedactedImageWhenRedactionsAreSelected() throws {
+    func testReviewPreview_prefersRedactedImageWhenRedactionsAreSelected() async throws {
         let viewModel = ScrubberViewModel()
         let source = try makeImage(color: .green)
         let processed = try makeImage(color: .blue)
@@ -36,7 +36,7 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
         )
     }
 
-    func testReviewPreview_usesProcessedImageWhenNoRedactionsAreSelected() throws {
+    func testReviewPreview_usesProcessedImageWhenNoRedactionsAreSelected() async throws {
         let viewModel = ScrubberViewModel()
         let source = try makeImage(color: .green)
         let processed = try makeImage(color: .blue)
@@ -67,7 +67,7 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
         )
     }
 
-    func testRedactionPreviewResults_includeOnlySelectedSensitiveData() {
+    func testRedactionPreviewResults_includeOnlySelectedSensitiveData() async {
         let viewModel = ScrubberViewModel()
         let email = DetectionResult(
             type: .email,

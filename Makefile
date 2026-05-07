@@ -69,7 +69,7 @@ upload-screenshots:
 	fi
 
 frame-screenshots:
-	$(FASTLANE) frame_screenshots
+	$(FASTLANE) apply_frames
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs

@@ -12,8 +12,8 @@ import XCTest
 /// Screens captured:
 ///   01_Home          — home screen with hero animation
 ///   02_About         — About & Trust sheet
-///   03_PhotoLoaded   — photo loaded, badge row visible
-///   04_MetadataDetail — EXIF category detail panel open
+///   03_PhotoLoaded   — photo loaded, scan complete, badge row and sensitive data section visible
+///   04_SensitiveData — Sensitive Data review sheet open
 ///   05_ReviewAndSave — pre-save review sheet
 @MainActor
 final class PicStripUITests: XCTestCase {
@@ -26,7 +26,7 @@ final class PicStripUITests: XCTestCase {
 
     /// Captures every App Store screenshot in one continuous session.
     /// Launch 1 (no fixture): 01_Home, 02_About
-    /// Launch 2 (with fixture): 03_PhotoLoaded, 04_MetadataDetail, 05_ReviewAndSave
+    /// Launch 2 (with fixture): 03_PhotoLoaded, 04_SensitiveData, 05_ReviewAndSave
     @MainActor
     func testAllScreenshots() throws {
 
@@ -69,19 +69,24 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 
-        // 03 — Photo loaded: wait for the dismiss button to appear (proxy for
-        // the photo being fully loaded and the badge row rendered).
+        // 03 — Photo loaded: wait for the dismiss button (photo fully loaded), then
+        // wait for reviewSensitiveDataButton which only appears once the PII scan is
+        // complete — guarantees the badge row is stable and saveButton is enabled.
         let dismissButton = app.buttons["Dismiss photo"]
         XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
                       "Dismiss button should appear after fixture image loads")
-        // Also wait for processing spinner to disappear.
-        Thread.sleep(forTimeInterval: 1.5)
+
+        let reviewSensitiveDataButton = app.descendants(matching: .any)["reviewSensitiveDataButton"]
+        XCTAssertTrue(
+            reviewSensitiveDataButton.waitForExistence(timeout: 20),
+            "Review Sensitive Data button should appear once the PII scan finishes."
+        )
         XCTAssertTrue(
             app.descendants(matching: .any)["metadataPhotoPreview"].exists,
             "Loaded-photo screen should expose a zoomable/pannable image preview."
         )
         XCTAssertTrue(
-            app.descendants(matching: .any)["sensitiveDataSection"].waitForExistence(timeout: 15),
+            app.descendants(matching: .any)["sensitiveDataSection"].exists,
             "Loaded-photo screen should show visual sensitive data separately from metadata."
         )
         XCTAssertFalse(
@@ -94,15 +99,17 @@ final class PicStripUITests: XCTestCase {
         )
         snapshot("03_PhotoLoaded")
 
-        // 04 — Metadata detail panel: tap the EXIF badge.
-        let exifBadge = app.buttons["badge_EXIF"]
-        XCTAssertTrue(exifBadge.waitForExistence(timeout: 5))
-        exifBadge.tap()
-        Thread.sleep(forTimeInterval: 0.6)
-        snapshot("04_MetadataDetail")
+        // 04 — Sensitive Data sheet: tap the review button, wait for the sheet.
+        reviewSensitiveDataButton.tap()
+        XCTAssertTrue(
+            app.navigationBars["Sensitive Data"].waitForExistence(timeout: 5),
+            "Sensitive Data sheet should appear after tapping the review button."
+        )
+        Thread.sleep(forTimeInterval: 0.5)
+        snapshot("04_SensitiveData")
 
-        // Dismiss the panel by tapping the badge again.
-        exifBadge.tap()
+        // Dismiss the sheet via the Done button in the nav bar.
+        app.navigationBars["Sensitive Data"].buttons["Done"].tap()
         Thread.sleep(forTimeInterval: 0.5)
 
         // 05 — Review & save sheet: tap Save to Photos.
