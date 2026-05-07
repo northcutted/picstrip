@@ -299,48 +299,38 @@ A fourth job runs only when the `screenshots` label is applied to the PR:
 
 `main.yml` runs 11 jobs across 9 sequential stages. A semantic-release dry-run in the `version` job gates the entire pipeline — if no releasable commits exist, all downstream jobs are skipped.
 
-```
-version (ubuntu)
-Semantic-release dry-run; determines next version.
-Skips all downstream jobs if no releasable commits.
-  │
-  ▼
-lint / analyze / test  (macos-26, parallel)
-SwiftLint · xcodebuild analyze · PicStripTests
-  │
-  ▼
-build (macos-26)
-Records toolchain + signing environment; syncs certificates via Match;
-signs + exports IPA with clean build (no DerivedData cache — SLSA L3
-isolation requirement); computes SHA-256; creates GitHub artifact attestation
-  │
-  ▼
-release (ubuntu)
-semantic-release: tags commit, publishes GitHub release, updates CHANGELOG,
-commits release_notes.txt back to main; outputs release_sha
-  │
-  ▼
-provenance
-SLSA Build Level 3 provenance via slsa-github-generator;
-covers IPA + build-env.txt + signing-env.txt
-  │
-  ▼
-attach-release-assets (ubuntu)
-Attaches IPA + SHA-256 digest to the GitHub Release
-  │
-  ▼
-verify-provenance (ubuntu)
-Verifies GitHub artifact attestation and SLSA provenance
-against the exact workflow source commit before distribution
-  │
-  ▼
-upload-testflight (macos-26)
-Downloads the verified IPA artifact; uploads to TestFlight
-  │
-  ▼
-submit (ubuntu)  ← requires manual approval: "production" environment
-Checks out at release_sha (includes updated release_notes.txt);
-submits the processed TestFlight build for App Review
+```mermaid
+flowchart TD
+    version["version · ubuntu\nSemantic-release dry-run\nNo releasable commits — all downstream skipped"]
+    lint["lint · macos-26\nSwiftLint"]
+    analyze["analyze · macos-26\nxcodebuild analyze"]
+    test["test · macos-26\nUnit tests"]
+    build["build · macos-26\nRecords toolchain + signing env\nSigns + exports IPA · clean build · no cache\nSHA-256 + GitHub attestation"]
+    release["release · ubuntu\nTags commit · publishes GitHub release\nUpdates CHANGELOG + release_notes.txt"]
+    provenance["provenance · slsa-github-generator\nSLSA Build Level 3\nCovers IPA + env manifests"]
+    attach["attach-release-assets · ubuntu\nAttaches IPA + SHA-256 to GitHub Release"]
+    verify["verify-provenance · ubuntu\nVerifies GitHub attestation + SLSA provenance\nagainst exact workflow source commit"]
+    testflight["upload-testflight · macos-26\nDownloads verified IPA · uploads to TestFlight"]
+    submit["submit · ubuntu\nManual approval — production environment\nChecks out release_sha · submits for App Review"]
+
+    version --> lint & analyze & test
+    lint & analyze & test --> build
+    build --> release
+    release --> provenance
+    provenance --> attach
+    attach --> verify
+    verify --> testflight
+    testflight --> submit
+
+    classDef ubuntu fill:#dbeafe,stroke:#3b82f6,color:#1e3a5f
+    classDef macos  fill:#dcfce7,stroke:#22c55e,color:#14532d
+    classDef slsa   fill:#f3e8ff,stroke:#a855f7,color:#3b0764
+    classDef manual fill:#fef3c7,stroke:#f59e0b,color:#78350f
+
+    class version,release,attach,verify ubuntu
+    class lint,analyze,test,build,testflight macos
+    class provenance slsa
+    class submit manual
 ```
 
 ### Screenshot workflow
