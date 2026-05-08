@@ -116,9 +116,15 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
 
         XCTAssertEqual(viewModel.selectedPIIResult, email)
 
-        try? await Task.sleep(for: .seconds(1.7))
+        // Poll until selectedPIIResult clears (production delay is 1.5 s).
+        // A fixed sleep is too fragile under CI scheduler load; use a generous
+        // timeout with a tight poll interval instead.
+        let deadline = Date().addingTimeInterval(5)
+        while viewModel.selectedPIIResult != nil, Date() < deadline {
+            try? await Task.sleep(for: .milliseconds(100))
+        }
 
-        XCTAssertNil(viewModel.selectedPIIResult)
+        XCTAssertNil(viewModel.selectedPIIResult, "selectedPIIResult should clear within 5 s after focusPIIResult")
     }
 
     private func makeImage(color: UIColor) throws -> UIImage {
