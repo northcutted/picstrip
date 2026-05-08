@@ -1,16 +1,5 @@
+Features
+• Add support for handling alpha channel in PNG metadata
 Bug Fixes
-• **ci:** convert inline python3 -c to heredocs in screenshots.yml
-• **ci:** remove duplicate contents: key from pr.yml permissions block
-• finalize submission
-• rename step id from 'inputs' to 'hash' to avoid reserved context conflict
-• replace <br/> with \n in Mermaid graph TD node labels
-• simplify screenshots workflow to a single manual upload job
-• upload job reads screenshots from checkout, not artifact download
-• use shell find for screenshot validation + add upload job diagnostics
-Documentation
-• add app icon and framed screenshots to README
-• apply app brand palette to all Mermaid diagrams
-• correct CI/CD pipeline description to match actual workflow files
-• replace ASCII pipeline diagram with Mermaid flowchart
-• update CI badge to point to the correct workflow file
-• use rendered icon from Icon Composer as README logo, centered
+• harden unit tests, rename Fastfile lane, refresh screenshots
+• replace fixed sleep with polling wait in testFocusPIIResult

@@ -1,3 +1,16 @@
+## [1.3.0](https://github.com/northcutted/picstrip/compare/v1.2.4...v1.3.0) (2026-05-08)
+
+
+### Features
+
+* Add support for handling alpha channel in PNG metadata ([c1f361a](https://github.com/northcutted/picstrip/commit/c1f361a0738547283abff54fad4a23e55d633c28))
+
+
+### Bug Fixes
+
+* harden unit tests, rename Fastfile lane, refresh screenshots ([b177ffa](https://github.com/northcutted/picstrip/commit/b177ffa4a7f5f7216acbda774bcd5b2b030d22fa))
+* replace fixed sleep with polling wait in testFocusPIIResult ([94a010e](https://github.com/northcutted/picstrip/commit/94a010ee865ed98f7b9c24642a567326ea29befc))
+
 ## [1.2.4](https://github.com/northcutted/picstrip/compare/v1.2.3...v1.2.4) (2026-05-07)
 
 
