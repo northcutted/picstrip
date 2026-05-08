@@ -24,7 +24,7 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
     }
 
     /// Derives a named band from a raw 0.0–1.0 score.
-    init(score: Double) {
+    nonisolated init(score: Double) {
         switch score {
         case 0.80...: self = .high
         case 0.55...: self = .medium

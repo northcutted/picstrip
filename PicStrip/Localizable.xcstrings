@@ -14,6 +14,15 @@
         }
       }
     },
+    "%@ color" : {
+
+    },
+    "%@ match" : {
+
+    },
+    "%@ style" : {
+
+    },
     "%@, %lld field%@, %@" : {
       "localizations" : {
         "en" : {
@@ -64,16 +73,13 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "%1$lld type%2$@ found • %3$lld region%4$@ will redact"
+            "state" : "translated",
+            "value" : "%1$lld type%2$@ found • %3$lld region%4$@ will be redacted"
           }
         }
       }
     },
-    "%lld%%" : {
-
-    },
-    "%lld%% match" : {
+    "^[%lld field](inflect: true)" : {
 
     },
     "^[%lld field](inflect: true) found" : {
@@ -89,13 +95,13 @@
         }
       }
     },
-    "^[%lld instance](inflect: true)" : {
-
-    },
     "^[%lld photo](inflect: true) processed" : {
 
     },
     "^[%lld privacy field](inflect: true) stripped" : {
+
+    },
+    "^[%lld region](inflect: true)" : {
 
     },
     "^[%lld visual region](inflect: true) redacted" : {
@@ -110,7 +116,19 @@
     "About the Project" : {
 
     },
-    "Add %@ to redaction list" : {
+    "Add or edit redactions. %lld active." : {
+
+    },
+    "Add or edit redactions. None active." : {
+
+    },
+    "Add Region" : {
+
+    },
+    "Add/Edit Redactions" : {
+
+    },
+    "Aggregate counts only. PicStrip does not keep photo history, removed values, OCR snippets, or redaction boxes." : {
 
     },
     "Apply a single privacy policy to all of them." : {
@@ -125,10 +143,16 @@
     "Cancel" : {
 
     },
+    "Cancel drawing redaction" : {
+
+    },
     "Cannot be preserved during safe re-encoding." : {
 
     },
     "Checking visible text before save" : {
+
+    },
+    "Clean and save a photo to build an aggregate privacy summary." : {
 
     },
     "Clean Photos" : {
@@ -143,7 +167,16 @@
     "Close %@ details" : {
 
     },
-    "Deselect All" : {
+    "Color" : {
+
+    },
+    "Confidence summarizes automatic visual detections only. Custom redactions are counted without a confidence score." : {
+
+    },
+    "Delete %@ region" : {
+
+    },
+    "Detection Confidence" : {
 
     },
     "Detection limits are intentional. We only flag patterns specific enough to keep false positives rare." : {
@@ -152,10 +185,16 @@
     "Developer" : {
 
     },
+    "Disable redaction for %@" : {
+
+    },
     "Dismiss photo" : {
 
     },
     "Done" : {
+
+    },
+    "Done editing redactions" : {
 
     },
     "Double tap to %@" : {
@@ -164,13 +203,28 @@
     "Double tap to close" : {
 
     },
-    "Double tap to reset" : {
+    "Double tap to deselect" : {
 
     },
     "Double tap to review" : {
 
     },
+    "Double tap to review what was removed" : {
+
+    },
+    "Double tap to select and highlight on image" : {
+
+    },
+    "Drag on the photo to draw a redaction box" : {
+
+    },
+    "Draw a new redaction region" : {
+
+    },
     "Eddie Northcutt" : {
+
+    },
+    "Enable redaction for %@" : {
 
     },
     "Export Batch Audit Log (JSON)" : {
@@ -203,16 +257,6 @@
     "Keeps original format" : {
 
     },
-    "Locate %@ in photo, %lld%% match" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "new",
-            "value" : "Locate %1$@ in photo, %2$lld%% match"
-          }
-        }
-      }
-    },
     "Match Original" : {
 
     },
@@ -231,19 +275,31 @@
     "MIT License" : {
 
     },
+    "No Cleanup Stats Yet" : {
+
+    },
     "No hidden metadata found" : {
 
     },
     "No Private Metadata Found" : {
 
     },
+    "No redaction regions" : {
+
+    },
     "No sensitive data found" : {
+
+    },
+    "None" : {
 
     },
     "Open Source License" : {
 
     },
     "Opens PicStrip so you can select photos to clean. Strips privacy metadata and optionally redacts sensitive content before saving cleaned copies to your Photos library." : {
+
+    },
+    "Opens the redaction editor" : {
 
     },
     "Original Not Found" : {
@@ -259,9 +315,6 @@
 
     },
     "PicStrip was built on a single principle: your photos are yours. The app exists to give you back control of the data attached to and visible inside your images, silently, automatically, and entirely privately." : {
-
-    },
-    "Pinch to zoom" : {
 
     },
     "Pinch to zoom and drag to pan" : {
@@ -280,6 +333,9 @@
 
     },
     "Privacy" : {
+
+    },
+    "Privacy Cleanup" : {
 
     },
     "Privacy metadata is stripped automatically before saving." : {
@@ -307,16 +363,19 @@
     "Recommended" : {
 
     },
-    "Redact All" : {
+    "Redact Sensitive Visual Data" : {
 
     },
-    "Redact Sensitive Visual Data" : {
+    "Redaction Regions" : {
+
+    },
+    "Redo" : {
 
     },
     "Reduced file size, standard compatibility" : {
 
     },
-    "Remove %@ from redaction list" : {
+    "Removed Data" : {
 
     },
     "Replace" : {
@@ -328,7 +387,10 @@
     "Replace Original" : {
 
     },
-    "Review" : {
+    "Reset zoom to fit image" : {
+
+    },
+    "Resize redaction" : {
 
     },
     "Review & Save" : {
@@ -364,9 +426,6 @@
     "Select a photo from your library" : {
 
     },
-    "Sensitive Data" : {
-
-    },
     "Sensitive data found" : {
 
     },
@@ -374,8 +433,8 @@
       "localizations" : {
         "en" : {
           "stringUnit" : {
-            "state" : "new",
-            "value" : "Sensitive data found: %1$lld type%2$@, %3$lld region%4$@ will redact"
+            "state" : "translated",
+            "value" : "Sensitive data found: %1$lld type%2$@, %3$lld region%4$@ will be redacted"
           }
         }
       }
@@ -395,10 +454,10 @@
     "Strip Privacy Metadata" : {
 
     },
-    "Successfully cleaned and saved ^[%lld photo](inflect: true)." : {
+    "Style" : {
 
     },
-    "Tap a row to locate it in the image. Selected items will be permanently blacked out on the exported image." : {
+    "Successfully cleaned and saved ^[%lld photo](inflect: true)." : {
 
     },
     "Tap to review" : {
@@ -411,6 +470,9 @@
 
     },
     "This image contained no EXIF, GPS, or other private metadata." : {
+
+    },
+    "Undo" : {
 
     },
     "View Source on GitHub" : {

@@ -37,17 +37,17 @@ struct PreSaveReviewView: View {
         originalOrdered.flatMap(\.fields).count
     }
 
-    private var redactedResults: [DetectionResult] {
-        viewModel.detectedPII.filter { viewModel.typesToRedact.contains($0.type) }
+    private var redactedRegions: [RedactionRegion] {
+        viewModel.enabledRedactionRegions
     }
 
     private var visualRedactionCount: Int {
-        redactedResults.reduce(0) { $0 + $1.matchCount }
+        redactedRegions.count
     }
 
     private var totalRemovalCount: Int { originalMetadataCount + visualRedactionCount }
 
-    private var hasPII: Bool { !viewModel.detectedPII.isEmpty }
+    private var hasPII: Bool { !redactedRegions.isEmpty }
 
     private var previewImage: UIImage? {
         viewModel.reviewPreviewUIImage
@@ -55,39 +55,38 @@ struct PreSaveReviewView: View {
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 0) {
+            // ── Single scrollable List — full card (preview + save) at
+            //    top, collapsible breakdown below. ──────────────────────
+            List {
+                // Full summary + save card
+                Section {
+                    summaryCard
+                        .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                }
 
-                // ── Fixed summary card ──────────────────────────────────
-                summaryCard
-                    .padding(.horizontal, 16)
-                    .padding(.top, 12)
-                    .padding(.bottom, 8)
-
-                Divider()
-
-                // ── Collapsible breakdown ───────────────────────────────
-                let hasContent = !originalOrdered.isEmpty || !redactedResults.isEmpty
-
-                if hasContent {
-                    List {
-                        if !redactedResults.isEmpty {
-                            redactionSection
-                        }
-                        if !originalOrdered.isEmpty {
-                            Section("Metadata Removed") {
-                                ForEach(originalOrdered, id: \.category) { group in
-                                    categorySection(group.category, fields: group.fields)
-                                }
-                            }
+                // Collapsible breakdown
+                if !redactedRegions.isEmpty {
+                    redactionSection
+                }
+                if !originalOrdered.isEmpty {
+                    Section("Metadata Removed") {
+                        ForEach(originalOrdered, id: \.category) { group in
+                            categorySection(group.category, fields: group.fields)
                         }
                     }
-                    .listStyle(.insetGrouped)
-                } else {
-                    Spacer()
-                    emptyMetadataState
-                    Spacer()
+                }
+                if originalOrdered.isEmpty && redactedRegions.isEmpty {
+                    Section {
+                        emptyMetadataState
+                            .frame(maxWidth: .infinity)
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
+                    }
                 }
             }
+            .listStyle(.insetGrouped)
             .navigationTitle("Review & Save")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -109,6 +108,24 @@ struct PreSaveReviewView: View {
             .onChange(of: viewModel.activeSheet) { _, newValue in
                 if newValue != .preSave { dismiss() }
             }
+            .sheet(isPresented: $showAdvanced) {
+                NavigationStack {
+                    ScrollView {
+                        AdvancedOptionsView(viewModel: viewModel, hasPII: hasPII)
+                            .padding()
+                    }
+                    .background(Color(.systemGroupedBackground))
+                    .navigationTitle("Export Format")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { showAdvanced = false }
+                        }
+                    }
+                }
+                .presentationDetents([.medium])
+                .presentationDragIndicator(.visible)
+            }
             .sheet(isPresented: Binding(
                 get: { auditURL != nil },
                 set: { if !$0 { auditURL = nil } }
@@ -121,7 +138,7 @@ struct PreSaveReviewView: View {
         }
     }
 
-    // MARK: - Summary card
+    // MARK: - Summary card (overview + preview + save actions)
 
     @ViewBuilder
     private var summaryCard: some View {
@@ -166,13 +183,11 @@ struct PreSaveReviewView: View {
             }
 
             if let previewImage {
-                VStack(alignment: .leading, spacing: 8) {
-                    Label(
-                        visualRedactionCount > 0 ? "Preview with redactions" : "Preview",
-                        systemImage: visualRedactionCount > 0 ? "eye.slash" : "photo"
-                    )
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(visualRedactionCount > 0 ? "Preview with redactions" : "Preview")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                     ZoomableImagePreview(
                         image: previewImage,
@@ -188,6 +203,8 @@ struct PreSaveReviewView: View {
                 }
             }
 
+            Divider()
+
             if viewModel.isProcessing {
                 HStack {
                     Spacer()
@@ -198,20 +215,26 @@ struct PreSaveReviewView: View {
             } else {
                 VStack(spacing: 10) {
 
-                    // Export Format picker
-                    DisclosureGroup(isExpanded: $showAdvanced) {
-                        AdvancedOptionsView(viewModel: viewModel, hasPII: hasPII)
-                            .padding(.top, 8)
+                    // Export format picker — opens as a sheet to avoid List layout jump
+                    Button {
+                        showAdvanced = true
                     } label: {
-                        HStack(spacing: 5) {
+                        HStack(spacing: 6) {
                             Image(systemName: "square.and.arrow.up.on.square")
                                 .font(.subheadline)
                             Text("Export Format")
                                 .font(.subheadline.weight(.medium))
+                            Spacer()
+                            Text(viewModel.selectedExportFormat.title)
+                                .font(.subheadline)
+                                .foregroundStyle(.tertiary)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(.tertiary)
                         }
                         .foregroundStyle(.secondary)
                     }
-                    .tint(.secondary)
+                    .buttonStyle(.plain)
 
                     Divider()
 
@@ -219,6 +242,8 @@ struct PreSaveReviewView: View {
                         Task { await viewModel.saveToPhotos(replacing: false) }
                     } label: {
                         Label("Save as New Photo", systemImage: "plus.square.on.square")
+                            .symbolRenderingMode(.monochrome)
+                            .foregroundStyle(.white)
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
@@ -230,6 +255,8 @@ struct PreSaveReviewView: View {
                         Task { await viewModel.saveToPhotos(replacing: true) }
                     } label: {
                         Label("Replace Original", systemImage: "arrow.triangle.2.circlepath")
+                            .symbolRenderingMode(.monochrome)
+                            .foregroundStyle(.red)
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
@@ -247,6 +274,8 @@ struct PreSaveReviewView: View {
                             )
                         ) {
                             Label("Share Image", systemImage: "square.and.arrow.up")
+                                .symbolRenderingMode(.monochrome)
+                                .foregroundStyle(.secondary)
                                 .font(.body.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
@@ -260,6 +289,8 @@ struct PreSaveReviewView: View {
                         auditURL = viewModel.generateAuditJSON()
                     } label: {
                         Label("Export Findings (JSON)", systemImage: "doc.text.magnifyingglass")
+                            .symbolRenderingMode(.monochrome)
+                            .foregroundStyle(.secondary)
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
@@ -387,25 +418,40 @@ struct PreSaveReviewView: View {
     @ViewBuilder
     private var redactionSection: some View {
         Section("Visual Redactions") {
-            ForEach(redactedResults) { result in
+            ForEach(redactionSummaries, id: \.name) { summary in
                 HStack(spacing: 12) {
                     Image(systemName: "shield.lefthalf.filled")
                         .foregroundStyle(.red)
                         .accessibilityHidden(true)
-                    Text(result.type.description)
+                    Text(summary.name)
                         .foregroundStyle(.primary)
                     Spacer()
-                    Text("\(result.scorePercent)%")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(confidenceColor(result.confidence))
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 3)
-                        .background(confidenceColor(result.confidence).opacity(0.10), in: Capsule())
-                    Text("^[\(result.matchCount) instance](inflect: true)")
+                    if let confidence = summary.confidence, let score = summary.score {
+                        Text(score, format: .percent.precision(.fractionLength(0)))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(confidenceColor(confidence))
+                            .padding(.horizontal, 7)
+                            .padding(.vertical, 3)
+                            .background(confidenceColor(confidence).opacity(0.10), in: Capsule())
+                    }
+                    Text("^[\(summary.count) region](inflect: true)")
                         .foregroundStyle(.secondary)
                 }
             }
         }
+    }
+
+    private var redactionSummaries: [RedactionSummary] {
+        Dictionary(grouping: redactedRegions, by: \.displayName)
+            .map { name, regions in
+                let strongest = regions.compactMap(\.score).max()
+                return RedactionSummary(
+                    name: name,
+                    count: regions.count,
+                    score: strongest
+                )
+            }
+            .sorted { $0.name < $1.name }
     }
 
     private func confidenceColor(_ level: ConfidenceLevel) -> Color {
@@ -441,6 +487,17 @@ struct ActivityView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
+}
+
+private struct RedactionSummary {
+    let name: String
+    let count: Int
+    let score: Double?
+
+    var confidence: ConfidenceLevel? {
+        score.map(ConfidenceLevel.init(score:))
+    }
+
 }
 
 // MARK: - Preview

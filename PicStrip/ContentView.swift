@@ -6,6 +6,10 @@ struct ContentView: View {
     @State private var viewModel = ScrubberViewModel()
     @State private var isPanelOpen: Bool = false
     @State private var visiblePanelCategory: String = ""
+    @State private var showingPrivacyImpact = false
+    @State private var isRedactionEditing = false
+    @State private var isAddingRedaction = false
+    @State private var zoomResetRequest = 0
 
     /// Set to true by the scenePhase observer when StripImageIntent fires.
     @State private var isShowingIntentBatchPicker = false
@@ -100,11 +104,13 @@ struct ContentView: View {
             }
             .animation(.easeInOut(duration: 0.3), value: hasPhoto)
         }
+        .sheet(isPresented: $showingPrivacyImpact) {
+            PrivacyImpactSummaryView(stats: PrivacyRemovalStats.load())
+        }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
         }, content: { sheet in
             switch sheet {
-            case .pii:    PIIDetailsView(viewModel: viewModel)
             case .preSave: PreSaveReviewView(viewModel: viewModel)
             case .batch:  BatchConfigView(viewModel: viewModel)
             }
@@ -142,6 +148,7 @@ struct ContentView: View {
         // test), load the image bytes directly so the full photo UI is visible
         // without needing to automate the system Photos picker.
         .task {
+            seedStatsIfRequested()
             guard let path = ProcessInfo.processInfo.environment["PICSTRIP_FIXTURE"],
                   let data = try? Data(contentsOf: URL(fileURLWithPath: path))
             else { return }
@@ -284,21 +291,32 @@ struct ContentView: View {
     // MARK: - Stats capsule
 
     private var statsCapsule: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "checkmark.shield.fill")
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundStyle(.green)
-                .accessibilityHidden(true)
-            Text("^[\(lifetimeFields) field](inflect: true) stripped · ^[\(lifetimePhotos) photo](inflect: true) cleaned")
-                .font(.footnote.weight(.medium))
-                .foregroundStyle(.secondary)
+        Button {
+            showingPrivacyImpact = true
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.shield.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.green)
+                    .accessibilityHidden(true)
+                Text("^[\(lifetimeFields) field](inflect: true) stripped · ^[\(lifetimePhotos) photo](inflect: true) cleaned")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(.secondary)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(.regularMaterial, in: Capsule())
+            .overlay(Capsule().strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 8)
-        .background(.regularMaterial, in: Capsule())
-        .overlay(Capsule().strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
+        .buttonStyle(.plain)
         .accessibilityLabel(statsText)
         .accessibilityElement(children: .ignore)
+        .accessibilityHint("Double tap to review what was removed")
+        .accessibilityIdentifier("privacyStatsButton")
     }
 
     private var statsText: String {
@@ -339,6 +357,20 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: style).impactOccurred()
     }
 
+    private func seedStatsIfRequested() {
+        guard ProcessInfo.processInfo.environment["PICSTRIP_SEED_STATS"] == "1" else { return }
+        guard lifetimePhotos == 0 else { return }
+
+        lifetimePhotos = 4
+        lifetimeFields = 18
+
+        var stats = PrivacyRemovalStats()
+        stats.metadataCategoryCounts = ["GPS": 6, "EXIF": 8, "TIFF": 4]
+        stats.visualTypeCounts = ["Email Address": 3, "Phone Number": 2, "Custom Redaction": 1]
+        stats.visualConfidenceCounts = ["High": 4, "Medium": 1]
+        stats.save()
+    }
+
     // MARK: - Photo layout (existing layout when a photo is loaded)
 
     private var photoLayout: some View {
@@ -355,11 +387,61 @@ struct ContentView: View {
 
             Divider()
 
-            controlPanel
-                .padding(.horizontal, 20)
-                .padding(.vertical, 16)
+            if isRedactionEditing {
+                RedactionEditorDrawer(
+                    regions: viewModel.redactionRegions,
+                    selectedRegionID: viewModel.selectedRedactionRegionID,
+                    canUndo: viewModel.canUndo,
+                    canRedo: viewModel.canRedo,
+                    isAddingRedaction: isAddingRedaction,
+                    onSelect: { id in
+                        viewModel.selectRedactionRegion(id: id)
+                    },
+                    onAdd: {
+                        withAnimation(.spring(duration: 0.2)) {
+                            isAddingRedaction.toggle()
+                        }
+                    },
+                    onToggleRegion: { id in
+                        viewModel.toggleRedactionRegion(id: id)
+                    },
+                    onDeleteRegion: { id in
+                        viewModel.deleteRedactionRegion(id: id)
+                    },
+                    onChangeStyle: { id, style in
+                        viewModel.changeRedactionStyle(id: id, style: style)
+                    },
+                    onChangeColor: { id, color in
+                        viewModel.changeRedactionColor(id: id, color: color)
+                    },
+                    onUndo: { viewModel.undoRedaction() },
+                    onRedo: { viewModel.redoRedaction() },
+                    onFit:  { zoomResetRequest += 1 },
+                    onDone: {
+                        withAnimation(.spring(duration: 0.35, bounce: 0.1)) {
+                            isRedactionEditing = false
+                            isAddingRedaction = false
+                            viewModel.selectRedactionRegion(id: nil)
+                        }
+                    }
+                )
                 .background(Color(.systemBackground))
+                .transition(.asymmetric(
+                    insertion: .move(edge: .bottom).combined(with: .opacity),
+                    removal:   .move(edge: .bottom).combined(with: .opacity)
+                ))
+            } else {
+                controlPanel
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 16)
+                    .background(Color(.systemBackground))
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal:   .move(edge: .bottom).combined(with: .opacity)
+                    ))
+            }
         }
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: isRedactionEditing)
     }
 
     // MARK: - Image display region
@@ -372,12 +454,31 @@ struct ContentView: View {
                 if let uiImage = viewModel.sourceUIImage {
                     ZoomableImagePreview(
                         image: uiImage,
-                        highlightedResults: viewModel.redactionPreviewResults,
-                        focusedResult: viewModel.selectedPIIResult,
+                        redactionRegions: viewModel.redactionRegions,
+                        selectedRedactionRegionID: Binding(
+                            get: { viewModel.selectedRedactionRegionID },
+                            set: { viewModel.selectRedactionRegion(id: $0) }
+                        ),
+                        isRedactionEditing: isRedactionEditing,
+                        isAddingRedaction: isAddingRedaction,
+                        resetZoomRequest: zoomResetRequest,
                         isScanning: viewModel.isScanningPII,
                         showZoomHint: hasPhoto,
                         onTap: {
                             if isPanelOpen { closePanel() }
+                        },
+                        onAddRedaction: { rect in
+                            viewModel.addCustomRedaction(rect: rect)
+                            isAddingRedaction = false
+                        },
+                        onBeginUpdateRedaction: { id in
+                            viewModel.beginRedactionUpdate(id: id)
+                        },
+                        onUpdateRedaction: { id, rect in
+                            viewModel.updateRedactionRegion(id: id, rect: rect)
+                        },
+                        onSelectRedaction: { id in
+                            viewModel.selectRedactionRegion(id: id)
                         }
                     )
                     .padding()
@@ -479,8 +580,12 @@ struct ContentView: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
 
-            if hasPhoto, viewModel.isScanningPII || !viewModel.detectedPII.isEmpty {
-                sensitiveDataSection
+            // ── Redaction entry — adapts to PII scan state ─────────────
+            // • Scanning  : muted row with spinner (not tappable)
+            // • PII found : red tinted row that opens the editor (mirrors old sensitive-data banner)
+            // • No PII    : normal "Add/Edit Redactions" chevron row
+            if hasPhoto {
+                redactionEntryButton
                     .transition(.opacity.combined(with: .move(edge: .top)))
             }
 
@@ -551,66 +656,137 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
     }
 
-    // MARK: - Sensitive data section
+    // MARK: - Redaction entry button (adaptive: scanning / PII found / no PII)
 
-    private var sensitiveDataSection: some View {
-        let typeCount = viewModel.detectedPII.count
-        let redactionCount = viewModel.redactionPreviewResults.reduce(0) { $0 + $1.matchCount }
-
-        return HStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(Color.red.opacity(0.14))
-                Image(systemName: viewModel.isScanningPII ? "hourglass" : "eye.fill")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundStyle(.red)
-                    .accessibilityHidden(true)
+    private var redactionEntryButton: some View {
+        Button {
+            withAnimation(.spring(duration: 0.35, bounce: 0.1)) {
+                isRedactionEditing = true
+                closePanel()
             }
-            .frame(width: 38, height: 38)
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text(viewModel.isScanningPII ? "Scanning for sensitive data" : "Sensitive data found")
-                    .font(.subheadline.weight(.semibold))
-
-                Text(viewModel.isScanningPII
-                    ? "Checking visible text before save"
-                    : "\(typeCount) type\(typeCount == 1 ? "" : "s") found • \(redactionCount) region\(redactionCount == 1 ? "" : "s") will redact")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(2)
-            }
-
-            Spacer(minLength: 8)
-
-            if viewModel.isScanningPII {
-                ProgressView()
-                    .controlSize(.small)
-                    .accessibilityHidden(true)
-            } else {
-                Button {
-                    viewModel.activeSheet = .pii
-                } label: {
-                    Label("Review", systemImage: "scope")
-                        .font(.caption.weight(.semibold))
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.small)
-                .tint(.red)
-                .accessibilityIdentifier("reviewSensitiveDataButton")
-            }
+        } label: {
+            redactionEntryLabel
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 11)
-        .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
-        )
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("sensitiveDataSection")
-        .accessibilityLabel(viewModel.isScanningPII
-            ? "Scanning for sensitive data"
-            : "Sensitive data found: \(typeCount) type\(typeCount == 1 ? "" : "s"), \(redactionCount) region\(redactionCount == 1 ? "" : "s") will redact")
+        .buttonStyle(.plain)
+        .disabled(viewModel.isScanningPII)
+        .accessibilityHint(viewModel.isScanningPII ? "" : "Opens the redaction editor")
+        .accessibilityIdentifier("editRedactionsButton")
+        .animation(.easeInOut(duration: 0.3), value: viewModel.isScanningPII)
+        .animation(.easeInOut(duration: 0.3), value: viewModel.detectedPII.isEmpty)
+    }
+
+    @ViewBuilder
+    private var redactionEntryLabel: some View {
+        let regionCount = viewModel.enabledRedactionRegions.count
+
+        if viewModel.isScanningPII {
+            // ── Scanning state — muted row, not tappable ──────────────────
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Color.secondary.opacity(0.12))
+                    ProgressView()
+                        .controlSize(.small)
+                        .accessibilityHidden(true)
+                }
+                .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Scanning for sensitive data")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    Text("Checking visible text before save")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                }
+                Spacer(minLength: 8)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            )
+            .accessibilityLabel("Scanning for sensitive data")
+
+        } else if !viewModel.detectedPII.isEmpty {
+            // ── PII found state — red tinted, full-row tap ────────────────
+            let typeCount = viewModel.detectedPII.count
+
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Color.red.opacity(0.14))
+                    Image(systemName: "eye.fill")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.red)
+                        .accessibilityHidden(true)
+                }
+                .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Sensitive data found")
+                        .font(.subheadline.weight(.semibold))
+                    Text("\(typeCount) type\(typeCount == 1 ? "" : "s") found • \(regionCount) region\(regionCount == 1 ? "" : "s") will redact")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.red.opacity(0.5))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 11)
+            .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
+            )
+            .accessibilityLabel("Sensitive data found: \(typeCount) type\(typeCount == 1 ? "" : "s"), \(regionCount) region\(regionCount == 1 ? "" : "s") will redact")
+            .accessibilityIdentifier("sensitiveDataSection")
+
+        } else {
+            // ── No PII state — normal chevron row ─────────────────────────
+            HStack(spacing: 10) {
+                Label("Add/Edit Redactions", systemImage: "square.dashed")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                if regionCount == 0 {
+                    Text("None")
+                        .font(.caption)
+                        .foregroundStyle(.tertiary)
+                } else {
+                    Text("^[\(regionCount) region](inflect: true)")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.tertiary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 11)
+            .background(
+                Color(.secondarySystemGroupedBackground),
+                in: RoundedRectangle(cornerRadius: 12)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            )
+            .accessibilityLabel(
+                regionCount == 0
+                    ? "Add or edit redactions. None active."
+                    : "Add or edit redactions. \(regionCount) active."
+            )
+        }
     }
 
     // MARK: - Confidence helpers
@@ -631,21 +807,378 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Action button helper (icon + label, used in photo-loaded control panel)
+}
 
-    private func actionButton(_ systemName: String, label: String, prominent: Bool) -> some View {
-        VStack(spacing: 6) {
-            Image(systemName: systemName)
-                .font(.system(size: 20, weight: .medium))
-                .foregroundStyle(prominent ? .white : .primary)
-                .frame(width: 56, height: 56)
+// MARK: - Redaction Editor Drawer
+
+/// Bottom-panel UI that replaces `controlPanel` while the user is editing redaction regions.
+/// All state is passed in as value types + action callbacks — no `@Binding` — for clean
+/// separation from `ContentView`'s state machine.
+private struct RedactionEditorDrawer: View {
+
+    let regions: [RedactionRegion]
+    let selectedRegionID: String?
+    let canUndo: Bool
+    let canRedo: Bool
+    let isAddingRedaction: Bool
+
+    let onSelect: (String?) -> Void
+    let onAdd: () -> Void
+    let onToggleRegion: (String) -> Void
+    let onDeleteRegion: (String) -> Void
+    let onChangeStyle: (String, RedactionStyle) -> Void
+    let onChangeColor: (String, RedactionColor) -> Void
+    let onUndo: () -> Void
+    let onRedo: () -> Void
+    let onFit: () -> Void
+    let onDone: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+
+            // ── Header ────────────────────────────────────────────────────
+            HStack {
+                Label("Redaction Regions", systemImage: "square.dashed")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+
+                Spacer()
+
+                // Add / Cancel-Add toggle
+                Button(action: onAdd) {
+                    Label(
+                        isAddingRedaction ? "Cancel" : "Add Region",
+                        systemImage: isAddingRedaction ? "xmark" : "plus"
+                    )
+                    .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(isAddingRedaction ? .secondary : .accentColor)
+                .controlSize(.small)
+                .accessibilityIdentifier("addRedactionButton")
+                .accessibilityLabel(isAddingRedaction ? "Cancel drawing redaction" : "Draw a new redaction region")
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 8)
+
+            // ── Draw-mode hint ────────────────────────────────────────────
+            if isAddingRedaction {
+                HStack(spacing: 8) {
+                    Image(systemName: "hand.draw")
+                        .font(.system(size: 13, weight: .medium))
+                        .accessibilityHidden(true)
+                    Text("Drag on the photo to draw a redaction box")
+                        .font(.caption)
+                }
+                .foregroundStyle(.orange)
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            Divider()
+
+            // ── Region list ───────────────────────────────────────────────
+            if regions.isEmpty {
+                HStack {
+                    Spacer()
+                    VStack(spacing: 6) {
+                        Image(systemName: "square.dashed")
+                            .font(.system(size: 22, weight: .light))
+                            .foregroundStyle(.tertiary)
+                        Text("No redaction regions")
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding(.vertical, 18)
+                    Spacer()
+                }
+            } else {
+                ScrollView {
+                    LazyVStack(spacing: 0) {
+                        ForEach(regions) { region in
+                            regionRow(region)
+                            if region.id != regions.last?.id {
+                                Divider()
+                                    .padding(.leading, 44)
+                            }
+                        }
+                    }
+                }
+                .frame(maxHeight: 160)
+            }
+
+            Divider()
+
+            // ── Style + Color panel (visible when a region is selected) ────
+            if let selectedRegion = regions.first(where: { $0.id == selectedRegionID }) {
+                styleColorPanel(for: selectedRegion)
+                Divider()
+            }
+
+            // ── Action bar ────────────────────────────────────────────────
+            HStack(spacing: 8) {
+                Button(action: onUndo) {
+                    Image(systemName: "arrow.uturn.backward")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(!canUndo)
+                .accessibilityLabel("Undo")
+                .accessibilityIdentifier("undoRedactionButton")
+
+                Button(action: onRedo) {
+                    Image(systemName: "arrow.uturn.forward")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .disabled(!canRedo)
+                .accessibilityLabel("Redo")
+                .accessibilityIdentifier("redoRedactionButton")
+
+                Button(action: onFit) {
+                    Image(systemName: "arrow.down.right.and.arrow.up.left")
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .accessibilityLabel("Reset zoom to fit image")
+                .accessibilityIdentifier("resetZoomButton")
+
+                Spacer()
+
+                Button(action: onDone) {
+                    Text("Done")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.regular)
+                .accessibilityLabel("Done editing redactions")
+                .accessibilityIdentifier("doneEditingRedactionsButton")
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+        }
+        .animation(.spring(duration: 0.22), value: isAddingRedaction)
+        .animation(.spring(duration: 0.22), value: regions.count)
+    }
+
+    // MARK: - Style + Color Panel
+
+    /// Compact contextual panel shown when a region is selected.
+    /// Style choices are always visible; the colour row is hidden for `.pixelate`
+    /// (which shows scrambled source pixels — colour is irrelevant).
+    @ViewBuilder
+    private func styleColorPanel(for region: RedactionRegion) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+
+            // ── Style row ─────────────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Style")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 6) {
+                    ForEach(RedactionStyle.allCases, id: \.self) { style in
+                        let isActive = region.style == style
+                        Button {
+                            onChangeStyle(region.id, style)
+                        } label: {
+                            VStack(spacing: 3) {
+                                Image(systemName: style.symbolName)
+                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
+                                Text(style.displayName)
+                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
+                            }
+                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 7)
+                            .background(
+                                isActive
+                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
+                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
+                                in: RoundedRectangle(cornerRadius: 8)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(
+                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
+                                        lineWidth: 1
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("\(style.displayName) style")
+                        .accessibilityAddTraits(isActive ? .isSelected : [])
+                        .accessibilityIdentifier("styleButton-\(style.rawValue)")
+                    }
+                }
+            }
+
+            // ── Colour row (suppressed for pixelate) ──────────────────────
+            if region.style.supportsColor {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Color")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
+                        spacing: 8
+                    ) {
+                        ForEach(RedactionColor.allCases, id: \.self) { color in
+                            let isActive = region.color == color
+                            Button {
+                                onChangeColor(region.id, color)
+                            } label: {
+                                ZStack {
+                                    Circle()
+                                        .fill(color.color)
+                                        .frame(width: 28, height: 28)
+                                    if color.isLight {
+                                        Circle()
+                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
+                                            .frame(width: 28, height: 28)
+                                    }
+                                    if isActive {
+                                        Circle()
+                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
+                                            .frame(width: 34, height: 34)
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
+                                    }
+                                }
+                                .frame(width: 36, height: 36)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("\(color.displayName) color")
+                            .accessibilityAddTraits(isActive ? .isSelected : [])
+                            .accessibilityIdentifier("colorButton-\(color.rawValue)")
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .animation(.easeInOut(duration: 0.18), value: region.style)
+        .animation(.easeInOut(duration: 0.18), value: region.color)
+    }
+
+    // MARK: - Region Row
+
+    @ViewBuilder
+    private func regionRow(_ region: RedactionRegion) -> some View {
+        let isSelected = region.id == selectedRegionID
+
+        Button {
+            onSelect(isSelected ? nil : region.id)
+        } label: {
+            HStack(spacing: 12) {
+
+                // ── Leading icon: confidence-colored for detected, accent for custom ──
+                Group {
+                    if let level = region.confidence {
+                        Image(systemName: confidenceIcon(level))
+                            .foregroundStyle(confidenceColor(level))
+                    } else {
+                        Image(systemName: "square.dashed")
+                            .foregroundStyle(.accent)
+                    }
+                }
+                .font(.system(size: 16, weight: .semibold))
+                .frame(width: 28, height: 28)
                 .background(
-                    prominent ? Color.accentColor : Color(.tertiarySystemFill),
-                    in: Circle()
+                    (region.confidence.map(confidenceColor) ?? .accentColor).opacity(0.12),
+                    in: RoundedRectangle(cornerRadius: 7)
                 )
-            Text(label)
-                .font(.caption2.weight(.medium))
-                .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+
+                // ── Middle: name + snippet + confidence score ──────────────
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(region.displayName)
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
+
+                    if let snippet = region.snippet, !snippet.isEmpty {
+                        Text(snippet)
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                    }
+
+                    if let score = region.score, let level = region.confidence {
+                        Text("\(score, format: .percent.precision(.fractionLength(0))) match")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(confidenceColor(level))
+                    }
+                }
+
+                Spacer(minLength: 4)
+
+                // ── Trailing: enable/disable toggle + delete ───────────────
+                HStack(spacing: 4) {
+                    // Enable / disable toggle
+                    Button {
+                        onToggleRegion(region.id)
+                    } label: {
+                        Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(region.isEnabled ? .red : .secondary)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(region.isEnabled
+                        ? "Disable redaction for \(region.displayName)"
+                        : "Enable redaction for \(region.displayName)")
+                    .accessibilityIdentifier("toggleRegionButton-\(region.id)")
+
+                    // Delete
+                    Button {
+                        onDeleteRegion(region.id)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundStyle(.red)
+                            .frame(width: 30, height: 30)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Delete \(region.displayName) region")
+                    .accessibilityIdentifier("deleteRegionButton-\(region.id)")
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(isSelected ? Color.accentColor.opacity(0.07) : Color.clear)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .opacity(region.isEnabled ? 1 : 0.45)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(region.displayName + (isSelected ? ", selected" : ""))
+        .accessibilityHint(isSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
+        .accessibilityIdentifier("regionRow-\(region.id)")
+    }
+
+    // MARK: - Confidence helpers
+
+    private func confidenceIcon(_ level: ConfidenceLevel) -> String {
+        switch level {
+        case .high:   return "exclamationmark.octagon.fill"
+        case .medium: return "exclamationmark.triangle.fill"
+        case .low:    return "info.circle.fill"
+        }
+    }
+
+    private func confidenceColor(_ level: ConfidenceLevel) -> Color {
+        switch level {
+        case .high:   return .red
+        case .medium: return .orange
+        case .low:    return .blue
         }
     }
 }
