@@ -1,0 +1,4 @@
+# Marketing screenshots tracked via Git LFS so they round-trip cleanly through
+# git without bloating the pack files. Triggered by ``screenshots.yml`` for App
+# Store Connect upload; regenerated locally with ``make process-screenshots``.
+fastlane/screenshots/processed/**/*.png filter=lfs diff=lfs merge=lfs -text

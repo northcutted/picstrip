@@ -1,18 +1,49 @@
 name: Upload Screenshots
 
+# Two modes, controlled by the ``generate_new`` input:
+#
+#   generate_new=false (default)
+#     Pulls the marketing PNGs from Git LFS and uploads them to App Store
+#     Connect as-is. Runs on ubuntu-latest — no macOS runner needed because
+#     no simulator is involved. Fast (~2 min) and cheap.
+#
+#   generate_new=true
+#     Captures fresh screenshots on the macOS runner, composes the
+#     marketing PNGs via the Python compositor, commits the result back to
+#     the repo via Git LFS (with [skip ci]), and then uploads. Slow
+#     (~30-90 min depending on locale subset) and expensive — only use when
+#     UI changes warrant a refresh.
+
 on:
   workflow_dispatch:
+    inputs:
+      generate_new:
+        description: "Capture fresh screenshots before uploading"
+        type: boolean
+        required: false
+        default: false
+      languages:
+        description: "Locale subset for the (re)capture, comma-separated. Empty = all locales in Snapfile."
+        type: string
+        required: false
+        default: ""
 
 permissions:
-  contents: read
+  # ``contents: write`` is needed only when generate_new=true so we can
+  # commit the regenerated processed/ PNGs back to the repo. The default
+  # upload-only path is read-only.
+  contents: write
 
 jobs:
   upload:
     name: Upload to App Store Connect
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.generate_new && 'macos-26' || 'ubuntu-latest' }}
+    timeout-minutes: ${{ inputs.generate_new && 240 || 30 }}
     steps:
-      - name: Checkout
+      - name: Checkout (with LFS)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          lfs: true
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
@@ -20,9 +51,65 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
 
+      # ── Regeneration path (only when generate_new=true) ─────────────────
+      - name: Boot simulators
+        if: ${{ inputs.generate_new }}
+        run: |
+          xcrun simctl boot "iPhone 17 Pro Max"     || true
+          xcrun simctl boot "iPad Pro 13-inch (M5)" || true
+          xcrun simctl bootstatus "iPhone 17 Pro Max"     -b
+          xcrun simctl bootstatus "iPad Pro 13-inch (M5)" -b
+
+      - name: Override status bars
+        if: ${{ inputs.generate_new }}
+        run: |
+          for device in "iPhone 17 Pro Max" "iPad Pro 13-inch (M5)"; do
+            xcrun simctl status_bar "$device" override \
+              --time "9:41" \
+              --dataNetwork wifi \
+              --wifiMode active \
+              --wifiBars 3 \
+              --cellularMode active \
+              --cellularBars 4 \
+              --batteryState charged \
+              --batteryLevel 100
+          done
+
+      - name: Install Python compositor deps
+        if: ${{ inputs.generate_new }}
+        run: pip3 install --user -r scripts/requirements.txt
+
+      - name: Capture screenshots
+        if: ${{ inputs.generate_new }}
+        run: |
+          sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
+          if [ -n "${{ inputs.languages }}" ]; then
+            bundle exec fastlane screenshots languages:"${{ inputs.languages }}"
+          else
+            bundle exec fastlane screenshots
+          fi
+
+      - name: Compose marketing screenshots
+        if: ${{ inputs.generate_new }}
+        run: bundle exec fastlane process_screenshots
+
+      - name: Commit refreshed screenshots to LFS
+        if: ${{ inputs.generate_new }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fastlane/screenshots/processed/
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit."
+          else
+            git commit -m "chore(screenshots): refresh App Store screenshots [skip ci]"
+            git push
+          fi
+
+      # ── Upload (always runs, regardless of generate_new) ────────────────
       - name: Upload to App Store Connect
         env:
           APP_STORE_CONNECT_API_KEY_ID:        ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
           APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
           APP_STORE_CONNECT_API_KEY_CONTENT:   ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-        run: bundle exec fastlane upload_screenshots allow_partial:true
+        run: bundle exec fastlane upload_screenshots

@@ -5,6 +5,9 @@
 ## User settings
 xcuserdata/
 
+## Claude Code session state (locked agent worktrees, plans, settings)
+.claude/
+
 ## Obj-C/Swift specific
 *.hmap
 
@@ -61,11 +64,17 @@ xcuserdata/
 DerivedData/
 build/
 
-# Screenshots: ignore all PNGs under fastlane/screenshots except the committed
-# raw App Store screenshots in en-US/ (used as a pipeline cache). Framed
-# variants (*_framed.png) stay ignored everywhere — they live in docs/screenshots/.
+# Screenshots:
+#   - Raw simulator captures stay ignored except en-US/ (used as a pipeline
+#     cache). Other locales are reproducible via ``make screenshots``.
+#   - frameit's ``*_framed.png`` variants are ignored everywhere — we draw
+#     our own device frame in the Python compositor and don't ship frameit
+#     output.
+#   - ``processed/`` (final marketing PNGs) is tracked via Git LFS — that's
+#     what ``screenshots.yml`` uploads to App Store Connect.
 fastlane/screenshots/**/*.png
 !fastlane/screenshots/en-US/*.png
+!fastlane/screenshots/processed/**/*.png
 fastlane/screenshots/en-US/*_framed.png
 fastlane/screenshots/**/*.html
 

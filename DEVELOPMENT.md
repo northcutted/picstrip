@@ -669,11 +669,11 @@ Four jobs run on `macos-26`:
 - **lint** — `bundle exec fastlane lint` (SwiftLint strict mode); runs on every PR
 - **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`); runs on every PR
 - **test** — `bundle exec fastlane test` (`PicStripTests` unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact); runs on every PR
-- **screenshots** — full 3-device App Store capture; runs **only when the `screenshots` label is applied** to the PR
+- **screenshots** — full 2-device App Store capture; runs **only when the `screenshots` label is applied** to the PR
 
 #### PR Screenshots (`screenshots` label)
 
-Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same three devices used in `screenshots.yml` (iPhone 17 Pro Max, iPhone Air, iPad Pro 13-inch M5). Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs — that step is only performed by `screenshots.yml` when dispatched against `main`.
+Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same two devices used in `screenshots.yml` (iPhone 17 Pro Max, iPad Pro 13-inch M5). The App Store auto-scales the 6.9" iPhone set to 6.7"/6.5"/5.5", so the iPhone Air capture is intentionally omitted. Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs — that step is only performed by `screenshots.yml` when dispatched against `main`.
 
 ### Release Workflow (`main.yml`)
 
@@ -763,7 +763,7 @@ Manually dispatched (not part of the release pipeline). Key design decisions:
 - **No pre-boot/status bar override step**: Fastlane/Xcode boots each simulator when needed. Direct `simctl bootstatus` and `simctl status_bar` calls have hung on `macos-26` runners.
 - **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
 
-**PR label-gated screenshots (`pr.yml` — `screenshots` job)**: Adding the `screenshots` label to a PR triggers the same full 3-device capture in the PR pipeline. Results upload as a PR artifact (`pr-screenshots-<PR-number>`, retained 14 days). The App Store Connect upload step is skipped — it only runs when `screenshots.yml` is dispatched against `main`.
+**PR label-gated screenshots (`pr.yml` — `screenshots` job)**: Adding the `screenshots` label to a PR triggers the same full 2-device capture in the PR pipeline. Results upload as a PR artifact (`pr-screenshots-<PR-number>`, retained 14 days). The App Store Connect upload step is skipped — it only runs when `screenshots.yml` is dispatched against `main`.
 
 ### Semantic Release
 

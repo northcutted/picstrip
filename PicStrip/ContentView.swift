@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var isRedactionEditing = false
     @State private var isAddingRedaction = false
     @State private var zoomResetRequest = 0
+    @State private var isShowingSensitiveDataReview = false
 
     /// Set to true by the scenePhase observer when StripImageIntent fires.
     @State private var isShowingIntentBatchPicker = false
@@ -106,6 +107,9 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingPrivacyImpact) {
             PrivacyImpactSummaryView(stats: PrivacyRemovalStats.load())
+        }
+        .sheet(isPresented: $isShowingSensitiveDataReview) {
+            SensitiveDataReviewView(viewModel: viewModel)
         }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
@@ -508,6 +512,7 @@ struct ContentView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Dismiss photo")
+                    .accessibilityIdentifier("dismissPhotoButton")
                     .padding(14)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
                     .transition(.opacity.animation(.easeInOut(duration: 0.2)))
@@ -580,11 +585,22 @@ struct ContentView: View {
 
             // ── Redaction entry — adapts to PII scan state ─────────────
             // • Scanning  : muted row with spinner (not tappable)
-            // • PII found : red tinted row that opens the editor (mirrors old sensitive-data banner)
-            // • No PII    : normal "Add/Edit Redactions" chevron row
+            // • PII found : red banner (opens Sensitive Data review sheet)
+            //               + a separate Edit Redactions row below it
+            // • No PII    : normal "Edit Redactions" chevron row
             if hasPhoto {
-                redactionEntryButton
-                    .transition(.opacity.combined(with: .move(edge: .top)))
+                if viewModel.isScanningPII {
+                    scanningRow
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                } else if !viewModel.detectedPII.isEmpty {
+                    sensitiveBanner
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                    editRedactionsRow
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                } else {
+                    editRedactionsRow
+                        .transition(.opacity.combined(with: .move(edge: .top)))
+                }
             }
 
             // Metadata row — only when photo loaded
@@ -595,6 +611,7 @@ struct ContentView: View {
                     Label("Metadata found in this photo", systemImage: "tag.fill")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
+                        .accessibilityIdentifier("metadataFoundLabel")
                     Spacer()
                     Text("Tap to review")
                         .font(.caption2)
@@ -654,63 +671,45 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
     }
 
-    // MARK: - Redaction entry button (adaptive: scanning / PII found / no PII)
+    // MARK: - Scanning row (muted, not interactive)
 
-    private var redactionEntryButton: some View {
-        Button {
-            withAnimation(.spring(duration: 0.35, bounce: 0.1)) {
-                isRedactionEditing = true
-                closePanel()
+    private var scanningRow: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle().fill(Color.secondary.opacity(0.12))
+                ProgressView()
+                    .controlSize(.small)
+                    .accessibilityHidden(true)
             }
-        } label: {
-            redactionEntryLabel
+            .frame(width: 38, height: 38)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Scanning for sensitive data")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.secondary)
+                Text("Checking visible text before save")
+                    .font(.caption)
+                    .foregroundStyle(.tertiary)
+            }
+            Spacer(minLength: 8)
         }
-        .buttonStyle(.plain)
-        .disabled(viewModel.isScanningPII)
-        .accessibilityHint(viewModel.isScanningPII ? "" : "Opens the redaction editor")
-        .accessibilityIdentifier("editRedactionsButton")
-        .animation(.easeInOut(duration: 0.3), value: viewModel.isScanningPII)
-        .animation(.easeInOut(duration: 0.3), value: viewModel.detectedPII.isEmpty)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 11)
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14)
+                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+        )
+        .accessibilityLabel("Scanning for sensitive data")
     }
 
-    @ViewBuilder
-    private var redactionEntryLabel: some View {
-        let regionCount = viewModel.enabledRedactionRegions.count
+    // MARK: - Sensitive data found banner → opens SensitiveDataReviewView
 
-        if viewModel.isScanningPII {
-            // ── Scanning state — muted row, not tappable ──────────────────
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().fill(Color.secondary.opacity(0.12))
-                    ProgressView()
-                        .controlSize(.small)
-                        .accessibilityHidden(true)
-                }
-                .frame(width: 38, height: 38)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Scanning for sensitive data")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.secondary)
-                    Text("Checking visible text before save")
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
-                }
-                Spacer(minLength: 8)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 11)
-            .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
-            )
-            .accessibilityLabel("Scanning for sensitive data")
-
-        } else if !viewModel.detectedPII.isEmpty {
-            // ── PII found state — red tinted, full-row tap ────────────────
-            let typeCount = viewModel.detectedPII.count
-
+    private var sensitiveBanner: some View {
+        Button {
+            isShowingSensitiveDataReview = true
+            closePanel()
+        } label: {
             HStack(spacing: 12) {
                 ZStack {
                     Circle().fill(Color.red.opacity(0.14))
@@ -724,7 +723,8 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Sensitive data found")
                         .font(.subheadline.weight(.semibold))
-                    Text("^[\(typeCount) type](inflect: true) found • ^[\(regionCount) region](inflect: true) will redact")
+                    (Text("^[\(viewModel.detectedPII.count) type](inflect: true) found • ") +
+                     Text("^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact"))
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
@@ -744,18 +744,39 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
             )
-            .accessibilityLabel(Text("Sensitive data found: ^[\(typeCount) type](inflect: true), ^[\(regionCount) region](inflect: true) will redact"))
+            // Inner identifier lets XCUITest confirm the PII section is present
+            // as a distinct element from the tap target.
             .accessibilityIdentifier("sensitiveDataSection")
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            Text("Sensitive data found: ") +
+            Text("^[\(viewModel.detectedPII.count) type](inflect: true)") +
+            Text(", ") +
+            Text("^[\(viewModel.enabledRedactionRegions.count) region](inflect: true)") +
+            Text(" will redact. Tap to review.")
+        )
+        .accessibilityIdentifier("reviewSensitiveDataButton")
+        .accessibilityHint("Opens the Sensitive Data review sheet")
+    }
 
-        } else {
-            // ── No PII state — normal chevron row ─────────────────────────
+    // MARK: - Edit Redactions row → opens the redaction editor
+
+    private var editRedactionsRow: some View {
+        Button {
+            withAnimation(.spring(duration: 0.35, bounce: 0.1)) {
+                isRedactionEditing = true
+                closePanel()
+            }
+        } label: {
             HStack(spacing: 10) {
-                Label("Add/Edit Redactions", systemImage: "square.dashed")
+                Label("Edit Redactions", systemImage: "square.dashed")
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.primary)
 
                 Spacer()
 
+                let regionCount = viewModel.enabledRedactionRegions.count
                 if regionCount == 0 {
                     Text("None")
                         .font(.caption)
@@ -780,12 +801,15 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
             )
-            .accessibilityLabel(
-                regionCount == 0
-                    ? "Add or edit redactions. None active."
-                    : "Add or edit redactions. \(regionCount) active."
-            )
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(Text(
+            viewModel.enabledRedactionRegions.isEmpty
+                ? "Edit redactions. None active."
+                : "Edit redactions. \(viewModel.enabledRedactionRegions.count) active."
+        ))
+        .accessibilityHint("Opens the redaction editor")
+        .accessibilityIdentifier("editRedactionsButton")
     }
 
     // MARK: - Confidence helpers
@@ -1147,7 +1171,7 @@ private struct RedactionEditorDrawer: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Delete \(region.displayName) region")
-                    .accessibilityIdentifier("deleteRegionButton-\(region.id)")
+                    .accessibilityIdentifier("deleteRedactionButton")
                 }
             }
             .padding(.horizontal, 16)

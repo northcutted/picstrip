@@ -213,8 +213,8 @@ PicStrip/
 ├── fastlane/
 │   ├── Fastfile             # Lane definitions
 │   ├── Snapfile             # Screenshot configuration
+│   ├── MarketingHeadlines.xcstrings  # Localized App Store screenshot copy
 │   ├── screenshots/
-│   │   ├── Framefile.json   # force_device_type overrides for 2025 device names
 │   │   ├── manifest.json    # Inputs SHA + expected file list (screenshot cache key)
 │   │   └── en-US/           # Raw App Store screenshots (committed as cache)
 │   └── metadata/            # App Store metadata (title, description, keywords, release notes)
@@ -297,7 +297,7 @@ npm install
 | `make localization-translate LANGUAGES="es fr"` | Fills missing string-catalog localizations using the local pseudo provider by default |
 | `make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES="es fr"` | Fills missing string-catalog localizations via OpenAI; requires `OPENAI_API_KEY` |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
-| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPhone Air"` for subsets |
+| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
 | `make upload-screenshots` | Uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
 | `bundle exec fastlane analyze` | `xcodebuild analyze` static analysis |
@@ -361,7 +361,7 @@ make localization-export
 
 A fourth job runs only when the `screenshots` label is applied to the PR:
 
-- **PR Screenshots** — boots all three simulators explicitly, overrides status bars to a clean state (9:41, full Wi-Fi/cellular/battery), runs the full 3-device capture, and uploads results as a PR artifact (14-day retention). Snapshot logs are uploaded separately on failure. No upload to App Store Connect from PRs.
+- **PR Screenshots** — boots both simulators explicitly, overrides status bars to a clean state (9:41, full Wi-Fi/cellular/battery), runs the full 2-device capture, and uploads results as a PR artifact (14-day retention). Snapshot logs are uploaded separately on failure. No upload to App Store Connect from PRs.
 
 ### On push to `main`
 
@@ -403,9 +403,9 @@ flowchart TD
 
 ### Screenshot workflow
 
-`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
+`screenshots.yml` is **manually dispatched** (not part of the release pipeline). It captures App Store screenshots on iPhone 17 Pro Max and iPad Pro 13-inch (M5), leaving simulator boot and status bar handling to Fastlane/Xcode. The App Store auto-scales the 6.9" iPhone set to the 6.7"/6.5"/5.5" device classes, so the iPhone Air capture is intentionally omitted. All screenshots land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
 
-**Cache behaviour:** on each run the workflow computes a SHA-256 hash of all inputs that affect screenshot appearance (`PicStrip/`, `PicStripUITests/PicStripUITests.swift`, `PicStripUITests/test_list.png`, `fastlane/Snapfile`). If the hash matches `fastlane/screenshots/manifest.json` and all 15 expected PNGs are present in the repo, the simulator is skipped entirely and the existing screenshots are uploaded directly. On a cache miss the workflow recaptures, frames, updates `manifest.json`, and commits the new cache back to `main` with `[skip ci]`.
+**Cache behaviour:** on each run the workflow computes a SHA-256 hash of all inputs that affect screenshot appearance (`PicStrip/`, `PicStripUITests/PicStripUITests.swift`, `PicStripUITests/test_list.png`, `fastlane/Snapfile`). If the hash matches `fastlane/screenshots/manifest.json` and all expected PNGs are present in the repo, the simulator is skipped entirely and the existing screenshots are uploaded directly. On a cache miss the workflow recaptures, frames, updates `manifest.json`, and commits the new cache back to `main` with `[skip ci]`.
 
 ---
 

@@ -94,6 +94,7 @@ struct PrivacyImpactSummaryView: View {
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
+                        .accessibilityIdentifier("privacyImpactDoneButton")
                 }
             }
         }

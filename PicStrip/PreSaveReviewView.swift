@@ -188,6 +188,7 @@ struct PreSaveReviewView: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
+                        .accessibilityIdentifier("savePreviewLabel")
 
                     ZoomableImagePreview(
                         image: previewImage,

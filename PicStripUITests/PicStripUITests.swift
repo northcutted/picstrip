@@ -55,7 +55,7 @@ final class PicStripUITests: XCTestCase {
         )
         Thread.sleep(forTimeInterval: 0.5)
         snapshot("02_PrivacyImpact")
-        app.navigationBars["Removed Data"].buttons["Done"].tap()
+        app.buttons["privacyImpactDoneButton"].tap()
 
         // 03 — About sheet
         Thread.sleep(forTimeInterval: 0.4)
@@ -88,7 +88,7 @@ final class PicStripUITests: XCTestCase {
         // 04 — Photo loaded: wait for the dismiss button (photo fully loaded), then
         // wait for reviewSensitiveDataButton which only appears once the PII scan is
         // complete — guarantees the badge row is stable and saveButton is enabled.
-        let dismissButton = app.buttons["Dismiss photo"]
+        let dismissButton = app.buttons["dismissPhotoButton"]
         XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
                       "Dismiss button should appear after fixture image loads")
 
@@ -110,7 +110,7 @@ final class PicStripUITests: XCTestCase {
             "Visual detections should no longer be surfaced as the old PII pill."
         )
         XCTAssertTrue(
-            app.staticTexts["Metadata found in this photo"].exists,
+            app.descendants(matching: .any)["metadataFoundLabel"].exists,
             "Metadata should remain its own section when visual sensitive data is present."
         )
         snapshot("04_PhotoLoaded")
@@ -130,20 +130,20 @@ final class PicStripUITests: XCTestCase {
         start.press(forDuration: 0.1, thenDragTo: end)
         Thread.sleep(forTimeInterval: 0.5)
         snapshot("05_RedactionEditor")
-        editRedactionsButton.tap()
+        app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
         Thread.sleep(forTimeInterval: 0.3)
 
         // 06 — Sensitive Data sheet: tap the review button, wait for the sheet.
         reviewSensitiveDataButton.tap()
         XCTAssertTrue(
-            app.navigationBars["Sensitive Data"].waitForExistence(timeout: 5),
+            app.descendants(matching: .any)["sensitiveDataReview"].waitForExistence(timeout: 5),
             "Sensitive Data sheet should appear after tapping the review button."
         )
         Thread.sleep(forTimeInterval: 0.5)
         snapshot("06_SensitiveData")
 
         // Dismiss the sheet via the Done button in the nav bar.
-        app.navigationBars["Sensitive Data"].buttons["Done"].tap()
+        app.buttons["sensitiveDataDoneButton"].tap()
         Thread.sleep(forTimeInterval: 0.5)
 
         // 07 — Review & save sheet: tap Save to Photos.
@@ -157,7 +157,7 @@ final class PicStripUITests: XCTestCase {
             "Review sheet should show the processed image preview before saving."
         )
         XCTAssertTrue(
-            app.staticTexts["Preview with redactions"].exists || app.staticTexts["Preview"].exists,
+            app.descendants(matching: .any)["savePreviewLabel"].exists,
             "Review sheet should label the visual save preview."
         )
         snapshot("07_ReviewAndSave")
@@ -230,7 +230,9 @@ final class PicStripUITests: XCTestCase {
             )
 
         XCTAssertTrue(app.descendants(matching: .any)["deleteRedactionButton"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["saveButton"].exists)
+        // Editor is still open at this point; verify the "Done" button is present
+        // (the save button lives in the control panel, which is hidden during editing).
+        XCTAssertTrue(app.descendants(matching: .any)["doneEditingRedactionsButton"].exists)
     }
 
     @MainActor

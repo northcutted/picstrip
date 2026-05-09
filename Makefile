@@ -10,7 +10,7 @@ LOCALIZATION_CONCURRENCY ?= 5
 # Ordered by iOS market priority; add new codes here to grow coverage.
 LOCALIZATION_LANGUAGES ?= es fr de ja zh-Hans pt-BR ko it nl pl sv tr ar zh-Hant pt-PT
 
-.PHONY: help lint analyze test build audit-localization localization-export localization-translate localization-translate-all localization-validate screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices frame-screenshots clean-screenshots
+.PHONY: help lint analyze test build audit-localization localization-export localization-translate localization-translate-all localization-validate screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -31,9 +31,9 @@ help:
 	@echo "  make screenshots                  Generate screenshots from fastlane/Snapfile"
 	@echo "  make screenshots DEVICE=\"iPhone 17 Pro Max\""
 	@echo "                                    Generate one-device screenshots"
-	@echo "  make screenshots DEVICES=\"iPhone 17 Pro Max,iPhone Air\""
+	@echo "  make screenshots DEVICES=\"iPhone 17 Pro Max,iPad Pro 13-inch (M5)\""
 	@echo "                                    Generate a comma-separated device subset"
-	@echo "  make frame-screenshots            Add device frames (for GitHub/marketing use)"
+	@echo "  make process-screenshots          Frame + compose marketing PNGs from existing captures"
 	@echo "  make upload-screenshots           Upload full screenshot set to App Store Connect"
 	@echo "  make upload-screenshots ALLOW_PARTIAL=true"
 	@echo "                                    Force upload of an incomplete screenshot set"
@@ -102,20 +102,24 @@ screenshots-device:
 
 screenshots-devices:
 	@if [ -z "$(DEVICES)" ]; then \
-		echo "Set DEVICES, for example: make screenshots-devices DEVICES=\"iPhone 17 Pro Max,iPhone Air\""; \
+		echo "Set DEVICES, for example: make screenshots-devices DEVICES=\"iPhone 17 Pro Max,iPad Pro 13-inch (M5)\""; \
 		exit 1; \
 	fi
 	$(FASTLANE) screenshots devices:"$(DEVICES)"
 
-upload-screenshots:
+process-screenshots:
+	$(FASTLANE) process_screenshots
+
+# Chains process-screenshots first so a local one-shot regenerates the
+# marketing PNGs from raw captures before uploading. CI uploads what's
+# already in fastlane/screenshots/processed/ (committed via Git LFS) and
+# calls upload_screenshots directly without going through this target.
+upload-screenshots: process-screenshots
 	@if [ "$(ALLOW_PARTIAL)" = "true" ]; then \
 		$(FASTLANE) upload_screenshots allow_partial:true; \
 	else \
 		$(FASTLANE) upload_screenshots; \
 	fi
-
-frame-screenshots:
-	$(FASTLANE) apply_frames
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs
