@@ -147,8 +147,8 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: entry.type.description,
-                                    detail: entry.detail
+                                    title: LocalizedStringKey(entry.type.description),
+                                    detail: LocalizedStringKey(entry.detail)
                                 )
                             }
                         }
@@ -169,8 +169,8 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: entry.name,
-                                    detail: entry.detail
+                                    title: LocalizedStringKey(entry.name),
+                                    detail: LocalizedStringKey(entry.detail)
                                 )
                             }
                         }
@@ -237,22 +237,26 @@ struct AboutView: View {
                         }
                     }
 
-                    LabeledContent {
-                        Text("Eddie Northcutt")
-                            .foregroundStyle(.secondary)
-                    } label: {
-                        Label {
-                            Text("Developer")
-                        } icon: {
-                            Image(systemName: "person.fill")
-                                .foregroundStyle(.secondary)
+                    if let linkedInURL = URL(string: "https://www.linkedin.com/in/edward-northcutt-b06386101") {
+                        Link(destination: linkedInURL) {
+                            LabeledContent {
+                                Text("Eddie Northcutt")
+                                    .foregroundStyle(.secondary)
+                            } label: {
+                                Label {
+                                    Text("Developer")
+                                } icon: {
+                                    Image(systemName: "person.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
                 }
 
                 // ── Section 6: Privacy promise footer ─────────────────────
                 Section {
-                    Text("PicStrip was built on a single principle: your photos are yours. The app exists to give you back control of the data attached to and visible inside your images, silently, automatically, and entirely privately.")
+                    Text("PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don’t intend to.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -273,7 +277,7 @@ struct AboutView: View {
 
     // MARK: - Row helpers
 
-    private func instructionRow(icon: String, color: Color, text: String) -> some View {
+    private func instructionRow(icon: String, color: Color, text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
@@ -289,7 +293,7 @@ struct AboutView: View {
         }
     }
 
-    private func privacyRow(icon: String, color: Color, title: String, detail: String) -> some View {
+    private func privacyRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
@@ -310,7 +314,7 @@ struct AboutView: View {
         .padding(.vertical, 4)
     }
 
-    private func disclosureLabel(icon: String, color: Color, title: String, count: String) -> some View {
+    private func disclosureLabel(icon: String, color: Color, title: LocalizedStringKey, count: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
@@ -335,7 +339,7 @@ struct AboutView: View {
         .padding(.vertical, 2)
     }
 
-    private func detectionRow(icon: String, color: Color, title: String, detail: String) -> some View {
+    private func detectionRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))

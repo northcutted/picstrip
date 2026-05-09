@@ -5,7 +5,7 @@ import XCTest
 @MainActor
 final class ScrubberViewModelPreviewTests: XCTestCase {
 
-    func testReviewPreview_prefersRedactedImageWhenRedactionsAreSelected() async throws {
+    func testReviewPreview_prefersCachedProcessedPreviewWhenAvailable() async throws {
         let viewModel = ScrubberViewModel()
         let source = try makeImage(color: .green)
         let processed = try makeImage(color: .blue)
@@ -13,7 +13,7 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
 
         viewModel.sourceUIImage = source
         viewModel.processedData = try XCTUnwrap(processed.pngData())
-        viewModel.redactedUIImage = redacted
+        viewModel.processedPreviewUIImage = processed
         viewModel.detectedPII = [
             DetectionResult(
                 type: .email,
@@ -28,11 +28,14 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
             )
         ]
         viewModel.typesToRedact = [.email]
+        // Legacy full-size redaction cache should not be needed when a decoded
+        // processed preview is already available.
+        viewModel.redactedUIImage = redacted
 
         XCTAssertEqual(
             try dominantColor(of: XCTUnwrap(viewModel.reviewPreviewUIImage)),
-            try dominantColor(of: redacted),
-            "Review preview must show the rendered redaction image before save."
+            try dominantColor(of: processed),
+            "Review preview should use the cached processed preview without re-decoding export bytes."
         )
     }
 
@@ -44,6 +47,7 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
 
         viewModel.sourceUIImage = source
         viewModel.processedData = try XCTUnwrap(processed.pngData())
+        viewModel.processedPreviewUIImage = processed
         viewModel.redactedUIImage = redacted
         viewModel.detectedPII = [
             DetectionResult(

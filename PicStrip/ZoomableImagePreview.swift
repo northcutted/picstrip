@@ -73,14 +73,14 @@ struct ZoomableImagePreview: View {
 
     private var previewAccessibilityValue: String {
         if let focusedResult {
-            return "Focused \(focusedResult.type.description)"
+            return String(localized: "Focused \(focusedResult.type.description)")
         }
 
         let regionCount = redactionRegions.isEmpty
             ? highlightedResults.reduce(0) { $0 + $1.matchCount }
             : redactionRegions.filter(\.isEnabled).count
-        guard regionCount > 0 else { return "No sensitive data highlighted" }
-        return "\(regionCount) sensitive data region\(regionCount == 1 ? "" : "s") highlighted"
+        guard regionCount > 0 else { return String(localized: "No sensitive data highlighted") }
+        return String(localized: "^[\(regionCount) sensitive data region](inflect: true) highlighted")
     }
 
     var body: some View {
@@ -92,8 +92,6 @@ struct ZoomableImagePreview: View {
                     imageLayer(size: fittedSize)
                         .scaleEffect(scale)
                         .offset(offset)
-                        .animation(.spring(response: 0.25, dampingFraction: 0.82), value: scale)
-                        .animation(.spring(response: 0.25, dampingFraction: 0.82), value: offset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
@@ -349,7 +347,6 @@ struct ZoomableImagePreview: View {
         }
         // Explicit frame ensures .position() coordinates map 1-to-1 with image pixels.
         .frame(width: size.width, height: size.height)
-        .animation(.spring(response: 0.25, dampingFraction: 0.78), value: redactionRegions)
         .animation(.spring(response: 0.25, dampingFraction: 0.78), value: selectedRedactionRegionID?.wrappedValue)
     }
 
@@ -457,7 +454,7 @@ struct ZoomableImagePreview: View {
         guard image.width > 0, image.height > 0 else { return .zero }
         let s = imageNormalizedPoint(start, imageSize: image, containerSize: container,
                                      scale: scale, panOffset: offset)
-        let e = imageNormalizedPoint(end,   imageSize: image, containerSize: container,
+        let e = imageNormalizedPoint(end, imageSize: image, containerSize: container,
                                      scale: scale, panOffset: offset)
         let minX   = min(s.x, e.x)
         let minY   = min(s.y, e.y)
@@ -527,7 +524,7 @@ struct ZoomableImagePreview: View {
         let maxX = max(0, (image.width  * scale - container.width)  / 2)
         let maxY = max(0, (image.height * scale - container.height) / 2)
         return CGSize(
-            width:  clamp(proposed.width,  min: -maxX, max: maxX),
+            width: clamp(proposed.width, min: -maxX, max: maxX),
             height: clamp(proposed.height, min: -maxY, max: maxY)
         )
     }

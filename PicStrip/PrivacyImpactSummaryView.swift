@@ -168,23 +168,23 @@ private struct VisualImpactRow: View {
 private func visualRiskDescription(for name: String) -> String {
     switch name {
     case PIIType.email.description:
-        return "Email addresses can connect a photo to accounts, breach data, social profiles, and workplace identity."
+        return String(localized: "Email addresses can connect a photo to accounts, breach data, social profiles, and workplace identity.")
     case PIIType.phoneNumber.description:
-        return "Phone numbers can be searched, messaged, or linked to public records and account recovery flows."
+        return String(localized: "Phone numbers can be searched, messaged, or linked to public records and account recovery flows.")
     case PIIType.address.description:
-        return "Addresses can reveal where someone lives, works, or spends time."
+        return String(localized: "Addresses can reveal where someone lives, works, or spends time.")
     case PIIType.link.description:
-        return "Links can expose private documents, usernames, tracking parameters, or internal systems."
+        return String(localized: "Links can expose private documents, usernames, tracking parameters, or internal systems.")
     case PIIType.ipAddress.description:
-        return "IP addresses can identify a network, workplace, approximate location, or infrastructure."
+        return String(localized: "IP addresses can identify a network, workplace, approximate location, or infrastructure.")
     case PIIType.macAddress.description:
-        return "Hardware addresses can identify a specific device on a local network."
+        return String(localized: "Hardware addresses can identify a specific device on a local network.")
     case PIIType.creditCard.description, PIIType.iban.description, PIIType.cryptoWallet.description:
-        return "Financial identifiers can expose accounts or enable fraud when shared with the wrong audience."
+        return String(localized: "Financial identifiers can expose accounts or enable fraud when shared with the wrong audience.")
     case PIIType.socialSecurityNumber.description,
          PIIType.nationalInsuranceNumber.description,
          PIIType.dateOfBirth.description:
-        return "Identity details can support impersonation, account recovery abuse, or public-record matching."
+        return String(localized: "Identity details can support impersonation, account recovery abuse, or public-record matching.")
     case PIIType.awsAccessKey.description,
          PIIType.githubToken.description,
          PIIType.googleAPIKey.description,
@@ -192,11 +192,11 @@ private func visualRiskDescription(for name: String) -> String {
          PIIType.slackToken.description,
          PIIType.stripeKey.description,
          PIIType.genericPrivateKey.description:
-        return "Secrets and tokens can grant access to accounts, code, infrastructure, or paid services."
+        return String(localized: "Secrets and tokens can grant access to accounts, code, infrastructure, or paid services.")
     case PIIType.unstructuredCredential.description:
-        return "Credentials in screenshots or whiteboards can be reused directly if they are visible."
+        return String(localized: "Credentials in screenshots or whiteboards can be reused directly if they are visible.")
     default:
-        return "Custom redactions hide sensitive visual details that automatic detection may not understand."
+        return String(localized: "Custom redactions hide sensitive visual details that automatic detection may not understand.")
     }
 }
 

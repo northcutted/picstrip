@@ -10,7 +10,7 @@ enum PIIScannerError: Error, LocalizedError {
     var errorDescription: String? {
         switch self {
         case .invalidImageData:
-            return "Could not decode the provided data into a valid image."
+            return String(localized: "Could not decode the provided data into a valid image.")
         }
     }
 }
@@ -100,6 +100,12 @@ struct PIIScanner {
 
     /// Analyses each OCR observation individually, preserving bounding-box
     /// associations and tracking heuristic credential state across observations.
+    nonisolated private static let nativeDetector = try? NSDataDetector(
+        types: NSTextCheckingResult.CheckingType.link.rawValue |
+            NSTextCheckingResult.CheckingType.phoneNumber.rawValue |
+            NSTextCheckingResult.CheckingType.address.rawValue
+    )
+
     nonisolated private static func detectPII(
         in observations: [VNRecognizedTextObservation]
     ) throws -> [DetectionResult] {
@@ -151,13 +157,6 @@ struct PIIScanner {
                 )
             }
         }
-
-        // Build the NSDataDetector once and reuse it across all observations.
-        let detectorTypes: NSTextCheckingTypes =
-            NSTextCheckingResult.CheckingType.link.rawValue |
-            NSTextCheckingResult.CheckingType.phoneNumber.rawValue |
-            NSTextCheckingResult.CheckingType.address.rawValue
-        let detector = try NSDataDetector(types: detectorTypes)
 
         // Orphan-label regex: matches an observation that IS a credential keyword
         // (possibly garbled by Vision) but has no value on the same line.
@@ -240,7 +239,7 @@ struct PIIScanner {
             // Runs after the regex pass. For types also covered by a regex rule
             // (email), record() will not downgrade a stronger score already set.
             var stageAMatched = false
-            detector.enumerateMatches(in: text, options: [], range: nsRange) { match, _, _ in
+            nativeDetector?.enumerateMatches(in: text, options: [], range: nsRange) { match, _, _ in
                 guard let match else { return }
                 stageAMatched = true
 

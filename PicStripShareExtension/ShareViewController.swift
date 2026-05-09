@@ -59,7 +59,7 @@ class ShareViewController: UIViewController {
                 self?.extensionContext?.cancelRequest(withError: NSError(
                     domain: "northcutt.PicStrip.ShareExtension",
                     code: 0,
-                    userInfo: [NSLocalizedDescriptionKey: "Cancelled by user"]
+                    userInfo: [NSLocalizedDescriptionKey: String(localized: "Cancelled by user")]
                 ))
             }
         )
@@ -91,7 +91,7 @@ class ShareViewController: UIViewController {
 
     private func runProcessingPipeline(stripMetadata: Bool, redactPII: Bool) {
         guard let items = extensionContext?.inputItems as? [NSExtensionItem] else {
-            showErrorThenCancel("No input items found.")
+            showErrorThenCancel(String(localized: "No input items found."))
             return
         }
 
@@ -100,7 +100,7 @@ class ShareViewController: UIViewController {
             .filter { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }
 
         guard !providers.isEmpty else {
-            showErrorThenCancel("No image attachments found.")
+            showErrorThenCancel(String(localized: "No image attachments found."))
             return
         }
 
@@ -116,7 +116,7 @@ class ShareViewController: UIViewController {
             let authStatus = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard authStatus == .authorized || authStatus == .limited else {
                 await MainActor.run {
-                    self.showErrorThenCancel("Photos access is needed to save cleaned images. Grant access in Settings → Privacy → Photos.")
+                    self.showErrorThenCancel(String(localized: "Photos access is needed to save cleaned images. Grant access in Settings > Privacy > Photos."))
                 }
                 return
             }
@@ -183,7 +183,7 @@ class ShareViewController: UIViewController {
             let completedCount = savedCount
             await MainActor.run {
                 if completedCount == 0 {
-                    self.showErrorThenCancel("No images could be saved to your library.")
+                    self.showErrorThenCancel(String(localized: "No images could be saved to your library."))
                 } else {
                     // Completing with an empty array dismisses the extension
                     // normally — Photos / the host app needs no return value
@@ -321,6 +321,7 @@ private struct ExtensionConfigView: View {
                 Toggle("Strip Privacy Metadata", isOn: $stripMetadata)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
+                    .accessibilityHint("Removes location, camera, editing, and other private image metadata.")
 
                 Divider()
                     .padding(.leading, 20)
@@ -328,6 +329,7 @@ private struct ExtensionConfigView: View {
                 Toggle("Auto-Redact Sensitive Data", isOn: $redactPII)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
+                    .accessibilityHint("Scans visible text on device and burns redaction boxes over likely sensitive data.")
             }
 
             Divider()
@@ -354,6 +356,7 @@ private struct ExtensionConfigView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .accessibilityHint("Cleans selected images on this device and saves new copies to Photos.")
 
                 Button(role: .cancel) {
                     onCancel()
@@ -364,6 +367,7 @@ private struct ExtensionConfigView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
+                .accessibilityHint("Closes the PicStrip share extension without saving.")
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
@@ -384,5 +388,7 @@ private struct ExtensionConfigView: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.bottom, 28)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Cleaning and saving to Photos")
     }
 }

@@ -30,19 +30,19 @@ func metadataIconColor(for category: String) -> Color {
 func metadataCategoryDescription(for category: String) -> String {
     switch category {
     case "GPS":
-        return "The precise location where this photo was taken — latitude, longitude, and altitude. Sharing it reveals where you live, work, or travel, and can be used to track your movements over time."
+        return String(localized: "The precise location where this photo was taken — latitude, longitude, and altitude. Sharing it reveals where you live, work, or travel, and can be used to track your movements over time.")
     case "EXIF":
-        return "Camera settings, the exact date and time the photo was taken, and your device model. The timestamp can expose your daily routine; the device model identifies your phone or camera."
+        return String(localized: "Camera settings, the exact date and time the photo was taken, and your device model. The timestamp can expose your daily routine; the device model identifies your phone or camera.")
     case "EXIF Auxiliary":
-        return "Lens details, flash status, and other technical data recorded by your camera app. Low direct privacy risk, but still unnecessary information to share with strangers."
+        return String(localized: "Lens details, flash status, and other technical data recorded by your camera app. Low direct privacy risk, but still unnecessary information to share with strangers.")
     case "TIFF":
-        return "Low-level image properties including software version, color profile, and copyright strings — which sometimes contain your real name or organisation."
+        return String(localized: "Low-level image properties including software version, color profile, and copyright strings — which sometimes contain your real name or organisation.")
     case "IPTC":
-        return "Publishing and editorial metadata: captions, credit lines, keywords, and contact information. Often contains your name, job title, or email address."
+        return String(localized: "Publishing and editorial metadata: captions, credit lines, keywords, and contact information. Often contains your name, job title, or email address.")
     case "Apple Maker Note":
-        return "Private diagnostic data embedded by Apple's Camera app. The exact contents are not publicly documented but may include device identifiers and shooting conditions."
+        return String(localized: "Private diagnostic data embedded by Apple's Camera app. The exact contents are not publicly documented but may include device identifiers and shooting conditions.")
     default:
-        return "Additional metadata embedded in this image that may contain private or identifying information."
+        return String(localized: "Additional metadata embedded in this image that may contain private or identifying information.")
     }
 }
 

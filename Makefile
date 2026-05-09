@@ -2,8 +2,15 @@ FASTLANE ?= bundle exec fastlane
 DEVICE ?=
 DEVICES ?=
 ALLOW_PARTIAL ?= false
+LANGUAGES ?=
+LOCALIZATION_PROVIDER ?= pseudo
+OPENAI_TRANSLATION_MODEL ?= gpt-4.1-mini
+LOCALIZATION_CONCURRENCY ?= 5
+# Canonical language list for localization-translate-all.
+# Ordered by iOS market priority; add new codes here to grow coverage.
+LOCALIZATION_LANGUAGES ?= es fr de ja zh-Hans pt-BR ko it nl pl sv tr ar zh-Hant pt-PT
 
-.PHONY: help lint analyze test build screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices frame-screenshots clean-screenshots
+.PHONY: help lint analyze test build audit-localization localization-export localization-translate localization-translate-all localization-validate screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices frame-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -12,6 +19,15 @@ help:
 	@echo "  make analyze                      Run xcodebuild static analysis"
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
+	@echo "  make audit-localization           Check core/extension string-returning literals"
+	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
+	@echo "  make localization-translate LANGUAGES=\"es fr\""
+	@echo "                                    Fill missing .xcstrings localizations (default provider: pseudo)"
+	@echo "  make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES=\"es fr\""
+	@echo "                                    Translate via OpenAI Responses API (requires OPENAI_API_KEY)"
+	@echo "  make localization-translate-all LOCALIZATION_PROVIDER=openai"
+	@echo "                                    Translate all 15 supported languages via OpenAI (requires OPENAI_API_KEY)"
+	@echo "  make localization-validate        Validate catalogs, localization audit, and SwiftLint"
 	@echo "  make screenshots                  Generate screenshots from fastlane/Snapfile"
 	@echo "  make screenshots DEVICE=\"iPhone 17 Pro Max\""
 	@echo "                                    Generate one-device screenshots"
@@ -34,6 +50,36 @@ test:
 
 build:
 	$(FASTLANE) build
+
+audit-localization:
+	scripts/audit_localization_strings.sh
+
+localization-export:
+	rm -rf build/localization-export
+	xcodebuild -exportLocalizations \
+		-project PicStrip.xcodeproj \
+		-localizationPath build/localization-export
+
+localization-translate:
+	@if [ -z "$(LANGUAGES)" ]; then \
+		echo "Set LANGUAGES, for example: make localization-translate LANGUAGES=\"es fr de\""; \
+		exit 1; \
+	fi
+	LOCALIZATION_PROVIDER="$(LOCALIZATION_PROVIDER)" \
+	OPENAI_TRANSLATION_MODEL="$(OPENAI_TRANSLATION_MODEL)" \
+	LOCALIZATION_CONCURRENCY="$(LOCALIZATION_CONCURRENCY)" \
+		scripts/translate_xcstrings.js --languages $(LANGUAGES)
+
+localization-translate-all:
+	LOCALIZATION_PROVIDER="$(LOCALIZATION_PROVIDER)" \
+	OPENAI_TRANSLATION_MODEL="$(OPENAI_TRANSLATION_MODEL)" \
+	LOCALIZATION_CONCURRENCY="$(LOCALIZATION_CONCURRENCY)" \
+		scripts/translate_xcstrings.js --languages $(LOCALIZATION_LANGUAGES)
+
+localization-validate:
+	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings
+	scripts/audit_localization_strings.sh
+	swiftlint lint
 
 screenshots:
 	@if [ -n "$(DEVICE)" ]; then \

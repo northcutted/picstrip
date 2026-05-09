@@ -18,8 +18,9 @@ Architecture details, data flows, service reference, CI/CD documentation, and co
 10. [Privacy & Security](#privacy--security)
 11. [CI/CD Pipeline](#cicd-pipeline)
 12. [SLSA Build Provenance Level 3](#slsa-build-provenance-level-3)
-13. [Contributing: Adding a New PII Type](#contributing-adding-a-new-pii-type)
-14. [Known Constraints](#known-constraints)
+13. [Localization Automation](#localization-automation)
+14. [Contributing: Adding a New PII Type](#contributing-adding-a-new-pii-type)
+15. [Known Constraints](#known-constraints)
 
 ---
 
@@ -51,19 +52,22 @@ PicStrip/
 │   ├── Snapfile                # Screenshot capture config
 │   └── metadata/               # App Store metadata (title, description, keywords, release notes)
 │
-├── scripts/                    # Utility scripts (e.g., release_notes generator)
+├── scripts/                    # Utility scripts (release notes, localization audit/translation)
+│
+├── PicStripCore/               # Shared pure processing/domain source files
+│   ├── ImageProcessor.swift    # Stateless enum; two-pass ImageIO metadata stripping
+│   ├── PIIScanner.swift        # Stateless struct; async Vision OCR + rule matching
+│   ├── ImageRedactor.swift     # Stateless struct; UIGraphicsImageRenderer redaction
+│   ├── DetectionModels.swift   # DetectionResult / DetectedInstance / confidence models
+│   ├── DetectionRule.swift     # DetectionRule struct + DetectionRegistry enum
+│   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
+│   └── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
 │
 ├── PicStrip/                   # Main app target (iOS 17+, Swift 5.9)
 │   ├── PicStripApp.swift       # @main entry point
 │   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
-│   ├── ImageProcessor.swift    # Stateless enum; two-pass ImageIO metadata stripping
-│   ├── PIIScanner.swift        # Stateless struct; async Vision OCR + rule matching
-│   ├── ImageRedactor.swift     # Stateless struct; UIGraphicsImageRenderer redaction
-│   ├── DetectionRule.swift     # DetectionRule struct + DetectionRegistry enum
-│   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
-│   ├── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
 │   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
 │   ├── AboutView.swift         # PII catalogue + metadata category entries
@@ -73,12 +77,6 @@ PicStrip/
 │
 ├── PicStripShareExtension/     # Share Extension target (separate binary)
 │   ├── ShareViewController.swift    # UIKit host; embeds ExtensionConfigView via UIHostingController
-│   ├── ImageProcessor.swift         # Duplicate — extensions cannot link to main app binary
-│   ├── PIIScanner.swift             # Duplicate
-│   ├── ImageRedactor.swift          # Duplicate
-│   ├── ExportPreset.swift           # Duplicate
-│   ├── DetectionRule.swift          # Duplicate
-│   ├── PIIType.swift                # Duplicate
 │   └── PrivacyInfo.xcprivacy       # Independent privacy manifest
 │
 ├── PicStripTests/              # Unit tests
@@ -93,8 +91,8 @@ PicStrip/
 
 **Key notes:**
 
-- `ImageProcessor.swift`, `PIIScanner.swift`, `ImageRedactor.swift`, `ExportPreset.swift`, `DetectionRule.swift`, and `PIIType.swift` are **duplicated** into `PicStripShareExtension/`. iOS extensions cannot link to the main app's binary. There is no shared framework.
-- `ExportFormat+AppEnum.swift` is compiled **only in the main app target** because it imports `AppIntents`, which is not available in extensions.
+- `PicStripCore/` files are compiled directly into both the main app and the share extension. This keeps one source of truth without adding a binary framework target.
+- `ExportFormat+AppEnum.swift` is compiled **only in the main app target** because it imports `AppIntents`, which is not needed in extensions.
 - Both targets have independent `PrivacyInfo.xcprivacy` declarations.
 - `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target.
 
@@ -147,9 +145,11 @@ PicStrip/
 | Stateless services (no instances) | Photo processing is a pure function of inputs; no mutable service state needed |
 | Two-pass ImageIO | Single-pass re-encode still triggers iOS auto-synthesis of EXIF; two-pass defeats it |
 | `VNImageRequestHandler(data:)` instead of `(cgImage:)` | Preserves EXIF orientation so bounding boxes land on the correct pixels |
+| Downsampled UI previews | The app keeps full-resolution bytes for export, but decodes display/review previews to bounded images to reduce RAM |
+| Off-main image processing | Metadata encode/decode and review preview generation run off the MainActor; the view model only publishes final state |
 | Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
-| `DetectionRegistry` as `static let` | Compiles all regexes once at startup; reused on every scan |
+| Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
 | No Core Data / SwiftData | Metadata is ephemeral; only lifetime stats need persistence (UserDefaults) |
 | App Group for Shortcuts IPC | Single boolean flag from the AppIntent to trigger batch picker |
 
@@ -166,11 +166,12 @@ ContentView.selectedItem.didSet → ScrubberViewModel.handleItemChange()
     ↓
 ScrubberViewModel.processSinglePhoto()
     ├─ Load: PhotosPickerItem → Data
-    ├─ Decode: UIImage(data:).normalized() → sourceUIImage
+    ├─ Downsample display preview via ImageIO → sourceUIImage
     ├─ Scan (async, Task.detached):
     │     PIIScanner.scanImage(data:) → [DetectionResult]
     │     └─ Vision OCR + DetectionRegistry regex + NSDataDetector
-    ├─ Catalogue: ImageProcessor.catalogueStrippedMetadata() → pendingStrippedMetadata
+    ├─ Off-main process/catalogue:
+    │     ImageProcessor.process(...) → processedData + processedPreviewUIImage
     ├─ @MainActor update:
     │     inputImage, sourceUIImage, detectionResults, stripConfig, pendingStrippedMetadata
     └─ isProcessing = false
@@ -184,7 +185,7 @@ User taps "Save to Photos" or "Share"
     ├─ Prepare review bytes:
     │     Optional: ImageRedactor.redact() if redaction enabled
     │     ImageProcessor.process(image:sourceData:preset:config:)
-    │     → processedData, outputFileFields
+    │     → processedData, processedPreviewUIImage, outputFileFields
     ├─ presentSheet(.preSave)
     └─ PreSaveReviewView shows format picker + stripped-field summary
     ↓
@@ -222,8 +223,9 @@ BatchSummaryView shows total processed, errors, and downloadable audit JSON
 
 | Data | Owner | Lifetime |
 |------|-------|----------|
-| `sourceUIImage: UIImage?` | ScrubberViewModel | Single-photo session; nil'd on new pick |
+| `sourceUIImage: UIImage?` | ScrubberViewModel | Downsampled display preview for the single-photo session |
 | `processedData: Data?` | ScrubberViewModel | Set during pre-save prep; nil'd on dismiss |
+| `processedPreviewUIImage: UIImage?` | ScrubberViewModel | Downsampled decoded preview of processed bytes; avoids repeated Data decoding |
 | `detectionResults: [DetectionResult]` | ScrubberViewModel | Single-photo session |
 | `pendingStrippedMetadata: StrippedMetadata?` | ScrubberViewModel | Single-photo session |
 | `stripConfig: StripConfig` | ScrubberViewModel | Per-session; persists across format changes |
@@ -237,7 +239,7 @@ BatchSummaryView shows total processed, errors, and downloadable audit JSON
 
 ### ImageProcessor
 
-**File:** `PicStrip/ImageProcessor.swift`
+**File:** `PicStripCore/ImageProcessor.swift`
 
 A **stateless enum** (namespace of static methods) responsible for metadata extraction, cataloguing, and two-pass privacy stripping.
 
@@ -296,7 +298,7 @@ The UI marks these with a lock icon and explains they contain no personal data.
 
 ### PIIScanner
 
-**File:** `PicStrip/PIIScanner.swift`
+**File:** `PicStripCore/PIIScanner.swift`
 
 A **stateless struct** that runs async Vision OCR followed by layered rule matching.
 
@@ -312,7 +314,7 @@ The method offloads all CPU work to `Task.detached(priority: .userInitiated)`. S
 
 ### ImageRedactor
 
-**File:** `PicStrip/ImageRedactor.swift`
+**File:** `PicStripCore/ImageRedactor.swift`
 
 Burns opaque black rectangles over detected PII instances using `UIGraphicsImageRenderer`.
 
@@ -328,7 +330,7 @@ Bounding boxes stored in `DetectedInstance.boundingBox` are normalised SwiftUI c
 
 ### DetectionRegistry
 
-**File:** `PicStrip/DetectionRule.swift`
+**File:** `PicStripCore/DetectionRule.swift`
 
 ```swift
 enum DetectionRegistry {
@@ -545,11 +547,11 @@ ShareViewController.runProcessingPipeline(stripMetadata:redactPII:)
 extensionContext?.completeRequest(returningItems: [])
 ```
 
-### Why Duplication Instead of a Shared Framework?
+### Shared Core Without a Framework Target
 
-iOS extensions are separate processes. An extension binary cannot dynamically link to the `.app` binary's code. A proper solution would be a shared framework target; the current approach duplicates the six files that contain no UIKit view code, keeping the extension self-contained without introducing a framework build phase.
+iOS extensions are separate processes. An extension binary cannot dynamically link to the `.app` binary's code, so PicStrip keeps shared processing code in `PicStripCore/` and compiles those same source files into both targets. This avoids duplicate source files while also avoiding a new binary framework build phase.
 
-`ExportFormat+AppEnum.swift` is **not** duplicated — it imports `AppIntents`, which is unavailable in extensions. The extension uses `ExportPreset` directly.
+`ExportFormat+AppEnum.swift` remains app-only because it imports `AppIntents`. The extension uses the shared `ExportPreset` directly.
 
 ### 120 MB Memory Ceiling
 
@@ -886,6 +888,46 @@ Or browse: `https://search.sigstore.dev/?logIndex=<index>`
 - SLSA GitHub Generator: https://github.com/slsa-framework/slsa-github-generator
 - slsa-verifier: https://github.com/slsa-framework/slsa-verifier
 - Rekor: https://transparency.sigstore.dev/
+
+---
+
+## Localization Automation
+
+PicStrip localizes user-facing app text through Apple string catalogs:
+
+- `PicStrip/Localizable.xcstrings` — app, share extension, processing, errors, and accessibility copy
+- `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Shortcuts expose
+
+The automated path is intentionally reviewable:
+
+1. New English strings land in the catalogs through normal SwiftUI / `String(localized:)` extraction.
+2. `scripts/translate_xcstrings.js` fills missing target-language entries.
+3. Placeholder validation rejects translations that lose `%@`, `%lld`, `${applicationName}`, or Swift inflection markup.
+4. Generated strings are marked with the configured review state, so privacy-sensitive wording can be checked before release.
+5. `make localization-validate` runs JSON validation, the hard-coded-string audit, and SwiftLint.
+
+Common commands:
+
+```bash
+# Inspect the missing work without writing files.
+scripts/translate_xcstrings.js --languages es fr --dry-run
+
+# Generate pseudo-localized entries for layout smoke testing.
+make localization-translate LANGUAGES="es"
+
+# Generate machine translations through OpenAI.
+OPENAI_API_KEY=... make localization-translate \
+  LOCALIZATION_PROVIDER=openai \
+  LANGUAGES="es fr de ja"
+
+# Validate catalogs and source after translation.
+make localization-validate
+
+# Export .xcloc bundles for human translators or external review.
+make localization-export
+```
+
+Do not skip review for App Shortcut phrases, permission prompts, privacy explanations, or redaction/security terms. Those strings carry product trust, and literal machine translations can sound harsher or less precise than intended.
 
 ---
 

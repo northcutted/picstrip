@@ -37,6 +37,23 @@ struct BatchConfig {
     var saveMode: BatchSaveMode = .saveAsNew
 }
 
+private struct ProcessingSnapshot {
+    let processed: ProcessedImage
+    let outputFileFields: [MetadataField]
+    let processedPreviewUIImage: UIImage?
+    let rawSourceProps: [CFString: Any]?
+    let allSourceMetadata: StrippedMetadata?
+}
+
+private struct ProcessingRequest {
+    let raw: Data
+    let sourceData: Data
+    let imageOverride: UIImage?
+    let preset: ExportPreset
+    let config: StripConfig
+    let updateSourceMetadata: Bool
+}
+
 /// ViewModel driving the scrubber interface.
 ///
 /// Owns the full data-flow pipeline:
@@ -64,6 +81,11 @@ final class ScrubberViewModel {
 
     /// The scrubbed, re-encoded image bytes ready for saving or sharing.
     var processedData: Data?
+
+    /// Downsampled preview decoded from `processedData` off the main actor.
+    /// Avoids repeatedly decoding the export bytes from SwiftUI computed
+    /// properties while preserving full-resolution bytes for save/share.
+    var processedPreviewUIImage: UIImage?
 
     /// Every metadata field actually present in the output file after encoding.
     /// Populated after each processing pass — including the redacted path — so the
@@ -194,16 +216,7 @@ final class ScrubberViewModel {
     /// and sharing still use `processedData`, which has passed through metadata
     /// stripping.
     var reviewPreviewUIImage: UIImage? {
-        if !enabledRedactionRegions.isEmpty, let redactedUIImage {
-            return redactedUIImage
-        }
-
-        if let processedData,
-           let image = UIImage(data: processedData) {
-            return image
-        }
-
-        return sourceUIImage
+        processedPreviewUIImage ?? redactedUIImage ?? sourceUIImage
     }
 
     // MARK: - Batch state
@@ -316,6 +329,10 @@ final class ScrubberViewModel {
     /// cheaply when only the config changes (without re-running the full encode pipeline).
     private var rawSourceProps: [CFString: Any]?
 
+    /// Rejects stale processing completions when the user changes photo, preset,
+    /// or redaction settings while an off-main encode is still running.
+    private var processingToken = UUID()
+
     // MARK: - Item change handler
 
     private func handleItemChange() {
@@ -335,6 +352,7 @@ final class ScrubberViewModel {
         isProcessing = true
         errorMessage = nil
         processedData = nil
+        processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
         pendingStrippedMetadata = nil
@@ -356,24 +374,23 @@ final class ScrubberViewModel {
         typesToRedact = []
         clearUndoRedoStacks()
 
-        defer { isProcessing = false }
-
         rawImageData = data
 
-        if let uiImage = UIImage(data: data) {
+        if let uiImage = await Self.makePreviewImage(from: data) {
             inputImage = Image(uiImage: uiImage)
             sourceUIImage = uiImage
             imageSize = uiImage.size
         }
 
         startPIIScan(data: data)
-        processCurrentImage()
+        await processCurrentImageNow()
     }
 
     private func loadAndProcess(item: PhotosPickerItem) async {
         isProcessing = true
         errorMessage = nil
         processedData = nil
+        processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
         pendingStrippedMetadata = nil
@@ -395,17 +412,16 @@ final class ScrubberViewModel {
         typesToRedact     = []
         clearUndoRedoStacks()
 
-        defer { isProcessing = false }
-
         do {
             guard let data = try await item.loadTransferable(type: Data.self) else {
-                errorMessage = "The selected item could not be loaded as image data."
+                errorMessage = String(localized: "The selected item could not be loaded as image data.")
+                isProcessing = false
                 return
             }
 
             rawImageData = data
 
-            if let uiImage = UIImage(data: data) {
+            if let uiImage = await Self.makePreviewImage(from: data) {
                 inputImage    = Image(uiImage: uiImage)
                 sourceUIImage = uiImage
                 // Store point dimensions (not pixel dimensions).
@@ -416,10 +432,11 @@ final class ScrubberViewModel {
 
             startPIIScan(data: data)
 
-            processCurrentImage()
+            await processCurrentImageNow()
         } catch {
             errorMessage = error.localizedDescription
             rawImageData = nil
+            isProcessing = false
         }
     }
 
@@ -427,10 +444,26 @@ final class ScrubberViewModel {
 
     func processCurrentImage() {
         guard rawImageData != nil else { return }
-        errorMessage = nil
-        isProcessing = true
-        defer { isProcessing = false }
-        processImage()
+        Task { await processCurrentImageNow() }
+    }
+
+    private func processCurrentImageNow() async {
+        guard let raw = rawImageData else {
+            isProcessing = false
+            return
+        }
+        await processImage(
+            raw: raw,
+            sourceData: raw,
+            imageOverride: nil,
+            updateSourceMetadata: true
+        )
+    }
+
+    private static func makePreviewImage(from data: Data) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            ImageProcessor.downsampledUIImage(from: data)
+        }.value
     }
 
     private func startPIIScan(data: Data) {
@@ -630,28 +663,41 @@ final class ScrubberViewModel {
 
     private func prepareAndReview(presentSheet: Bool = true) async {
         isProcessing = true
-        defer { isProcessing = false }
 
         await waitForCurrentPIIScan()
 
         // Redaction path: burn only the instances whose type is in typesToRedact.
         let regionsToRedact = enabledRedactionRegions
 
-        if !regionsToRedact.isEmpty,
-           let raw = rawImageData,
-           let uiImage = UIImage(data: raw) {
+        if !regionsToRedact.isEmpty, let raw = rawImageData {
+            let uiImage = await Task.detached(priority: .userInitiated) {
+                UIImage(data: raw)
+            }.value
 
-            if let burned = await ImageRedactor().redact(image: uiImage, specs: regionsToRedact.map(\.spec)) {
-                redactedUIImage = burned
-                processImage(overridingImage: burned)
-            } else {
-                errorMessage = "Could not render redactions for this image."
+            guard let uiImage,
+                  let burned = await ImageRedactor().redact(
+                    image: uiImage,
+                    specs: regionsToRedact.map(\.spec)
+                  ) else {
+                errorMessage = String(localized: "Could not render redactions for this image.")
                 processedData = nil
+                processedPreviewUIImage = nil
+                isProcessing = false
                 return
             }
+
+            await processImage(
+                raw: raw,
+                sourceData: raw,
+                imageOverride: burned,
+                updateSourceMetadata: false
+            )
+            // The processed bytes now include redactions; keep only the
+            // downsampled processed preview to avoid retaining a full-size bitmap.
+            redactedUIImage = nil
         } else {
             redactedUIImage = nil
-            processImage()
+            await processCurrentImageNow()
         }
 
         if presentSheet {
@@ -665,35 +711,83 @@ final class ScrubberViewModel {
     /// `rawSourceProps` and `allSourceMetadata` are derived from the *original*
     /// image only — they must never be overwritten by intermediate redacted data,
     /// which carries ghost iOS-injected TIFF/EXIF fields.
-    private func processImage(overridingRawData override: Data? = nil, overridingImage imageOverride: UIImage? = nil) {
-        guard let raw = override ?? rawImageData else { return }
-
+    private func processImage(
+        raw: Data,
+        sourceData: Data,
+        imageOverride: UIImage?,
+        updateSourceMetadata: Bool
+    ) async {
+        let token = UUID()
+        processingToken = token
         errorMessage = nil
+        isProcessing = true
+
+        let preset = selectedPreset
+        let config = stripConfig
 
         do {
+            let snapshot = try await Self.makeProcessingSnapshot(ProcessingRequest(
+                raw: raw,
+                sourceData: sourceData,
+                imageOverride: imageOverride,
+                preset: preset,
+                config: config,
+                updateSourceMetadata: updateSourceMetadata
+            ))
+            guard processingToken == token else { return }
+
+            processedData           = snapshot.processed.data
+            processedPreviewUIImage = snapshot.processedPreviewUIImage
+            sourceUTType            = snapshot.processed.sourceType
+            pendingStrippedMetadata = snapshot.processed.stripped
+            outputFileFields        = snapshot.outputFileFields
+
+            if updateSourceMetadata {
+                rawSourceProps = snapshot.rawSourceProps
+                allSourceMetadata = snapshot.allSourceMetadata
+            }
+            isProcessing = false
+        } catch {
+            guard processingToken == token else { return }
+            processedData           = nil
+            processedPreviewUIImage = nil
+            pendingStrippedMetadata = nil
+            errorMessage            = error.localizedDescription
+            isProcessing            = false
+        }
+    }
+
+    private static func makeProcessingSnapshot(_ request: ProcessingRequest) async throws -> ProcessingSnapshot {
+        try await Task.detached(priority: .userInitiated) {
             let result: ProcessedImage
-            if let imageOverride, let sourceData = rawImageData {
+            if let imageOverride = request.imageOverride {
                 result = try ImageProcessor.process(
                     image: imageOverride,
-                    sourceData: sourceData,
-                    preset: selectedPreset,
-                    config: stripConfig
+                    sourceData: request.sourceData,
+                    preset: request.preset,
+                    config: request.config
                 )
             } else {
-                result = try ImageProcessor.process(data: raw, preset: selectedPreset, config: stripConfig)
+                result = try ImageProcessor.process(
+                    data: request.raw,
+                    preset: request.preset,
+                    config: request.config
+                )
             }
-            processedData           = result.data
-            sourceUTType            = result.sourceType
-            pendingStrippedMetadata = result.stripped
-            // Read the actual metadata present in the encoded output — captures any
-            // fields the iOS encoder re-injected regardless of our stripping efforts.
-            outputFileFields        = ImageProcessor.readAllFields(from: result.data)
 
-            // Only update source props and display metadata when processing the
-            // original image — not when processing redacted intermediate data.
-            if override == nil && imageOverride == nil {
-                if let source = CGImageSourceCreateWithData(raw as CFData, nil) {
+            let outputFileFields = ImageProcessor.readAllFields(from: result.data)
+            let processedPreview = ImageProcessor.downsampledUIImage(
+                from: result.data,
+                maxPixelDimension: 1_600
+            )
+
+            let rawSourceProps: [CFString: Any]?
+            let allSourceMetadata: StrippedMetadata?
+            if request.updateSourceMetadata {
+                if let source = CGImageSourceCreateWithData(request.sourceData as CFData, nil) {
                     rawSourceProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+                } else {
+                    rawSourceProps = nil
                 }
                 allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
                     from: rawSourceProps,
@@ -704,12 +798,19 @@ final class ScrubberViewModel {
                         fieldOverrides: [:]
                     )
                 )
+            } else {
+                rawSourceProps = nil
+                allSourceMetadata = nil
             }
-        } catch {
-            processedData           = nil
-            pendingStrippedMetadata = nil
-            errorMessage            = error.localizedDescription
-        }
+
+            return ProcessingSnapshot(
+                processed: result,
+                outputFileFields: outputFileFields,
+                processedPreviewUIImage: processedPreview,
+                rawSourceProps: rawSourceProps,
+                allSourceMetadata: allSourceMetadata
+            )
+        }.value
     }
 
     /// Saves the processed image to the photo library.
@@ -721,7 +822,7 @@ final class ScrubberViewModel {
         let requiredLevel: PHAccessLevel = replacing ? .readWrite : .addOnly
         let status = await PHPhotoLibrary.requestAuthorization(for: requiredLevel)
         guard status == .authorized || status == .limited else {
-            errorMessage = "Photo library access was denied. Please enable it in Settings."
+            errorMessage = String(localized: "Photo library access was denied. Please enable it in Settings.")
             return
         }
 
@@ -744,7 +845,7 @@ final class ScrubberViewModel {
             incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
-            errorMessage = "Could not save to Photos: \(error.localizedDescription)"
+            errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
         }
     }
 
@@ -770,7 +871,7 @@ final class ScrubberViewModel {
             incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
-            errorMessage = "Could not replace photo: \(error.localizedDescription)"
+            errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
         }
     }
 
@@ -1095,6 +1196,7 @@ final class ScrubberViewModel {
         inputImage              = nil
         sourceUIImage           = nil
         processedData           = nil
+        processedPreviewUIImage = nil
         allSourceMetadata       = nil
         pendingStrippedMetadata = nil
         outputFileFields        = []

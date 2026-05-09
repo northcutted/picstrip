@@ -65,8 +65,11 @@ PII bounding boxes must land on the right pixels regardless of how the photo was
 **Sequential memory-safe batch processing.**
 Each image in a batch is processed, saved, and explicitly deallocated before the next one begins. This keeps peak memory at ~one image at a time rather than accumulating a full batch in RAM, which matters on constrained devices and inside the share extension's 120 MB process ceiling.
 
+**Preview memory discipline.**
+PicStrip keeps full-resolution source bytes for export, but decodes bounded ImageIO thumbnails for display and review. Heavy encode/decode work runs off the MainActor, then the view model publishes only final state back to SwiftUI.
+
 **Layered PII detection.**
-Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins.
+Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; a reused `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins.
 
 **Zero runtime third-party dependencies.**
 Every framework is Apple-native: `ImageIO`, `Vision`, `Photos`, `PhotosUI`, `AppIntents`, `CoreGraphics`, `UIKit`, `SwiftUI`. No package manager dependencies appear in the final binary.
@@ -219,26 +222,26 @@ PicStrip/
 ├── docs/
 │   └── screenshots/         # Framed device-bezel previews (committed; used in this README)
 │
+├── PicStripCore/            # Shared pure processing/domain code compiled into app + extension
+│   ├── ImageProcessor.swift
+│   ├── PIIScanner.swift
+│   ├── ImageRedactor.swift
+│   ├── DetectionModels.swift
+│   ├── DetectionRule.swift
+│   ├── PIIType.swift
+│   └── ExportPreset.swift
+│
 ├── PicStrip/                # Main app target
 │   ├── PicStripApp.swift
 │   ├── ContentView.swift
 │   ├── ScrubberViewModel.swift
-│   ├── ImageProcessor.swift
-│   ├── PIIScanner.swift
-│   ├── ImageRedactor.swift
-│   ├── DetectionRegistry.swift
-│   ├── DetectionRule.swift
-│   ├── PIIType.swift
 │   ├── AuditReport.swift
-│   ├── ExportPreset.swift
 │   ├── AboutView.swift
 │   ├── PreSaveReviewView.swift
 │   └── PrivacyInfo.xcprivacy
 │
 ├── PicStripShareExtension/  # Share Extension target (separate binary)
 │   ├── ShareViewController.swift   # UIKit host + UIHostingController
-│   ├── ExtensionViewModel.swift
-│   ├── ImageProcessor.swift        # duplicate — extensions cannot link to main app
 │   └── PrivacyInfo.xcprivacy
 │
 ├── PicStripTests/           # Unit tests
@@ -289,6 +292,11 @@ npm install
 | `make help` | Lists local helper commands |
 | `make test` | Runs `bundle exec fastlane test` |
 | `make build` | Runs `bundle exec fastlane build` |
+| `make audit-localization` | Checks shared core/extension string-returning code for literals that should use localization helpers |
+| `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
+| `make localization-translate LANGUAGES="es fr"` | Fills missing string-catalog localizations using the local pseudo provider by default |
+| `make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES="es fr"` | Fills missing string-catalog localizations via OpenAI; requires `OPENAI_API_KEY` |
+| `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
 | `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPhone Air"` for subsets |
 | `make upload-screenshots` | Uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
@@ -300,6 +308,44 @@ npm install
 | `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 17 Pro Max"` for a one-device local smoke run |
 | `bundle exec fastlane upload_screenshots` | Pushes the full captured screenshot set to App Store Connect; refuses partial sets unless `allow_partial:true` is passed |
 | `bundle exec fastlane submit` | Submits the processed TestFlight build for App Review |
+
+---
+
+## Localization Automation
+
+PicStrip uses Apple string catalogs:
+
+- `PicStrip/Localizable.xcstrings`
+- `PicStrip/AppShortcuts.xcstrings`
+
+To add a language, run a dry run first:
+
+```bash
+scripts/translate_xcstrings.js --languages es fr --dry-run
+```
+
+For layout smoke testing without external services, generate pseudo-localized values:
+
+```bash
+make localization-translate LANGUAGES="es"
+make localization-validate
+```
+
+For machine translation, set an OpenAI API key and use the OpenAI provider:
+
+```bash
+export OPENAI_API_KEY=...
+make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES="es fr de ja"
+make localization-validate
+```
+
+The translator preserves placeholders such as `%@`, `%lld`, `${applicationName}`, and Swift inflection markup. Generated translations are written with a review state so privacy, App Shortcut, and permission-copy wording can still be checked before release.
+
+Use Xcode's localization package flow when handing strings to a human translator:
+
+```bash
+make localization-export
+```
 
 ---
 

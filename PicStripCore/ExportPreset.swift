@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 /// Simple four-way format choice exposed in the UI.
 /// Maps to an `ExportPreset` for the stripping engine.
 /// Cases are ordered for display: most private first.
-enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
+nonisolated enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
     case png
     case jpeg
     case heic
@@ -15,19 +15,19 @@ enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
 
     var title: String {
         switch self {
-        case .png:      return "PNG"
-        case .jpeg:     return "JPEG"
-        case .heic:     return "HEIC"
-        case .original: return "Match Original"
+        case .png:      return String(localized: "PNG")
+        case .jpeg:     return String(localized: "JPEG")
+        case .heic:     return String(localized: "HEIC")
+        case .original: return String(localized: "Match Original")
         }
     }
 
     var description: String {
         switch self {
-        case .png:      return "Maximum Privacy. Prevents OS from injecting format headers."
-        case .jpeg:     return "Reduced file size. Standard compatibility."
-        case .heic:     return "High efficiency. Apple OS may inject Maker data upon saving."
-        case .original: return "Keeps original format. OS may re-encode and inject basic headers."
+        case .png:      return String(localized: "Maximum Privacy. Prevents OS from injecting format headers.")
+        case .jpeg:     return String(localized: "Reduced file size. Standard compatibility.")
+        case .heic:     return String(localized: "High efficiency. Apple OS may inject Maker data upon saving.")
+        case .original: return String(localized: "Keeps original format. OS may re-encode and inject basic headers.")
         }
     }
 
@@ -43,7 +43,13 @@ enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
 }
 
 // MARK: - ExportPreset
-enum ExportPreset: String, Identifiable, CaseIterable {
+nonisolated enum ExportPreset: String, Identifiable, CaseIterable {
+
+    private static func localizedJPEGDescription(quality: Double, detail: LocalizedStringResource) -> String {
+        String(
+            localized: "JPEG at \(quality, format: .percent.precision(.fractionLength(0))) quality — \(detail)"
+        )
+    }
 
     /// Re-encode in the same format as the source image (default).
     case matchSource      = "match_source"
@@ -60,22 +66,30 @@ enum ExportPreset: String, Identifiable, CaseIterable {
 
     var title: String {
         switch self {
-        case .matchSource:      return "Same as Original"
-        case .highQualityJPEG:  return "High Quality JPEG"
-        case .webFriendlyJPEG:  return "Web-Friendly JPEG"
-        case .losslessPNG:      return "Lossless PNG"
-        case .heicOriginal:     return "HEIC"
+        case .matchSource:      return String(localized: "Same as Original")
+        case .highQualityJPEG:  return String(localized: "High Quality JPEG")
+        case .webFriendlyJPEG:  return String(localized: "Web-Friendly JPEG")
+        case .losslessPNG:      return String(localized: "Lossless PNG")
+        case .heicOriginal:     return String(localized: "HEIC")
         }
     }
 
     /// One-line description shown in the Advanced format picker.
     var description: String {
         switch self {
-        case .matchSource:      return "Keeps the original file format"
-        case .highQualityJPEG:  return "JPEG at 90 % quality — small file, excellent detail"
-        case .webFriendlyJPEG:  return "JPEG at 60 % quality — optimised for sharing online"
-        case .losslessPNG:      return "PNG with no quality loss — larger file"
-        case .heicOriginal:     return "Apple HEIC — efficient compression, iOS/macOS native"
+        case .matchSource:      return String(localized: "Keeps the original file format")
+        case .highQualityJPEG:
+            return Self.localizedJPEGDescription(
+                quality: 0.9,
+                detail: "small file, excellent detail"
+            )
+        case .webFriendlyJPEG:
+            return Self.localizedJPEGDescription(
+                quality: 0.6,
+                detail: "optimised for sharing online"
+            )
+        case .losslessPNG:      return String(localized: "PNG with no quality loss — larger file")
+        case .heicOriginal:     return String(localized: "Apple HEIC — efficient compression, iOS/macOS native")
         }
     }
 

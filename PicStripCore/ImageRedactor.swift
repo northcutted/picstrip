@@ -1,6 +1,6 @@
-import UIKit
 import CoreImage
 import CoreImage.CIFilterBuiltins
+import UIKit
 
 // MARK: - RedactionStyle
 //
@@ -19,9 +19,9 @@ enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
 
     var displayName: String {
         switch self {
-        case .solid:      return "Solid"
-        case .crosshatch: return "Crosshatch"
-        case .pixelate:   return "Pixelate"
+        case .solid:      return String(localized: "Solid")
+        case .crosshatch: return String(localized: "Crosshatch")
+        case .pixelate:   return String(localized: "Pixelate")
         }
     }
 
@@ -60,18 +60,18 @@ enum RedactionColor: String, CaseIterable, Equatable, Hashable, Codable {
 
     var displayName: String {
         switch self {
-        case .black:    return "Black"
-        case .charcoal: return "Charcoal"
-        case .white:    return "White"
-        case .red:      return "Red"
-        case .orange:   return "Orange"
-        case .yellow:   return "Yellow"
-        case .green:    return "Green"
-        case .teal:     return "Teal"
-        case .blue:     return "Blue"
-        case .navy:     return "Navy"
-        case .purple:   return "Purple"
-        case .pink:     return "Pink"
+        case .black:    return String(localized: "Black")
+        case .charcoal: return String(localized: "Charcoal")
+        case .white:    return String(localized: "White")
+        case .red:      return String(localized: "Red")
+        case .orange:   return String(localized: "Orange")
+        case .yellow:   return String(localized: "Yellow")
+        case .green:    return String(localized: "Green")
+        case .teal:     return String(localized: "Teal")
+        case .blue:     return String(localized: "Blue")
+        case .navy:     return String(localized: "Navy")
+        case .purple:   return String(localized: "Purple")
+        case .pink:     return String(localized: "Pink")
         }
     }
 
@@ -126,6 +126,8 @@ struct RedactionSpec {
 ///    base image, then stamps each remaining style on top.
 struct ImageRedactor {
 
+    nonisolated private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
+
     // MARK: - Public API
 
     /// Burns styled redaction blocks over the supplied specs and returns a new,
@@ -155,7 +157,7 @@ struct ImageRedactor {
                     let rect = CGRect(
                         x: spec.rect.minX * size.width,
                         y: spec.rect.minY * size.height,
-                        width:  spec.rect.width  * size.width,
+                        width: spec.rect.width * size.width,
                         height: spec.rect.height * size.height
                     )
                     guard rect.width > 0, rect.height > 0 else { continue }
@@ -221,15 +223,15 @@ struct ImageRedactor {
         // Forward diagonals (↘)
         var startX = rect.minX - rect.height
         while startX < rect.maxX {
-            cgCtx.move(to:    CGPoint(x: startX,              y: rect.minY))
+            cgCtx.move(to: CGPoint(x: startX, y: rect.minY))
             cgCtx.addLine(to: CGPoint(x: startX + rect.height, y: rect.maxY))
             startX += spacing
         }
         // Backward diagonals (↙)
         startX = rect.minX - rect.height
         while startX < rect.maxX {
-            cgCtx.move(to:    CGPoint(x: startX + rect.height, y: rect.minY))
-            cgCtx.addLine(to: CGPoint(x: startX,               y: rect.maxY))
+            cgCtx.move(to: CGPoint(x: startX + rect.height, y: rect.minY))
+            cgCtx.addLine(to: CGPoint(x: startX, y: rect.maxY))
             startX += spacing
         }
         cgCtx.strokePath()
@@ -241,7 +243,7 @@ struct ImageRedactor {
     /// Uses `CIPixellate` to mosaic each region and composites the pixellated
     /// areas back onto the original image.  Colour is ignored — the effect shows
     /// scrambled source pixels, not a solid fill.
-    private nonisolated static func applyPixellate(to image: UIImage, specs: [RedactionSpec]) -> UIImage? {
+    nonisolated private static func applyPixellate(to image: UIImage, specs: [RedactionSpec]) -> UIImage? {
         guard let ciImage = CIImage(image: image) else { return nil }
         let extent = ciImage.extent   // CI pixel space (Y-up, device pixels)
 
@@ -250,9 +252,9 @@ struct ImageRedactor {
         for spec in specs {
             // Map normalised top-left-origin rect → CI pixel rect (Y-up)
             let ciRect = CGRect(
-                x:      spec.rect.minX * extent.width,
-                y:      (1.0 - spec.rect.maxY) * extent.height,
-                width:  spec.rect.width  * extent.width,
+                x: spec.rect.minX * extent.width,
+                y: (1.0 - spec.rect.maxY) * extent.height,
+                width: spec.rect.width * extent.width,
                 height: spec.rect.height * extent.height
             )
             guard ciRect.width > 0, ciRect.height > 0 else { continue }
@@ -276,14 +278,13 @@ struct ImageRedactor {
             let mask = CIImage(color: CIColor.white).cropped(to: ciRect)
 
             guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { continue }
-            blendFilter.setValue(result,     forKey: kCIInputBackgroundImageKey)
+            blendFilter.setValue(result, forKey: kCIInputBackgroundImageKey)
             blendFilter.setValue(pixellated, forKey: kCIInputImageKey)
-            blendFilter.setValue(mask,       forKey: kCIInputMaskImageKey)
+            blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
 
             result = blendFilter.outputImage ?? result
         }
 
-        let ciContext = CIContext(options: [.useSoftwareRenderer: false])
         guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
         return UIImage(cgImage: cgOut, scale: image.scale, orientation: image.imageOrientation)
     }

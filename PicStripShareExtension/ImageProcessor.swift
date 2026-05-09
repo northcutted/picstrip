@@ -1,1 +1,0 @@
-../PicStrip/ImageProcessor.swift

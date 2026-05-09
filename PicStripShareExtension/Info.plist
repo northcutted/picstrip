@@ -7,7 +7,7 @@
     <key>CFBundleName</key>
     <string>$(PRODUCT_NAME)</string>
     <key>CFBundleDisplayName</key>
-    <string>Strip Metadata</string>
+	<string>Clean with PicStrip</string>
     <key>CFBundleIdentifier</key>
     <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
     <key>CFBundleVersion</key>
@@ -33,7 +33,7 @@
         <string>$(PRODUCT_MODULE_NAME).ShareViewController</string>
     </dict>
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>PicStrip saves the metadata-stripped image to your photo library.</string>
+	<string>PicStrip saves cleaned images to your photo library.</string>
     <key>ITSAppUsesNonExemptEncryption</key>
     <false/>
 </dict>

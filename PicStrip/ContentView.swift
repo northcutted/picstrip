@@ -322,14 +322,12 @@ struct ContentView: View {
     private var statsText: String {
         let photos = lifetimePhotos
         let fields = lifetimeFields
-        let photoStr = photos == 1 ? "1 photo" : "\(photos.formatted()) photos"
-        let fieldStr = "\(fields.formatted()) fields"
-        return "\(fieldStr) stripped · \(photoStr) cleaned"
+        return String(localized: "^[\(fields) field](inflect: true) stripped · ^[\(photos) photo](inflect: true) cleaned")
     }
 
     // MARK: - Pill button label
 
-    private func pillLabel(icon: String, text: String, prominent: Bool) -> some View {
+    private func pillLabel(icon: String, text: LocalizedStringKey, prominent: Bool) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.callout.weight(.semibold))
@@ -416,7 +414,7 @@ struct ContentView: View {
                     },
                     onUndo: { viewModel.undoRedaction() },
                     onRedo: { viewModel.redoRedaction() },
-                    onFit:  { zoomResetRequest += 1 },
+                    onFit: { zoomResetRequest += 1 },
                     onDone: {
                         withAnimation(.spring(duration: 0.35, bounce: 0.1)) {
                             isRedactionEditing = false
@@ -428,7 +426,7 @@ struct ContentView: View {
                 .background(Color(.systemBackground))
                 .transition(.asymmetric(
                     insertion: .move(edge: .bottom).combined(with: .opacity),
-                    removal:   .move(edge: .bottom).combined(with: .opacity)
+                    removal: .move(edge: .bottom).combined(with: .opacity)
                 ))
             } else {
                 controlPanel
@@ -437,7 +435,7 @@ struct ContentView: View {
                     .background(Color(.systemBackground))
                     .transition(.asymmetric(
                         insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal:   .move(edge: .bottom).combined(with: .opacity)
+                        removal: .move(edge: .bottom).combined(with: .opacity)
                     ))
             }
         }
@@ -726,10 +724,11 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Sensitive data found")
                         .font(.subheadline.weight(.semibold))
-                    Text("\(typeCount) type\(typeCount == 1 ? "" : "s") found • \(regionCount) region\(regionCount == 1 ? "" : "s") will redact")
+                    Text("^[\(typeCount) type](inflect: true) found • ^[\(regionCount) region](inflect: true) will redact")
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                        .lineLimit(1)
+                        .lineLimit(2)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
 
                 Spacer(minLength: 8)
@@ -745,7 +744,7 @@ struct ContentView: View {
                 RoundedRectangle(cornerRadius: 14)
                     .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
             )
-            .accessibilityLabel("Sensitive data found: \(typeCount) type\(typeCount == 1 ? "" : "s"), \(regionCount) region\(regionCount == 1 ? "" : "s") will redact")
+            .accessibilityLabel(Text("Sensitive data found: ^[\(typeCount) type](inflect: true), ^[\(regionCount) region](inflect: true) will redact"))
             .accessibilityIdentifier("sensitiveDataSection")
 
         } else {
@@ -1162,6 +1161,12 @@ private struct RedactionEditorDrawer: View {
         .accessibilityLabel(region.displayName + (isSelected ? ", selected" : ""))
         .accessibilityHint(isSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
         .accessibilityIdentifier("regionRow-\(region.id)")
+        .accessibilityAction(named: region.isEnabled ? "Disable redaction" : "Enable redaction") {
+            onToggleRegion(region.id)
+        }
+        .accessibilityAction(named: "Delete redaction") {
+            onDeleteRegion(region.id)
+        }
     }
 
     // MARK: - Confidence helpers

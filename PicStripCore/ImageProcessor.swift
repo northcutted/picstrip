@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 ///
 /// Field override keys use the compound format `"<Category>.<KeyName>"`,
 /// e.g. `"GPS.GPSLatitude"`. A value of `false` means "keep this field".
-struct StripConfig {
+nonisolated struct StripConfig {
     /// Per-category enable flags. `true` = strip the whole category.
     var categoryEnabled: [String: Bool]
 
@@ -71,7 +71,7 @@ struct StripConfig {
 // MARK: - Metadata value types
 
 /// A single metadata field that was present in the source image and stripped during processing.
-struct MetadataField: Identifiable {
+nonisolated struct MetadataField: Identifiable {
     let id: UUID = UUID()
     /// Human-readable category, e.g. "GPS", "EXIF", "TIFF", "IPTC", "Apple Maker Note".
     let category: String
@@ -94,7 +94,7 @@ struct MetadataField: Identifiable {
 }
 
 /// The complete set of metadata fields removed from a source image during a processing run.
-struct StrippedMetadata {
+nonisolated struct StrippedMetadata {
     let fields: [MetadataField]
 
     /// Convenience: fields grouped by category, preserving category insertion order.
@@ -116,7 +116,7 @@ struct StrippedMetadata {
     var isEmpty: Bool { fields.isEmpty }
 }
 
-struct ProcessedImage {
+nonisolated struct ProcessedImage {
     let data: Data
     let sourceType: UTType
     let stripped: StrippedMetadata
@@ -128,7 +128,7 @@ struct ProcessedImage {
 /// from image data and re-encoding it according to an `ExportPreset`.
 ///
 /// All methods are static; no instances of this type should be created.
-enum ImageProcessor {
+nonisolated enum ImageProcessor {
 
     // MARK: - Errors
 
@@ -142,15 +142,15 @@ enum ImageProcessor {
         var errorDescription: String? {
             switch self {
             case .sourceCreationFailed:
-                return "Could not create a CGImageSource from the supplied data. The data may be corrupt or an unsupported format."
+                return String(localized: "Could not create a CGImageSource from the supplied data. The data may be corrupt or an unsupported format.")
             case .imageDecodingFailed:
-                return "Could not decode pixel data from the image source."
+                return String(localized: "Could not decode pixel data from the image source.")
             case .destinationCreationFailed:
-                return "Could not create a CGImageDestination for the requested output format."
+                return String(localized: "Could not create a CGImageDestination for the requested output format.")
             case .finalizationFailed:
-                return "CGImageDestination finalization failed. The image could not be encoded."
+                return String(localized: "CGImageDestination finalization failed. The image could not be encoded.")
             case .unsupportedSourceFormat:
-                return "The source image format is not supported for re-encoding."
+                return String(localized: "The source image format is not supported for re-encoding.")
             }
         }
     }
@@ -159,7 +159,7 @@ enum ImageProcessor {
 
     /// Ordered list of (ImageIO property dict key, human-readable category name) pairs.
     /// Order determines display order in the UI.
-    static let categoryMap: [(key: CFString, category: String)] = [
+    nonisolated(unsafe) static let categoryMap: [(key: CFString, category: String)] = [
         (kCGImagePropertyGPSDictionary, "GPS"),
         (kCGImagePropertyExifDictionary, "EXIF"),
         (kCGImagePropertyExifAuxDictionary, "EXIF Auxiliary"),
@@ -174,7 +174,7 @@ enum ImageProcessor {
     /// not privacy-sensitive data.  They are excluded from the UI catalogue so the
     /// app never falsely claims it can strip them, and so an image with *only* these
     /// fields correctly reports "0 fields to remove".
-    static let structuralKeys: Set<String> = [
+    nonisolated static let structuralKeys: Set<String> = [
         // ── Root-level properties injected by the iOS encoder ──────────────────
         // These live at the top of the CGImageSource dictionary, not inside any
         // sub-dictionary.  They are format/rendering metadata, not personal data.
@@ -208,7 +208,7 @@ enum ImageProcessor {
 
     /// Returns `true` when a category can be written back through the XMP
     /// metadata APIs used by the safe two-pass encoder.
-    static func canPreserveMetadata(category: String) -> Bool {
+    nonisolated static func canPreserveMetadata(category: String) -> Bool {
         guard let entry = categoryMap.first(where: { $0.category == category }) else { return false }
         return xmpNamespace(for: entry.key) != nil
     }
@@ -216,7 +216,7 @@ enum ImageProcessor {
     /// Returns `true` when a field should be reported as stripped in review and
     /// audit output. Unsupported categories remain reported even if the user tried
     /// to keep them, because ImageIO cannot safely re-inject those dictionaries.
-    static func shouldReportStripped(
+    nonisolated static func shouldReportStripped(
         category: String,
         key: String,
         isStructural: Bool,
@@ -229,6 +229,37 @@ enum ImageProcessor {
     }
 
     // MARK: - Public API
+
+    /// Creates a display-sized UIImage without decoding the full-resolution source
+    /// into memory. Export paths still use the original bytes; this is only for UI
+    /// previews where a multi-megapixel bitmap would waste RAM.
+    nonisolated static func downsampledUIImage(
+        from data: Data,
+        maxPixelDimension: CGFloat = 2_400
+    ) -> UIImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceShouldCache: false
+        ]
+        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary) else {
+            return nil
+        }
+
+        let thumbnailOptions: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceShouldCacheImmediately: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixelDimension
+        ]
+        guard let cgImage = CGImageSourceCreateThumbnailAtIndex(
+            source,
+            0,
+            thumbnailOptions as CFDictionary
+        ) else {
+            return nil
+        }
+
+        return UIImage(cgImage: cgImage)
+    }
 
     /// Strips private metadata from `data`, re-encodes the image using `preset`, and
     /// returns the scrubbed `Data`, the detected source `UTType`, and a `StrippedMetadata`
@@ -255,7 +286,7 @@ enum ImageProcessor {
     /// - Returns: A tuple of the scrubbed `Data`, the resolved source `UTType`,
     ///            and a `StrippedMetadata` record.
     /// - Throws: `ProcessingError` if any `ImageIO` operation fails.
-    static func process(
+    nonisolated static func process(
         data: Data,
         preset: ExportPreset,
         config: StripConfig = .default
@@ -276,7 +307,7 @@ enum ImageProcessor {
     /// Re-encodes an already-rendered image while using metadata from the
     /// original source bytes. This is used after visual redaction so export
     /// changes never fall back to the unredacted source image.
-    static func process(
+    nonisolated static func process(
         image: UIImage,
         sourceData: Data,
         preset: ExportPreset,
@@ -294,7 +325,7 @@ enum ImageProcessor {
         )
     }
 
-    private static func process(
+    nonisolated private static func process(
         cgImage: CGImage,
         sourceData: Data,
         preset: ExportPreset,
@@ -468,7 +499,7 @@ enum ImageProcessor {
     /// - Parameter data: Any image bytes supported by ImageIO.
     /// - Returns: All key/value pairs found in the image, with structural keys tagged
     ///            `isStructural: true`.  Fields are sorted by key for stable display.
-    static func readAllFields(from data: Data) -> [MetadataField] {
+    nonisolated static func readAllFields(from data: Data) -> [MetadataField] {
         guard
             let source = CGImageSourceCreateWithData(data as CFData, nil),
             let props  = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
@@ -528,7 +559,7 @@ enum ImageProcessor {
     ///
     /// This is also called by `ScrubberViewModel` to produce `pendingStrippedMetadata`
     /// without running the full encode pipeline.
-    static func catalogueStrippedMetadata(
+    nonisolated static func catalogueStrippedMetadata(
         from props: [CFString: Any]?,
         config: StripConfig = .default
     ) -> StrippedMetadata {
@@ -607,7 +638,7 @@ enum ImageProcessor {
     /// Maps an ImageIO property dictionary key to its XMP (namespace, prefix) pair,
     /// used when re-injecting preserved metadata into CGMutableImageMetadata.
     /// Returns `nil` for dictionaries that have no direct XMP representation.
-    private static func xmpNamespace(for dictKey: CFString) -> (namespace: String, prefix: String)? {
+    nonisolated private static func xmpNamespace(for dictKey: CFString) -> (namespace: String, prefix: String)? {
         switch dictKey {
         case kCGImagePropertyGPSDictionary:
             // GPS uses its own XMP sub-namespace under the EXIF namespace.
@@ -625,7 +656,7 @@ enum ImageProcessor {
     }
 
     /// Renders an arbitrary property list value as a human-readable string.
-    private static func stringify(_ value: Any) -> String {
+    nonisolated private static func stringify(_ value: Any) -> String {
         switch value {
         case let dict as [AnyHashable: Any]:
             return dict
@@ -654,7 +685,7 @@ private extension UIImage {
     /// This ensures the CGImage we hand to ImageIO is already correctly oriented
     /// regardless of the source format (HEIC stores pixels in sensor orientation
     /// and relies on the EXIF tag to rotate on display).
-    func normalized() -> UIImage {
+    nonisolated func normalized() -> UIImage {
         guard imageOrientation != .up else { return self }
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1

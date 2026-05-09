@@ -35,9 +35,9 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
     /// Human-readable label used in UI.
     var label: String {
         switch self {
-        case .low:    return "Low"
-        case .medium: return "Medium"
-        case .high:   return "High"
+        case .low:    return String(localized: "Low")
+        case .medium: return String(localized: "Medium")
+        case .high:   return String(localized: "High")
         }
     }
 }

@@ -3,32 +3,32 @@ import AppIntents
 // MARK: - ExportFormat + AppEnum
 //
 // This file is compiled only in the main app target (PicStrip/).
-// The Share Extension has its own ExportPreset.swift copy in
-// PicStripShareExtension/ and does NOT link AppIntents.
+// The share extension uses the shared PicStripCore export types directly and
+// does not link AppIntents.
 
-extension ExportFormat: AppEnum {
+nonisolated extension ExportFormat: AppEnum {
 
     nonisolated static var typeDisplayRepresentation: TypeDisplayRepresentation {
-        TypeDisplayRepresentation(name: "Export Format")
+        TypeDisplayRepresentation(name: LocalizedStringResource("Export Format"))
     }
 
     nonisolated static var caseDisplayRepresentations: [ExportFormat: DisplayRepresentation] {
         [
             .png: DisplayRepresentation(
-                title: "PNG",
-                subtitle: "Maximum privacy — no format headers"
+                title: LocalizedStringResource("PNG"),
+                subtitle: LocalizedStringResource("Maximum privacy — no format headers")
             ),
             .jpeg: DisplayRepresentation(
-                title: "JPEG",
-                subtitle: "Reduced file size, standard compatibility"
+                title: LocalizedStringResource("JPEG"),
+                subtitle: LocalizedStringResource("Reduced file size, standard compatibility")
             ),
             .heic: DisplayRepresentation(
-                title: "HEIC",
-                subtitle: "High efficiency, Apple native"
+                title: LocalizedStringResource("HEIC"),
+                subtitle: LocalizedStringResource("High efficiency, Apple native")
             ),
             .original: DisplayRepresentation(
-                title: "Match Original",
-                subtitle: "Keeps original format"
+                title: LocalizedStringResource("Match Original"),
+                subtitle: LocalizedStringResource("Keeps original format")
             )
         ]
     }
