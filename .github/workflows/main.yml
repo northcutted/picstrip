@@ -425,19 +425,55 @@ jobs:
           IPA_PATH:                             artifacts/PicStrip.ipa
         run: bundle exec fastlane upload_testflight
 
-  # ── 9. Submit for App Review ───────────────────────────────────────────────
+  # ── 9. Preflight — push metadata + screenshots, no submit ─────────────────
+  # Runs automatically (no gate) immediately after the TestFlight upload so
+  # that by the time a reviewer is asked to approve the production gate below,
+  # the pending "Prepare for Submission" version in App Store Connect already
+  # has all metadata, descriptions, keywords, What's New, and screenshots
+  # populated and ready to inspect.
+  preflight:
+    name: Push Metadata to App Store Connect (no submit)
+    runs-on: ubuntu-latest
+    needs: [version, release, upload-testflight]
+    if: needs.version.outputs.will_release == 'true'
+    steps:
+      - name: Checkout (post-release commit — includes release_notes.txt and LFS screenshots)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ needs.release.outputs.release_sha }}
+          fetch-depth: 1
+          lfs: true
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Push metadata + screenshots (no submit)
+        env:
+          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MARKETING_VERSION:                    ${{ needs.version.outputs.version }}
+          BUILD_NUMBER:                         ${{ github.run_number }}
+        run: bundle exec fastlane preflight
+
+  # ── 10. Submit for App Review ──────────────────────────────────────────────
   # Requires manual approval via the "production" GitHub environment.
   # To enable: Settings → Environments → production → add required reviewers.
   #
-  # Checks out main at HEAD (after semantic-release committed release_notes.txt
-  # back) so the metadata directory includes the freshly generated What's New.
+  # By the time this gate appears, the preflight job above will have already
+  # created the pending version in App Store Connect with all metadata and
+  # screenshots populated. Review it there, then approve here to submit.
+  #
   # The binary is already in TestFlight; skip_binary_upload avoids a duplicate-
-  # binary error and just submits the processed build for review.
+  # binary error and just submits the already-populated version for review.
   submit:
     name: Submit for App Review
     runs-on: ubuntu-latest
     environment: production
-    needs: [version, release, upload-testflight]
+    needs: [version, release, upload-testflight, preflight]
     if: needs.version.outputs.will_release == 'true'
     steps:
       - name: Checkout (post-release commit — includes release_notes.txt and LFS screenshots)
