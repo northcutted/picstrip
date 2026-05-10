@@ -1,2 +1,4 @@
 Features
-• Allow user to customize redactions, add custom redactions, and added new detections.
+• Add support for license plate detection and implement related tests
+• **ci:** add preflight lane and workflow to verify metadata before App Review submission
+• **ci:** fold preflight into main release pipeline before the production approval gate

@@ -1,3 +1,12 @@
+## [1.5.0](https://github.com/northcutted/picstrip/compare/v1.4.0...v1.5.0) (2026-05-10)
+
+
+### Features
+
+* Add support for license plate detection and implement related tests ([7fdab72](https://github.com/northcutted/picstrip/commit/7fdab725a1d4a847857d058404d58571ae7f3d1f))
+* **ci:** add preflight lane and workflow to verify metadata before App Review submission ([4fcf51a](https://github.com/northcutted/picstrip/commit/4fcf51a3eb44dcccad49a215f1fbcf77cc4c6e8a))
+* **ci:** fold preflight into main release pipeline before the production approval gate ([0321889](https://github.com/northcutted/picstrip/commit/0321889bb5d4c2a631fc6738f9feca3bd2134fb0))
+
 ## [1.4.0](https://github.com/northcutted/picstrip/compare/v1.3.0...v1.4.0) (2026-05-10)
 
 
