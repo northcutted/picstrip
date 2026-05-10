@@ -2059,6 +2059,9 @@
         }
       }
     },
+    "ABA Routing Number" : {
+
+    },
     "About" : {
       "localizations" : {
         "ar" : {
@@ -6340,6 +6343,9 @@
         }
       }
     },
+    "Database Connection String" : {
+
+    },
     "Date of Birth" : {
       "localizations" : {
         "ar" : {
@@ -7016,6 +7022,9 @@
           }
         }
       }
+    },
+    "Developer Secret" : {
+
     },
     "Disable redaction" : {
       "localizations" : {
@@ -8840,6 +8849,9 @@
         }
       }
     },
+    "Encoded barcode" : {
+
+    },
     "Export Batch Audit Log (JSON)" : {
       "localizations" : {
         "ar" : {
@@ -9215,6 +9227,12 @@
           }
         }
       }
+    },
+    "Face" : {
+
+    },
+    "Face detected" : {
+
     },
     "Financial identifiers can expose accounts or enable fraud when shared with the wrong audience." : {
       "localizations" : {
@@ -9615,6 +9633,9 @@
           }
         }
       }
+    },
+    "Government ID" : {
+
     },
     "Green" : {
       "localizations" : {
@@ -11273,6 +11294,9 @@
           }
         }
       }
+    },
+    "JWT Token" : {
+
     },
     "Keeps original format" : {
       "localizations" : {
@@ -17649,6 +17673,9 @@
         }
       }
     },
+    "QR Code / Barcode" : {
+
+    },
     "Recommended" : {
       "localizations" : {
         "ar" : {
@@ -21957,6 +21984,9 @@
         }
       }
     },
+    "SWIFT / BIC Code" : {
+
+    },
     "Tap to review" : {
       "localizations" : {
         "ar" : {
@@ -22826,6 +22856,9 @@
           }
         }
       }
+    },
+    "Vehicle Identification Number" : {
+
     },
     "View Source on GitHub" : {
       "localizations" : {

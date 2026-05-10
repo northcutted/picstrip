@@ -28,6 +28,7 @@ enum DetectionRegistry {
     /// All regex-based detection rules, compiled once at first access.
     /// NSDataDetector handles .address, .phoneNumber, and plain .link natively;
     /// those types are intentionally absent here and remain in PIIScanner.
+    /// Vision-detected types (.face, .barcode) also have no regex rules.
     nonisolated static let allRules: [DetectionRule] = build()
 
     // MARK: - Private helpers
@@ -93,6 +94,65 @@ enum DetectionRegistry {
                  #"\b[A-CEGHJ-PR-TW-Z]{2}[\ ]?[0-9]{2}[\ ]?[0-9]{2}[\ ]?[0-9]{2}[\ ]?[A-D]\b"#,
                  0.91),
 
+            // MARK: Government IDs (consolidated — snippet carries sub-type)
+            // Brazilian CPF — 3.3.3-2 with mandatory dots and dash; very specific.
+            rule(.governmentID,
+                 #"\b\d{3}\.\d{3}\.\d{3}\-\d{2}\b"#,
+                 0.93),
+
+            // Italian Codice Fiscale — 6 letters + 2 digits + month letter + 2
+            // digits + municipality letter + 3 digits + check letter.
+            rule(.governmentID,
+                 #"\b[A-Z]{6}\d{2}[A-EHLMPRST]\d{2}[A-Z]\d{3}[A-Z]\b"#,
+                 0.95),
+
+            // Spanish NIE — X/Y/Z + 7 digits + check letter.
+            rule(.governmentID,
+                 #"\b[XYZ]\d{7}[A-Z]\b"#,
+                 0.88),
+
+            // Indian PAN — 5 letters + 4 digits + check letter.
+            rule(.governmentID,
+                 #"\b[A-Z]{5}\d{4}[A-Z]\b"#,
+                 0.87),
+
+            // French INSEE social security number — starts with 1 or 2,
+            // 13 remaining digits, optional spaces between groups.
+            rule(.governmentID,
+                 #"\b[12][ ]?\d{2}[ ]?\d{2}[ ]?\d{2}[ ]?\d{3}[ ]?\d{3}[ ]?\d{2}\b"#,
+                 0.83),
+
+            // Spanish DNI — 8 digits + check letter.
+            rule(.governmentID,
+                 #"\b\d{8}[A-Z]\b"#,
+                 0.82),
+
+            // Indian Aadhaar / Japanese My Number — 4-4-4 space-separated
+            // (both are 12-digit IDs displayed in this grouping).
+            rule(.governmentID,
+                 #"\b\d{4} \d{4} \d{4}\b"#,
+                 0.80),
+
+            // Canadian SIN — 3-3-3 with space or hyphen separators.
+            rule(.governmentID,
+                 #"\b\d{3}[ \-]\d{3}[ \-]\d{3}\b"#,
+                 0.75),
+
+            // German Steuer-ID — 11 digits in 2-3-3-3 space-separated grouping.
+            rule(.governmentID,
+                 #"\b\d{2} \d{3} \d{3} \d{3}\b"#,
+                 0.75),
+
+            // MARK: Vehicle
+            // VIN — exactly 17 chars from A-H, J-N, P-R, S-Z, 0-9 (I/O/Q excluded
+            // by the ISO 3779 standard).  Upper-bound word boundaries keep the rule
+            // from matching longer hash-like strings.  Base 0.82: the exclusion of
+            // three letters and exact length make this specific, but 17-char
+            // alphanumeric codes can appear in other contexts (serial numbers, etc.).
+            rule(.vehicleIdentificationNumber,
+                 #"\b[A-HJ-NPR-Z0-9]{17}\b"#,
+                 0.82),
+
             // MARK: Financial
             // Credit card — compact (no separators); Luhn intentionally omitted
             // since OCR may corrupt digits; structurally specific prefixes.
@@ -126,7 +186,43 @@ enum DetectionRegistry {
                  #"\bbc1[a-z0-9]{6,87}\b"#,
                  0.88),
 
-            // MARK: Developer Secrets
+            // SWIFT / BIC code — requires an explicit label keyword ("SWIFT", "BIC",
+            // or "SWIFT/BIC") on the same OCR observation line, followed by the
+            // 8-or-11-char bank code.
+            //
+            // Design rationale: the bare structural pattern
+            //   `\b[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}(?:[A-Z0-9]{3})?\b`
+            // matches ANY 8-char uppercase word (personal names, book-spine text,
+            // initialisms, etc.) — an unacceptably high false-positive rate
+            // demonstrated in practice (e.g. "COSTANZA" on a children's book).
+            //
+            // By requiring a label keyword we stay consistent with the ABA routing
+            // number strategy: structural form + context = high precision.
+            // The `(?i)` flag makes the keyword case-insensitive ("swift:", "SWIFT:",
+            // "Bic Code:") while the code's `[A-Z]` character class remains
+            // uppercase-only because `(?i)` IS applied to it — but since the code is
+            // the captured group (group 1) and always appears after a typed label, the
+            // OCR output for real bank codes will be uppercase in practice.
+            // Group 1 is the code itself; the scanner displays only that substring.
+            // Base 0.91: keyword + exact structure gives very high precision.
+            rule(.swiftBIC,
+                 #"(?i)(?:swift|bic)(?:\s*/\s*(?:bic|swift))?\s*(?:code|number|num\.?|no\.?|#)?\s*:?\s*([A-Z]{4}[A-Z]{2}[A-Z0-9]{2}(?:[A-Z0-9]{3})?)\b"#,
+                 0.91),
+
+            // US ABA routing number — 9 decimal digits preceded by a contextual
+            // keyword ("routing", "routing number", "ABA", etc.).
+            //
+            // Design rationale: `\b\d{9}\b` alone causes too many false positives
+            // (phone extension blocks, invoice numbers, zip+4 codes, etc.).
+            // Anchoring to a context keyword reduces FP rate significantly.
+            // The digit sequence is captured in group 1 so the scanner highlights
+            // only the number, not the keyword label.
+            // Base 0.88: the keyword+length combination is structurally strong.
+            rule(.abaRoutingNumber,
+                 #"(?i)(?:routing\s+(?:number|num\.?|no\.?|#)?\s*:?\s*|ABA\s*(?:number|num\.?|no\.?|#)?\s*:?\s*)(\d{9})\b"#,
+                 0.88),
+
+            // MARK: Developer Secrets — existing named types
             // AWS Access Key ID — exact AKIA prefix + 16 alphanumeric chars.
             rule(.awsAccessKey,
                  #"\bAKIA[0-9A-Z]{16}\b"#,
@@ -170,6 +266,63 @@ enum DetectionRegistry {
             rule(.genericPrivateKey,
                  #"-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----"#,
                  0.96),
+
+            // MARK: Developer Secrets — JWT tokens
+            // The double-eyJ prefix is base64url for '{"' — globally unique to JWTs.
+            // Three dot-separated base64url segments required (header.payload.sig).
+            rule(.jwtToken,
+                 #"\beyJ[A-Za-z0-9_-]+\.eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b"#,
+                 0.97),
+
+            // MARK: Developer Secrets — additional vendor tokens
+            // Anthropic API key.
+            rule(.developerSecret,
+                 #"\bsk-ant-[A-Za-z0-9_-]{90,}\b"#,
+                 0.97),
+
+            // GitLab personal access token.
+            rule(.developerSecret,
+                 #"\bglpat-[A-Za-z0-9_-]{20}\b"#,
+                 0.97),
+
+            // npm access token.
+            rule(.developerSecret,
+                 #"\bnpm_[A-Za-z0-9]{36}\b"#,
+                 0.97),
+
+            // HuggingFace access token.
+            rule(.developerSecret,
+                 #"\bhf_[A-Za-z0-9]{34}\b"#,
+                 0.97),
+
+            // DigitalOcean personal access token.
+            rule(.developerSecret,
+                 #"\bdop_v1_[a-f0-9]{64}\b"#,
+                 0.97),
+
+            // Twilio account SID (AC prefix + 32 hex chars).
+            rule(.developerSecret,
+                 #"\bAC[a-f0-9]{32}\b"#,
+                 0.95),
+
+            // SendGrid API key — SG. prefix + two base64url segments.
+            rule(.developerSecret,
+                 #"\bSG\.[A-Za-z0-9_-]{22}\.[A-Za-z0-9_-]{43}\b"#,
+                 0.97),
+
+            // Discord bot token — M or N prefix + 23 alphanum + dot + 6 alphanum
+            // + dot + 27 alphanum/hyphen/underscore.
+            rule(.developerSecret,
+                 #"\b[MN][A-Za-z0-9]{23}\.[A-Za-z0-9_-]{6}\.[A-Za-z0-9_-]{27}\b"#,
+                 0.96),
+
+            // MARK: Database / broker connection strings
+            // Matches URIs of the form scheme://user:password@host[:port][/db].
+            // The presence of both user:password@ and a recognised scheme makes
+            // this highly specific; base 0.95.
+            rule(.connectionString,
+                 #"(?:postgres(?:ql)?|mysql|mongodb(?:\+srv)?|redis|amqps?|rabbitmq)://[^\s:@]+:[^\s@]+@[^\s]+"#,
+                 0.95),
 
             // MARK: Unstructured / Contextual
             // Heuristic for physical credentials on whiteboards, sticky notes, etc.

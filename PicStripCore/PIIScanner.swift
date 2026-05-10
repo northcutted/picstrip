@@ -45,7 +45,21 @@ struct PIIScanner {
             let observations = try Self.recognizeText(in: data)
 
             // Stage 3: Per-observation two-stage PII analysis with state tracking.
-            return try Self.detectPII(in: observations)
+            var results = try Self.detectPII(in: observations)
+
+            // Stage 4: Visual detection — faces and barcodes via dedicated Vision
+            // requests.  Errors here are non-fatal: a corrupted image that still
+            // passes stage 1 shouldn't suppress a complete text-PII report.
+            let (faceResults, barcodeResults) = Self.detectFacesAndBarcodes(in: data)
+            results.append(contentsOf: faceResults)
+            results.append(contentsOf: barcodeResults)
+
+            // Re-sort combined results: highest score first, alphabetical tiebreak.
+            return results.sorted {
+                $0.score != $1.score
+                    ? $0.score > $1.score
+                    : $0.type.description < $1.type.description
+            }
         }.value
     }
 
@@ -293,6 +307,70 @@ struct PIIScanner {
             }
             return $0.type.description < $1.type.description
         }
+    }
+
+    // MARK: - Visual detection (faces + barcodes)
+
+    /// Runs face-rectangle and barcode detection on the same image data in a
+    /// single `VNImageRequestHandler` pass (one decode, two requests).
+    ///
+    /// Returns `([], [])` on any Vision error so that a successful OCR pass is
+    /// never suppressed by a failure in the visual pipeline.
+    ///
+    /// Face results carry a fixed score of 0.99 — the dedicated ML model is
+    /// highly reliable and the result needs no OCR-confidence weighting.
+    /// Barcode results also score 0.99; the decoded payload is placed in the
+    /// snippet so the user can see what the code contains.
+    nonisolated private static func detectFacesAndBarcodes(
+        in data: Data
+    ) -> (faces: [DetectionResult], barcodes: [DetectionResult]) {
+        let faceRequest    = VNDetectFaceRectanglesRequest()
+        let barcodeRequest = VNDetectBarcodesRequest()
+        let handler        = VNImageRequestHandler(data: data, options: [:])
+
+        do {
+            try handler.perform([faceRequest, barcodeRequest])
+        } catch {
+            return ([], [])
+        }
+
+        // ── Faces ────────────────────────────────────────────────────────────
+        let faceResults: [DetectionResult] = {
+            guard let observations = faceRequest.results, !observations.isEmpty else {
+                return []
+            }
+            let instances = observations.map { obs in
+                DetectedInstance(
+                    snippet: String(localized: "Face detected"),
+                    boundingBox: swiftUIBox(from: obs.boundingBox),
+                    score: 0.99
+                )
+            }
+            return [DetectionResult(type: .face, score: 0.99, instances: instances)]
+        }()
+
+        // ── Barcodes / QR codes ──────────────────────────────────────────────
+        let barcodeResults: [DetectionResult] = {
+            guard let observations = barcodeRequest.results, !observations.isEmpty else {
+                return []
+            }
+            var instances: [DetectedInstance] = []
+            for obs in observations {
+                let payload  = obs.payloadStringValue ?? String(localized: "Encoded barcode")
+                let instance = DetectedInstance(
+                    snippet: snippet(payload, max: 60),
+                    boundingBox: swiftUIBox(from: obs.boundingBox),
+                    score: 0.99
+                )
+                if !instances.contains(instance) {
+                    instances.append(instance)
+                }
+            }
+            guard !instances.isEmpty else { return [] }
+            return [DetectionResult(type: .barcode, score: 0.99, instances: instances)]
+        }()
+
+        return (faceResults, barcodeResults)
     }
 
     // MARK: - Coordinate helpers

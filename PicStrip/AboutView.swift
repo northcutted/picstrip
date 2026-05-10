@@ -25,6 +25,7 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .socialSecurityNumber, icon: "person.text.rectangle.fill", color: .red, detail: "US SSN — 3-2-4 format with anti-zero guards"),
     .init(type: .dateOfBirth, icon: "calendar", color: .purple, detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
     .init(type: .nationalInsuranceNumber, icon: "person.badge.shield.checkmark.fill", color: .indigo, detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
+    .init(type: .governmentID, icon: "person.text.rectangle", color: .teal, detail: "Canadian SIN, Indian PAN/Aadhaar, Spanish DNI/NIE, Brazilian CPF, German Steuer-ID, Italian Codice Fiscale, French INSEE, Japanese My Number"),
     // Web
     .init(type: .ipAddress, icon: "network", color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
     .init(type: .macAddress, icon: "wifi", color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
@@ -41,6 +42,12 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .slackToken, icon: "message.fill", color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
     .init(type: .stripeKey, icon: "dollarsign.circle.fill", color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
     .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "PEM headers: RSA, EC, DSA, OPENSSH private keys"),
+    .init(type: .jwtToken, icon: "ellipsis.curlybraces", color: .cyan, detail: "JSON Web Tokens — double eyJ base64url prefix uniquely identifies the format"),
+    .init(type: .developerSecret, icon: "lock.shield.fill", color: .red, detail: "Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord bot tokens"),
+    .init(type: .connectionString, icon: "server.rack", color: .brown, detail: "Database/broker URIs with inline credentials: postgres, mysql, mongodb, redis, amqp"),
+    // Vision-detected
+    .init(type: .face, icon: "face.dashed", color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
+    .init(type: .barcode, icon: "qrcode", color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
     // Unstructured
     .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
