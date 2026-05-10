@@ -1,5 +1,2 @@
 Features
-• Add support for handling alpha channel in PNG metadata
-Bug Fixes
-• harden unit tests, rename Fastfile lane, refresh screenshots
-• replace fixed sleep with polling wait in testFocusPIIResult
+• Allow user to customize redactions, add custom redactions, and added new detections.

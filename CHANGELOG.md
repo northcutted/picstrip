@@ -1,3 +1,10 @@
+## [1.4.0](https://github.com/northcutted/picstrip/compare/v1.3.0...v1.4.0) (2026-05-10)
+
+
+### Features
+
+* Allow user to customize redactions, add custom redactions, and added new detections. ([b2c24a8](https://github.com/northcutted/picstrip/commit/b2c24a87136af08c17d90146ed4ddf97f8bcaf34))
+
 ## [1.3.0](https://github.com/northcutted/picstrip/compare/v1.2.4...v1.3.0) (2026-05-08)
 
 
