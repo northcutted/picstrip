@@ -361,13 +361,12 @@ struct ContentView: View {
 
     private func seedStatsIfRequested() {
         guard ProcessInfo.processInfo.environment["PICSTRIP_SEED_STATS"] == "1" else { return }
-        guard lifetimePhotos == 0 else { return }
 
         lifetimePhotos = 4
         lifetimeFields = 18
 
         var stats = PrivacyRemovalStats()
-        stats.metadataCategoryCounts = ["GPS": 6, "EXIF": 8, "TIFF": 4]
+        stats.metadataCategoryCounts = ["GPS": 6, "EXIF": 8, "IPTC": 4]
         stats.visualTypeCounts = ["Email Address": 3, "Phone Number": 2, "Custom Redaction": 1]
         stats.visualConfidenceCounts = ["High": 4, "Medium": 1]
         stats.save()
@@ -723,8 +722,12 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Sensitive data found")
                         .font(.subheadline.weight(.semibold))
-                    (Text("^[\(viewModel.detectedPII.count) type](inflect: true) found • ") +
-                     Text("^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact"))
+                    // Single Text — split concatenations (Text(...) + Text(...))
+                    // each look up their own LocalizedStringKey, so SwiftUI can't
+                    // find translations for fragments like "%lld type found • ".
+                    // Combining produces one key that already lives in
+                    // Localizable.xcstrings with translations for all locales.
+                    Text("^[\(viewModel.detectedPII.count) type](inflect: true) found • ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(2)
@@ -750,11 +753,7 @@ struct ContentView: View {
         }
         .buttonStyle(.plain)
         .accessibilityLabel(
-            Text("Sensitive data found: ") +
-            Text("^[\(viewModel.detectedPII.count) type](inflect: true)") +
-            Text(", ") +
-            Text("^[\(viewModel.enabledRedactionRegions.count) region](inflect: true)") +
-            Text(" will redact. Tap to review.")
+            Text("Sensitive data found: ^[\(viewModel.detectedPII.count) type](inflect: true), ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact. Tap to review.")
         )
         .accessibilityIdentifier("reviewSensitiveDataButton")
         .accessibilityHint("Opens the Sensitive Data review sheet")

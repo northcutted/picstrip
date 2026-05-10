@@ -226,6 +226,13 @@ platform :ios do
     # locale. Keep old captured log folders from breaking screenshot uploads.
     sh("rm -rf #{ROOT}/fastlane/screenshots/Logs")
 
+    # Wipe the processed tree before regen. Without this, a change to
+    # SCREENSHOT_DISPLAY_ORDER in the Python compositor (or to the screen-key
+    # set itself) leaves orphaned PNGs from the previous order alongside the
+    # new ones — and ``upload_to_app_store`` would happily ship both, blowing
+    # past App Store Connect's 10-screenshot-per-device limit.
+    sh("rm -rf #{ROOT}/fastlane/screenshots/processed")
+
     # The Python compositor handles device framing internally — it draws a
     # matte rounded-rect frame around each raw capture rather than consuming
     # frameit's output. We discover the locales from the directory tree

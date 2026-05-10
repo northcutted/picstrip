@@ -1,0 +1,1 @@
+privacidad,EXIF,metadatos,GPS,ubicación,redactar,difuminar,anonimizar,geo,sensible,seguro,compartir

@@ -1,6 +1,6 @@
-PicStrip removes hidden metadata from your photos before you share them — no account required, no data leaves your device.
+Sent someone a photo lately? You probably also sent your home GPS coordinates, the exact time it was taken, and your camera's serial number — embedded invisibly in the file. PicStrip removes all of it before you share, in one tap, 100% on your device.
 
-Every photo taken on an iPhone contains invisible EXIF data: exact GPS coordinates, the time it was taken, your camera model, and more. PicStrip strips all of it in one tap.
+No account. No uploads. No tracking. Just clean photos.
 
 WHAT GETS REMOVED
 • GPS location — precise coordinates embedded in every photo
@@ -12,8 +12,13 @@ WHAT GETS REMOVED
 PRIVACY BY DESIGN
 • Runs entirely on-device — nothing is uploaded anywhere
 • No account, no login, no tracking
-• Open source — the code is public and auditable
 • No ads, no in-app purchases, no subscriptions
+
+WHY YOU CAN TRUST IT
+• Open source — every line of code is public and auditable on GitHub
+• SLSA Level 3 build provenance — every release is cryptographically verified
+• Zero third-party SDKs in the final binary; no analytics, no network calls
+• Privacy nutrition label declares "Data Not Collected" — the strongest possible answer
 
 HOW IT WORKS
 1. Tap to select a photo from your library

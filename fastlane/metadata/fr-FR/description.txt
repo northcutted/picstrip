@@ -1,0 +1,33 @@
+Vous avez envoyé une photo récemment ? Vous avez probablement aussi envoyé vos coordonnées GPS de chez vous, l'heure exacte de la prise et le numéro de série de votre appareil — invisiblement intégrés au fichier. PicStrip supprime tout cela avant le partage, en un clic, à 100% sur votre appareil.
+
+Sans compte. Sans envoi. Sans traçage. Juste des photos propres.
+
+CE QUI EST SUPPRIMÉ
+• Position GPS — les coordonnées précises intégrées à chaque photo
+• Horodatages — quand la photo a été prise, modifiée et numérisée
+• Infos appareil — marque, modèle, objectif et version logicielle
+• Identifiants personnels — auteur, copyright et numéros de série
+• Analyses caméra privées — données Apple « maker note » le cas échéant
+
+CONFIDENTIALITÉ PAR CONCEPTION
+• Tourne entièrement sur l'appareil — rien n'est envoyé nulle part
+• Sans compte, sans connexion, sans traçage
+• Sans publicité, sans achats intégrés, sans abonnements
+
+POURQUOI VOUS POUVEZ NOUS FAIRE CONFIANCE
+• Code source ouvert — chaque ligne est publique et auditable sur GitHub
+• Provenance de build SLSA niveau 3 — chaque version est vérifiée cryptographiquement
+• Zéro SDK tiers dans le binaire final ; pas d'analytique, pas d'appel réseau
+• Étiquette de confidentialité : « Aucune donnée collectée » — la réponse la plus forte possible
+
+COMMENT ÇA MARCHE
+1. Touchez pour sélectionner une photo de votre bibliothèque
+2. PicStrip analyse toutes les métadonnées intégrées
+3. Vérifiez exactement ce qui a été trouvé
+4. Supprimez — votre photo propre est enregistrée instantanément dans votre bibliothèque
+
+EXTENSION DE PARTAGE
+Supprimez les métadonnées directement depuis la feuille de partage dans Photos, Safari ou n'importe quelle app — sans jamais ouvrir PicStrip.
+
+RACCOURCIS & AUTOMATISATION
+PicStrip inclut une action Raccourcis pour automatiser : suppression des métadonnées à l'import, traitement par lots, ou intégration à vos raccourcis existants.

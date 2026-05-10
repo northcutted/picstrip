@@ -66,15 +66,19 @@ HEADLINE_STROKE_COLOR = (4, 30, 22)  # near-black teal — defines letter edges
 HIGHLIGHT_COLOR = (110, 200, 160) # soft top-center glow
 
 # ── Layout ratios ──────────────────────────────────────────────────────────
-# The composition is roughly "1/3 copy on top, 2/3 framed device on bottom",
+# The composition is roughly "copy on top, oversized device on bottom",
 # with a clear gap between the headline block and the device so the two
 # read as distinct sections rather than crowding each other. The device
 # dominates — it's the hero of every screenshot.
 HEADLINE_AREA_FRAC = 0.25           # top 25% — headline lives here
 HEADLINE_TOP_PAD_FRAC = 0.06        # space above the headline
 HEADLINE_BOTTOM_GAP_FRAC = 0.04     # breathing room between text and device
+PHONE_HEADLINE_AREA_FRAC = 0.11     # phone shots prioritize the oversized device
+PHONE_HEADLINE_TOP_PAD_FRAC = 0.018 # copy shifts upward to make room for the app
+PHONE_HEADLINE_BOTTOM_GAP_FRAC = 0.012
 HEADLINE_HORIZONTAL_PAD_FRAC = 0.09 # 9% margin on each side of the headline
 DEVICE_HORIZONTAL_PAD_FRAC = 0.04   # 4% margin on each side of the device
+PHONE_DEVICE_HORIZONTAL_PAD_FRAC = 0.012  # almost edge-to-edge, like App Store cards
 DEVICE_BOTTOM_PAD_FRAC = 0.02       # bottom breathing room under the device
 HEADLINE_MAX_LINES = 3
 HEADLINE_LINE_SPACING = 1.08        # tight tracking for display headlines
@@ -104,19 +108,41 @@ HEADLINE_SHADOW_Y_OFFSET = 10
 
 # ── Custom device frame ────────────────────────────────────────────────────
 # We render our own minimal frame around the raw screenshot rather than
-# consuming fastlane frameit's framed PNG. Frameit ships device frames with
-# a baked-in metallic side reflection that reads as a white sliver against
-# a dark canvas; we get cleaner, brand-friendlier results by drawing a
-# matte-black rounded rectangle in code.
-FRAME_COLOR = (18, 20, 22, 255)     # near-black with a faint cool tint
+# consuming fastlane frameit's framed PNG (which shipped a metallic side
+# reflection that read as white slivers against a dark canvas). The goal is
+# unambiguously "this is an iPhone / iPad" without going full skeuomorphic:
+# a matte titanium-ish body, a faint inner rim suggesting the display
+# bezel, and stylized side buttons that read as iOS-native at a glance.
+FRAME_COLOR = (11, 12, 13, 255)     # near-black titanium body
+FRAME_EDGE_HIGHLIGHT = (50, 55, 58, 125)
+FRAME_RIM_COLOR = (1, 2, 3, 255)    # black glass bevel around the display
+FRAME_RIM_HIGHLIGHT = (58, 65, 68, 80)
+FRAME_BUTTON_COLOR = (28, 31, 33, 255)  # slightly lighter than body — bare metal feel
+IPHONE_FRAME_COLOR = (13, 14, 15, 255)     # near-black titanium side rail
+IPHONE_FRAME_GLASS_COLOR = (1, 2, 3, 255)  # black front glass around the display
+IPHONE_FRAME_EDGE_HIGHLIGHT = (70, 76, 78, 95)
+IPHONE_FRAME_EDGE_SHADOW = (0, 0, 0, 170)
+IPHONE_FRAME_RIM_COLOR = (0, 0, 0, 255)    # black display gasket
+IPHONE_FRAME_RIM_HIGHLIGHT = (48, 55, 58, 80)
+IPHONE_FRAME_BUTTON_COLOR = (24, 27, 29, 255)
+DYNAMIC_ISLAND_COLOR = (0, 0, 0, 255)
+CAMERA_GLASS_COLOR = (3, 5, 7, 255)
+CAMERA_LENS_COLOR = (13, 25, 36, 255)
+
 # Per-device tuning. ``screen_radius_frac`` and ``bezel_frac`` are expressed
 # relative to the screenshot's *width* so the frame scales correctly across
 # device sizes. The radii match Apple's display corner radii closely enough
 # to read as native; tighter than that and the bezel looks computer-drawn.
-IPHONE_SCREEN_RADIUS_FRAC = 0.046   # ≈61 px on a 1320 px-wide capture
-IPHONE_BEZEL_FRAC = 0.018           # ≈24 px frame thickness
+IPHONE_OUTER_RADIUS_FRAC = 0.132    # iPhone-style continuous hardware corners
+IPHONE_BEZEL_FRAC = 0.036           # ≈48 px frame thickness — keeps display inside shell
 IPAD_SCREEN_RADIUS_FRAC = 0.022     # ≈45 px on a 2064 px-wide capture
-IPAD_BEZEL_FRAC = 0.024             # ≈50 px frame thickness
+IPAD_BEZEL_FRAC = 0.030             # ≈62 px frame thickness
+IPHONE_CONTROL_GUTTER_FRAC = 0.009
+IPAD_CONTROL_GUTTER_FRAC = 0.009
+IPHONE_ISLAND_WIDTH_FRAC = 0.292
+IPHONE_ISLAND_HEIGHT_FRAC = 0.082
+IPHONE_ISLAND_CENTER_Y_FRAC = 0.070
+IPAD_CAMERA_RADIUS_FRAC = 0.006
 
 # ── Font lookup ────────────────────────────────────────────────────────────
 # Each entry is ``(path, ttc_index, named_variation, axis_weight)``. We try
@@ -219,7 +245,7 @@ def _shape_for_display(
     bidi algorithm reorders the result so PIL — which always draws LTR —
     produces the correct visual sequence. We shape per-line and only touch
     lines that actually contain Arabic — pure-Latin lines (e.g. brand
-    acronyms ``GPS. EXIF. TIFF.`` mixed into Arabic headlines) pass through
+    acronyms ``GPS. EXIF. IPTC.`` mixed into Arabic headlines) pass through
     untouched so bidi neutrals don't get misclassified.
     """
     if candidates is _FONT_CANDIDATES_ARABIC and _HAS_ARABIC_SHAPING:
@@ -241,15 +267,31 @@ def _shape_for_display(
 # canonical English values in that file.
 HEADLINES: dict[str, str] = {
     "01_Home":            "Share the photo.\nNot the story behind it.",
-    "02_PrivacyImpact":   "GPS. EXIF. TIFF.\nAll stripped automatically.",
-    "03_About":           "Four steps.\nTotal privacy.",
+    "02_PrivacyImpact":   "GPS. Time. Camera ID.\nAll stripped automatically.",
+    "03_About":           "Open source.\nAuditable privacy.",
     "04_PhotoLoaded":     "Sensitive data\ncaught instantly.",
     "05_RedactionEditor": "Draw to hide\nanything sensitive.",
-    "06_SensitiveData":   "Review what's\nbeing protected.",
+    "06_SensitiveData":   "See exactly\nwhat gets hidden.",
     "07_ReviewAndSave":   "Export clean.\nShare confidently.",
 }
 
 DEFAULT_HEADLINE = "Share the photo.\nNot the story behind it."
+
+# Output filenames control App Store screenshot order. The first 1–3 slots
+# drive the bulk of conversion, so the lead with the strongest emotional hook
+# (Home — "Share the photo. Not the story behind it."), prove the product
+# works (PhotoLoaded — sensitive data caught), then close the loop
+# (ReviewAndSave — clean export). Slots 4–7 reinforce: the redaction power
+# feature, transparency, breadth of metadata stripped, and the brand close.
+SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {
+    "01_Home":            "01_Home",
+    "04_PhotoLoaded":     "02_PhotoLoaded",
+    "07_ReviewAndSave":   "03_ReviewAndSave",
+    "05_RedactionEditor": "04_RedactionEditor",
+    "06_SensitiveData":   "05_SensitiveData",
+    "02_PrivacyImpact":   "06_PrivacyImpact",
+    "03_About":           "07_About",
+}
 
 
 @dataclass(frozen=True)
@@ -350,6 +392,21 @@ def _screen_key_from_filename(name: str) -> str:
     return stem.rsplit("-", 1)[1]
 
 
+def _ordered_output_name(name: str) -> str:
+    """Return the processed filename with its App Store display-order prefix."""
+    screen_key = _screen_key_from_filename(name)
+    ordered_key = SCREENSHOT_DISPLAY_ORDER.get(screen_key)
+    if ordered_key is None:
+        return name
+
+    path = Path(name)
+    stem = path.stem
+    if "-" not in stem:
+        return name
+    device_name = stem.rsplit("-", 1)[0]
+    return f"{device_name}-{ordered_key}{path.suffix}"
+
+
 def _load_headlines_xcstrings(xcstrings_path: Path) -> dict[str, dict[str, str]]:
     """Parse an ``.xcstrings`` JSON file into ``{screen_key: {locale: value}}``.
 
@@ -437,6 +494,38 @@ def _text_height(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont
     return bbox[3] - bbox[1]
 
 
+def _line_bbox(
+    draw: ImageDraw.ImageDraw,
+    text: str,
+    font: ImageFont.ImageFont,
+    stroke_width: int = 0,
+) -> tuple[int, int, int, int]:
+    return draw.textbbox((0, 0), text, font=font, stroke_width=stroke_width)
+
+
+def _headline_block_size(
+    draw: ImageDraw.ImageDraw,
+    lines: list[str],
+    font: ImageFont.ImageFont,
+    stroke_width: int = 0,
+) -> tuple[int, int, int]:
+    """Return ``(width, height, line_gap)`` for real glyph bounds.
+
+    Arabic ascenders/descenders can be much taller than the Latin "Ag" probe.
+    Measuring the actual rendered lines prevents stacked headline lines from
+    colliding in RTL locales while preserving tight Latin display type.
+    """
+    if not lines:
+        return 0, 0, 0
+
+    bboxes = [_line_bbox(draw, line, font, stroke_width) for line in lines]
+    heights = [bbox[3] - bbox[1] for bbox in bboxes]
+    widths = [bbox[2] - bbox[0] for bbox in bboxes]
+    em_h = max(1, _line_bbox(draw, "Ag", font, stroke_width)[3] - _line_bbox(draw, "Ag", font, stroke_width)[1])
+    line_gap = max(2, int(em_h * (HEADLINE_LINE_SPACING - 1)))
+    return max(widths, default=0), sum(heights) + line_gap * max(0, len(lines) - 1), line_gap
+
+
 def _fit_headline_font(
     text: str,
     max_width: int,
@@ -473,9 +562,8 @@ def _fit_headline_font(
             lines = _wrap_headline(shaped, font, max_width, draw)
             if len(lines) > max_lines:
                 continue
-            line_h = _text_height(draw, "Ag", font)
-            block_h = int(line_h * HEADLINE_LINE_SPACING * len(lines))
-            widest = max((_text_width(draw, line, font) for line in lines), default=0)
+            stroke_w = max(1, int(size * HEADLINE_STROKE_WIDTH_FRAC))
+            widest, block_h, _ = _headline_block_size(draw, lines, font, stroke_w)
             if widest <= max_width and block_h <= max_height:
                 return font, lines
 
@@ -508,9 +596,8 @@ def _draw_headline(
     font_size = getattr(font, "size", 0) or 0
     stroke_w = max(1, int(font_size * HEADLINE_STROKE_WIDTH_FRAC))
 
-    line_h = _text_height(measure_draw, "Ag", font)
-    spaced_h = int(line_h * HEADLINE_LINE_SPACING)
-    block_h = spaced_h * len(lines)
+    _, block_h, line_gap = _headline_block_size(measure_draw, lines, font, stroke_w)
+    line_bboxes = [_line_bbox(measure_draw, line, font, stroke_w) for line in lines]
     cursor_y = y0 + max(0, (box_h - block_h) // 2)
 
     # Draw the shadow first on its own layer, blur it, then composite.
@@ -520,18 +607,19 @@ def _draw_headline(
         shadow_layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
         shadow_draw = ImageDraw.Draw(shadow_layer)
         sy = cursor_y
-        for line in lines:
-            line_w = _text_width(shadow_draw, line, font)
+        for line, bbox in zip(lines, line_bboxes):
+            line_w = bbox[2] - bbox[0]
+            line_h = bbox[3] - bbox[1]
             x = x0 + (box_w - line_w) // 2
             shadow_draw.text(
-                (x, sy + HEADLINE_SHADOW_Y_OFFSET),
+                (x - bbox[0], sy - bbox[1] + HEADLINE_SHADOW_Y_OFFSET),
                 line,
                 fill=(0, 0, 0, HEADLINE_SHADOW_OPACITY),
                 font=font,
                 stroke_width=stroke_w,
                 stroke_fill=(0, 0, 0, HEADLINE_SHADOW_OPACITY),
             )
-            sy += spaced_h
+            sy += line_h + line_gap
         shadow_layer = shadow_layer.filter(
             ImageFilter.GaussianBlur(radius=HEADLINE_SHADOW_BLUR)
         )
@@ -540,31 +628,37 @@ def _draw_headline(
     # Draw the crisp white text with a near-black stroke on top.
     text_layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
     text_draw = ImageDraw.Draw(text_layer)
-    for line in lines:
-        line_w = _text_width(text_draw, line, font)
+    for line, bbox in zip(lines, line_bboxes):
+        line_w = bbox[2] - bbox[0]
+        line_h = bbox[3] - bbox[1]
         x = x0 + (box_w - line_w) // 2
         text_draw.text(
-            (x, cursor_y),
+            (x - bbox[0], cursor_y - bbox[1]),
             line,
             fill=(*HEADLINE_COLOR, 255),
             font=font,
             stroke_width=stroke_w,
             stroke_fill=(*HEADLINE_STROKE_COLOR, 255),
         )
-        cursor_y += spaced_h
+        cursor_y += line_h + line_gap
     canvas.alpha_composite(text_layer)
 
 
 # ── Device placement ───────────────────────────────────────────────────────
-def _device_layout(canvas_w: int, canvas_h: int) -> Layout:
-    headline_bottom = int(canvas_h * HEADLINE_AREA_FRAC)
-    gap_h = int(canvas_h * HEADLINE_BOTTOM_GAP_FRAC)
+def _device_layout(canvas_w: int, canvas_h: int, is_ipad: bool) -> Layout:
+    headline_area_frac = HEADLINE_AREA_FRAC if is_ipad else PHONE_HEADLINE_AREA_FRAC
+    headline_top_pad_frac = HEADLINE_TOP_PAD_FRAC if is_ipad else PHONE_HEADLINE_TOP_PAD_FRAC
+    headline_gap_frac = HEADLINE_BOTTOM_GAP_FRAC if is_ipad else PHONE_HEADLINE_BOTTOM_GAP_FRAC
+
+    headline_bottom = int(canvas_h * headline_area_frac)
+    gap_h = int(canvas_h * headline_gap_frac)
     headline_pad_x = int(canvas_w * HEADLINE_HORIZONTAL_PAD_FRAC)
-    device_pad_x = int(canvas_w * DEVICE_HORIZONTAL_PAD_FRAC)
+    device_pad_frac = DEVICE_HORIZONTAL_PAD_FRAC if is_ipad else PHONE_DEVICE_HORIZONTAL_PAD_FRAC
+    device_pad_x = int(canvas_w * device_pad_frac)
 
     headline_box = (
         headline_pad_x,
-        int(canvas_h * HEADLINE_TOP_PAD_FRAC),
+        int(canvas_h * headline_top_pad_frac),
         canvas_w - headline_pad_x,
         headline_bottom,
     )
@@ -580,6 +674,9 @@ def _device_layout(canvas_w: int, canvas_h: int) -> Layout:
 def _fit_device(
     device_img: Image.Image,
     box: tuple[int, int, int, int],
+    *,
+    fill_width: bool = False,
+    align_top: bool = False,
 ) -> tuple[Image.Image, tuple[int, int]]:
     """Resize ``device_img`` to fit inside ``box`` preserving aspect ratio.
 
@@ -590,14 +687,32 @@ def _fit_device(
     box_h = max(1, y1 - y0)
 
     src_w, src_h = device_img.size
-    scale = min(box_w / src_w, box_h / src_h)
+    scale = box_w / src_w if fill_width else min(box_w / src_w, box_h / src_h)
     new_w = max(1, int(src_w * scale))
     new_h = max(1, int(src_h * scale))
 
     resized = device_img.resize((new_w, new_h), Image.LANCZOS)
     paste_x = x0 + (box_w - new_w) // 2
-    paste_y = y0 + (box_h - new_h) // 2
+    paste_y = y0 if align_top else y0 + (box_h - new_h) // 2
     return resized, (paste_x, paste_y)
+
+
+def _alpha_composite_clipped(
+    canvas: Image.Image,
+    overlay: Image.Image,
+    origin: tuple[int, int],
+) -> None:
+    """Composite ``overlay`` onto ``canvas``, cropping overflow at canvas edges."""
+    px, py = origin
+    x0 = max(px, 0)
+    y0 = max(py, 0)
+    x1 = min(px + overlay.width, canvas.width)
+    y1 = min(py + overlay.height, canvas.height)
+    if x1 <= x0 or y1 <= y0:
+        return
+
+    crop = overlay.crop((x0 - px, y0 - py, x1 - px, y1 - py))
+    canvas.alpha_composite(crop, dest=(x0, y0))
 
 
 def _round_corners(img: Image.Image, radius: int) -> Image.Image:
@@ -625,36 +740,307 @@ def _is_ipad_capture(name: str) -> bool:
     return "ipad" in name.lower()
 
 
-def _build_device_frame(screenshot: Image.Image, is_ipad: bool) -> Image.Image:
-    """Wrap ``screenshot`` in a minimal matte-black device frame.
+def _draw_side_controls(
+    draw: ImageDraw.ImageDraw,
+    body_box: tuple[int, int, int, int],
+    gutter: int,
+    is_ipad: bool,
+) -> None:
+    """Draw subtle protruding side controls around the device body."""
+    if gutter <= 0:
+        return
 
-    The frame is a rounded rectangle ``bezel`` pixels wider on every side
-    than the screenshot, with rounded corners that match the device's
-    physical display radius. The screenshot's own corners are rounded so
-    they fit cleanly inside the frame's inner aperture.
+    x0, y0, x1, y1 = body_box
+    body_w = x1 - x0 + 1
+    body_h = y1 - y0 + 1
+    radius = max(2, gutter // 2)
+
+    button_color = FRAME_BUTTON_COLOR if is_ipad else IPHONE_FRAME_BUTTON_COLOR
+
+    def button(box: tuple[int, int, int, int]) -> None:
+        draw.rounded_rectangle(
+            box,
+            radius=radius,
+            fill=button_color,
+        )
+
+    if is_ipad:
+        button_len = max(36, int(body_w * 0.10))
+        button_thick = max(5, gutter)
+        top_y = max(0, y0 - button_thick // 2)
+        left_button_x = x0 + int(body_w * 0.11)
+        right_button_x = x1 - int(body_w * 0.20)
+        button((left_button_x, top_y, left_button_x + button_len, y0 + button_thick))
+        button((right_button_x, top_y, right_button_x + button_len, y0 + button_thick))
+        return
+
+    button_thick = max(4, gutter // 2)
+    long_len = max(44, int(body_h * 0.070))
+    short_len = max(24, int(body_h * 0.038))
+    left_x0 = x0 - button_thick
+    left_x1 = x0 + max(1, button_thick // 4)
+    right_x0 = x1 - max(1, button_thick // 4)
+    right_x1 = x1 + button_thick
+
+    action_y = y0 + int(body_h * 0.15)
+    volume_up_y = y0 + int(body_h * 0.245)
+    volume_down_y = y0 + int(body_h * 0.325)
+    sleep_y = y0 + int(body_h * 0.245)
+    button((left_x0, action_y, left_x1, action_y + short_len))
+    button((left_x0, volume_up_y, left_x1, volume_up_y + long_len))
+    button((left_x0, volume_down_y, left_x1, volume_down_y + long_len))
+    button((right_x0, sleep_y, right_x1, sleep_y + int(long_len * 1.35)))
+
+
+def _draw_dynamic_island(
+    framed: Image.Image,
+    screen_box: tuple[int, int, int, int],
+) -> None:
+    """Overlay an iPhone Dynamic Island inside the captured display."""
+    sx0, sy0, sx1, sy1 = screen_box
+    screen_w = sx1 - sx0 + 1
+    island_w = max(96, int(screen_w * IPHONE_ISLAND_WIDTH_FRAC))
+    island_h = max(28, int(screen_w * IPHONE_ISLAND_HEIGHT_FRAC))
+    island_x0 = sx0 + (screen_w - island_w) // 2
+    island_center_y = sy0 + int(screen_w * IPHONE_ISLAND_CENTER_Y_FRAC)
+    island_y0 = island_center_y - island_h // 2
+    scale = 4
+    pad = max(6, island_h // 8)
+    layer_w = (island_w + 2 * pad) * scale
+    layer_h = (island_h + 2 * pad) * scale
+    layer = Image.new("RGBA", (layer_w, layer_h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(layer)
+
+    pill = (
+        pad * scale,
+        pad * scale,
+        (pad + island_w) * scale,
+        (pad + island_h) * scale,
+    )
+
+    # A tiny soft edge keeps the cutout from looking like a flat decal while
+    # still reading as the black glass/sensor area on recent iPhones.
+    if _HAS_GAUSSIAN_BLUR:
+        shadow = Image.new("RGBA", layer.size, (0, 0, 0, 0))
+        shadow_draw = ImageDraw.Draw(shadow)
+        shadow_draw.rounded_rectangle(
+            pill,
+            radius=(island_h * scale) // 2,
+            fill=(0, 0, 0, 115),
+        )
+        shadow = shadow.filter(ImageFilter.GaussianBlur(radius=max(2, island_h // 18) * scale))
+        layer.alpha_composite(shadow)
+
+    draw.rounded_rectangle(
+        pill,
+        radius=(island_h * scale) // 2,
+        fill=DYNAMIC_ISLAND_COLOR,
+    )
+
+    lens_r = max(4, int(island_h * 0.105)) * scale
+    lens_cx = (pad + int(island_w * 0.775)) * scale
+    lens_cy = (pad + island_h // 2) * scale
+    draw.ellipse(
+        [lens_cx - lens_r, lens_cy - lens_r, lens_cx + lens_r, lens_cy + lens_r],
+        fill=CAMERA_GLASS_COLOR,
+    )
+    inner_r = max(2, lens_r // 2)
+    draw.ellipse(
+        [lens_cx - inner_r, lens_cy - inner_r, lens_cx + inner_r, lens_cy + inner_r],
+        fill=CAMERA_LENS_COLOR,
+    )
+    glint_r = max(1, lens_r // 5)
+    draw.ellipse(
+        [
+            lens_cx - lens_r // 3,
+            lens_cy - lens_r // 3,
+            lens_cx - lens_r // 3 + glint_r,
+            lens_cy - lens_r // 3 + glint_r,
+        ],
+        fill=(42, 62, 76, 150),
+    )
+
+    layer = layer.resize((layer_w // scale, layer_h // scale), Image.Resampling.LANCZOS)
+    framed.alpha_composite(layer, dest=(island_x0 - pad, island_y0 - pad))
+
+
+def _draw_iphone_hardware_frame(
+    draw: ImageDraw.ImageDraw,
+    body_box: tuple[int, int, int, int],
+    screen_box: tuple[int, int, int, int],
+    outer_radius: int,
+    screen_radius: int,
+    bezel: int,
+) -> None:
+    """Draw a more iPhone-like shell: thin side rail, black glass, display gasket."""
+    x0, y0, x1, y1 = body_box
+    rail_w = max(5, bezel // 5)
+    glass_inset = max(3, bezel // 7)
+    glass_box = (
+        x0 + glass_inset,
+        y0 + glass_inset,
+        x1 - glass_inset,
+        y1 - glass_inset,
+    )
+    glass_radius = max(1, outer_radius - glass_inset)
+
+    draw.rounded_rectangle(
+        body_box,
+        radius=outer_radius,
+        fill=IPHONE_FRAME_COLOR,
+        outline=IPHONE_FRAME_EDGE_SHADOW,
+        width=max(1, rail_w),
+    )
+    draw.rounded_rectangle(
+        [
+            x0 + max(1, rail_w // 2),
+            y0 + max(1, rail_w // 2),
+            x1 - max(1, rail_w // 2),
+            y1 - max(1, rail_w // 2),
+        ],
+        radius=max(1, outer_radius - rail_w // 2),
+        outline=IPHONE_FRAME_EDGE_HIGHLIGHT,
+        width=max(1, rail_w // 2),
+    )
+    draw.rounded_rectangle(
+        glass_box,
+        radius=glass_radius,
+        fill=IPHONE_FRAME_GLASS_COLOR,
+    )
+
+    gasket_outer = max(1, bezel // 4)
+    draw.rounded_rectangle(
+        [
+            screen_box[0] - gasket_outer,
+            screen_box[1] - gasket_outer,
+            screen_box[2] + gasket_outer,
+            screen_box[3] + gasket_outer,
+        ],
+        radius=screen_radius + gasket_outer,
+        outline=IPHONE_FRAME_RIM_COLOR,
+        width=max(2, bezel // 3),
+    )
+    highlight_outer = max(1, bezel // 2)
+    draw.rounded_rectangle(
+        [
+            screen_box[0] - highlight_outer,
+            screen_box[1] - highlight_outer,
+            screen_box[2] + highlight_outer,
+            screen_box[3] + highlight_outer,
+        ],
+        radius=screen_radius + highlight_outer,
+        outline=IPHONE_FRAME_RIM_HIGHLIGHT,
+        width=max(1, bezel // 10),
+    )
+
+
+def _draw_ipad_camera(
+    framed: Image.Image,
+    screen_box: tuple[int, int, int, int],
+    bezel: int,
+) -> None:
+    """Draw the centered FaceTime camera in the iPad bezel."""
+    sx0, sy0, sx1, _ = screen_box
+    camera_r = max(4, int((sx1 - sx0 + 1) * IPAD_CAMERA_RADIUS_FRAC))
+    cx = sx0 + (sx1 - sx0 + 1) // 2
+    cy = max(camera_r + 2, sy0 - bezel // 2)
+
+    draw = ImageDraw.Draw(framed)
+    draw.ellipse(
+        [cx - camera_r, cy - camera_r, cx + camera_r, cy + camera_r],
+        fill=CAMERA_GLASS_COLOR,
+    )
+    glint_r = max(1, camera_r // 3)
+    draw.ellipse(
+        [cx - glint_r, cy - glint_r, cx, cy],
+        fill=CAMERA_LENS_COLOR,
+    )
+
+
+def _build_device_frame(screenshot: Image.Image, is_ipad: bool) -> Image.Image:
+    """Wrap ``screenshot`` in a recognizable black iPhone / iPad frame.
+
+    The hardware is rendered procedurally instead of using frameit PNGs so the
+    output stays crisp against PicStrip's dark teal gradient. iPhone captures
+    get a Dynamic Island overlay; iPad captures get a tablet bezel with the
+    centered camera detail.
     """
     sw, sh = screenshot.size
 
     if is_ipad:
         screen_radius = max(1, int(sw * IPAD_SCREEN_RADIUS_FRAC))
         bezel = max(1, int(sw * IPAD_BEZEL_FRAC))
+        gutter = max(1, int(sw * IPAD_CONTROL_GUTTER_FRAC))
+        outer_radius = screen_radius + bezel
     else:
-        screen_radius = max(1, int(sw * IPHONE_SCREEN_RADIUS_FRAC))
         bezel = max(1, int(sw * IPHONE_BEZEL_FRAC))
+        gutter = max(1, int(sw * IPHONE_CONTROL_GUTTER_FRAC))
+        outer_radius = max(1, int(sw * IPHONE_OUTER_RADIUS_FRAC))
+        screen_radius = max(1, outer_radius - bezel)
 
-    fw, fh = sw + 2 * bezel, sh + 2 * bezel
-    outer_radius = screen_radius + bezel
+    body_w, body_h = sw + 2 * bezel, sh + 2 * bezel
+    fw, fh = body_w + 2 * gutter, body_h + gutter
+    body_x0 = gutter
+    body_y0 = gutter // 2
+    body_box = (body_x0, body_y0, body_x0 + body_w - 1, body_y0 + body_h - 1)
+    screen_box = (
+        body_x0 + bezel,
+        body_y0 + bezel,
+        body_x0 + bezel + sw - 1,
+        body_y0 + bezel + sh - 1,
+    )
 
     framed = Image.new("RGBA", (fw, fh), (0, 0, 0, 0))
     frame_draw = ImageDraw.Draw(framed)
-    frame_draw.rounded_rectangle(
-        [0, 0, fw - 1, fh - 1],
-        radius=outer_radius,
-        fill=FRAME_COLOR,
-    )
+    _draw_side_controls(frame_draw, body_box, gutter, is_ipad)
+    if is_ipad:
+        frame_draw.rounded_rectangle(
+            body_box,
+            radius=outer_radius,
+            fill=FRAME_COLOR,
+            outline=FRAME_EDGE_HIGHLIGHT,
+            width=max(1, bezel // 7),
+        )
+        frame_draw.rounded_rectangle(
+            [
+                screen_box[0] - max(1, bezel // 3),
+                screen_box[1] - max(1, bezel // 3),
+                screen_box[2] + max(1, bezel // 3),
+                screen_box[3] + max(1, bezel // 3),
+            ],
+            radius=screen_radius + max(1, bezel // 3),
+            outline=FRAME_RIM_HIGHLIGHT,
+            width=max(1, bezel // 8),
+        )
+        frame_draw.rounded_rectangle(
+            [
+                screen_box[0] - max(1, bezel // 5),
+                screen_box[1] - max(1, bezel // 5),
+                screen_box[2] + max(1, bezel // 5),
+                screen_box[3] + max(1, bezel // 5),
+            ],
+            radius=screen_radius + max(1, bezel // 5),
+            outline=FRAME_RIM_COLOR,
+            width=max(2, bezel // 4),
+        )
+    else:
+        _draw_iphone_hardware_frame(
+            frame_draw,
+            body_box,
+            screen_box,
+            outer_radius,
+            screen_radius,
+            bezel,
+        )
 
     rounded = _round_corners(screenshot, screen_radius)
-    framed.alpha_composite(rounded, dest=(bezel, bezel))
+    framed.alpha_composite(rounded, dest=(screen_box[0], screen_box[1]))
+
+    if is_ipad:
+        _draw_ipad_camera(framed, screen_box, bezel)
+    else:
+        _draw_dynamic_island(framed, screen_box)
+
     return framed
 
 
@@ -688,20 +1074,22 @@ def _composite_device_shadows(
 
     # Ambient halo — large, soft.
     ambient = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
-    ambient.paste(
-        _build_silhouette(device, AMBIENT_OPACITY),
+    ambient_silhouette = _build_silhouette(device, AMBIENT_OPACITY)
+    _alpha_composite_clipped(
+        ambient,
+        ambient_silhouette,
         (px, py + AMBIENT_Y_OFFSET),
-        _build_silhouette(device, AMBIENT_OPACITY),
     )
     ambient = ambient.filter(ImageFilter.GaussianBlur(radius=AMBIENT_BLUR_RADIUS))
     canvas.alpha_composite(ambient)
 
     # Contact shadow — small, sharp, sits closer to the device.
     contact = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
-    contact.paste(
-        _build_silhouette(device, CONTACT_OPACITY),
+    contact_silhouette = _build_silhouette(device, CONTACT_OPACITY)
+    _alpha_composite_clipped(
+        contact,
+        contact_silhouette,
         (px, py + CONTACT_Y_OFFSET),
-        _build_silhouette(device, CONTACT_OPACITY),
     )
     contact = contact.filter(ImageFilter.GaussianBlur(radius=CONTACT_BLUR_RADIUS))
     canvas.alpha_composite(contact)
@@ -727,7 +1115,8 @@ def _compose_one(
     with Image.open(src) as opened:
         screenshot = opened.convert("RGBA")
 
-    framed_device = _build_device_frame(screenshot, _is_ipad_capture(src.name))
+    is_ipad = _is_ipad_capture(src.name)
+    framed_device = _build_device_frame(screenshot, is_ipad)
 
     # The output canvas matches the original screenshot's dimensions so
     # App Store Connect accepts it for the corresponding device class.
@@ -735,11 +1124,16 @@ def _compose_one(
     _draw_gradient_on(canvas, BRAND_TOP, BRAND_BOTTOM)
     _paint_top_highlight(canvas)
 
-    layout = _device_layout(canvas.width, canvas.height)
+    layout = _device_layout(canvas.width, canvas.height, is_ipad)
 
-    resized, origin = _fit_device(framed_device, layout.device_box)
+    resized, origin = _fit_device(
+        framed_device,
+        layout.device_box,
+        fill_width=not is_ipad,
+        align_top=not is_ipad,
+    )
     _composite_device_shadows(canvas, resized, origin)
-    canvas.alpha_composite(resized, dest=origin)
+    _alpha_composite_clipped(canvas, resized, origin)
 
     _draw_headline(canvas, headline_text, layout.headline_box)
 
@@ -763,7 +1157,10 @@ def process_directory(
     for raw in _iter_inputs(input_dir):
         screen_key = _screen_key_from_filename(raw.name)
         headline = _resolve_headline(screen_key, locale, xcstrings_map)
-        dest = output_dir / raw.name
+        dest = output_dir / _ordered_output_name(raw.name)
+        old_dest = output_dir / raw.name
+        if old_dest != dest and old_dest.exists():
+            old_dest.unlink()
         _compose_one(raw, dest, headline)
         print(f"composed {dest}")
         count += 1

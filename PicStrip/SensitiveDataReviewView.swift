@@ -45,6 +45,7 @@ struct SensitiveDataReviewView: View {
                             viewModel.typesToRedact = Set(viewModel.detectedPII.map(\.type))
                         }
                     }
+                    .accessibilityIdentifier("sensitiveDataBulkToggleButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }

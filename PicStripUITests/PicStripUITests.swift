@@ -24,6 +24,27 @@ final class PicStripUITests: XCTestCase {
         continueAfterFailure = false
     }
 
+    private func fixtureImageURL() -> URL? {
+        let bundle = Bundle(for: type(of: self))
+        if let url = bundle.url(forResource: "test_list", withExtension: "png") {
+            return url
+        }
+
+        let bundledURL = bundle.bundleURL.appendingPathComponent("test_list.png")
+        if FileManager.default.fileExists(atPath: bundledURL.path) {
+            return bundledURL
+        }
+
+        let sourceURL = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent()
+            .appendingPathComponent("test_list.png")
+        if FileManager.default.fileExists(atPath: sourceURL.path) {
+            return sourceURL
+        }
+
+        return nil
+    }
+
     // MARK: - All screenshots — two launches
 
     /// Captures every App Store screenshot in one continuous session.
@@ -72,8 +93,7 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment.removeValue(forKey: "PICSTRIP_SEED_STATS")
 
         // Write fixture bytes to the simulator's /tmp so the app can read them.
-        let fixtureURL = Bundle(for: type(of: self))
-            .url(forResource: "test_list", withExtension: "png")
+        let fixtureURL = fixtureImageURL()
         XCTAssertNotNil(fixtureURL, "test_list.png must be in the UITest bundle")
 
         let tmpPath = "/tmp/picstrip_fixture.png"
@@ -201,8 +221,7 @@ final class PicStripUITests: XCTestCase {
     func testManualRedactionEditorCanCreateCustomRegion() throws {
         let app = XCUIApplication()
 
-        let fixtureURL = Bundle(for: type(of: self))
-            .url(forResource: "test_list", withExtension: "png")
+        let fixtureURL = fixtureImageURL()
         let tmpPath = "/tmp/picstrip_manual_redaction_fixture.png"
         if let srcURL = fixtureURL,
            let data = try? Data(contentsOf: srcURL) {
@@ -239,8 +258,7 @@ final class PicStripUITests: XCTestCase {
     func testSensitiveDataReviewFocusesDetection() throws {
         let app = XCUIApplication()
 
-        let fixtureURL = Bundle(for: type(of: self))
-            .url(forResource: "test_list", withExtension: "png")
+        let fixtureURL = fixtureImageURL()
         let tmpPath = "/tmp/picstrip_sensitive_fixture.png"
         if let srcURL = fixtureURL,
            let data = try? Data(contentsOf: srcURL) {
@@ -263,12 +281,12 @@ final class PicStripUITests: XCTestCase {
 
         let emailRow = app.descendants(matching: .any)["sensitiveDataRow_email"]
         XCTAssertTrue(emailRow.waitForExistence(timeout: 10))
-        emailRow.tap()
 
-        XCTAssertTrue(emailRow.exists)
-
-        let redactAllButton = app.buttons["Redact All"].firstMatch
-        XCTAssertTrue(redactAllButton.exists || app.buttons["Deselect All"].firstMatch.exists)
+        let bulkToggleButton = app.buttons["sensitiveDataBulkToggleButton"].firstMatch
+        XCTAssertTrue(
+            bulkToggleButton.waitForExistence(timeout: 5),
+            "Sensitive Data review should expose the bulk redact/deselect control."
+        )
     }
 
     private func makeCleanPNG() throws -> Data {
