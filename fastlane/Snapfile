@@ -4,17 +4,48 @@
 # Target devices.
 # App Store Connect required size classes for iPhone + iPad submissions:
 #   6.9"  → iPhone 17 Pro Max  (required)
-#   6.7"  → iPhone Air         (required; 6.7" Super Retina class in Xcode 26)
 #  13.0"  → iPad Pro 13-inch (M5) (required for iPad support)
+# The App Store auto-scales the 6.9" iPhone screenshot set down to the 6.7",
+# 6.5", and 5.5" device classes, so capturing those sizes separately is
+# redundant and only adds capture/processing time.
 devices([
   "iPhone 17 Pro Max",
-  "iPhone Air",
   "iPad Pro 13-inch (M5)",
 ])
 
+# iOS runtime version installed on this machine.
+# fastlane reads the Xcode SDK as "26.4" but the installed simulator runtime is
+# "26.4.1"; without this override xcodebuild rejects the destination specifier.
+ios_version("26.4.1")
+
 # Languages / locales to capture.
+#
+# These codes are passed to xcodebuild via -testLanguage and also become the
+# directory names under fastlane/screenshots/<locale>/, which `deliver` /
+# `upload_to_app_store` consumes for App Store Connect upload. We use a mix of
+# language-only codes (e.g. "de", "ja") and language+region codes
+# (e.g. "en-US", "pt-BR") matching what `deliver` accepts as locale folder
+# names; Snapshot maps each to the corresponding simulator language/region.
+#
+# The 16 locales below mirror the supported set in PicStrip/Localizable.xcstrings
+# (`en, ar, de, es, fr, it, ja, ko, nl, pl, pt-BR, pt-PT, sv, tr, zh-Hans, zh-Hant`).
 languages([
   "en-US",
+  "ar-SA",
+  "de-DE",
+  "es-ES",
+  "fr-FR",
+  "it",
+  "ja",
+  "ko",
+  "nl-NL",
+  "pl",
+  "pt-BR",
+  "pt-PT",
+  "sv",
+  "tr",
+  "zh-Hans",
+  "zh-Hant",
 ])
 
 # Dedicated screenshots-only scheme — contains only PicStripUITests.

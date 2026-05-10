@@ -10,7 +10,6 @@ import UniformTypeIdentifiers
 /// Only one sheet can be presented at a time; setting `activeSheet` to a new
 /// value automatically dismisses any currently-open sheet first.
 enum ActiveSheet: String, Identifiable {
-    case pii
     case preSave
     case batch
     var id: String { rawValue }
@@ -36,6 +35,23 @@ struct BatchConfig {
     var outputFormat: ExportFormat = .png
     /// Whether to save cleaned photos as new assets or overwrite the originals.
     var saveMode: BatchSaveMode = .saveAsNew
+}
+
+private struct ProcessingSnapshot {
+    let processed: ProcessedImage
+    let outputFileFields: [MetadataField]
+    let processedPreviewUIImage: UIImage?
+    let rawSourceProps: [CFString: Any]?
+    let allSourceMetadata: StrippedMetadata?
+}
+
+private struct ProcessingRequest {
+    let raw: Data
+    let sourceData: Data
+    let imageOverride: UIImage?
+    let preset: ExportPreset
+    let config: StripConfig
+    let updateSourceMetadata: Bool
 }
 
 /// ViewModel driving the scrubber interface.
@@ -66,6 +82,11 @@ final class ScrubberViewModel {
     /// The scrubbed, re-encoded image bytes ready for saving or sharing.
     var processedData: Data?
 
+    /// Downsampled preview decoded from `processedData` off the main actor.
+    /// Avoids repeatedly decoding the export bytes from SwiftUI computed
+    /// properties while preserving full-resolution bytes for save/share.
+    var processedPreviewUIImage: UIImage?
+
     /// Every metadata field actually present in the output file after encoding.
     /// Populated after each processing pass — including the redacted path — so the
     /// review screen can show exactly what the encoder wrote into the final bytes,
@@ -74,7 +95,7 @@ final class ScrubberViewModel {
 
     /// The active export format chosen by the user.
     /// Changing this updates `selectedPreset` and re-triggers processing.
-    var selectedExportFormat: ExportFormat = .original {
+    var selectedExportFormat: ExportFormat = .png {
         didSet { selectedPreset = selectedExportFormat.exportPreset }
     }
 
@@ -134,7 +155,13 @@ final class ScrubberViewModel {
 
     /// PII types detected in the currently loaded image via on-device OCR.
     /// Empty when no image is loaded or the scan found nothing.
-    var detectedPII: [DetectionResult] = []
+    /// Setting this property automatically rebuilds `redactionRegions` from
+    /// the new results so that `redactionPreviewResults` and derived views
+    /// stay in sync without requiring callers to call
+    /// `replaceDetectedRedactionRegions` separately.
+    var detectedPII: [DetectionResult] = [] {
+        didSet { replaceDetectedRedactionRegions(from: detectedPII) }
+    }
 
     /// Pixel dimensions of the currently loaded image.
     /// Used by ContentView to compute the exact rendered frame of a .scaledToFit()
@@ -148,14 +175,33 @@ final class ScrubberViewModel {
     /// The set of `PIIType`s whose instances will be burned black on export.
     /// Auto-populated with every detected type when a scan completes (privacy by
     /// default).  The user can remove individual types in the PII details sheet.
-    var typesToRedact: Set<PIIType> = []
+    var typesToRedact: Set<PIIType> = [] {
+        didSet { syncDetectedRegionEnablement() }
+    }
 
-    /// Detected visual results that are currently selected for redaction.
+    /// Editable per-photo redaction boxes. Detected boxes are seeded from OCR;
+    /// custom boxes are user-created and never persisted across photos.
+    var redactionRegions: [RedactionRegion] = []
+
+    /// Currently selected redaction box in the preview editor.
+    var selectedRedactionRegionID: String?
+
+    var selectedRedactionRegion: RedactionRegion? {
+        guard let selectedRedactionRegionID else { return nil }
+        return redactionRegions.first { $0.id == selectedRedactionRegionID }
+    }
+
+    var enabledRedactionRegions: [RedactionRegion] {
+        redactionRegions.filter(\.isEnabled)
+    }
+
+    /// Detected visual results that currently have at least one enabled region.
     /// Used by the photo preview to show subtle always-on redaction outlines.
+    /// Derived from `enabledRedactionRegions` so per-instance toggles are reflected
+    /// immediately without needing to consult `typesToRedact`.
     var redactionPreviewResults: [DetectionResult] {
-        detectedPII.filter { result in
-            typesToRedact.contains(result.type) && !result.instances.isEmpty
-        }
+        let enabledTypes = Set(enabledRedactionRegions.compactMap(\.type))
+        return detectedPII.filter { enabledTypes.contains($0.type) && !$0.instances.isEmpty }
     }
 
     /// The redacted `UIImage` produced by `ImageRedactor`, cached so `requestSave()`
@@ -170,20 +216,7 @@ final class ScrubberViewModel {
     /// and sharing still use `processedData`, which has passed through metadata
     /// stripping.
     var reviewPreviewUIImage: UIImage? {
-        let hasSelectedRedactions = detectedPII.contains { result in
-            typesToRedact.contains(result.type) && !result.instances.isEmpty
-        }
-
-        if hasSelectedRedactions, let redactedUIImage {
-            return redactedUIImage
-        }
-
-        if let processedData,
-           let image = UIImage(data: processedData) {
-            return image
-        }
-
-        return sourceUIImage
+        processedPreviewUIImage ?? redactedUIImage ?? sourceUIImage
     }
 
     // MARK: - Batch state
@@ -206,6 +239,79 @@ final class ScrubberViewModel {
     /// Non-nil when the batch encounters a fatal error (e.g. photo library access denied).
     var batchErrorMessage: String?
 
+    // MARK: - Undo / Redo
+
+    /// Whether there is at least one action to undo.
+    var canUndo: Bool { !undoStack.isEmpty }
+
+    /// Whether there is at least one action to redo.
+    var canRedo: Bool { !redoStack.isEmpty }
+
+    /// Snapshots of `redactionRegions` taken before each user-driven mutation.
+    /// Capped at 50 entries to avoid unbounded memory growth.
+    private var undoStack: [[RedactionRegion]] = []
+
+    /// Snapshots pushed when the user undoes an action, enabling redo.
+    private var redoStack: [[RedactionRegion]] = []
+
+    /// The region ID currently being moved or resized by a drag gesture.
+    /// Used to push exactly one snapshot per drag gesture (not one per event).
+    private var activeDragID: String?
+
+    /// Saves the current `redactionRegions` to the undo stack and clears the
+    /// redo stack. Call this before any mutation that should be undoable.
+    private func pushUndoSnapshot() {
+        undoStack.append(redactionRegions)
+        if undoStack.count > 50 { undoStack.removeFirst() }
+        redoStack.removeAll()
+        activeDragID = nil
+    }
+
+    private func clearUndoRedoStacks() {
+        undoStack.removeAll()
+        redoStack.removeAll()
+        activeDragID = nil
+    }
+
+    /// Called by the view when a move or resize drag gesture begins for a region.
+    ///
+    /// Pushes exactly one undo snapshot per gesture, regardless of how many
+    /// `.onChanged` events fire. Subsequent calls for the same `id` within
+    /// the same gesture are no-ops.
+    func beginRedactionUpdate(id: String) {
+        guard activeDragID != id else { return }
+        pushUndoSnapshot()
+        activeDragID = id
+    }
+
+    /// Restores `redactionRegions` to the state before the last user action.
+    func undoRedaction() {
+        guard let snapshot = undoStack.popLast() else { return }
+        redoStack.append(redactionRegions)
+        redactionRegions = snapshot
+        // Deselect if the selected region no longer exists after undo.
+        if let id = selectedRedactionRegionID,
+           !redactionRegions.contains(where: { $0.id == id }) {
+            selectedRedactionRegionID = nil
+        }
+        redactedUIImage = nil
+        activeDragID = nil
+    }
+
+    /// Re-applies the most recently undone action.
+    func redoRedaction() {
+        guard let snapshot = redoStack.popLast() else { return }
+        undoStack.append(redactionRegions)
+        redactionRegions = snapshot
+        // Deselect if the selected region no longer exists after redo.
+        if let id = selectedRedactionRegionID,
+           !redactionRegions.contains(where: { $0.id == id }) {
+            selectedRedactionRegionID = nil
+        }
+        redactedUIImage = nil
+        activeDragID = nil
+    }
+
     // MARK: - Private
 
     private let piiScanner = PIIScanner()
@@ -222,6 +328,10 @@ final class ScrubberViewModel {
     /// The raw source properties from ImageIO — used to rebuild pendingStrippedMetadata
     /// cheaply when only the config changes (without re-running the full encode pipeline).
     private var rawSourceProps: [CFString: Any]?
+
+    /// Rejects stale processing completions when the user changes photo, preset,
+    /// or redaction settings while an off-main encode is still running.
+    private var processingToken = UUID()
 
     // MARK: - Item change handler
 
@@ -242,6 +352,7 @@ final class ScrubberViewModel {
         isProcessing = true
         errorMessage = nil
         processedData = nil
+        processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
         pendingStrippedMetadata = nil
@@ -257,27 +368,29 @@ final class ScrubberViewModel {
         imageSize = .zero
         activeSheet = nil
         selectedPIIResult = nil
+        redactionRegions = []
+        selectedRedactionRegionID = nil
         redactedUIImage = nil
         typesToRedact = []
-
-        defer { isProcessing = false }
+        clearUndoRedoStacks()
 
         rawImageData = data
 
-        if let uiImage = UIImage(data: data) {
+        if let uiImage = await Self.makePreviewImage(from: data) {
             inputImage = Image(uiImage: uiImage)
             sourceUIImage = uiImage
             imageSize = uiImage.size
         }
 
         startPIIScan(data: data)
-        processCurrentImage()
+        await processCurrentImageNow()
     }
 
     private func loadAndProcess(item: PhotosPickerItem) async {
         isProcessing = true
         errorMessage = nil
         processedData = nil
+        processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
         pendingStrippedMetadata = nil
@@ -293,20 +406,22 @@ final class ScrubberViewModel {
         imageSize         = .zero
         activeSheet       = nil
         selectedPIIResult = nil
+        redactionRegions  = []
+        selectedRedactionRegionID = nil
         redactedUIImage   = nil
         typesToRedact     = []
-
-        defer { isProcessing = false }
+        clearUndoRedoStacks()
 
         do {
             guard let data = try await item.loadTransferable(type: Data.self) else {
-                errorMessage = "The selected item could not be loaded as image data."
+                errorMessage = String(localized: "The selected item could not be loaded as image data.")
+                isProcessing = false
                 return
             }
 
             rawImageData = data
 
-            if let uiImage = UIImage(data: data) {
+            if let uiImage = await Self.makePreviewImage(from: data) {
                 inputImage    = Image(uiImage: uiImage)
                 sourceUIImage = uiImage
                 // Store point dimensions (not pixel dimensions).
@@ -317,10 +432,11 @@ final class ScrubberViewModel {
 
             startPIIScan(data: data)
 
-            processCurrentImage()
+            await processCurrentImageNow()
         } catch {
             errorMessage = error.localizedDescription
             rawImageData = nil
+            isProcessing = false
         }
     }
 
@@ -328,10 +444,26 @@ final class ScrubberViewModel {
 
     func processCurrentImage() {
         guard rawImageData != nil else { return }
-        errorMessage = nil
-        isProcessing = true
-        defer { isProcessing = false }
-        processImage()
+        Task { await processCurrentImageNow() }
+    }
+
+    private func processCurrentImageNow() async {
+        guard let raw = rawImageData else {
+            isProcessing = false
+            return
+        }
+        await processImage(
+            raw: raw,
+            sourceData: raw,
+            imageOverride: nil,
+            updateSourceMetadata: true
+        )
+    }
+
+    private static func makePreviewImage(from data: Data) async -> UIImage? {
+        await Task.detached(priority: .userInitiated) {
+            ImageProcessor.downsampledUIImage(from: data)
+        }.value
     }
 
     private func startPIIScan(data: Data) {
@@ -352,6 +484,9 @@ final class ScrubberViewModel {
                 guard self.piiScanToken == token, !Task.isCancelled else { return }
                 self.detectedPII = result
                 // Privacy by default: pre-select every detected type for redaction.
+                // `detectedPII.didSet` already called replaceDetectedRedactionRegions;
+                // syncDetectedRegionEnablement (via typesToRedact.didSet) then enables
+                // each region whose type is in typesToRedact.
                 self.typesToRedact = Set(result.map(\.type))
                 self.isScanningPII = false
                 self.piiScanTask = nil
@@ -366,6 +501,9 @@ final class ScrubberViewModel {
 
     func focusPIIResult(_ result: DetectionResult) {
         selectedPIIResult = result
+        selectedRedactionRegionID = redactionRegions.first {
+            $0.source == .detected && $0.type == result.type
+        }?.id
         piiFocusTask?.cancel()
         piiFocusTask = Task {
             try? await Task.sleep(for: .seconds(1.5))
@@ -373,10 +511,131 @@ final class ScrubberViewModel {
             await MainActor.run {
                 if self.selectedPIIResult == result {
                     self.selectedPIIResult = nil
+                    if self.selectedRedactionRegion?.type == result.type {
+                        self.selectedRedactionRegionID = nil
+                    }
                 }
                 self.piiFocusTask = nil
             }
         }
+    }
+
+    func addCustomRedaction(rect: CGRect) {
+        pushUndoSnapshot()
+        let region = RedactionRegion.custom(rect: rect)
+        redactionRegions.append(region)
+        selectedRedactionRegionID = region.id
+        redactedUIImage = nil
+    }
+
+    func updateRedactionRegion(id: String, rect: CGRect) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
+        redactionRegions[index].rect = RedactionRegion.clamped(rect)
+        redactedUIImage = nil
+    }
+
+    func selectRedactionRegion(id: String?) {
+        selectedRedactionRegionID = id
+        if let id,
+           let region = redactionRegions.first(where: { $0.id == id }),
+           let type = region.type,
+           let result = detectedPII.first(where: { $0.type == type }) {
+            selectedPIIResult = result
+        } else {
+            selectedPIIResult = nil
+        }
+    }
+
+    func deleteSelectedRedactionRegion() {
+        guard let id = selectedRedactionRegionID else { return }
+        deleteRedactionRegion(id: id)
+    }
+
+    /// Deletes the region with the given ID without requiring it to be selected first.
+    /// Used by the region list in `RedactionEditorDrawer` where each row has its own delete button.
+    func deleteRedactionRegion(id: String) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
+        pushUndoSnapshot()
+        let region = redactionRegions[index]
+        redactionRegions.remove(at: index)
+        if selectedRedactionRegionID == id {
+            selectedRedactionRegionID = nil
+        }
+        if let type = region.type,
+           !redactionRegions.contains(where: { $0.type == type && $0.isEnabled }) {
+            typesToRedact.remove(type)
+        }
+        redactedUIImage = nil
+    }
+
+    /// Toggles the enabled state of a specific redaction region.
+    ///
+    /// `isEnabled` is toggled directly on the individual region for both detected
+    /// and custom sources, giving per-instance granularity. `typesToRedact` is **not**
+    /// modified here — it remains the initial-seeding mechanism used when a PII scan
+    /// completes. An undo snapshot is pushed so every toggle is reversible.
+    func toggleRedactionRegion(id: String) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].isEnabled.toggle()
+        redactedUIImage = nil
+    }
+
+    /// Changes the visual style for a specific redaction region.
+    /// The mutation is undoable and clears any cached redacted image.
+    func changeRedactionStyle(id: String, style: RedactionStyle) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
+        guard redactionRegions[index].style != style else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].style = style
+        redactedUIImage = nil
+    }
+
+    /// Changes the fill colour for a specific redaction region.
+    /// Ignored if the region's current style does not support colour (e.g. `.pixelate`).
+    /// The mutation is undoable and clears any cached redacted image.
+    func changeRedactionColor(id: String, color: RedactionColor) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
+        guard redactionRegions[index].color != color else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].color = color
+        redactedUIImage = nil
+    }
+
+    func resetDetectedRedactionRegions() {
+        replaceDetectedRedactionRegions(from: detectedPII)
+        selectedRedactionRegionID = nil
+        redactedUIImage = nil
+    }
+
+    private func replaceDetectedRedactionRegions(from results: [DetectionResult]) {
+        let customRegions = redactionRegions.filter { $0.source == .custom }
+        let detectedRegions = results.flatMap { result in
+            result.instances.enumerated().map { index, instance in
+                RedactionRegion.detected(
+                    result: result,
+                    instance: instance,
+                    index: index,
+                    isEnabled: typesToRedact.contains(result.type)
+                )
+            }
+        }
+        redactionRegions = detectedRegions + customRegions
+        if let selectedRedactionRegionID,
+           !redactionRegions.contains(where: { $0.id == selectedRedactionRegionID }) {
+            self.selectedRedactionRegionID = nil
+        }
+        redactedUIImage = nil
+    }
+
+    private func syncDetectedRegionEnablement() {
+        guard !redactionRegions.isEmpty else { return }
+        for index in redactionRegions.indices where redactionRegions[index].source == .detected {
+            if let type = redactionRegions[index].type {
+                redactionRegions[index].isEnabled = typesToRedact.contains(type)
+            }
+        }
+        redactedUIImage = nil
     }
 
     /// Recomputes `pendingStrippedMetadata` from cached source props without re-encoding.
@@ -404,30 +663,41 @@ final class ScrubberViewModel {
 
     private func prepareAndReview(presentSheet: Bool = true) async {
         isProcessing = true
-        defer { isProcessing = false }
 
         await waitForCurrentPIIScan()
 
         // Redaction path: burn only the instances whose type is in typesToRedact.
-        let instancesToRedact = detectedPII
-            .filter { typesToRedact.contains($0.type) }
-            .flatMap(\.instances)
+        let regionsToRedact = enabledRedactionRegions
 
-        if !instancesToRedact.isEmpty,
-           let raw = rawImageData,
-           let uiImage = UIImage(data: raw) {
+        if !regionsToRedact.isEmpty, let raw = rawImageData {
+            let uiImage = await Task.detached(priority: .userInitiated) {
+                UIImage(data: raw)
+            }.value
 
-            if let burned = await ImageRedactor().redact(image: uiImage, instances: instancesToRedact) {
-                redactedUIImage = burned
-                processImage(overridingImage: burned)
-            } else {
-                errorMessage = "Could not render redactions for this image."
+            guard let uiImage,
+                  let burned = await ImageRedactor().redact(
+                    image: uiImage,
+                    specs: regionsToRedact.map(\.spec)
+                  ) else {
+                errorMessage = String(localized: "Could not render redactions for this image.")
                 processedData = nil
+                processedPreviewUIImage = nil
+                isProcessing = false
                 return
             }
+
+            await processImage(
+                raw: raw,
+                sourceData: raw,
+                imageOverride: burned,
+                updateSourceMetadata: false
+            )
+            // The processed bytes now include redactions; keep only the
+            // downsampled processed preview to avoid retaining a full-size bitmap.
+            redactedUIImage = nil
         } else {
             redactedUIImage = nil
-            processImage()
+            await processCurrentImageNow()
         }
 
         if presentSheet {
@@ -441,35 +711,83 @@ final class ScrubberViewModel {
     /// `rawSourceProps` and `allSourceMetadata` are derived from the *original*
     /// image only — they must never be overwritten by intermediate redacted data,
     /// which carries ghost iOS-injected TIFF/EXIF fields.
-    private func processImage(overridingRawData override: Data? = nil, overridingImage imageOverride: UIImage? = nil) {
-        guard let raw = override ?? rawImageData else { return }
-
+    private func processImage(
+        raw: Data,
+        sourceData: Data,
+        imageOverride: UIImage?,
+        updateSourceMetadata: Bool
+    ) async {
+        let token = UUID()
+        processingToken = token
         errorMessage = nil
+        isProcessing = true
+
+        let preset = selectedPreset
+        let config = stripConfig
 
         do {
+            let snapshot = try await Self.makeProcessingSnapshot(ProcessingRequest(
+                raw: raw,
+                sourceData: sourceData,
+                imageOverride: imageOverride,
+                preset: preset,
+                config: config,
+                updateSourceMetadata: updateSourceMetadata
+            ))
+            guard processingToken == token else { return }
+
+            processedData           = snapshot.processed.data
+            processedPreviewUIImage = snapshot.processedPreviewUIImage
+            sourceUTType            = snapshot.processed.sourceType
+            pendingStrippedMetadata = snapshot.processed.stripped
+            outputFileFields        = snapshot.outputFileFields
+
+            if updateSourceMetadata {
+                rawSourceProps = snapshot.rawSourceProps
+                allSourceMetadata = snapshot.allSourceMetadata
+            }
+            isProcessing = false
+        } catch {
+            guard processingToken == token else { return }
+            processedData           = nil
+            processedPreviewUIImage = nil
+            pendingStrippedMetadata = nil
+            errorMessage            = error.localizedDescription
+            isProcessing            = false
+        }
+    }
+
+    private static func makeProcessingSnapshot(_ request: ProcessingRequest) async throws -> ProcessingSnapshot {
+        try await Task.detached(priority: .userInitiated) {
             let result: ProcessedImage
-            if let imageOverride, let sourceData = rawImageData {
+            if let imageOverride = request.imageOverride {
                 result = try ImageProcessor.process(
                     image: imageOverride,
-                    sourceData: sourceData,
-                    preset: selectedPreset,
-                    config: stripConfig
+                    sourceData: request.sourceData,
+                    preset: request.preset,
+                    config: request.config
                 )
             } else {
-                result = try ImageProcessor.process(data: raw, preset: selectedPreset, config: stripConfig)
+                result = try ImageProcessor.process(
+                    data: request.raw,
+                    preset: request.preset,
+                    config: request.config
+                )
             }
-            processedData           = result.data
-            sourceUTType            = result.sourceType
-            pendingStrippedMetadata = result.stripped
-            // Read the actual metadata present in the encoded output — captures any
-            // fields the iOS encoder re-injected regardless of our stripping efforts.
-            outputFileFields        = ImageProcessor.readAllFields(from: result.data)
 
-            // Only update source props and display metadata when processing the
-            // original image — not when processing redacted intermediate data.
-            if override == nil && imageOverride == nil {
-                if let source = CGImageSourceCreateWithData(raw as CFData, nil) {
+            let outputFileFields = ImageProcessor.readAllFields(from: result.data)
+            let processedPreview = ImageProcessor.downsampledUIImage(
+                from: result.data,
+                maxPixelDimension: 1_600
+            )
+
+            let rawSourceProps: [CFString: Any]?
+            let allSourceMetadata: StrippedMetadata?
+            if request.updateSourceMetadata {
+                if let source = CGImageSourceCreateWithData(request.sourceData as CFData, nil) {
                     rawSourceProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+                } else {
+                    rawSourceProps = nil
                 }
                 allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
                     from: rawSourceProps,
@@ -480,12 +798,19 @@ final class ScrubberViewModel {
                         fieldOverrides: [:]
                     )
                 )
+            } else {
+                rawSourceProps = nil
+                allSourceMetadata = nil
             }
-        } catch {
-            processedData           = nil
-            pendingStrippedMetadata = nil
-            errorMessage            = error.localizedDescription
-        }
+
+            return ProcessingSnapshot(
+                processed: result,
+                outputFileFields: outputFileFields,
+                processedPreviewUIImage: processedPreview,
+                rawSourceProps: rawSourceProps,
+                allSourceMetadata: allSourceMetadata
+            )
+        }.value
     }
 
     /// Saves the processed image to the photo library.
@@ -497,7 +822,7 @@ final class ScrubberViewModel {
         let requiredLevel: PHAccessLevel = replacing ? .readWrite : .addOnly
         let status = await PHPhotoLibrary.requestAuthorization(for: requiredLevel)
         guard status == .authorized || status == .limited else {
-            errorMessage = "Photo library access was denied. Please enable it in Settings."
+            errorMessage = String(localized: "Photo library access was denied. Please enable it in Settings.")
             return
         }
 
@@ -517,10 +842,10 @@ final class ScrubberViewModel {
                 let request = PHAssetCreationRequest.forAsset()
                 request.addResource(with: .photo, data: data, options: nil)
             }
-            incrementStats(photos: 1, fields: pendingFieldCount)
+            incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
-            errorMessage = "Could not save to Photos: \(error.localizedDescription)"
+            errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
         }
     }
 
@@ -543,10 +868,10 @@ final class ScrubberViewModel {
                 createRequest.addResource(with: .photo, data: data, options: nil)
                 PHAssetChangeRequest.deleteAssets([asset] as NSArray)
             }
-            incrementStats(photos: 1, fields: pendingFieldCount)
+            incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
-            errorMessage = "Could not replace photo: \(error.localizedDescription)"
+            errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
         }
     }
 
@@ -557,21 +882,43 @@ final class ScrubberViewModel {
     /// - Parameters:
     ///   - photos: Number of photos successfully saved in this operation.
     ///   - fields: Number of non-structural metadata fields stripped in this operation.
-    private func incrementStats(photos: Int = 0, fields: Int = 0) {
+    private func incrementStats(
+        photos: Int = 0,
+        fields: Int = 0,
+        metadataFields: [MetadataField] = [],
+        visualRegions: [RedactionRegion] = []
+    ) {
         let d = UserDefaults.standard
         if photos > 0 {
             d.set(d.integer(forKey: "picstrip.lifetimePhotos") + photos,
                   forKey: "picstrip.lifetimePhotos")
         }
-        if fields > 0 {
-            d.set(d.integer(forKey: "picstrip.lifetimeFields") + fields,
+        let fieldCount = fields + metadataFields.count
+        if fieldCount > 0 {
+            d.set(d.integer(forKey: "picstrip.lifetimeFields") + fieldCount,
                   forKey: "picstrip.lifetimeFields")
         }
+        guard !metadataFields.isEmpty || !visualRegions.isEmpty else { return }
+        var stats = PrivacyRemovalStats.load(from: d)
+        stats.record(metadataFields: metadataFields, visualRegions: visualRegions)
+        stats.save(to: d)
     }
 
     /// Number of non-structural metadata fields that will be stripped given the current config.
     private var pendingFieldCount: Int {
-        pendingStrippedMetadata?.fields.filter { !$0.isStructural }.count ?? 0
+        pendingMetadataFields.count
+    }
+
+    private var pendingMetadataFields: [MetadataField] {
+        guard let source = allSourceMetadata else { return [] }
+        return source.fields.filter {
+            ImageProcessor.shouldReportStripped(
+                category: $0.category,
+                key: $0.key,
+                isStructural: $0.isStructural,
+                config: stripConfig
+            )
+        }
     }
 
     // MARK: - Helpers
@@ -581,9 +928,10 @@ final class ScrubberViewModel {
     /// Returns `nil` if encoding or writing fails.
     func generateAuditJSON() -> URL? {
         // 1. Visual redactions — only types the user has opted to redact.
-        let visualRedactions: [RedactionReport] = detectedPII
-            .filter { typesToRedact.contains($0.type) }
-            .map { RedactionReport(type: $0.type.description, instanceCount: $0.matchCount) }
+        let groupedRegions = Dictionary(grouping: enabledRedactionRegions, by: \.displayName)
+        let visualRedactions: [RedactionReport] = groupedRegions
+            .map { RedactionReport(type: $0.key, instanceCount: $0.value.count) }
+            .sorted { $0.type < $1.type }
 
         // 2. Metadata stripped — non-structural fields grouped by category,
         //    respecting the current strip config (disabled categories are excluded).
@@ -806,6 +1154,9 @@ final class ScrubberViewModel {
             $0 + $1.metadataStripped.reduce(0) { $0 + $1.strippedFields.count }
         }
         incrementStats(photos: batchReports.count, fields: totalFields)
+        var stats = PrivacyRemovalStats.load()
+        stats.record(reports: batchReports)
+        stats.save()
     }
 
     /// Wraps all per-photo `AuditReport`s in a `BatchAuditReport`, encodes it as
@@ -845,6 +1196,7 @@ final class ScrubberViewModel {
         inputImage              = nil
         sourceUIImage           = nil
         processedData           = nil
+        processedPreviewUIImage = nil
         allSourceMetadata       = nil
         pendingStrippedMetadata = nil
         outputFileFields        = []
@@ -855,6 +1207,8 @@ final class ScrubberViewModel {
         imageSize               = .zero
         activeSheet             = nil
         selectedPIIResult       = nil
+        redactionRegions        = []
+        selectedRedactionRegionID = nil
         redactedUIImage         = nil
         typesToRedact           = []
         stripConfig             = .default
@@ -864,5 +1218,6 @@ final class ScrubberViewModel {
         piiFocusTask            = nil
         piiScanToken            = UUID()
         isScanningPII           = false
+        clearUndoRedoStacks()
     }
 }

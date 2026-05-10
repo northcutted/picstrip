@@ -1,0 +1,7 @@
+# Python dependencies for scripts/process_screenshots.py.
+# Install locally with: pip3 install --user -r scripts/requirements.txt
+# CI installs these in screenshots.yml only when generate_new=true.
+
+Pillow>=10.0          # core image compositing
+arabic-reshaper>=3.0  # joins Arabic isolated forms into cursive ligatures
+python-bidi>=0.4      # reorders RTL text for left-to-right PIL rendering

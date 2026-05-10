@@ -248,6 +248,23 @@ final class ImageProcessorTests: XCTestCase {
         )
     }
 
+    func testDownsampledUIImageLimitsPreviewPixelDimensions() throws {
+        let renderer = UIGraphicsImageRenderer(size: CGSize(width: 1200, height: 800))
+        let image = renderer.image { context in
+            UIColor.systemBlue.setFill()
+            context.fill(CGRect(x: 0, y: 0, width: 1200, height: 800))
+        }
+        let data = try XCTUnwrap(image.jpegData(compressionQuality: 0.9))
+
+        let preview = try XCTUnwrap(
+            ImageProcessor.downsampledUIImage(from: data, maxPixelDimension: 300)
+        )
+
+        XCTAssertLessThanOrEqual(max(preview.size.width, preview.size.height), 300)
+        XCTAssertGreaterThan(preview.size.width, 0)
+        XCTAssertGreaterThan(preview.size.height, 0)
+    }
+
     /// **Redacted image path.**
     ///
     /// Re-encoding a rendered image with separate source bytes must still use the

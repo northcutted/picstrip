@@ -11,7 +11,6 @@ platform :ios do
   IPA_NAME       = "PicStrip.ipa"
   SCREENSHOT_DEVICES = [
     "iPhone 17 Pro Max",
-    "iPhone Air",
     "iPad Pro 13-inch (M5)"
   ]
 
@@ -163,6 +162,15 @@ platform :ios do
       screenshot_options[:devices] = options[:devices].split(",").map(&:strip)
     end
 
+    # Optional locale subset. Without this, the lane reads the full locale
+    # list from Snapfile (16 locales for App Store submission) — a full
+    # 16-locale × 2-device capture takes ~2 hours on macos-26 runners, well
+    # past CI timeouts. PR sanity checks pass `languages:en-US`; the full
+    # multi-locale capture runs locally or on a dedicated workflow.
+    if options[:languages]
+      screenshot_options[:languages] = options[:languages].split(",").map(&:strip)
+    end
+
     # Work around fastlane/snapshot emitting OS=26.4 when Xcode needs OS=26.4.1.
     # `xcrun simctl list devices` labels the runtime header "-- iOS 26.4 --"
     # (no patch version), so DeviceManager#simulators sets device.os_version to
@@ -172,17 +180,16 @@ platform :ios do
     # Switching to id=<UDID> bypasses the version string entirely and is always
     # unambiguous.  Remove this block once fastlane ships a fix for the simctl
     # text-parse regression (fastlane/fastlane#22xxx).
-    # Fix the HTML report so iPhone 17 Pro Max, iPhone Air, and iPad Pro 13-inch (M5)
-    # all appear correctly.  The upstream device-name map in reports_generator.rb has no
+    # Fix the HTML report so iPhone 17 Pro Max and iPad Pro 13-inch (M5) all
+    # appear correctly.  The upstream device-name map in reports_generator.rb has no
     # entry for these models; the generic 'iPad Pro' key incidentally matches iPad but
-    # the two iPhone rows are invisible.  We prepend three specific entries *before*
+    # the iPhone row is invisible.  We prepend specific entries *before*
     # the broad 'iPad Pro' substring so the lookup breaks on the right key.
     require 'snapshot/reports_generator'
     Snapshot::ReportsGenerator.prepend(Module.new do
       def xcode_9_and_above_device_name_mappings
         {
           'iPhone 17 Pro Max'     => 'iPhone 17 Pro Max',
-          'iPhone Air'            => 'iPhone Air',
           'iPad Pro 13-inch (M5)' => 'iPad Pro 13-inch (M5)'
         }.merge(super)
       end
@@ -213,18 +220,53 @@ platform :ios do
     capture_ios_screenshots(screenshot_options)
   end
 
-  desc "Upload previously captured screenshots to App Store Connect (binary unchanged)"
-  lane :upload_screenshots do |options|
+  desc "Compose marketing screenshots from raw captures into ./fastlane/screenshots/processed/"
+  lane :process_screenshots do
     # Deliver validates every top-level directory under screenshots_path as a
     # locale. Keep old captured log folders from breaking screenshot uploads.
-    sh("rm -rf ./fastlane/screenshots/Logs")
+    sh("rm -rf #{ROOT}/fastlane/screenshots/Logs")
+
+    # Wipe the processed tree before regen. Without this, a change to
+    # SCREENSHOT_DISPLAY_ORDER in the Python compositor (or to the screen-key
+    # set itself) leaves orphaned PNGs from the previous order alongside the
+    # new ones — and ``upload_to_app_store`` would happily ship both, blowing
+    # past App Store Connect's 10-screenshot-per-device limit.
+    sh("rm -rf #{ROOT}/fastlane/screenshots/processed")
+
+    # The Python compositor handles device framing internally — it draws a
+    # matte rounded-rect frame around each raw capture rather than consuming
+    # frameit's output. We discover the locales from the directory tree
+    # rather than hardcoding the list so adding or removing a locale in
+    # Snapfile doesn't require editing the Fastfile too. Paths are absolute
+    # via ROOT — Ruby's CWD inside a fastlane lane isn't reliably the
+    # project root, and a relative ``Dir.glob`` here silently returns []
+    # which would skip the entire compose step without any error message.
+    locale_dirs = Dir.glob(File.join(ROOT, "fastlane/screenshots/*/"))
+                     .map { |p| File.basename(p) }
+                     .reject { |d| d == "processed" || d.start_with?(".") }
+    locale_dirs.each do |locale|
+      sh("cd #{ROOT} && python3 scripts/process_screenshots.py --locale #{locale}")
+    end
+  end
+
+  desc "Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged)"
+  lane :upload_screenshots do |options|
+    # NOTE: this lane uploads the marketing PNGs already on disk under
+    # ``fastlane/screenshots/processed/<locale>/``. Run
+    # ``bundle exec fastlane process_screenshots`` first if you need to
+    # regenerate from raw captures (the Makefile chains them for the local
+    # ``make upload-screenshots`` UX). Decoupled from process_screenshots so
+    # CI can pull pre-composed PNGs from Git LFS and upload without needing
+    # a macOS runner or any source files beyond ``processed/``.
+
+    processed_path = "#{ROOT}/fastlane/screenshots/processed"
 
     allow_partial = options[:allow_partial].to_s == "true"
     unless allow_partial
-      # Use shell find (runs from project root via sh) rather than Dir.glob to
-      # avoid Ruby CWD / FNM_CASEFOLD cross-platform differences on Linux CI.
+      # Absolute path so the find runs against the right tree regardless of
+      # whatever directory fastlane has chdir'd into for this lane.
       raw_find = sh(
-        "find ./fastlane/screenshots -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null || true",
+        "find '#{processed_path}' -name '*.png' -o -name '*.jpg' -o -name '*.jpeg' 2>/dev/null || true",
         log: false
       ).strip
       image_paths = raw_find.empty? ? [] : raw_find.split("\n")
@@ -253,21 +295,13 @@ platform :ios do
 
     upload_to_app_store(
       api_key:                      api_key,
-      screenshots_path:             "./fastlane/screenshots",
+      screenshots_path:             processed_path,
       skip_binary_upload:           true,
       skip_metadata:                true,
       overwrite_screenshots:        true,   # replace existing shots on re-runs
       run_precheck_before_submit:   false,  # API key can't check IAP; skip it
       precheck_include_in_app_purchases: false,
       force:                        true    # skip interactive HTML diff preview
-    )
-  end
-
-  desc "Add device frames to screenshots (for GitHub / marketing use, not App Store upload)"
-  lane :apply_frames do
-    frame_screenshots(
-      path:   "./fastlane/screenshots",
-      resume: true
     )
   end
 

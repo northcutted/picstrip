@@ -25,6 +25,7 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .socialSecurityNumber, icon: "person.text.rectangle.fill", color: .red, detail: "US SSN — 3-2-4 format with anti-zero guards"),
     .init(type: .dateOfBirth, icon: "calendar", color: .purple, detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
     .init(type: .nationalInsuranceNumber, icon: "person.badge.shield.checkmark.fill", color: .indigo, detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
+    .init(type: .governmentID, icon: "person.text.rectangle", color: .teal, detail: "Canadian SIN, Indian PAN/Aadhaar, Spanish DNI/NIE, Brazilian CPF, German Steuer-ID, Italian Codice Fiscale, French INSEE, Japanese My Number"),
     // Web
     .init(type: .ipAddress, icon: "network", color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
     .init(type: .macAddress, icon: "wifi", color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
@@ -41,6 +42,12 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .slackToken, icon: "message.fill", color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
     .init(type: .stripeKey, icon: "dollarsign.circle.fill", color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
     .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "PEM headers: RSA, EC, DSA, OPENSSH private keys"),
+    .init(type: .jwtToken, icon: "ellipsis.curlybraces", color: .cyan, detail: "JSON Web Tokens — double eyJ base64url prefix uniquely identifies the format"),
+    .init(type: .developerSecret, icon: "lock.shield.fill", color: .red, detail: "Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord bot tokens"),
+    .init(type: .connectionString, icon: "server.rack", color: .brown, detail: "Database/broker URIs with inline credentials: postgres, mysql, mongodb, redis, amqp"),
+    // Vision-detected
+    .init(type: .face, icon: "face.dashed", color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
+    .init(type: .barcode, icon: "qrcode", color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
     // Unstructured
     .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
@@ -147,8 +154,8 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: entry.type.description,
-                                    detail: entry.detail
+                                    title: LocalizedStringKey(entry.type.description),
+                                    detail: LocalizedStringKey(entry.detail)
                                 )
                             }
                         }
@@ -169,8 +176,8 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: entry.name,
-                                    detail: entry.detail
+                                    title: LocalizedStringKey(entry.name),
+                                    detail: LocalizedStringKey(entry.detail)
                                 )
                             }
                         }
@@ -237,22 +244,26 @@ struct AboutView: View {
                         }
                     }
 
-                    LabeledContent {
-                        Text("Eddie Northcutt")
-                            .foregroundStyle(.secondary)
-                    } label: {
-                        Label {
-                            Text("Developer")
-                        } icon: {
-                            Image(systemName: "person.fill")
-                                .foregroundStyle(.secondary)
+                    if let linkedInURL = URL(string: "https://www.linkedin.com/in/edward-northcutt-b06386101") {
+                        Link(destination: linkedInURL) {
+                            LabeledContent {
+                                Text("Eddie Northcutt")
+                                    .foregroundStyle(.secondary)
+                            } label: {
+                                Label {
+                                    Text("Developer")
+                                } icon: {
+                                    Image(systemName: "person.fill")
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
                         }
                     }
                 }
 
                 // ── Section 6: Privacy promise footer ─────────────────────
                 Section {
-                    Text("PicStrip was built on a single principle: your photos are yours. The app exists to give you back control of the data attached to and visible inside your images, silently, automatically, and entirely privately.")
+                    Text("PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don’t intend to.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -273,7 +284,7 @@ struct AboutView: View {
 
     // MARK: - Row helpers
 
-    private func instructionRow(icon: String, color: Color, text: String) -> some View {
+    private func instructionRow(icon: String, color: Color, text: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 16, weight: .semibold))
@@ -289,7 +300,7 @@ struct AboutView: View {
         }
     }
 
-    private func privacyRow(icon: String, color: Color, title: String, detail: String) -> some View {
+    private func privacyRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
@@ -310,7 +321,7 @@ struct AboutView: View {
         .padding(.vertical, 4)
     }
 
-    private func disclosureLabel(icon: String, color: Color, title: String, count: String) -> some View {
+    private func disclosureLabel(icon: String, color: Color, title: LocalizedStringKey, count: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
@@ -335,7 +346,7 @@ struct AboutView: View {
         .padding(.vertical, 2)
     }
 
-    private func detectionRow(icon: String, color: Color, title: String, detail: String) -> some View {
+    private func detectionRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))

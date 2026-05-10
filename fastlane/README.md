@@ -79,21 +79,21 @@ Upload an already-built IPA to TestFlight
 
 Capture App Store screenshots on simulator (reads fastlane/Snapfile)
 
+### ios process_screenshots
+
+```sh
+[bundle exec] fastlane ios process_screenshots
+```
+
+Compose marketing screenshots from raw captures into ./fastlane/screenshots/processed/
+
 ### ios upload_screenshots
 
 ```sh
 [bundle exec] fastlane ios upload_screenshots
 ```
 
-Upload previously captured screenshots to App Store Connect (binary unchanged)
-
-### ios apply_frames
-
-```sh
-[bundle exec] fastlane ios apply_frames
-```
-
-Add device frames to screenshots (for GitHub / marketing use, not App Store upload)
+Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged)
 
 ### ios submit
 

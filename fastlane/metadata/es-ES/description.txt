@@ -1,0 +1,33 @@
+¿Has enviado una foto últimamente? Probablemente también enviaste las coordenadas GPS de tu casa, la hora exacta de la captura y el número de serie de tu cámara — incrustados de forma invisible en el archivo. PicStrip lo elimina todo antes de compartir, en un toque, 100% en tu dispositivo.
+
+Sin cuenta. Sin envíos. Sin rastreo. Solo fotos limpias.
+
+QUÉ SE ELIMINA
+• Ubicación GPS — coordenadas precisas incrustadas en cada foto
+• Marcas de tiempo — cuándo se hizo la foto, se editó y se digitalizó
+• Información del dispositivo — marca, modelo, objetivo y versión de software
+• Identificadores personales — autor, copyright y números de serie
+• Análisis privado de cámara — datos Apple maker-note cuando estén presentes
+
+PRIVACIDAD POR DISEÑO
+• Funciona totalmente en el dispositivo — no se sube nada a ninguna parte
+• Sin cuenta, sin inicio de sesión, sin rastreo
+• Sin anuncios, sin compras dentro de la app, sin suscripciones
+
+POR QUÉ PUEDES CONFIAR
+• Código abierto — cada línea de código es pública y auditable en GitHub
+• Procedencia de compilación SLSA Nivel 3 — cada lanzamiento se verifica criptográficamente
+• Cero SDK de terceros en el binario final; sin analíticas, sin llamadas de red
+• Etiqueta de privacidad: «No se recopilan datos» — la respuesta más contundente posible
+
+CÓMO FUNCIONA
+1. Toca para elegir una foto de tu fototeca
+2. PicStrip escanea todos los metadatos incrustados
+3. Revisa exactamente qué se encontró
+4. Bórralos — tu foto limpia se guarda al instante en la fototeca
+
+EXTENSIÓN DE COMPARTIR
+Elimina metadatos directamente desde el menú compartir en Fotos, Safari o cualquier app — sin abrir PicStrip.
+
+ATAJOS Y AUTOMATIZACIÓN
+PicStrip incluye una acción de Atajos para crear flujos automáticos: eliminar metadatos al importar, procesar fotos por lotes o integrar con tus atajos existentes.

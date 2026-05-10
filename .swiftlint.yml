@@ -36,10 +36,13 @@ disabled_rules:
 
 # Paths to exclude
 excluded:
+  - .build
+  - .claude
   - Pods
   - DerivedData
   - PicStripTests
   - PicStripUITests
+  - build
   - fastlane
   - vendor
   - node_modules

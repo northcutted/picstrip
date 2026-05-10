@@ -102,11 +102,11 @@ jobs:
           retention-days: 7
 
   # ── Screenshots (label-gated) ─────────────────────────────────────────────
-  # Add the "screenshots" label to a PR to trigger a full 3-device App Store
+  # Add the "screenshots" label to a PR to trigger a full 2-device App Store
   # screenshot capture. Results are uploaded as an artifact for visual review.
   # No upload to App Store Connect is performed from PRs.
   screenshots:
-    name: PR Screenshots (3 devices)
+    name: PR Screenshots (2 devices)
     runs-on: macos-26
     timeout-minutes: 60
     if: contains(github.event.pull_request.labels.*.name, 'screenshots')
@@ -135,15 +135,13 @@ jobs:
       - name: Boot simulators
         run: |
           xcrun simctl boot "iPhone 17 Pro Max"     || true
-          xcrun simctl boot "iPhone Air"            || true
           xcrun simctl boot "iPad Pro 13-inch (M5)" || true
           xcrun simctl bootstatus "iPhone 17 Pro Max"     -b
-          xcrun simctl bootstatus "iPhone Air"            -b
           xcrun simctl bootstatus "iPad Pro 13-inch (M5)" -b
 
       - name: Override status bars
         run: |
-          for device in "iPhone 17 Pro Max" "iPhone Air" "iPad Pro 13-inch (M5)"; do
+          for device in "iPhone 17 Pro Max" "iPad Pro 13-inch (M5)"; do
             xcrun simctl status_bar "$device" override \
               --time "9:41" \
               --dataNetwork wifi \
@@ -156,9 +154,12 @@ jobs:
           done
 
       - name: Capture screenshots
+        # PR runs are a sanity check, not a release. Cap to en-US so the job
+        # finishes inside the 60-min timeout — full 16-locale capture lives
+        # in the dedicated screenshots.yml workflow (manual dispatch).
         run: |
           sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
-          bundle exec fastlane screenshots
+          bundle exec fastlane screenshots languages:en-US
 
       - name: Upload screenshots artifact
         if: always()
