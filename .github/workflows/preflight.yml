@@ -1,0 +1,62 @@
+name: Preflight Metadata Check
+
+# Pushes metadata + screenshots to a pending App Store version WITHOUT
+# submitting for review. Use this to verify that Fastlane metadata automation
+# (descriptions, keywords, What's New, screenshots) looks correct in App Store
+# Connect before you approve a real release.
+#
+# Prerequisites:
+#   1. The build for MARKETING_VERSION must be processed in TestFlight.
+#      Run the main Release workflow first and let it reach the
+#      "Upload Verified IPA to TestFlight" job.
+#   2. Processed screenshots must be committed to Git LFS under
+#      fastlane/screenshots/processed/. Run the "Capture Screenshots"
+#      workflow if they need refreshing.
+#
+# After this workflow succeeds:
+#   • Open App Store Connect → Apps → PicStrip → Distribution
+#   • Verify descriptions, keywords, screenshots, What's New for every locale
+#   • When satisfied, approve the "production" environment gate on the
+#     Release workflow run to trigger the real submit lane.
+
+on:
+  workflow_dispatch:
+    inputs:
+      marketing_version:
+        description: "App version to create/update (e.g. 1.2.0). Must match a processed TestFlight build."
+        type: string
+        required: true
+      build_number:
+        description: "Specific build number to attach (e.g. 42). Leave blank to use the latest processed build for this version."
+        type: string
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    name: Push Metadata to App Store Connect (no submit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout (with LFS for screenshots)
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          lfs: true
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Push metadata + screenshots (no submit)
+        env:
+          APP_STORE_CONNECT_API_KEY_ID:        ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT:   ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MARKETING_VERSION:                   ${{ inputs.marketing_version }}
+          BUILD_NUMBER:                        ${{ inputs.build_number }}
+        run: bundle exec fastlane preflight

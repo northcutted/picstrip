@@ -349,6 +349,44 @@ platform :ios do
     )
   end
 
+  desc "Push metadata + screenshots to a pending App Store version WITHOUT submitting for review. " \
+       "Use this to verify Fastlane metadata automation in App Store Connect before a real release. " \
+       "Requires MARKETING_VERSION env var (e.g. '1.2.0'). BUILD_NUMBER is optional — omit it to " \
+       "let deliver attach the latest processed TestFlight build for that version."
+  lane :preflight do
+    api_key = app_store_connect_api_key(
+      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
+
+    accessibility
+
+    # Same as the submit lane but submit_for_review: false and no release options.
+    # deliver will create the pending "Prepare for Submission" version if one does
+    # not already exist, populate all metadata, and upload screenshots — then stop.
+    # You can then open App Store Connect, review everything, and either approve
+    # the CI production gate or click Submit manually when satisfied.
+    processed_path = "#{ROOT}/fastlane/screenshots/processed"
+    upload_to_app_store(
+      api_key:                           api_key,
+      app_version:                       ENV["MARKETING_VERSION"],
+      build_number:                      ENV.fetch("BUILD_NUMBER", nil),
+      skip_binary_upload:                true,
+      submit_for_review:                 false,  # ← key difference: does NOT submit
+      automatic_release:                 false,
+      phased_release:                    false,
+      metadata_path:                     "./fastlane/metadata",
+      screenshots_path:                  processed_path,
+      skip_screenshots:                  false,
+      overwrite_screenshots:             true,
+      run_precheck_before_submit:        false,
+      precheck_include_in_app_purchases: false,
+      force:                             true
+    )
+  end
+
   desc "Sync App Store Accessibility Nutrition Label declarations"
   lane :accessibility do
     sync_accessibility_declarations(
