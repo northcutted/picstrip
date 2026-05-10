@@ -58,16 +58,17 @@ PicStrip/
 │   │   └── processed/          # Final marketing PNGs (Git LFS) — uploaded to App Store Connect
 │   └── metadata/               # App Store metadata (title, description, keywords, release notes)
 │
-├── scripts/                    # Utility scripts (release notes, localization audit/translation, screenshot compositor)
+├── scripts/                    # Utility scripts (release notes, localization, screenshot compositor)
 │   ├── process_screenshots.py  # Marketing screenshot compositor (custom frame + brand bg + headline)
+│   ├── make_fixture.py         # Regenerates the OCR test fixture (PicStripUITests/test_list.png)
 │   ├── requirements.txt        # Pillow, arabic-reshaper, python-bidi
-│   ├── translate_xcstrings.js  # Pseudo + OpenAI providers for Apple .xcstrings translation
-│   └── audit_localization_strings.sh  # Flags string-returning literals that should be localized
+│   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
+│   ├── audit_localization_strings.sh  # Flags string-returning literals that should be localized
+│   └── write_release_notes.sh  # Generates fastlane/metadata/en-US/release_notes.txt at release time
 │
 ├── docs/
-│   ├── icons/
-│   ├── screenshots/            # Framed previews used in README.md
-│   └── marketing/              # Versioned App Store marketing copy (one file per release)
+│   ├── icons/                  # Generated app icon variants (Default, Dark, Tinted)
+│   └── marketing/              # App Store marketing copy + index
 │
 ├── PicStripCore/               # Shared pure processing/domain source files
 │   ├── ImageProcessor.swift    # Stateless enum; two-pass ImageIO metadata stripping
@@ -925,40 +926,32 @@ Or browse: `https://search.sigstore.dev/?logIndex=<index>`
 
 ---
 
-## Localization Automation
+## Localization
 
 PicStrip localizes user-facing app text through Apple string catalogs:
 
 - `PicStrip/Localizable.xcstrings` — app, share extension, processing, errors, and accessibility copy
 - `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Shortcuts expose
-- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time. Translate with the same script via `--files fastlane/MarketingHeadlines.xcstrings`.
+- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time.
 
-The automated path is intentionally reviewable:
+**Production translations are hand-written.** Privacy-sensitive copy (permission prompts, redaction terminology, App Shortcut phrases, marketing headlines) is too high-stakes to ship LLM output of, and per-locale tuning catches idiom drift that machine translation doesn't. New strings get committed in English first, then a human review fills in target locales for each catalog.
 
-1. New English strings land in the catalogs through normal SwiftUI / `String(localized:)` extraction.
-2. `scripts/translate_xcstrings.js` fills missing target-language entries.
-3. Placeholder validation rejects translations that lose `%@`, `%lld`, `${applicationName}`, or Swift inflection markup.
-4. Generated strings are marked with the configured review state, so privacy-sensitive wording can be checked before release.
-5. `make localization-validate` runs JSON validation, the hard-coded-string audit, and SwiftLint.
-
-Common commands:
+**Pseudo-localization is available for layout smoke testing.** `scripts/translate_xcstrings.js --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries should be replaced with real translations before release.
 
 ```bash
-# Inspect the missing work without writing files.
+# See what's missing in a catalog without writing.
 scripts/translate_xcstrings.js --languages es fr --dry-run
 
-# Generate pseudo-localized entries for layout smoke testing.
-make localization-translate LANGUAGES="es"
+# Pseudo-localize a single catalog for layout smoke testing.
+make localization-pseudo LANGUAGES="es"
 
-# Generate machine translations through OpenAI.
-OPENAI_API_KEY=... make localization-translate \
-  LOCALIZATION_PROVIDER=openai \
-  LANGUAGES="es fr de ja"
+# Pseudo-localize the marketing headlines catalog specifically.
+scripts/translate_xcstrings.js --files fastlane/MarketingHeadlines.xcstrings --languages de
 
-# Validate catalogs and source after translation.
+# Validate JSON shape, hard-coded-string audit, and SwiftLint after edits.
 make localization-validate
 
-# Export .xcloc bundles for human translators or external review.
+# Export .xcloc bundles for handoff to a human translator.
 make localization-export
 ```
 

@@ -489,11 +489,6 @@ def _text_width(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont)
     return bbox[2] - bbox[0]
 
 
-def _text_height(draw: ImageDraw.ImageDraw, text: str, font: ImageFont.ImageFont) -> int:
-    bbox = draw.textbbox((0, 0), text, font=font)
-    return bbox[3] - bbox[1]
-
-
 def _line_bbox(
     draw: ImageDraw.ImageDraw,
     text: str,

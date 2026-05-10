@@ -18,22 +18,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 
 ## Screenshots
 
-<table>
-  <tr>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-01_Home_framed.png" width="160" alt="Home Screen"/><br/><sub><b>Home</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-02_About_framed.png" width="160" alt="About"/><br/><sub><b>About</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-03_PhotoLoaded_framed.png" width="160" alt="Photo Loaded"/><br/><sub><b>Photo Loaded</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-04_SensitiveData_framed.png" width="160" alt="Sensitive Data"/><br/><sub><b>Sensitive Data</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPhone%2017%20Pro%20Max-05_ReviewAndSave_framed.png" width="160" alt="Review &amp; Save"/><br/><sub><b>Review &amp; Save</b></sub></td>
-  </tr>
-</table>
-
-<table>
-  <tr>
-    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-03_PhotoLoaded_framed.png" width="360" alt="iPad Pro — Photo Loaded"/><br/><sub><b>iPad Pro — Photo Loaded</b></sub></td>
-    <td align="center"><img src="docs/screenshots/iPad%20Pro%2013-inch%20(M5)-04_SensitiveData_framed.png" width="360" alt="iPad Pro — Sensitive Data"/><br/><sub><b>iPad Pro — Sensitive Data</b></sub></td>
-  </tr>
-</table>
+The App Store carousel and the marketing PNGs uploaded to App Store Connect live in [`fastlane/screenshots/processed/<locale>/`](fastlane/screenshots/processed/) (Git LFS — 7 screens × 2 devices × 16 locales). Raw simulator captures live in [`fastlane/screenshots/<locale>/`](fastlane/screenshots/). Both regenerate via `gh workflow run screenshots.yml -f generate_new=true`.
 
 ---
 
@@ -229,8 +214,8 @@ PicStrip/
 │   └── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
 │
 ├── docs/
-│   ├── screenshots/         # Framed device-bezel previews (committed; used in this README)
-│   └── marketing/           # Versioned App Store marketing copy (one file per release)
+│   ├── icons/               # Generated app icon variants (Default, Dark, Tinted)
+│   └── marketing/           # App Store marketing copy + index
 │
 ├── PicStripCore/            # Shared pure processing/domain code compiled into app + extension
 │   ├── ImageProcessor.swift
@@ -304,9 +289,9 @@ npm install
 | `make build` | Runs `bundle exec fastlane build` |
 | `make audit-localization` | Checks shared core/extension string-returning code for literals that should use localization helpers |
 | `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
-| `make localization-translate LANGUAGES="es fr"` | Fills missing string-catalog localizations using the local pseudo provider by default |
-| `make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES="es fr"` | Fills missing string-catalog localizations via OpenAI; requires `OPENAI_API_KEY` |
+| `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing (production translations are hand-written) |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
+| `make test-fixture` | Regenerates the OCR test fixture (`PicStripUITests/test_list.png`) via `scripts/make_fixture.py` |
 | `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
 | `make process-screenshots` | Composes marketing PNGs from existing raw captures into `fastlane/screenshots/processed/<locale>/` (custom frame + brand gradient + localized headline) |
 | `make upload-screenshots` | Composes (via `process-screenshots`) and uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
@@ -323,35 +308,24 @@ npm install
 
 ---
 
-## Localization Automation
+## Localization
 
 PicStrip uses Apple string catalogs:
 
-- `PicStrip/Localizable.xcstrings`
-- `PicStrip/AppShortcuts.xcstrings`
+- `PicStrip/Localizable.xcstrings` — runtime app + extension copy
+- `PicStrip/AppShortcuts.xcstrings` — Siri / Shortcuts phrases
+- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headlines
 
-To add a language, run a dry run first:
+**Production translations are hand-written.** Privacy-sensitive copy (permission prompts, redaction labels, App Shortcut phrases, marketing headlines) is too high-stakes to ship LLM output of, and per-locale tuning catches idiom drift that machine translation misses. New strings get committed in English first, then a human review fills in target locales.
 
-```bash
-scripts/translate_xcstrings.js --languages es fr --dry-run
-```
-
-For layout smoke testing without external services, generate pseudo-localized values:
+For layout smoke testing — exercising the UI against longer strings, RTL mirroring, and non-ASCII glyphs *before* the real translations land — use the pseudo-localizer:
 
 ```bash
-make localization-translate LANGUAGES="es"
-make localization-validate
+make localization-pseudo LANGUAGES="es"     # writes [es] <source> into missing slots
+make localization-validate                  # JSON + SwiftLint + hard-coded-string audit
 ```
 
-For machine translation, set an OpenAI API key and use the OpenAI provider:
-
-```bash
-export OPENAI_API_KEY=...
-make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES="es fr de ja"
-make localization-validate
-```
-
-The translator preserves placeholders such as `%@`, `%lld`, `${applicationName}`, and Swift inflection markup. Generated translations are written with a review state so privacy, App Shortcut, and permission-copy wording can still be checked before release.
+Pseudo entries should be replaced with real translations before release.
 
 Use Xcode's localization package flow when handing strings to a human translator:
 

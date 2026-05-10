@@ -3,14 +3,8 @@ DEVICE ?=
 DEVICES ?=
 ALLOW_PARTIAL ?= false
 LANGUAGES ?=
-LOCALIZATION_PROVIDER ?= pseudo
-OPENAI_TRANSLATION_MODEL ?= gpt-4.1-mini
-LOCALIZATION_CONCURRENCY ?= 5
-# Canonical language list for localization-translate-all.
-# Ordered by iOS market priority; add new codes here to grow coverage.
-LOCALIZATION_LANGUAGES ?= es fr de ja zh-Hans pt-BR ko it nl pl sv tr ar zh-Hant pt-PT
 
-.PHONY: help lint analyze test build audit-localization localization-export localization-translate localization-translate-all localization-validate screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
+.PHONY: help lint analyze test build audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -18,15 +12,13 @@ help:
 	@echo "  make lint                         Run SwiftLint"
 	@echo "  make analyze                      Run xcodebuild static analysis"
 	@echo "  make test                         Run PicStripTests on the simulator"
+	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
 	@echo "  make audit-localization           Check core/extension string-returning literals"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
-	@echo "  make localization-translate LANGUAGES=\"es fr\""
-	@echo "                                    Fill missing .xcstrings localizations (default provider: pseudo)"
-	@echo "  make localization-translate LOCALIZATION_PROVIDER=openai LANGUAGES=\"es fr\""
-	@echo "                                    Translate via OpenAI Responses API (requires OPENAI_API_KEY)"
-	@echo "  make localization-translate-all LOCALIZATION_PROVIDER=openai"
-	@echo "                                    Translate all 15 supported languages via OpenAI (requires OPENAI_API_KEY)"
+	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
+	@echo "                                    Pseudo-localize a catalog for layout smoke testing"
+	@echo "                                    (production translations are hand-written and committed directly)"
 	@echo "  make localization-validate        Validate catalogs, localization audit, and SwiftLint"
 	@echo "  make screenshots                  Generate screenshots from fastlane/Snapfile"
 	@echo "  make screenshots DEVICE=\"iPhone 17 Pro Max\""
@@ -48,6 +40,16 @@ analyze:
 test:
 	$(FASTLANE) test
 
+# Regenerates the OCR test fixture (PicStripUITests/test_list.png) from
+# scripts/make_fixture.py. The fixture image is committed; this target only
+# needs to run when the fixture itself is being changed (e.g. to add a new
+# PII type to the OCR-detection scenarios). Requires Pillow:
+#   pip3 install --user -r scripts/requirements.txt
+test-fixture:
+	python3 scripts/make_fixture.py \
+		--reference PicStripUITests/test_list.png \
+		--out PicStripUITests/test_list.png
+
 build:
 	$(FASTLANE) build
 
@@ -60,21 +62,12 @@ localization-export:
 		-project PicStrip.xcodeproj \
 		-localizationPath build/localization-export
 
-localization-translate:
+localization-pseudo:
 	@if [ -z "$(LANGUAGES)" ]; then \
-		echo "Set LANGUAGES, for example: make localization-translate LANGUAGES=\"es fr de\""; \
+		echo "Set LANGUAGES, for example: make localization-pseudo LANGUAGES=\"es fr de\""; \
 		exit 1; \
 	fi
-	LOCALIZATION_PROVIDER="$(LOCALIZATION_PROVIDER)" \
-	OPENAI_TRANSLATION_MODEL="$(OPENAI_TRANSLATION_MODEL)" \
-	LOCALIZATION_CONCURRENCY="$(LOCALIZATION_CONCURRENCY)" \
-		scripts/translate_xcstrings.js --languages $(LANGUAGES)
-
-localization-translate-all:
-	LOCALIZATION_PROVIDER="$(LOCALIZATION_PROVIDER)" \
-	OPENAI_TRANSLATION_MODEL="$(OPENAI_TRANSLATION_MODEL)" \
-	LOCALIZATION_CONCURRENCY="$(LOCALIZATION_CONCURRENCY)" \
-		scripts/translate_xcstrings.js --languages $(LOCALIZATION_LANGUAGES)
+	scripts/translate_xcstrings.js --languages $(LANGUAGES)
 
 localization-validate:
 	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings

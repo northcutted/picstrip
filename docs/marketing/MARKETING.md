@@ -1,20 +1,16 @@
-# PicStrip — App Store Marketing Copy · v1.3.0
+# PicStrip — App Store Marketing Copy
 
-> Copy-paste-ready content for App Store Connect. One file per release. Tag this commit when you ship and keep older versions around for diff/audit.
+> The single canonical source for App Store text. When you change a field here, change it in the matching file under [`fastlane/metadata/en-US/`](../../fastlane/metadata/en-US) too — the release pipeline uploads from `fastlane/metadata/` on every release, not from this file. This doc exists so reviewers and marketing can read & edit copy without spelunking through `.txt` files.
 
 | | |
 |-|-|
-| **Marketing version** | 1.3.0 |
-| **Compiled** | 2026-05-09 |
 | **Bundle ID** | `com.northcutt.PicStrip` |
 | **Extension Bundle ID** | `com.northcutt.PicStrip.ShareExtension` |
-| **Source of truth (text)** | [`fastlane/metadata/en-US/`](../../fastlane/metadata/en-US) |
-| **Source of truth (screenshot copy)** | [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) |
+| **Source of truth (App Store text)** | [`fastlane/metadata/en-US/`](../../fastlane/metadata/en-US) (+ `de-DE`, `fr-FR`, `es-ES`, `ja`) |
+| **Source of truth (screenshot copy)** | [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) — 7 keys × 16 locales |
 | **Source of truth (screenshots)** | [`fastlane/screenshots/processed/`](../../fastlane/screenshots/processed) (Git LFS) |
-
-The text in this file is reviewed and approved English copy. Anything that ships through `fastlane/metadata/` is uploaded automatically by the release pipeline. Anything localized lives in the `.xcstrings` catalogs and is rendered into screenshot PNGs by `scripts/process_screenshots.py`.
-
-If you change a field below, also change it in the matching file under `fastlane/metadata/en-US/` so the next App Review submission ships the updated copy.
+| **App version** | Tracked in `MARKETING_VERSION` (auto-bumped by `semantic-release`) — see [`CHANGELOG.md`](../../CHANGELOG.md) for history |
+| **Per-version release notes** | [`fastlane/metadata/en-US/release_notes.txt`](../../fastlane/metadata/en-US/release_notes.txt) — auto-generated from commits |
 
 ---
 
@@ -28,7 +24,6 @@ If you change a field below, also change it in the matching file under `fastlane
 6. [Compliance & ratings](#6-compliance--ratings)
 7. [Localization coverage](#7-localization-coverage)
 8. [Pricing & availability](#8-pricing--availability)
-9. [Change log for this version](#9-change-log-for-this-version)
 
 ---
 
@@ -37,7 +32,7 @@ If you change a field below, also change it in the matching file under `fastlane
 | Field | Value |
 |------|------|
 | **App name** | PicStrip |
-| **Subtitle** | Strip photo metadata instantly |
+| **Subtitle** | Photo privacy in one tap |
 | **Primary category** | Photo & Video |
 | **Secondary category** | Utilities |
 | **Bundle ID** | `com.northcutt.PicStrip` |
@@ -177,18 +172,7 @@ Marketing screenshots are composed in `scripts/process_screenshots.py`: brand-gr
 | 6 | `02_PrivacyImpact` | GPS. Time. Camera ID.<br/>All stripped automatically. | Breadth of metadata stripped |
 | 7 | `03_About` | Open source.<br/>Auditable privacy. | Brand close — the durable differentiator |
 
-Display order is set by `SCREENSHOT_DISPLAY_ORDER` in `scripts/process_screenshots.py`. To change it, edit the dict and re-run the compositor — `process_screenshots` wipes `processed/` first so stale PNGs from the previous order don't accumulate.
-
-**v1.3.0 changes** (vs. v1.2.x):
-
-| Screen key | Before | After | Why |
-|------------|--------|-------|-----|
-| _Display order_ | Detect → Review → Export → Redact → Strip → Home → About | Home → Detect → Export → Redact → Review → Strip → About | First slot drives ~60% of App Store conversion. Old order led with `04_PhotoLoaded` (a product moment, but cold); new order leads with `01_Home` (the strongest emotional hook in the set). |
-| `02_PrivacyImpact` | GPS. EXIF. IPTC. | GPS. Time. Camera ID. | "IPTC" is a format jargon non-technical users don't recognize; "Time" and "Camera ID" describe what gets stripped in language users understand |
-| `03_About` | Four steps. Total privacy. | Open source. Auditable privacy. | "Four steps" is meaningless without context; the new copy leans into a concrete differentiator (open-source codebase) that competitor metadata strippers don't share |
-| `06_SensitiveData` | Review what's being protected. | See exactly what gets hidden. | Active voice + concrete verb; matches the imperative pattern of the strongest headlines (`01_Home`, `07_ReviewAndSave`) |
-
-Display order is set by `SCREENSHOT_DISPLAY_ORDER` in `scripts/process_screenshots.py`. Filenames in `fastlane/screenshots/processed/<locale>/` are renamed at compose time to match this order so the App Store carousel leads with the product moment (detect → review → export) before the brand spread.
+Display order is set by `SCREENSHOT_DISPLAY_ORDER` in `scripts/process_screenshots.py`. Filenames in `fastlane/screenshots/processed/<locale>/` are renamed at compose time to match this order. To change the order, edit the dict and re-run the compositor — `process_screenshots` wipes `processed/` first so stale PNGs from the previous order don't accumulate.
 
 **Localized variants:** see the full 16-locale matrix in [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings). Spot-check pairs:
 
@@ -302,7 +286,7 @@ PicStrip is localized into **16 locales**. Each locale ships:
 | `zh-Hans` | Chinese (Simplified) | Mainland China |
 | `zh-Hant` | Chinese (Traditional) | Taiwan / Hong Kong |
 
-App Store Connect localized text field coverage as of v1.3.0:
+App Store Connect localized text field coverage:
 
 | Locale | name | subtitle | promotional_text | description | keywords | URLs | release_notes |
 |--------|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
@@ -313,9 +297,9 @@ App Store Connect localized text field coverage as of v1.3.0:
 | `ja`    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | 11 other locales | — | — | — | — | — | — | — |
 
-**Why these 4 locales:** Germany, France, Spain, and Japan are the largest non-English iOS revenue markets where English subtitle/description copy demonstrably under-converts. Translating them (vs. shipping English in those storefronts) is the highest-leverage ASO move available. The remaining 11 supported locales still ship English ASC text — but their localized in-app strings, App Shortcut phrases, and screenshot headlines render natively because those live in the `.xcstrings` catalogs.
+**Why these 4 locales:** Germany, France, Spain, and Japan are the largest non-English iOS revenue markets where English subtitle/description copy demonstrably under-converts. Translating them (vs. shipping English in those storefronts) is the highest-leverage ASO move available. The remaining 11 supported locales still ship English ASC text — but their localized in-app strings, App Shortcut phrases, and screenshot headlines render natively because those live in the `.xcstrings` catalogs. To add a new locale, drop a `fastlane/metadata/<locale>/` directory with the same set of `.txt` files; `deliver` will pick it up on the next release.
 
-**Release notes localization** — currently auto-generated by `semantic-release`'s `prepareCmd` into `fastlane/metadata/en-US/release_notes.txt` only. To localize, either translate manually after each release, or extend the `prepareCmd` to write into all 4 locale directories. The technical release-note language ("harden unit tests", "polling wait") translates poorly without context, so manual is recommended.
+**Release notes localization** — auto-generated by `semantic-release`'s `prepareCmd` into `fastlane/metadata/en-US/release_notes.txt` only. To localize, either translate manually after each release, or extend the `prepareCmd` to write into the additional locale directories. The technical release-note language ("harden unit tests", "polling wait") translates poorly without context, so manual is recommended.
 
 ---
 
@@ -333,51 +317,12 @@ App Store Connect localized text field coverage as of v1.3.0:
 
 ---
 
-## 9. Change log for this version
-
-From [`CHANGELOG.md`](../../CHANGELOG.md):
-
-### Features
-
-- Add support for handling alpha channel in PNG metadata
-
-### Bug fixes
-
-- Harden unit tests, rename Fastfile lane, refresh screenshots
-- Replace fixed sleep with polling wait in `testFocusPIIResult`
-
-### Marketing-relevant changes since v1.2.4
-
-**Pipeline:**
-
-- All 16 locales are now in the screenshot pipeline (was en-US only)
-- Custom matte-black device frame replaces `fastlane frameit` output (eliminates the metallic side reflection that bled white edges into the brand gradient)
-- Marketing screenshot headlines moved to `fastlane/MarketingHeadlines.xcstrings` and hand-translated into all 16 locales
-- Processed marketing PNGs versioned via Git LFS so CI can upload without invoking a macOS runner (`generate_new=false` path in `screenshots.yml`)
-
-**Copy refresh (Tier 1 ASO pass):**
-
-- **Subtitle** rewritten from feature-led ("Strip photo metadata instantly") to benefit-led ("Photo privacy in one tap") — drops the jargon word "metadata" that non-technical iPhone users don't search for
-- **Promotional text** expanded from 60 → 158 characters, leading with the concrete threat (your GPS, the time, your camera fingerprint) before the resolution
-- **Keywords** repacked from 67 → 92 characters; dropped overlapping words (`photo`, `strip`, `clean`, `remove`) and added high-intent terms (`redact`, `blur`, `anonymize`, `geotag`, `scrub`, `share`)
-- **Description first paragraph** rewritten to lead with the user's problem ("Sent someone a photo lately? You probably also sent your home GPS coordinates…") instead of the app's feature list
-- **Three screenshot headlines** rewritten across all 16 locales: `02_PrivacyImpact` ("GPS. EXIF. IPTC." → "GPS. Time. Camera ID." — IPTC is jargon), `03_About` ("Four steps. Total privacy." → "Open source. Auditable privacy." — leans into the actual differentiator), `06_SensitiveData` (passive → active voice)
-
-**Conversion lift (Tier 2):**
-
-- **Screenshot display order reordered** to lead with `01_Home` (strongest emotional hook) → `04_PhotoLoaded` (proof) → `07_ReviewAndSave` (resolution) instead of the prior detect → review → export flow. The first-screenshot slot drives ~60% of App Store conversion attribution.
-- **WHY YOU CAN TRUST IT block** added to the description, surfacing the actual differentiators that competitor metadata strippers can't match: open-source codebase, SLSA Level 3 build provenance, zero third-party SDKs, "Data Not Collected" privacy nutrition label.
-- **App Store metadata localized into 4 new locales** (de-DE, fr-FR, es-ES, ja) — name, subtitle, promotional text, keywords, description, URLs. The 4 largest non-English iOS revenue markets where English-only ASC copy demonstrably under-converts.
-
----
-
 ## Workflow: how to ship a copy change
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │ 1. Edit fastlane/metadata/en-US/<field>.txt with the new copy.  │
-│ 2. Edit this file (docs/marketing/v<version>.md) so the         │
-│    versioned record matches.                                    │
+│ 2. Edit this file so the canonical doc matches.                 │
 │ 3. Commit on a feature branch (Conventional Commits).           │
 │ 4. Open a PR. PR checks run lint/analyze/test.                  │
 │ 5. Merge to main → semantic-release cuts a version → main.yml   │
@@ -387,12 +332,10 @@ From [`CHANGELOG.md`](../../CHANGELOG.md):
 
 **Promotional text and URLs** can be edited in App Store Connect without resubmitting for review. Other fields require a new submission. If a copy change is the only change in a PR, it still triggers a release because semantic-release counts `feat:`/`fix:` commits — use `chore:` for copy-only edits if you don't want a version bump.
 
----
-
 ## Workflow: how to refresh screenshots after a UI change
 
 ```bash
-# Local one-shot (re-uses the API key from the user's keychain).
+# Local one-shot (re-uses the API key from your keychain).
 make upload-screenshots                  # process + upload from raw captures
 
 # CI path (preferred — keeps API keys off your workstation).
@@ -405,4 +348,4 @@ The CI path commits the regenerated marketing PNGs back to `main` via Git LFS wi
 
 ---
 
-_Last edited: 2026-05-09 · maintained alongside [`fastlane/metadata/en-US/`](../../fastlane/metadata/en-US) and [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings)_
+_Per-version release notes live in [`fastlane/metadata/en-US/release_notes.txt`](../../fastlane/metadata/en-US/release_notes.txt) (auto-generated by `semantic-release`) and [`CHANGELOG.md`](../../CHANGELOG.md). Significant marketing changes are tracked in the git history of this file._
