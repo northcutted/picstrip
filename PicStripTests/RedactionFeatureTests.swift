@@ -2,6 +2,15 @@ import UIKit
 import XCTest
 @testable import PicStrip
 
+/// Test methods that construct or call `ScrubberViewModel` (or any other
+/// `@MainActor`-isolated type) **must be `async`**. Under Xcode 26 / Swift 6
+/// strict concurrency, XCTest only hops sync test methods onto MainActor when
+/// the class isolation is propagated through `await` — synchronous test
+/// methods on a `@MainActor` class get invoked off-main, and the first
+/// `ScrubberViewModel()` call then crashes with an actor isolation violation.
+/// Tests that only manipulate value types or static methods (e.g. the
+/// `imageNormalizedPoint` helpers, `RedactionRegion` math) are safe to keep
+/// synchronous.
 @MainActor
 final class RedactionFeatureTests: XCTestCase {
 
@@ -42,7 +51,7 @@ final class RedactionFeatureTests: XCTestCase {
         XCTAssertFalse(json.contains("boundingBox"))
     }
 
-    func testDetectedPIIConvertsIntoEditableRedactionRegions() {
+    func testDetectedPIIConvertsIntoEditableRedactionRegions() async {
         let viewModel = ScrubberViewModel()
         let email = DetectionResult(
             type: .email,
@@ -102,7 +111,7 @@ final class RedactionFeatureTests: XCTestCase {
         XCTAssertEqual(try pixelColor(in: redacted, x: 2, y: 2), [0, 0, 0, 255])
     }
 
-    func testReviewPreviewPrefersRedactedImageForCustomRedactions() throws {
+    func testReviewPreviewPrefersRedactedImageForCustomRedactions() async throws {
         let viewModel = ScrubberViewModel()
         let source = try makeImage(color: .green)
         let processed = try makeImage(color: .blue)
@@ -122,7 +131,7 @@ final class RedactionFeatureTests: XCTestCase {
     // MARK: - Undo / Redo tests
 
     /// After adding a region canUndo becomes true and canRedo stays false.
-    func testCanUndoAfterAdd() {
+    func testCanUndoAfterAdd() async {
         let vm = ScrubberViewModel()
         XCTAssertFalse(vm.canUndo)
         XCTAssertFalse(vm.canRedo)
@@ -132,7 +141,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Undoing an add removes the region and restores the previous count.
-    func testUndoRestoresRegionCountAfterAdd() {
+    func testUndoRestoresRegionCountAfterAdd() async {
         let vm = ScrubberViewModel()
         let before = vm.redactionRegions.count
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
@@ -145,7 +154,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Redo re-applies the undone add.
-    func testRedoReappliesAdd() {
+    func testRedoReappliesAdd() async {
         let vm = ScrubberViewModel()
         let before = vm.redactionRegions.count
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
@@ -158,7 +167,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Performing a new action after undo clears the redo stack.
-    func testNewActionClearsRedoStack() {
+    func testNewActionClearsRedoStack() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         vm.undoRedaction()
@@ -169,7 +178,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Undoing a delete restores the deleted region.
-    func testUndoRestoresRegionAfterDelete() {
+    func testUndoRestoresRegionAfterDelete() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         // Clear the undo history from the add so we test delete in isolation.
@@ -185,7 +194,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Undoing a move restores the region's rect to its pre-drag position.
-    func testUndoRestoresRectAfterMove() {
+    func testUndoRestoresRectAfterMove() async {
         let vm = ScrubberViewModel()
         let originalRect = CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2)
         vm.addCustomRedaction(rect: originalRect)
@@ -205,7 +214,7 @@ final class RedactionFeatureTests: XCTestCase {
 
     /// `beginRedactionUpdate` called repeatedly for the same ID within a gesture
     /// must push only one undo snapshot, not one per drag event.
-    func testBeginRedactionUpdateDeduplicated() {
+    func testBeginRedactionUpdateDeduplicated() async {
         let vm = ScrubberViewModel()
         let rect = CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2)
         vm.addCustomRedaction(rect: rect)
@@ -236,7 +245,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Undo stack is capped at 50; pushing 60 actions must not exceed the cap.
-    func testUndoStackCapAt50() {
+    func testUndoStackCapAt50() async {
         let vm = ScrubberViewModel()
         for i in 0..<60 {
             let x = CGFloat(i) * 0.01
@@ -255,7 +264,7 @@ final class RedactionFeatureTests: XCTestCase {
     // MARK: - toggleRedactionRegion(id:) tests
 
     /// Toggling a custom region flips its isEnabled flag.
-    func testToggleCustomRegionEnablement() {
+    func testToggleCustomRegionEnablement() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let id = vm.redactionRegions.last!.id
@@ -272,7 +281,7 @@ final class RedactionFeatureTests: XCTestCase {
 
     /// Toggling one detected instance disables only that region; other instances
     /// of the same type remain enabled (per-instance granularity).
-    func testToggleDetectedRegionAffectsOnlyThatInstance() {
+    func testToggleDetectedRegionAffectsOnlyThatInstance() async {
         let vm = ScrubberViewModel()
         let email = DetectionResult(
             type: .email,
@@ -314,7 +323,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Toggling a region is undoable — one undo step restores the previous state.
-    func testToggleRegionIsUndoable() {
+    func testToggleRegionIsUndoable() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let id = vm.redactionRegions.last!.id
@@ -331,7 +340,7 @@ final class RedactionFeatureTests: XCTestCase {
     // MARK: - deleteRedactionRegion(id:) tests
 
     /// Deleting by ID removes the correct region without requiring prior selection.
-    func testDeleteRedactionRegionById() {
+    func testDeleteRedactionRegionById() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         vm.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
@@ -347,7 +356,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Deleting by ID is undoable — the region is restored after one undo step.
-    func testDeleteRedactionRegionByIdIsUndoable() {
+    func testDeleteRedactionRegionByIdIsUndoable() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let targetID = vm.redactionRegions.last!.id
@@ -365,7 +374,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Deleting the currently selected region clears the selection.
-    func testDeleteSelectedRegionByIdClearsSelection() {
+    func testDeleteSelectedRegionByIdClearsSelection() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let id = vm.redactionRegions.last!.id
@@ -489,7 +498,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Changing a region's style is undoable — one undo step restores the previous style.
-    func testChangeRedactionStyleIsUndoable() {
+    func testChangeRedactionStyleIsUndoable() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let id = vm.redactionRegions.last!.id
@@ -506,7 +515,7 @@ final class RedactionFeatureTests: XCTestCase {
     }
 
     /// Changing a region's colour is undoable — one undo step restores the previous colour.
-    func testChangeRedactionColorIsUndoable() {
+    func testChangeRedactionColorIsUndoable() async {
         let vm = ScrubberViewModel()
         vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
         let id = vm.redactionRegions.last!.id
