@@ -402,7 +402,12 @@ struct ZoomableImagePreview: View {
                 guard isRedactionEditing, !isAddingRedaction else { return }
                 if dragStartRect == nil {
                     dragStartRect = region.rect
-                    selectRedaction(region.id)
+                    // Disable the spring animation that fires when selectedRedactionRegionID
+                    // changes so it does not fight the gesture's per-frame position updates,
+                    // which would cause the region to visibly "snap" on the first drag event.
+                    var t = Transaction()
+                    t.disablesAnimations = true
+                    withTransaction(t) { selectRedaction(region.id) }
                     // Notify the view model once per gesture so it can push exactly
                     // one undo snapshot regardless of how many drag events follow.
                     onBeginUpdateRedaction?(region.id)
@@ -422,7 +427,11 @@ struct ZoomableImagePreview: View {
                 guard isRedactionEditing else { return }
                 if dragStartRect == nil {
                     dragStartRect = region.rect
-                    selectRedaction(region.id)
+                    // Same flicker-fix as moveGesture: suppress the selection animation
+                    // so the spring does not compete with the resize drag updates.
+                    var t = Transaction()
+                    t.disablesAnimations = true
+                    withTransaction(t) { selectRedaction(region.id) }
                     onBeginUpdateRedaction?(region.id)
                 }
                 guard let dragStartRect else { return }

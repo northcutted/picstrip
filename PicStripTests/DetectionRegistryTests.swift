@@ -446,4 +446,44 @@ final class DetectionRegistryTests: XCTestCase {
         XCTAssertFalse(matches(.abaRoutingNumber, in: "routing number: 02100002"),
                        "An 8-digit number must not be accepted as a routing number")
     }
+
+    // MARK: - License Plate
+
+    func testLicensePlateRegex() {
+        // ── California-style structural rule (digit + 3 letters + 3 digits) ──────
+        XCTAssertTrue(matches(.licensePlate, in: "7ABC123"),
+                      "Should detect a California-style plate (digit-3L-3D)")
+        XCTAssertTrue(matches(.licensePlate, in: "1XYZ999"),
+                      "Should detect another California-style plate")
+        XCTAssertTrue(matches(.licensePlate, in: "Plate: 4DEF567"),
+                      "Should detect a California plate embedded in text")
+
+        // Too few letters (digit + 2 letters + 3 digits) — must not match structural rule
+        XCTAssertFalse(matches(.licensePlate, in: "7AB123"),
+                       "digit + 2 letters + 3 digits must not match California rule (needs 3 letters)")
+
+        // Starts with letter instead of digit — California rule must not match
+        XCTAssertFalse(matches(.licensePlate, in: "ABC1234"),
+                       "Plate starting with letters must not match the California structural rule")
+
+        // ── Keyword-anchored generic rule ──────────────────────────────────────
+        XCTAssertTrue(matches(.licensePlate, in: "License Plate: ABC-1234"),
+                      "Should detect a plate after 'License Plate:' label")
+        XCTAssertTrue(matches(.licensePlate, in: "license plate ABC 1234"),
+                      "Should detect a plate after lowercase 'license plate' label")
+        XCTAssertTrue(matches(.licensePlate, in: "Plate No. XYZ 789"),
+                      "Should detect a plate after 'Plate No.' label")
+        XCTAssertTrue(matches(.licensePlate, in: "Plate # 6TRL245"),
+                      "Should detect a plate after 'Plate #' label")
+        XCTAssertTrue(matches(.licensePlate, in: "LP: MHZ4521"),
+                      "Should detect a plate after 'LP:' label")
+        XCTAssertTrue(matches(.licensePlate, in: "vehicle tag AB 1234"),
+                      "Should detect a plate after 'vehicle tag' label")
+
+        // Plain short alphanumeric without keyword — must not match (prevents FPs)
+        XCTAssertFalse(matches(.licensePlate, in: "AB1234"),
+                       "A short alphanumeric string with no keyword must not match")
+        XCTAssertFalse(matches(.licensePlate, in: "Flight MH370"),
+                       "A flight number fragment must not match without a plate keyword")
+    }
 }

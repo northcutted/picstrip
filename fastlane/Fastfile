@@ -301,7 +301,8 @@ platform :ios do
       overwrite_screenshots:        true,   # replace existing shots on re-runs
       run_precheck_before_submit:   false,  # API key can't check IAP; skip it
       precheck_include_in_app_purchases: false,
-      force:                        true    # skip interactive HTML diff preview
+      force:                        true,   # skip interactive HTML diff preview
+      use_live_version:             true    # upload to the live listing — no pending version required
     )
   end
 

@@ -26,6 +26,9 @@ enum PIIType: String, Hashable, Identifiable, CaseIterable {
     /// Vehicle Identification Number — 17-character alphanumeric code (no I/O/Q).
     /// Common in car-listing screenshots, insurance documents, and registration photos.
     case vehicleIdentificationNumber
+    /// Vehicle license plate numbers.  California-style format (digit–3 letters–3 digits)
+    /// is detected structurally; other regional formats require a plate-label keyword nearby.
+    case licensePlate
 
     // MARK: - Financial
     case creditCard
@@ -86,6 +89,7 @@ enum PIIType: String, Hashable, Identifiable, CaseIterable {
         case .governmentID:             return String(localized: "Government ID")
         // Vehicle
         case .vehicleIdentificationNumber: return String(localized: "Vehicle Identification Number")
+        case .licensePlate:             return String(localized: "License Plate Number")
         // Financial
         case .creditCard:               return String(localized: "Credit Card Number")
         case .iban:                     return String(localized: "IBAN")

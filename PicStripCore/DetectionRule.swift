@@ -153,6 +153,27 @@ enum DetectionRegistry {
                  #"\b[A-HJ-NPR-Z0-9]{17}\b"#,
                  0.82),
 
+            // License plates — two strategies:
+            //
+            // 1. California-style structural rule: digit + 3 letters + 3 digits
+            //    (e.g. 7ABC123).  This specific positional sequence is uncommon
+            //    enough in non-plate text to use without a keyword anchor.
+            //    Base 0.77 — shorter than VIN and slightly less globally unique.
+            rule(.licensePlate,
+                 #"\b[0-9][A-Z]{3}[0-9]{3}\b"#,
+                 0.77),
+
+            // 2. Keyword-anchored generic rule — required for non-California
+            //    formats (2–3 letter + 3–4 digit, hyphen/space-separated, etc.).
+            //    Context keywords ("license plate", "plate #", "vehicle tag", "LP:")
+            //    must appear immediately before the value to suppress the very high
+            //    false-positive rate that bare short alphanumeric patterns carry.
+            //    Base 0.73: keyword + loose value structure; lower than the
+            //    California rule because the value portion is much broader.
+            rule(.licensePlate,
+                 #"(?i)(?:licen[sc]e\s+plate|plate\s+(?:num(?:ber)?|no\.?|#)|\blp\s*:|vehicle\s+tag|reg(?:istration)?\s+plate)\s*:?\s*([A-Z0-9]{2,4}[\ \-]?[A-Z0-9]{1,4}(?:[\ \-]?[A-Z0-9]{1,3})?)\b"#,
+                 0.73),
+
             // MARK: Financial
             // Credit card — compact (no separators); Luhn intentionally omitted
             // since OCR may corrupt digits; structurally specific prefixes.

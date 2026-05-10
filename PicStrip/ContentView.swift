@@ -1,5 +1,6 @@
 import PhotosUI
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
 
@@ -14,6 +15,12 @@ struct ContentView: View {
 
     /// Set to true by the scenePhase observer when StripImageIntent fires.
     @State private var isShowingIntentBatchPicker = false
+
+    /// Drives the Files app picker sheet.
+    @State private var isShowingFilePicker = false
+
+    /// True while a drag is hovering over the drop target.
+    @State private var isDropTargeted = false
 
     /// Rotating taglines shown beneath the app title on the home screen.
     private let mottos = [
@@ -158,6 +165,35 @@ struct ContentView: View {
             else { return }
             await viewModel.loadData(data)
         }
+        // ── Files app picker ──────────────────────────────────────────────
+        .fileImporter(
+            isPresented: $isShowingFilePicker,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: false
+        ) { result in
+            guard case .success(let urls) = result, let url = urls.first else { return }
+            Task {
+                guard url.startAccessingSecurityScopedResource() else { return }
+                defer { url.stopAccessingSecurityScopedResource() }
+                guard let data = try? Data(contentsOf: url) else { return }
+                await viewModel.loadData(data)
+            }
+        }
+        // ── Drag-and-drop (image or file URL from Photos / Files / Safari) ──
+        .onDrop(of: [.image, .fileURL], isTargeted: $isDropTargeted) { providers in
+            handleDrop(providers: providers)
+        }
+        .overlay {
+            // Subtle border pulse while a drag hovers over the window
+            if isDropTargeted {
+                RoundedRectangle(cornerRadius: 16)
+                    .strokeBorder(Color.accentColor.opacity(0.75), lineWidth: 3)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .animation(.easeInOut(duration: 0.15), value: isDropTargeted)
     }
 
     // MARK: - Home screen
@@ -248,6 +284,19 @@ struct ContentView: View {
                     )
                 }
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
+
+                Button {
+                    haptic(.light)
+                    isShowingFilePicker = true
+                } label: {
+                    pillLabel(
+                        icon: "folder",
+                        text: "Browse Files",
+                        prominent: false
+                    )
+                }
+                .accessibilityIdentifier("browseFilesButton")
+                .accessibilityLabel("Browse files to select an image")
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 48)
@@ -357,6 +406,53 @@ struct ContentView: View {
 
     private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
         UIImpactFeedbackGenerator(style: style).impactOccurred()
+    }
+
+    // MARK: - Drag-and-drop handler
+
+    /// Handles a drop of one or more `NSItemProvider` items onto the app.
+    ///
+    /// Priority order:
+    /// 1. A raw image type (JPEG / PNG / HEIC / GIF / …) from Photos or Safari.
+    /// 2. A file URL referencing an image on disk (Files app, document providers).
+    ///
+    /// - Returns: `true` when a provider was accepted and loading is in flight.
+    @discardableResult
+    private func handleDrop(providers: [NSItemProvider]) -> Bool {
+        guard let provider = providers.first else { return false }
+
+        // ── Image data (Photos, Safari image, copy-paste) ──────────────────
+        if provider.canLoadObject(ofClass: UIImage.self) {
+            _ = provider.loadObject(ofClass: UIImage.self) { reading, _ in
+                guard let image = reading as? UIImage,
+                      let data  = image.jpegData(compressionQuality: 0.95)
+                else { return }
+                Task { @MainActor in await viewModel.loadData(data) }
+            }
+            return true
+        }
+
+        // ── File URL (Files app, document providers) ───────────────────────
+        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
+            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
+                let url: URL?
+                if let data = item as? Data {
+                    url = URL(dataRepresentation: data, relativeTo: nil)
+                } else {
+                    url = item as? URL
+                }
+                guard let url else { return }
+                Task { @MainActor in
+                    guard url.startAccessingSecurityScopedResource() else { return }
+                    defer { url.stopAccessingSecurityScopedResource() }
+                    guard let data = try? Data(contentsOf: url) else { return }
+                    await viewModel.loadData(data)
+                }
+            }
+            return true
+        }
+
+        return false
     }
 
     private func seedStatsIfRequested() {

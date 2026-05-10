@@ -466,7 +466,7 @@ See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-build-provenance-level-3) for detailed 
 
 PicStrip is available on the App Store.
 
-[![Download on the App Store](https://img.shields.io/badge/Download-App%20Store-black?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/app/picstrip/idTODO_REPLACE_WITH_REAL_ID)
+[![Download on the App Store](https://img.shields.io/badge/Download-App%20Store-black?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/app/picstrip/id6765989071)
 
 > Replace `TODO_REPLACE_WITH_REAL_ID` with the actual App Store ID once published.
 
