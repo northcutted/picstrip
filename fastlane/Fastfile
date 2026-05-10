@@ -249,15 +249,20 @@ platform :ios do
     end
   end
 
-  desc "Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged)"
+  desc "Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. On CI, screenshot upload is handled inside the submit lane which runs at a pinned release SHA so screenshots are always versioned with code."
   lane :upload_screenshots do |options|
     # NOTE: this lane uploads the marketing PNGs already on disk under
     # ``fastlane/screenshots/processed/<locale>/``. Run
     # ``bundle exec fastlane process_screenshots`` first if you need to
     # regenerate from raw captures (the Makefile chains them for the local
-    # ``make upload-screenshots`` UX). Decoupled from process_screenshots so
-    # CI can pull pre-composed PNGs from Git LFS and upload without needing
-    # a macOS runner or any source files beyond ``processed/``.
+    # ``make upload-screenshots`` UX).
+    #
+    # IMPORTANT: App Store Connect requires a pending "Prepare for Submission"
+    # version to exist before screenshots can be uploaded. Create one first in
+    # App Store Connect, or use ``use_live_version: true`` only if you
+    # understand the consequences (bypasses the review gate). On CI this lane
+    # is NOT called — the submit lane handles screenshot upload so they are
+    # always tied to the exact release version.
 
     processed_path = "#{ROOT}/fastlane/screenshots/processed"
 
@@ -301,12 +306,11 @@ platform :ios do
       overwrite_screenshots:        true,   # replace existing shots on re-runs
       run_precheck_before_submit:   false,  # API key can't check IAP; skip it
       precheck_include_in_app_purchases: false,
-      force:                        true,   # skip interactive HTML diff preview
-      use_live_version:             true    # upload to the live listing — no pending version required
+      force:                        true    # skip interactive HTML diff preview
     )
   end
 
-  desc "Upload metadata + submit the processed TestFlight build for App Review"
+  desc "Upload metadata + screenshots + submit the processed TestFlight build for App Review"
   lane :submit do
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -321,6 +325,12 @@ platform :ios do
     # skip_binary_upload: true tells deliver to find the existing build
     # (matched by app_version + build_number) and submit it for review
     # rather than re-uploading, which would fail with a duplicate-binary error.
+    #
+    # Screenshots are uploaded here (not in a separate screenshots.yml workflow)
+    # so they are always coupled to the exact release version and commit. The
+    # CI submit job checks out the post-release SHA with LFS enabled so the
+    # processed PNGs from fastlane/screenshots/processed/ are present on disk.
+    processed_path = "#{ROOT}/fastlane/screenshots/processed"
     upload_to_app_store(
       api_key:                           api_key,
       app_version:                       ENV["MARKETING_VERSION"],
@@ -330,8 +340,9 @@ platform :ios do
       automatic_release:                 true,   # release automatically on approval
       phased_release:                    true,   # roll out over 7 days
       metadata_path:                     "./fastlane/metadata",
-      skip_screenshots:                  true,   # managed separately via screenshots.yml
-      overwrite_screenshots:             false,
+      screenshots_path:                  processed_path,
+      skip_screenshots:                  false,
+      overwrite_screenshots:             true,   # replace any existing shots for this version
       run_precheck_before_submit:        false,
       precheck_include_in_app_purchases: false,
       force:                             true    # skip interactive HTML diff preview

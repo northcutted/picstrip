@@ -440,11 +440,12 @@ jobs:
     needs: [version, release, upload-testflight]
     if: needs.version.outputs.will_release == 'true'
     steps:
-      - name: Checkout (post-release commit — includes release_notes.txt)
+      - name: Checkout (post-release commit — includes release_notes.txt and LFS screenshots)
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           ref: ${{ needs.release.outputs.release_sha }}
           fetch-depth: 1
+          lfs: true
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
