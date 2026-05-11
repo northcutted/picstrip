@@ -1,3 +1,10 @@
+## [1.5.2](https://github.com/northcutted/picstrip/compare/v1.5.1...v1.5.2) (2026-05-11)
+
+
+### Bug Fixes
+
+* fix other jitter issue ([154a6d2](https://github.com/northcutted/picstrip/commit/154a6d26c77756bf26044793b607b5f220c7621b))
+
 ## [1.5.1](https://github.com/northcutted/picstrip/compare/v1.5.0...v1.5.1) (2026-05-11)
 
 

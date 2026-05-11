@@ -1,2 +1,2 @@
 Bug Fixes
-• clean up extension behavior
+• fix other jitter issue
