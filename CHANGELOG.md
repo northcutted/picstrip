@@ -1,3 +1,10 @@
+## [1.5.1](https://github.com/northcutted/picstrip/compare/v1.5.0...v1.5.1) (2026-05-11)
+
+
+### Bug Fixes
+
+* clean up extension behavior ([0569276](https://github.com/northcutted/picstrip/commit/05692769f01a348ca6c4becbcb8e8b1de2c5d734))
+
 ## [1.5.0](https://github.com/northcutted/picstrip/compare/v1.4.0...v1.5.0) (2026-05-10)
 
 

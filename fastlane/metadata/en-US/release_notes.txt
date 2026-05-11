@@ -1,4 +1,2 @@
-Features
-• Add support for license plate detection and implement related tests
-• **ci:** add preflight lane and workflow to verify metadata before App Review submission
-• **ci:** fold preflight into main release pipeline before the production approval gate
+Bug Fixes
+• clean up extension behavior
