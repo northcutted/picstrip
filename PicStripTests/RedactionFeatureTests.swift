@@ -14,43 +14,6 @@ import XCTest
 @MainActor
 final class RedactionFeatureTests: XCTestCase {
 
-    func testPrivacyRemovalStatsRecordsOnlyAggregateCounts() throws {
-        let metadataFields = [
-            MetadataField(category: "GPS", key: "GPSLatitude", value: "37.33"),
-            MetadataField(category: "GPS", key: "GPSLongitude", value: "-122.03"),
-            MetadataField(category: "EXIF", key: "DateTimeOriginal", value: "2026:05:08"),
-            MetadataField(category: "TIFF", key: "Orientation", value: "1", isStructural: true)
-        ]
-        let regions = [
-            RedactionRegion(
-                id: "detected-email-0",
-                rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.1),
-                source: .detected,
-                type: .email,
-                score: 0.94,
-                snippet: "person@example.com",
-                isEnabled: true
-            ),
-            RedactionRegion.custom(rect: CGRect(x: 0.3, y: 0.3, width: 0.2, height: 0.2))
-        ]
-
-        var stats = PrivacyRemovalStats()
-        stats.record(metadataFields: metadataFields, visualRegions: regions)
-
-        XCTAssertEqual(stats.metadataCategoryCounts["GPS"], 2)
-        XCTAssertEqual(stats.metadataCategoryCounts["EXIF"], 1)
-        XCTAssertNil(stats.metadataCategoryCounts["TIFF"], "Structural fields should not be counted as stripped private metadata.")
-        XCTAssertEqual(stats.visualTypeCounts["Email Address"], 1)
-        XCTAssertEqual(stats.visualTypeCounts["Custom Redaction"], 1)
-        XCTAssertEqual(stats.visualConfidenceCounts["High"], 1)
-
-        let encoded = try JSONEncoder().encode(stats)
-        let json = String(decoding: encoded, as: UTF8.self)
-        XCTAssertFalse(json.contains("37.33"))
-        XCTAssertFalse(json.contains("person@example.com"))
-        XCTAssertFalse(json.contains("boundingBox"))
-    }
-
     func testDetectedPIIConvertsIntoEditableRedactionRegions() async {
         let viewModel = ScrubberViewModel()
         let email = DetectionResult(

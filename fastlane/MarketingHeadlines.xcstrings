@@ -102,108 +102,7 @@
         }
       }
     },
-    "02_PrivacyImpact": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. الوقت. معرّف الكاميرا.\nتُحذف تلقائيًا."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Zeitstempel. Kamera-ID.\nAlles automatisch entfernt."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Time. Camera ID.\nAll stripped automatically."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Hora. ID de cámara.\nTodo eliminado automáticamente."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Heure. ID caméra.\nTout supprimé automatiquement."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Ora. ID fotocamera.\nTutto rimosso automaticamente."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS、時刻、カメラ識別子。\nすべて自動で削除。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. 시간. 카메라 ID.\n모두 자동 삭제."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Tijd. Camera-ID.\nAllemaal automatisch verwijderd."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Czas. ID aparatu.\nUsunięte automatycznie."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Hora. ID da câmera.\nTudo removido automaticamente."
-          }
-        },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Hora. ID da câmara.\nTudo removido automaticamente."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Tid. Kamera-ID.\nAllt rensas automatiskt."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS. Zaman. Kamera kimliği.\nHepsi otomatik silinir."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS。时间戳。相机标识。\n全部自动清除。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "GPS。時間戳。相機識別碼。\n全部自動清除。"
-          }
-        }
-      }
-    },
-    "03_About": {
+    "02_About": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -304,7 +203,7 @@
         }
       }
     },
-    "04_PhotoLoaded": {
+    "03_PhotoLoaded": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -405,7 +304,7 @@
         }
       }
     },
-    "05_RedactionEditor": {
+    "04_RedactionEditor": {
       "extractionState": "manual",
       "localizations": {
         "ar": {
@@ -506,108 +405,7 @@
         }
       }
     },
-    "06_SensitiveData": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "شاهد بالضبط\nما يُخفى."
-          }
-        },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sieh genau,\nwas verborgen wird."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "See exactly\nwhat gets hidden."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mira exactamente\nqué se oculta."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Voyez exactement\nce qui est masqué."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vedi esattamente\ncosa viene nascosto."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "何が隠れるかを\n正確に確認。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "무엇이 가려지는지\n정확히 확인."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zie precies\nwat wordt verborgen."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zobacz dokładnie,\nco zostaje ukryte."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veja exatamente\no que fica oculto."
-          }
-        },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Veja exatamente\no que fica oculto."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se exakt\nvad som döljs."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Neyin gizlendiğini\ntam olarak gör."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "清楚看到\n什么被隐藏。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "清楚看到\n什麼被隱藏。"
-          }
-        }
-      }
-    },
-    "07_ReviewAndSave": {
+    "05_ReviewAndSave": {
       "extractionState": "manual",
       "localizations": {
         "ar": {

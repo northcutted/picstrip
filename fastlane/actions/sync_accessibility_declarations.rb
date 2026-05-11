@@ -26,6 +26,7 @@ module Fastlane
         config = JSON.parse(File.read(params[:config_path]))
         token = make_token(params)
         app_id = find_app_id(token, params[:app_identifier])
+        return unless app_id
 
         sync_accessibility_url(token, app_id, config["accessibilityUrl"]) if config.key?("accessibilityUrl")
         existing = list_declarations(token, app_id)
@@ -36,11 +37,11 @@ module Fastlane
           current = existing_for_device(existing, device_family)
 
           if current
-            update_declaration(token, current.fetch("id"), attributes)
-            UI.success("Updated #{device_family} accessibility declaration")
+            result = update_declaration(token, current.fetch("id"), attributes)
+            UI.success("Updated #{device_family} accessibility declaration") if result
           else
-            create_declaration(token, app_id, attributes)
-            UI.success("Created #{device_family} accessibility declaration")
+            result = create_declaration(token, app_id, attributes)
+            UI.success("Created #{device_family} accessibility declaration") if result
           end
         end
       end
@@ -64,8 +65,12 @@ module Fastlane
 
       def self.find_app_id(token, bundle_id)
         response = request(token, :get, "/v1/apps", query: { "filter[bundleId]" => bundle_id, "limit" => "1" })
-        app = response.fetch("data").first
-        UI.user_error!("Could not find App Store Connect app for bundle id #{bundle_id}") unless app
+        return nil unless response
+        app = response.fetch("data", []).first
+        unless app
+          UI.error("Could not find App Store Connect app for bundle id #{bundle_id} — skipping accessibility sync")
+          return nil
+        end
         app.fetch("id")
       end
 
@@ -76,7 +81,7 @@ module Fastlane
           "/v1/apps/#{app_id}/accessibilityDeclarations",
           query: { "limit" => "200" }
         )
-        response.fetch("data", [])
+        response ? response.fetch("data", []) : []
       end
 
       def self.existing_for_device(declarations, device_family)
@@ -133,7 +138,7 @@ module Fastlane
       end
 
       def self.sync_accessibility_url(token, app_id, accessibility_url)
-        request(
+        response = request(
           token,
           :patch,
           "/v1/apps/#{app_id}",
@@ -147,7 +152,7 @@ module Fastlane
             }
           }
         )
-        UI.success("Updated accessibility URL")
+        UI.success("Updated accessibility URL") if response
       end
 
       def self.request(token, method, path, query: {}, body: nil)
@@ -174,7 +179,8 @@ module Fastlane
         return parsed if response.code.to_i.between?(200, 299)
 
         detail = parsed.fetch("errors", []).map { |error| error["detail"] || error["title"] }.compact.join(" ")
-        UI.user_error!("App Store Connect accessibility API request failed: #{response.code} #{detail}")
+        UI.error("App Store Connect accessibility API request failed (non-fatal): #{response.code} #{detail}")
+        nil
       end
 
       def self.description

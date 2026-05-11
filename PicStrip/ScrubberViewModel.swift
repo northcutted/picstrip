@@ -842,7 +842,6 @@ final class ScrubberViewModel {
                 let request = PHAssetCreationRequest.forAsset()
                 request.addResource(with: .photo, data: data, options: nil)
             }
-            incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
@@ -868,40 +867,10 @@ final class ScrubberViewModel {
                 createRequest.addResource(with: .photo, data: data, options: nil)
                 PHAssetChangeRequest.deleteAssets([asset] as NSArray)
             }
-            incrementStats(photos: 1, metadataFields: pendingMetadataFields, visualRegions: enabledRedactionRegions)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
         }
-    }
-
-    // MARK: - Lifetime stats
-
-    /// Atomically increments the lifetime counters stored in `UserDefaults.standard`.
-    ///
-    /// - Parameters:
-    ///   - photos: Number of photos successfully saved in this operation.
-    ///   - fields: Number of non-structural metadata fields stripped in this operation.
-    private func incrementStats(
-        photos: Int = 0,
-        fields: Int = 0,
-        metadataFields: [MetadataField] = [],
-        visualRegions: [RedactionRegion] = []
-    ) {
-        let d = UserDefaults.standard
-        if photos > 0 {
-            d.set(d.integer(forKey: "picstrip.lifetimePhotos") + photos,
-                  forKey: "picstrip.lifetimePhotos")
-        }
-        let fieldCount = fields + metadataFields.count
-        if fieldCount > 0 {
-            d.set(d.integer(forKey: "picstrip.lifetimeFields") + fieldCount,
-                  forKey: "picstrip.lifetimeFields")
-        }
-        guard !metadataFields.isEmpty || !visualRegions.isEmpty else { return }
-        var stats = PrivacyRemovalStats.load(from: d)
-        stats.record(metadataFields: metadataFields, visualRegions: visualRegions)
-        stats.save(to: d)
     }
 
     /// Number of non-structural metadata fields that will be stripped given the current config.
@@ -1148,15 +1117,6 @@ final class ScrubberViewModel {
 
         isBatchProcessing = false
         batchComplete     = true
-
-        // Tally lifetime stats for the completed batch.
-        let totalFields = batchReports.reduce(0) {
-            $0 + $1.metadataStripped.reduce(0) { $0 + $1.strippedFields.count }
-        }
-        incrementStats(photos: batchReports.count, fields: totalFields)
-        var stats = PrivacyRemovalStats.load()
-        stats.record(reports: batchReports)
-        stats.save()
     }
 
     /// Wraps all per-photo `AuditReport`s in a `BatchAuditReport`, encodes it as

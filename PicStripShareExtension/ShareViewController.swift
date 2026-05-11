@@ -3,13 +3,31 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
+// MARK: - App Group constants
+
+private enum AppGroup {
+    static let identifier = "group.com.northcutt.PicStrip"
+    static let pendingEditFilename = "pending-edit.data"
+    static let urlScheme = "picstrip://edit-from-extension"
+
+    static var pendingEditURL: URL? {
+        FileManager.default
+            .containerURL(forSecurityApplicationGroupIdentifier: identifier)?
+            .appendingPathComponent(pendingEditFilename)
+    }
+}
+
 // MARK: - ExtensionViewModel
 
 @Observable
 final class ExtensionViewModel {
-    enum Phase { case configuring, processing }
+    enum Phase: Equatable { case configuring, processing, ready }
     var phase: Phase = .configuring
     var errorMessage: String?
+    /// Human-readable description of the active processing operation.
+    /// Set just before `phase` transitions to `.processing` so the spinner
+    /// always reflects the actual destination (Photos vs. main app editor).
+    var processingMessage: String = ""
 }
 
 // MARK: - ShareViewController
@@ -18,14 +36,14 @@ final class ExtensionViewModel {
 //
 // Lifecycle:
 //   1. iOS presents this view controller as a share sheet card.
-//   2. We embed ExtensionConfigView — two toggles and a "Process & Save" button.
-//   3. On tap the view transitions to a spinner while the sequential pipeline runs:
-//        a. Request Photos .addOnly authorization.
-//        b. Resolve the provider's best concrete image UTI (Photos only vends
-//           concrete types; the abstract "public.image" causes silent callback drops).
-//        c. Load raw Data, optionally redact PII, strip metadata.
-//        d. Save the cleaned UIImage to the Photos library via PHPhotoLibrary.
-//        e. Complete with empty returningItems — the extension dismisses normally.
+//   2. We embed ExtensionConfigView — two toggles and two action buttons.
+//   3. On "Process & Save" the pipeline saves a cleaned copy directly to Photos.
+//   4. On "Edit in PicStrip" the pipeline writes processed data to the shared
+//      app group container, shows a "Image Prepared" confirmation, then dismisses.
+//      iOS Share Extensions cannot programmatically switch apps (NSExtensionContext
+//      .open() is not supported from Share Extensions), so the user opens PicStrip
+//      manually. The main app's scenePhase observer drains the pending file on the
+//      next foreground transition.
 //
 // Memory discipline: each image's UIImage and Data are released between
 // iterations.  Extensions are killed without warning above ~120 MB.
@@ -53,7 +71,14 @@ class ShareViewController: UIViewController {
             itemCount: inputItemCount(),
             viewModel: viewModel,
             onProcess: { [weak self] stripMetadata, redactPII in
-                self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII)
+                self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, destination: .photos)
+            },
+            onEdit: { [weak self] stripMetadata, redactPII in
+                self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, destination: .mainApp)
+            },
+            onComplete: { [weak self] in
+                // "Done" from the ready state: job succeeded, complete normally.
+                self?.extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
             },
             onCancel: { [weak self] in
                 self?.extensionContext?.cancelRequest(withError: NSError(
@@ -87,9 +112,22 @@ class ShareViewController: UIViewController {
             .count
     }
 
+    // MARK: - Destination
+
+    private enum ProcessingDestination {
+        /// Save cleaned copies to the Photos library.
+        case photos
+        /// Write the first image to the app group container and open the main app editor.
+        case mainApp
+    }
+
     // MARK: - Processing pipeline
 
-    private func runProcessingPipeline(stripMetadata: Bool, redactPII: Bool) {
+    private func runProcessingPipeline(
+        stripMetadata: Bool,
+        redactPII: Bool,
+        destination: ProcessingDestination
+    ) {
         guard let items = extensionContext?.inputItems as? [NSExtensionItem] else {
             showErrorThenCancel(String(localized: "No input items found."))
             return
@@ -104,26 +142,34 @@ class ShareViewController: UIViewController {
             return
         }
 
+        // "Edit in PicStrip" only processes the first image — subsequent images
+        // in a multi-select are ignored since the editor is single-image.
+        let targetProviders: [NSItemProvider] = destination == .mainApp
+            ? Array(providers.prefix(1))
+            : providers
+
+        viewModel.processingMessage = destination == .mainApp
+            ? String(localized: "Preparing to open in PicStrip…")
+            : String(localized: "Cleaning and saving to Photos…")
         viewModel.phase = .processing
 
         Task.detached(priority: .userInitiated) { [weak self] in
             guard let self else { return }
 
-            // ── Request Photos authorization ───────────────────────────────
-            // .addOnly is sufficient — we only write a new asset, never read
-            // or delete existing ones.  NSPhotoLibraryAddUsageDescription in
-            // the extension's Info.plist covers this entitlement path.
-            let authStatus = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
-            guard authStatus == .authorized || authStatus == .limited else {
-                await MainActor.run {
-                    self.showErrorThenCancel(String(localized: "Photos access is needed to save cleaned images. Grant access in Settings > Privacy > Photos."))
+            // ── Request Photos authorization (save path only) ──────────────
+            if destination == .photos {
+                let authStatus = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
+                guard authStatus == .authorized || authStatus == .limited else {
+                    await MainActor.run {
+                        self.showErrorThenCancel(String(localized: "Photos access is needed to save cleaned images. Grant access in Settings > Privacy > Photos."))
+                    }
+                    return
                 }
-                return
             }
 
             var savedCount = 0
 
-            for provider in providers {
+            for provider in targetProviders {
 
                 // ── Resolve best concrete type ────────────────────────────
                 let typeID = Self.bestTypeIdentifier(for: provider)
@@ -164,26 +210,43 @@ class ShareViewController: UIViewController {
                     finalData = rawData
                 }
 
-                // ── Save cleaned image to Photos library ───────────────────
-                guard UIImage(data: finalData) != nil else {
-                    continue
-                }
-
-                do {
-                    try await PHPhotoLibrary.shared().performChanges {
-                        let request = PHAssetCreationRequest.forAsset()
-                        request.addResource(with: .photo, data: finalData, options: nil)
+                switch destination {
+                case .photos:
+                    // ── Save cleaned image to Photos library ───────────────
+                    guard UIImage(data: finalData) != nil else { continue }
+                    do {
+                        try await PHPhotoLibrary.shared().performChanges {
+                            let request = PHAssetCreationRequest.forAsset()
+                            request.addResource(with: .photo, data: finalData, options: nil)
+                        }
+                        savedCount += 1
+                    } catch {
+                        // Non-fatal: log and continue with remaining images.
                     }
-                    savedCount += 1
-                } catch {
-                    // Non-fatal: log and continue with remaining images.
+
+                case .mainApp:
+                    // ── Write to app group container ───────────────────────
+                    guard let destURL = AppGroup.pendingEditURL else { continue }
+                    do {
+                        try finalData.write(to: destURL, options: .atomic)
+                        savedCount += 1
+                    } catch {
+                        // Non-fatal.
+                    }
                 }
             }
 
             let completedCount = savedCount
             await MainActor.run {
                 if completedCount == 0 {
-                    self.showErrorThenCancel(String(localized: "No images could be saved to your library."))
+                    self.showErrorThenCancel(String(localized: "No images could be processed."))
+                } else if destination == .mainApp {
+                    // Transition to the "ready" state so the user sees confirmation
+                    // that their image has been prepared before they dismiss and open
+                    // PicStrip manually.  iOS Share Extensions cannot programmatically
+                    // switch to another app — NSExtensionContext.open() is not supported
+                    // from Share Extensions — so we can only guide the user.
+                    self.viewModel.phase = .ready
                 } else {
                     // Completing with an empty array dismisses the extension
                     // normally — Photos / the host app needs no return value
@@ -268,6 +331,8 @@ private struct ExtensionConfigView: View {
     let itemCount: Int
     let viewModel: ExtensionViewModel
     let onProcess: (Bool, Bool) -> Void
+    let onEdit: (Bool, Bool) -> Void
+    let onComplete: () -> Void
     let onCancel: () -> Void
 
     @State private var stripMetadata: Bool = true
@@ -284,14 +349,14 @@ private struct ExtensionConfigView: View {
                 .padding(.bottom, 16)
                 .accessibilityHidden(true)
 
-            if isProcessing {
-                processingBody
-            } else {
-                configBody
+            switch viewModel.phase {
+            case .processing: processingBody
+            case .ready:      readyBody
+            case .configuring: configBody
             }
         }
         .background(Color(.systemBackground))
-        .animation(.easeInOut(duration: 0.2), value: isProcessing)
+        .animation(.easeInOut(duration: 0.2), value: viewModel.phase)
     }
 
     // MARK: - Config form
@@ -358,6 +423,21 @@ private struct ExtensionConfigView: View {
                 .controlSize(.large)
                 .accessibilityHint("Cleans selected images on this device and saves new copies to Photos.")
 
+                // "Edit in PicStrip" — only available for a single image since
+                // the full editor is single-image.  When multiple images were
+                // shared, only the first will be sent to the editor.
+                Button {
+                    onEdit(stripMetadata, redactPII)
+                } label: {
+                    Label("Edit in PicStrip", systemImage: "pencil.and.scribble")
+                        .font(.body.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .accessibilityHint("Opens the first selected image in the PicStrip editor for manual redaction.")
+
                 Button(role: .cancel) {
                     onCancel()
                 } label: {
@@ -374,6 +454,46 @@ private struct ExtensionConfigView: View {
         }
     }
 
+    // MARK: - Ready state (mainApp destination)
+
+    private var readyBody: some View {
+        VStack(spacing: 24) {
+            Spacer()
+
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 52))
+                .foregroundStyle(.green)
+                .accessibilityHidden(true)
+
+            VStack(spacing: 6) {
+                Text("Image Prepared")
+                    .font(.title2.weight(.semibold))
+                Text("Open PicStrip to edit it.")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+
+            Spacer()
+
+            Button {
+                onComplete()
+            } label: {
+                Text("Done")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 28)
+            .accessibilityHint("Closes the extension. Open PicStrip to edit your prepared image.")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 20)
+    }
+
     // MARK: - Processing state
 
     private var processingBody: some View {
@@ -381,7 +501,7 @@ private struct ExtensionConfigView: View {
             Spacer()
             ProgressView()
                 .scaleEffect(1.4)
-            Text("Cleaning and saving to Photos…")
+            Text(viewModel.processingMessage)
                 .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
             Spacer()
@@ -389,6 +509,6 @@ private struct ExtensionConfigView: View {
         .frame(maxWidth: .infinity)
         .padding(.bottom, 28)
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("Cleaning and saving to Photos")
+        .accessibilityLabel(viewModel.processingMessage)
     }
 }

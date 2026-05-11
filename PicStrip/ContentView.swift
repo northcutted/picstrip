@@ -4,14 +4,12 @@ import UniformTypeIdentifiers
 
 struct ContentView: View {
 
-    @State private var viewModel = ScrubberViewModel()
+    @State var viewModel: ScrubberViewModel
     @State private var isPanelOpen: Bool = false
     @State private var visiblePanelCategory: String = ""
-    @State private var showingPrivacyImpact = false
     @State private var isRedactionEditing = false
     @State private var isAddingRedaction = false
     @State private var zoomResetRequest = 0
-    @State private var isShowingSensitiveDataReview = false
 
     /// Set to true by the scenePhase observer when StripImageIntent fires.
     @State private var isShowingIntentBatchPicker = false
@@ -42,10 +40,6 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    // Lifetime stats — written by ScrubberViewModel, read here via @AppStorage.
-    @AppStorage("picstrip.lifetimePhotos") private var lifetimePhotos: Int = 0
-    @AppStorage("picstrip.lifetimeFields") private var lifetimeFields: Int = 0
-
     private var hasPhoto: Bool { viewModel.inputImage != nil }
 
     private var sourceHasPrivacyMetadata: Bool {
@@ -58,6 +52,9 @@ struct ContentView: View {
             )
         } == true
     }
+
+    /// True once the on-device PII scan has found at least one detection.
+    private var hasPIIDetections: Bool { !viewModel.detectedPII.isEmpty }
 
     /// Controls presentation of the About / Trust sheet.
     @State private var showingAbout = false
@@ -112,12 +109,6 @@ struct ContentView: View {
             }
             .animation(.easeInOut(duration: 0.3), value: hasPhoto)
         }
-        .sheet(isPresented: $showingPrivacyImpact) {
-            PrivacyImpactSummaryView(stats: PrivacyRemovalStats.load())
-        }
-        .sheet(isPresented: $isShowingSensitiveDataReview) {
-            SensitiveDataReviewView(viewModel: viewModel)
-        }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
         }, content: { sheet in
@@ -159,7 +150,6 @@ struct ContentView: View {
         // test), load the image bytes directly so the full photo UI is visible
         // without needing to automate the system Photos picker.
         .task {
-            seedStatsIfRequested()
             guard let path = ProcessInfo.processInfo.environment["PICSTRIP_FIXTURE"],
                   let data = try? Data(contentsOf: URL(fileURLWithPath: path))
             else { return }
@@ -247,13 +237,6 @@ struct ContentView: View {
 
             Spacer()
 
-            // Lifetime stats capsule — only shown after first save
-            if lifetimePhotos > 0 {
-                statsCapsule
-                    .padding(.bottom, 24)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
-            }
-
             // Action buttons
             VStack(spacing: 12) {
                 PhotosPicker(
@@ -302,7 +285,7 @@ struct ContentView: View {
             .padding(.bottom, 48)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .animation(.spring(duration: 0.4), value: lifetimePhotos)
+        .animation(.spring(duration: 0.4), value: hasPhoto)
     }
 
     // MARK: - Breathing gradient
@@ -339,43 +322,6 @@ struct ContentView: View {
                 bottomBlobPhase = true
             }
         }
-    }
-
-    // MARK: - Stats capsule
-
-    private var statsCapsule: some View {
-        Button {
-            showingPrivacyImpact = true
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "checkmark.shield.fill")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(.green)
-                    .accessibilityHidden(true)
-                Text("^[\(lifetimeFields) field](inflect: true) stripped · ^[\(lifetimePhotos) photo](inflect: true) cleaned")
-                    .font(.footnote.weight(.medium))
-                    .foregroundStyle(.secondary)
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.tertiary)
-                    .accessibilityHidden(true)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(.regularMaterial, in: Capsule())
-            .overlay(Capsule().strokeBorder(Color.primary.opacity(0.06), lineWidth: 1))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(statsText)
-        .accessibilityElement(children: .ignore)
-        .accessibilityHint("Double tap to review what was removed")
-        .accessibilityIdentifier("privacyStatsButton")
-    }
-
-    private var statsText: String {
-        let photos = lifetimePhotos
-        let fields = lifetimeFields
-        return String(localized: "^[\(fields) field](inflect: true) stripped · ^[\(photos) photo](inflect: true) cleaned")
     }
 
     // MARK: - Pill button label
@@ -453,19 +399,6 @@ struct ContentView: View {
         }
 
         return false
-    }
-
-    private func seedStatsIfRequested() {
-        guard ProcessInfo.processInfo.environment["PICSTRIP_SEED_STATS"] == "1" else { return }
-
-        lifetimePhotos = 4
-        lifetimeFields = 18
-
-        var stats = PrivacyRemovalStats()
-        stats.metadataCategoryCounts = ["GPS": 6, "EXIF": 8, "IPTC": 4]
-        stats.visualTypeCounts = ["Email Address": 3, "Phone Number": 2, "Custom Redaction": 1]
-        stats.visualConfidenceCounts = ["High": 4, "Medium": 1]
-        stats.save()
     }
 
     // MARK: - Photo layout (existing layout when a photo is loaded)
@@ -687,11 +620,6 @@ struct ContentView: View {
                 if viewModel.isScanningPII {
                     scanningRow
                         .transition(.opacity.combined(with: .move(edge: .top)))
-                } else if !viewModel.detectedPII.isEmpty {
-                    sensitiveBanner
-                        .transition(.opacity.combined(with: .move(edge: .top)))
-                    editRedactionsRow
-                        .transition(.opacity.combined(with: .move(edge: .top)))
                 } else {
                     editRedactionsRow
                         .transition(.opacity.combined(with: .move(edge: .top)))
@@ -798,64 +726,12 @@ struct ContentView: View {
         .accessibilityLabel("Scanning for sensitive data")
     }
 
-    // MARK: - Sensitive data found banner → opens SensitiveDataReviewView
-
-    private var sensitiveBanner: some View {
-        Button {
-            isShowingSensitiveDataReview = true
-            closePanel()
-        } label: {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle().fill(Color.red.opacity(0.14))
-                    Image(systemName: "eye.fill")
-                        .font(.system(size: 18, weight: .semibold))
-                        .foregroundStyle(.red)
-                        .accessibilityHidden(true)
-                }
-                .frame(width: 38, height: 38)
-
-                VStack(alignment: .leading, spacing: 3) {
-                    Text("Sensitive data found")
-                        .font(.subheadline.weight(.semibold))
-                    // Single Text — split concatenations (Text(...) + Text(...))
-                    // each look up their own LocalizedStringKey, so SwiftUI can't
-                    // find translations for fragments like "%lld type found • ".
-                    // Combining produces one key that already lives in
-                    // Localizable.xcstrings with translations for all locales.
-                    Text("^[\(viewModel.detectedPII.count) type](inflect: true) found • ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.red.opacity(0.5))
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 11)
-            .background(Color.red.opacity(0.08), in: RoundedRectangle(cornerRadius: 14))
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .strokeBorder(Color.red.opacity(0.20), lineWidth: 1)
-            )
-            // Inner identifier lets XCUITest confirm the PII section is present
-            // as a distinct element from the tap target.
-            .accessibilityIdentifier("sensitiveDataSection")
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(
-            Text("Sensitive data found: ^[\(viewModel.detectedPII.count) type](inflect: true), ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) will redact. Tap to review.")
-        )
-        .accessibilityIdentifier("reviewSensitiveDataButton")
-        .accessibilityHint("Opens the Sensitive Data review sheet")
-    }
-
-    // MARK: - Edit Redactions row → opens the redaction editor
+    // MARK: - Edit Redactions row
+    //
+    // Neutral style when no PII is detected.
+    // Red tint + eye icon when the on-device scan found sensitive visual data,
+    // so the row itself signals the finding without a separate banner card.
+    // Tapping always opens the redaction editor.
 
     private var editRedactionsRow: some View {
         Button {
@@ -865,9 +741,12 @@ struct ContentView: View {
             }
         } label: {
             HStack(spacing: 10) {
-                Label("Edit Redactions", systemImage: "square.dashed")
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.primary)
+                Label(
+                    "Edit Redactions",
+                    systemImage: hasPIIDetections ? "eye.fill" : "square.dashed"
+                )
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(hasPIIDetections ? Color.red : Color.primary)
 
                 Spacer()
 
@@ -875,33 +754,40 @@ struct ContentView: View {
                 if regionCount == 0 {
                     Text("None")
                         .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.tertiary))
                 } else {
                     Text("^[\(regionCount) region](inflect: true)")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.secondary))
                 }
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(.tertiary)
+                    .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.5)) : AnyShapeStyle(.tertiary))
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
             .background(
-                Color(.secondarySystemGroupedBackground),
+                hasPIIDetections
+                    ? AnyShapeStyle(Color.red.opacity(0.08))
+                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
                 in: RoundedRectangle(cornerRadius: 12)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+                    .strokeBorder(
+                        hasPIIDetections ? Color.red.opacity(0.20) : Color.primary.opacity(0.06),
+                        lineWidth: 1
+                    )
             )
         }
         .buttonStyle(.plain)
         .accessibilityLabel(Text(
-            viewModel.enabledRedactionRegions.isEmpty
-                ? "Edit redactions. None active."
-                : "Edit redactions. \(viewModel.enabledRedactionRegions.count) active."
+            hasPIIDetections
+                ? "Sensitive data found. Edit redactions. ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) active."
+                : (viewModel.enabledRedactionRegions.isEmpty
+                    ? "Edit redactions. None active."
+                    : "Edit redactions. ^[\(viewModel.enabledRedactionRegions.count) region](inflect: true) active.")
         ))
         .accessibilityHint("Opens the redaction editor")
         .accessibilityIdentifier("editRedactionsButton")
@@ -1308,5 +1194,5 @@ private struct RedactionEditorDrawer: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(viewModel: ScrubberViewModel())
 }

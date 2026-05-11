@@ -217,6 +217,12 @@ struct AboutView: View {
                         title: "No Analytics or Tracking",
                         detail: "No telemetry, no crash reporters, no ad SDKs. Your usage is not observed or collected in any way."
                     )
+                    privacyRow(
+                        icon: "clock.badge.xmark",
+                        color: .purple,
+                        title: "No Photo History",
+                        detail: "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session."
+                    )
                 }
 
                 // ── Section 5: Open Source & Developer ─────────────────────

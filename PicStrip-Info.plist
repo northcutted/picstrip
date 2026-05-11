@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- Standard bundle identity keys — resolved by the build system -->
+    <key>CFBundleExecutable</key>
+    <string>$(EXECUTABLE_NAME)</string>
+    <key>CFBundleName</key>
+    <string>$(PRODUCT_NAME)</string>
+    <key>CFBundleDisplayName</key>
+    <string>PicStrip</string>
+    <key>CFBundleIdentifier</key>
+    <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+    <key>CFBundleVersion</key>
+    <string>$(CURRENT_PROJECT_VERSION)</string>
+    <key>CFBundleShortVersionString</key>
+    <string>$(MARKETING_VERSION)</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+
+    <!-- App category -->
+    <key>LSApplicationCategoryType</key>
+    <string>public.app-category.utilities</string>
+
+    <!-- Encryption -->
+    <key>ITSAppUsesNonExemptEncryption</key>
+    <false/>
+
+    <!-- Privacy usage descriptions -->
+    <key>NSPhotoLibraryAddUsageDescription</key>
+    <string>PicStrip saves the scrubbed image to your photo library.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>PicStrip needs access to your photo library to replace the original image when requested.</string>
+
+    <!-- URL scheme — registered so the Share Extension can open the main app editor.
+         picstrip://edit-from-extension is called after writing the processed image data
+         to the shared app group container. No sensitive data is passed in the URL. -->
+    <key>CFBundleURLTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleURLName</key>
+            <string>com.northcutt.PicStrip</string>
+            <key>CFBundleURLSchemes</key>
+            <array>
+                <string>picstrip</string>
+            </array>
+        </dict>
+    </array>
+
+    <!-- UI — equivalent to INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES -->
+    <key>UIApplicationSceneManifest</key>
+    <dict>
+        <key>UIApplicationSupportsMultipleScenes</key>
+        <false/>
+        <key>UISceneConfigurations</key>
+        <dict/>
+    </dict>
+
+    <!-- Equivalent to INFOPLIST_KEY_UILaunchScreen_Generation = YES -->
+    <key>UILaunchScreen</key>
+    <dict/>
+
+    <!-- Equivalent to INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES -->
+    <key>UIApplicationSupportsIndirectInputEvents</key>
+    <true/>
+
+    <!-- Supported orientations -->
+    <key>UISupportedInterfaceOrientations~iphone</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
+</dict>
+</plist>

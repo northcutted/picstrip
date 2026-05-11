@@ -66,6 +66,10 @@ struct ZoomableImagePreview: View {
     @State private var focusPulse = false
     @State private var draftRedactionRect: CGRect?
     @State private var dragStartRect: CGRect?
+    /// True while the user is actively dragging or resizing a redaction region.
+    /// Used to suppress the simultaneous pan gesture so the background does not
+    /// scroll while a redaction handle is being moved.
+    @State private var isDraggingRedaction: Bool = false
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -265,7 +269,7 @@ struct ZoomableImagePreview: View {
     private func panGesture(container: CGSize, image: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 2)
             .onChanged { value in
-                guard scale > 1.01, !isAddingRedaction else { return }
+                guard scale > 1.01, !isAddingRedaction, !isDraggingRedaction else { return }
                 let proposed = CGSize(
                     width: lastOffset.width + value.translation.width,
                     height: lastOffset.height + value.translation.height
@@ -402,6 +406,7 @@ struct ZoomableImagePreview: View {
                 guard isRedactionEditing, !isAddingRedaction else { return }
                 if dragStartRect == nil {
                     dragStartRect = region.rect
+                    isDraggingRedaction = true
                     // Disable the spring animation that fires when selectedRedactionRegionID
                     // changes so it does not fight the gesture's per-frame position updates,
                     // which would cause the region to visibly "snap" on the first drag event.
@@ -418,6 +423,7 @@ struct ZoomableImagePreview: View {
             }
             .onEnded { _ in
                 dragStartRect = nil
+                isDraggingRedaction = false
             }
     }
 
@@ -427,6 +433,7 @@ struct ZoomableImagePreview: View {
                 guard isRedactionEditing else { return }
                 if dragStartRect == nil {
                     dragStartRect = region.rect
+                    isDraggingRedaction = true
                     // Same flicker-fix as moveGesture: suppress the selection animation
                     // so the spring does not compete with the resize drag updates.
                     var t = Transaction()
@@ -440,6 +447,7 @@ struct ZoomableImagePreview: View {
             }
             .onEnded { _ in
                 dragStartRect = nil
+                isDraggingRedaction = false
             }
     }
 

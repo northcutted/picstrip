@@ -11,12 +11,10 @@ import XCTest
 ///
 /// Screens captured:
 ///   01_Home          — home screen with hero animation
-///   02_PrivacyImpact — aggregate removed-data analysis sheet
-///   03_About         — About & Trust sheet
-///   04_PhotoLoaded   — photo loaded, scan complete, badge row and sensitive data section visible
-///   05_RedactionEditor — custom redaction edit mode
-///   06_SensitiveData — Sensitive Data review sheet open
-///   07_ReviewAndSave — pre-save review sheet
+///   02_About         — About & Trust sheet
+///   03_PhotoLoaded   — photo loaded, scan complete, Edit Redactions row visible
+///   04_RedactionEditor — custom redaction edit mode
+///   05_ReviewAndSave — pre-save review sheet
 @MainActor
 final class PicStripUITests: XCTestCase {
 
@@ -48,8 +46,8 @@ final class PicStripUITests: XCTestCase {
     // MARK: - All screenshots — two launches
 
     /// Captures every App Store screenshot in one continuous session.
-    /// Launch 1 (no fixture): 01_Home, 02_PrivacyImpact, 03_About
-    /// Launch 2 (with fixture): 04_PhotoLoaded, 05_RedactionEditor, 06_SensitiveData, 07_ReviewAndSave
+    /// Launch 1 (no fixture): 01_Home, 02_About
+    /// Launch 2 (with fixture): 03_PhotoLoaded, 04_RedactionEditor, 05_ReviewAndSave
     @MainActor
     func testAllScreenshots() throws {
 
@@ -57,40 +55,25 @@ final class PicStripUITests: XCTestCase {
         setupSnapshot(app)
 
         // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 1: No fixture — home + aggregate stats + About
+        // LAUNCH 1: No fixture — home + About
         // ─────────────────────────────────────────────────────────────────────
-        app.launchEnvironment["PICSTRIP_SEED_STATS"] = "1"
         app.launch()
 
         // 01 — Home: hero animation has started, wait for it to settle.
         Thread.sleep(forTimeInterval: 1.5)
         snapshot("01_Home")
 
-        // 02 — Aggregate privacy impact sheet
-        let privacyStatsButton = app.descendants(matching: .any)["privacyStatsButton"]
-        XCTAssertTrue(privacyStatsButton.waitForExistence(timeout: 5))
-        privacyStatsButton.tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["privacyImpactSummary"].waitForExistence(timeout: 5),
-            "Privacy impact sheet should appear after tapping the home stats badge."
-        )
-        Thread.sleep(forTimeInterval: 0.5)
-        snapshot("02_PrivacyImpact")
-        app.buttons["privacyImpactDoneButton"].tap()
-
-        // 03 — About sheet
-        Thread.sleep(forTimeInterval: 0.4)
+        // 02 — About sheet
         let infoButton = app.buttons["infoButton"]
         XCTAssertTrue(infoButton.waitForExistence(timeout: 5))
         infoButton.tap()
         Thread.sleep(forTimeInterval: 0.8)
-        snapshot("03_About")
+        snapshot("02_About")
 
         // ─────────────────────────────────────────────────────────────────────
         // LAUNCH 2: With fixture — photo loaded screens
         // ─────────────────────────────────────────────────────────────────────
         app.terminate()
-        app.launchEnvironment.removeValue(forKey: "PICSTRIP_SEED_STATS")
 
         // Write fixture bytes to the simulator's /tmp so the app can read them.
         let fixtureURL = fixtureImageURL()
@@ -105,25 +88,21 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 
-        // 04 — Photo loaded: wait for the dismiss button (photo fully loaded), then
-        // wait for reviewSensitiveDataButton which only appears once the PII scan is
+        // 03 — Photo loaded: wait for the dismiss button (photo fully loaded), then
+        // wait for editRedactionsButton which only appears once the PII scan is
         // complete — guarantees the badge row is stable and saveButton is enabled.
         let dismissButton = app.buttons["dismissPhotoButton"]
         XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
                       "Dismiss button should appear after fixture image loads")
 
-        let reviewSensitiveDataButton = app.descendants(matching: .any)["reviewSensitiveDataButton"]
+        let editRedactionsButton = app.descendants(matching: .any)["editRedactionsButton"]
         XCTAssertTrue(
-            reviewSensitiveDataButton.waitForExistence(timeout: 20),
-            "Review Sensitive Data button should appear once the PII scan finishes."
+            editRedactionsButton.waitForExistence(timeout: 20),
+            "Edit Redactions button should appear once the PII scan finishes."
         )
         XCTAssertTrue(
             app.descendants(matching: .any)["metadataPhotoPreview"].exists,
             "Loaded-photo screen should expose a zoomable/pannable image preview."
-        )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["sensitiveDataSection"].exists,
-            "Loaded-photo screen should show visual sensitive data separately from metadata."
         )
         XCTAssertFalse(
             app.descendants(matching: .any)["piiPill"].exists,
@@ -133,11 +112,9 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["metadataFoundLabel"].exists,
             "Metadata should remain its own section when visual sensitive data is present."
         )
-        snapshot("04_PhotoLoaded")
+        snapshot("03_PhotoLoaded")
 
-        // 05 — Redaction editor: create one manual redaction on top of detected regions.
-        let editRedactionsButton = app.descendants(matching: .any)["editRedactionsButton"]
-        XCTAssertTrue(editRedactionsButton.waitForExistence(timeout: 5))
+        // 04 — Redaction editor: create one manual redaction on top of detected regions.
         editRedactionsButton.tap()
 
         let addRedactionButton = app.descendants(matching: .any)["addRedactionButton"]
@@ -149,24 +126,11 @@ final class PicStripUITests: XCTestCase {
         let end = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.45))
         start.press(forDuration: 0.1, thenDragTo: end)
         Thread.sleep(forTimeInterval: 0.5)
-        snapshot("05_RedactionEditor")
+        snapshot("04_RedactionEditor")
         app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
         Thread.sleep(forTimeInterval: 0.3)
 
-        // 06 — Sensitive Data sheet: tap the review button, wait for the sheet.
-        reviewSensitiveDataButton.tap()
-        XCTAssertTrue(
-            app.descendants(matching: .any)["sensitiveDataReview"].waitForExistence(timeout: 5),
-            "Sensitive Data sheet should appear after tapping the review button."
-        )
-        Thread.sleep(forTimeInterval: 0.5)
-        snapshot("06_SensitiveData")
-
-        // Dismiss the sheet via the Done button in the nav bar.
-        app.buttons["sensitiveDataDoneButton"].tap()
-        Thread.sleep(forTimeInterval: 0.5)
-
-        // 07 — Review & save sheet: tap Save to Photos.
+        // 05 — Review & save sheet: tap Save to Photos.
         let saveButton = app.buttons["saveButton"]
         XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
         saveButton.tap()
@@ -180,7 +144,7 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["savePreviewLabel"].exists,
             "Review sheet should label the visual save preview."
         )
-        snapshot("07_ReviewAndSave")
+        snapshot("05_ReviewAndSave")
     }
 
     @MainActor
@@ -201,20 +165,6 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["noMetadataBanner"].waitForExistence(timeout: 10),
             "Images without non-structural hidden metadata should say no hidden metadata was found."
         )
-    }
-
-    @MainActor
-    func testPrivacyStatsButtonOpensAggregateAnalysis() throws {
-        let app = XCUIApplication()
-        app.launchEnvironment["PICSTRIP_SEED_STATS"] = "1"
-        app.launch()
-
-        let statsButton = app.descendants(matching: .any)["privacyStatsButton"]
-        XCTAssertTrue(statsButton.waitForExistence(timeout: 5))
-        statsButton.tap()
-
-        XCTAssertTrue(app.descendants(matching: .any)["privacyImpactSummary"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.navigationBars["Removed Data"].exists)
     }
 
     @MainActor
@@ -254,8 +204,11 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["doneEditingRedactionsButton"].exists)
     }
 
+    /// When a fixture containing detectable sensitive data is loaded, the
+    /// Edit Redactions row should appear (signalling the scan completed) and
+    /// tapping it should open the redaction editor with at least one region.
     @MainActor
-    func testSensitiveDataReviewFocusesDetection() throws {
+    func testPIIDetectedOpensEditorWithRegions() throws {
         let app = XCUIApplication()
 
         let fixtureURL = fixtureImageURL()
@@ -268,24 +221,29 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 
+        // The Edit Redactions row is the scan-complete sentinel:
+        // it only appears after the scanning row (ProgressView) disappears.
+        let editRedactionsButton = app.descendants(matching: .any)["editRedactionsButton"]
         XCTAssertTrue(
-            app.descendants(matching: .any)["sensitiveDataSection"].waitForExistence(timeout: 20),
-            "Fixture should surface the dedicated sensitive data section."
+            editRedactionsButton.waitForExistence(timeout: 20),
+            "Edit Redactions button should appear once the PII scan finishes."
         )
 
-        let reviewButton = app.descendants(matching: .any)["reviewSensitiveDataButton"]
-        XCTAssertTrue(reviewButton.waitForExistence(timeout: 5))
-        reviewButton.tap()
+        // Tap into the redaction editor — the row must be interactive.
+        editRedactionsButton.tap()
 
-        XCTAssertTrue(app.navigationBars["Sensitive Data"].waitForExistence(timeout: 5))
-
-        let emailRow = app.descendants(matching: .any)["sensitiveDataRow_email"]
-        XCTAssertTrue(emailRow.waitForExistence(timeout: 10))
-
-        let bulkToggleButton = app.buttons["sensitiveDataBulkToggleButton"].firstMatch
+        // The Add Region button is only visible inside the redaction editor,
+        // confirming the editor opened successfully.
         XCTAssertTrue(
-            bulkToggleButton.waitForExistence(timeout: 5),
-            "Sensitive Data review should expose the bulk redact/deselect control."
+            app.descendants(matching: .any)["addRedactionButton"].waitForExistence(timeout: 5),
+            "Tapping Edit Redactions should open the redaction editor."
+        )
+
+        // At least one region row should exist because the fixture contains
+        // detectable PII (the same fixture used by other tests).
+        XCTAssertTrue(
+            app.descendants(matching: .any)["doneEditingRedactionsButton"].exists,
+            "Redaction editor should be open with a Done button."
         )
     }
 

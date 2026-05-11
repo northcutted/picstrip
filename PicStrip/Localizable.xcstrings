@@ -1089,6 +1089,7 @@
       }
     },
     "^[%lld field](inflect: true)" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1277,6 +1278,7 @@
       }
     },
     "^[%lld field](inflect: true) stripped · ^[%lld photo](inflect: true) cleaned" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -1772,6 +1774,7 @@
 
     },
     "^[%lld type](inflect: true) found • ^[%lld region](inflect: true) will redact" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2639,6 +2642,7 @@
       }
     },
     "Addresses can reveal where someone lives, works, or spends time." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -2739,6 +2743,7 @@
       }
     },
     "Aggregate counts only. PicStrip does not keep photo history, removed values, OCR snippets, or redaction boxes." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -3514,6 +3519,12 @@
         }
       }
     },
+    "Browse Files" : {
+
+    },
+    "Browse files to select an image" : {
+
+    },
     "Camera settings, the exact date and time the photo was taken, and your device model. The timestamp can expose your daily routine; the device model identifies your phone or camera." : {
       "localizations" : {
         "ar" : {
@@ -4191,6 +4202,7 @@
       }
     },
     "Clean and save a photo to build an aggregate privacy summary." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4667,6 +4679,7 @@
       }
     },
     "Cleaning and saving to Photos…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -4949,6 +4962,7 @@
       }
     },
     "Confidence summarizes automatic visual detections only. Custom redactions are counted without a confidence score." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -5743,6 +5757,7 @@
       }
     },
     "Credentials in screenshots or whiteboards can be reused directly if they are visible." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6244,6 +6259,7 @@
       }
     },
     "Custom redactions hide sensitive visual details that automatic detection may not understand." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -6742,6 +6758,7 @@
       }
     },
     "Detection Confidence" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -7879,6 +7896,7 @@
       }
     },
     "Double tap to review what was removed" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -8449,7 +8467,7 @@
         }
       }
     },
-    "Edit redactions. %lld active." : {
+    "Edit redactions. ^[%lld region](inflect: true) active." : {
 
     },
     "Edit redactions. None active." : {
@@ -8556,6 +8574,7 @@
       }
     },
     "Email addresses can connect a photo to accounts, breach data, social profiles, and workplace identity." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9235,6 +9254,7 @@
 
     },
     "Financial identifiers can expose accounts or enable fraud when shared with the wrong audience." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -9738,6 +9758,7 @@
       }
     },
     "Hardware addresses can identify a specific device on a local network." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10708,6 +10729,7 @@
       }
     },
     "Identity details can support impersonation, account recovery abuse, or public-record matching." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11002,6 +11024,7 @@
       }
     },
     "IP addresses can identify a network, workplace, approximate location, or infrastructure." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -11692,6 +11715,9 @@
         }
       }
     },
+    "License Plate Number" : {
+
+    },
     "Link" : {
       "localizations" : {
         "ar" : {
@@ -11793,6 +11819,7 @@
       }
     },
     "Links can expose private documents, usernames, tracking parameters, or internal systems." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13351,6 +13378,7 @@
       }
     },
     "No Cleanup Stats Yet" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -13631,6 +13659,9 @@
           }
         }
       }
+    },
+    "No Photo History" : {
+
     },
     "No Private Metadata Found" : {
       "localizations" : {
@@ -14584,9 +14615,6 @@
         }
       }
     },
-    "Opens the Sensitive Data review sheet" : {
-
-    },
     "optimised for sharing online" : {
       "localizations" : {
         "ar" : {
@@ -15070,6 +15098,7 @@
       }
     },
     "Phone numbers can be searched, messaged, or linked to public records and account recovery flows." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15556,6 +15585,9 @@
           }
         }
       }
+    },
+    "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session." : {
+
     },
     "PicStrip scans for sensitive visual data (passwords, emails, phone numbers) and blacks it out on-device." : {
       "localizations" : {
@@ -16704,6 +16736,7 @@
       }
     },
     "Privacy Cleanup" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -17676,6 +17709,9 @@
     "QR Code / Barcode" : {
 
     },
+    "Ready to Edit" : {
+
+    },
     "Recommended" : {
       "localizations" : {
         "ar" : {
@@ -18451,6 +18487,7 @@
       }
     },
     "Removed Data" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20061,6 +20098,7 @@
       }
     },
     "Secrets and tokens can grant access to accounts, code, infrastructure, or paid services." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20638,6 +20676,7 @@
       }
     },
     "Sensitive data found" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20831,6 +20870,9 @@
           }
         }
       }
+    },
+    "Sensitive data found. Edit redactions. ^[%lld region](inflect: true) active." : {
+
     },
     "Share Image" : {
       "localizations" : {
@@ -23629,6 +23671,9 @@
           }
         }
       }
+    },
+    "Your image has been prepared.\nTap below to open it in PicStrip." : {
+
     },
     "Your photos are never uploaded to any server. All scanning, redaction, and metadata stripping happens entirely on your iPhone." : {
       "localizations" : {
