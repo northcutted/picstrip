@@ -407,15 +407,21 @@ struct ZoomableImagePreview: View {
                 if dragStartRect == nil {
                     dragStartRect = region.rect
                     isDraggingRedaction = true
-                    // Disable the spring animation that fires when selectedRedactionRegionID
-                    // changes so it does not fight the gesture's per-frame position updates,
-                    // which would cause the region to visibly "snap" on the first drag event.
-                    var t = Transaction()
-                    t.disablesAnimations = true
-                    withTransaction(t) { selectRedaction(region.id) }
                     // Notify the view model once per gesture so it can push exactly
                     // one undo snapshot regardless of how many drag events follow.
                     onBeginUpdateRedaction?(region.id)
+                    // Select the region in its own transaction so the selection-state
+                    // spring (line 354) only has the visual style change to animate
+                    // (border/fill), not a position delta.  Calling onUpdateRedaction
+                    // in the same pass as selectRedaction would batch a rect mutation
+                    // together with the selectedRedactionRegionID change, causing the
+                    // value:-keyed spring to animate the position — visible as a jump.
+                    // The first event's translation is ≤ minimumDistance (2 pt) in
+                    // screen space, so skipping it here is imperceptible.
+                    var t = Transaction()
+                    t.disablesAnimations = false   // let the selection style animate nicely
+                    withTransaction(t) { selectRedaction(region.id) }
+                    return
                 }
                 guard let dragStartRect else { return }
                 let delta = normalizedDelta(value.translation, image: image)
@@ -434,12 +440,14 @@ struct ZoomableImagePreview: View {
                 if dragStartRect == nil {
                     dragStartRect = region.rect
                     isDraggingRedaction = true
-                    // Same flicker-fix as moveGesture: suppress the selection animation
-                    // so the spring does not compete with the resize drag updates.
-                    var t = Transaction()
-                    t.disablesAnimations = true
-                    withTransaction(t) { selectRedaction(region.id) }
                     onBeginUpdateRedaction?(region.id)
+                    // Same split as moveGesture: select first, skip the first delta.
+                    // Prevents the position-jump caused by the value:-keyed spring at
+                    // line 354 animating a batched rect + selectedID change together.
+                    var t = Transaction()
+                    t.disablesAnimations = false
+                    withTransaction(t) { selectRedaction(region.id) }
+                    return
                 }
                 guard let dragStartRect else { return }
                 let delta = normalizedDelta(value.translation, image: image)
