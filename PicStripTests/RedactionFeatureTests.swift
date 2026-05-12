@@ -450,6 +450,86 @@ final class RedactionFeatureTests: XCTestCase {
         XCTAssertGreaterThanOrEqual(clamped.minX, 0)
     }
 
+    // MARK: - normalizedDelta scale-correctness tests
+    //
+    // These guard against the drag-drift bug where move/resize deltas were divided
+    // only by imageSize, missing the current zoom `scale` factor.  At scale=1 the
+    // bug was invisible; at scale=2 the box moved twice as far as the finger.
+    //
+    // `normalizedDelta` is private to ZoomableImagePreview, so we test the maths
+    // directly through `imageNormalizedPoint` using the same formula the
+    // implementation uses: delta = imageNormalizedPoint(end) − imageNormalizedPoint(start).
+
+    /// At scale=1 (no zoom), dragging 20 pt right over a 200 pt wide image should
+    /// produce a normalised delta of 0.10 (20 / 200).
+    func testNormalizedDeltaScaleOne() {
+        let imageSize  = CGSize(width: 200, height: 300)
+        let container  = CGSize(width: 400, height: 600)
+        let scale: CGFloat = 1
+        let pan = CGSize.zero
+
+        let start = CGPoint(x: 200, y: 300)           // container centre
+        let end   = CGPoint(x: 220, y: 300)           // 20 pt right
+
+        let s = imageNormalizedPoint(start, imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let e = imageNormalizedPoint(end,   imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let dx = e.x - s.x
+        let dy = e.y - s.y
+
+        XCTAssertEqual(dx,  0.10, accuracy: 0.0001,
+                       "20 pt / (1 × 200 pt) must equal 0.10 normalised delta at scale=1")
+        XCTAssertEqual(dy,  0.00, accuracy: 0.0001, "Pure horizontal drag must not produce vertical delta")
+    }
+
+    /// At scale=2 (pinched in), the same 20 pt finger drag should produce a
+    /// normalised delta of 0.05 (20 / (2 × 200)) — half of the scale=1 value.
+    /// The old code produced 0.10 regardless of scale, causing a 2× overshoot.
+    func testNormalizedDeltaScaleTwo() {
+        let imageSize  = CGSize(width: 200, height: 300)
+        let container  = CGSize(width: 400, height: 600)
+        let scale: CGFloat = 2
+        let pan = CGSize.zero   // at scale=2 with no pan the image fills the container exactly
+
+        // At scale=2 the image origin is at (0, 0) — no centering margin left.
+        // Container centre (200, 300) maps to normalised (0.5, 0.5).
+        let start = CGPoint(x: 200, y: 300)
+        let end   = CGPoint(x: 220, y: 300)           // same 20 pt finger drag
+
+        let s = imageNormalizedPoint(start, imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let e = imageNormalizedPoint(end,   imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let dx = e.x - s.x
+
+        XCTAssertEqual(dx, 0.05, accuracy: 0.0001,
+                       "20 pt / (2 × 200 pt) must equal 0.05 at scale=2; old code returned 0.10 (regression)")
+    }
+
+    /// With non-zero pan, the delta between two nearby points must be the same as
+    /// without pan — pan offset cancels in the subtraction.
+    func testNormalizedDeltaPanOffsetCancels() {
+        let imageSize  = CGSize(width: 200, height: 300)
+        let container  = CGSize(width: 400, height: 600)
+        let scale: CGFloat = 2
+        let pan = CGSize(width: 50, height: -30)       // arbitrary non-zero pan
+
+        let start = CGPoint(x: 200, y: 300)
+        let end   = CGPoint(x: 200, y: 330)            // 30 pt downward drag
+
+        let s = imageNormalizedPoint(start, imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let e = imageNormalizedPoint(end,   imageSize: imageSize, containerSize: container,
+                                     scale: scale, panOffset: pan)
+        let dy = e.y - s.y
+
+        // Expected: 30 / (2 × 300) = 0.05
+        XCTAssertEqual(dy, 0.05, accuracy: 0.0001,
+                       "Pan offset must cancel in endpoint subtraction; dy must equal 30/(2×300)=0.05")
+        XCTAssertEqual(e.x - s.x, 0.0, accuracy: 0.0001, "Pure vertical drag must not produce horizontal delta")
+    }
+
     // MARK: - Style + Color tests
 
     /// New regions must carry `.solid` and `.black` defaults so existing rendering

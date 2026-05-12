@@ -10923,6 +10923,9 @@
         }
       }
     },
+    "Image Prepared" : {
+
+    },
     "IP Address" : {
       "localizations" : {
         "ar" : {
@@ -14232,6 +14235,9 @@
           }
         }
       }
+    },
+    "Open PicStrip to edit it." : {
+
     },
     "Open Source License" : {
       "localizations" : {
@@ -17707,9 +17713,6 @@
       }
     },
     "QR Code / Barcode" : {
-
-    },
-    "Ready to Edit" : {
 
     },
     "Recommended" : {
@@ -23671,9 +23674,6 @@
           }
         }
       }
-    },
-    "Your image has been prepared.\nTap below to open it in PicStrip." : {
-
     },
     "Your photos are never uploaded to any server. All scanning, redaction, and metadata stripping happens entirely on your iPhone." : {
       "localizations" : {

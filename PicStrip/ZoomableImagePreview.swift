@@ -66,6 +66,14 @@ struct ZoomableImagePreview: View {
     @State private var focusPulse = false
     @State private var draftRedactionRect: CGRect?
     @State private var dragStartRect: CGRect?
+    /// The live normalised rect for the region currently being moved or resized.
+    ///
+    /// Kept as local `@State` so position updates during a drag only re-render
+    /// `ZoomableImagePreview` itself — not the entire `ContentView` hierarchy.
+    /// `onUpdateRedaction` is called **once** in `onEnded` with the final rect,
+    /// instead of on every `onChanged` event (60–120×/sec on ProMotion), which
+    /// was triggering expensive `@Observable` mutations and dropped frames.
+    @State private var dragLiveRect: CGRect?
     /// True while the user is actively dragging or resizing a redaction region.
     /// Used to suppress the simultaneous pan gesture so the background does not
     /// scroll while a redaction handle is being moved.
@@ -93,13 +101,21 @@ struct ZoomableImagePreview: View {
 
             ZStack(alignment: .bottomTrailing) {
                 ZStack {
-                    imageLayer(size: fittedSize)
+                    imageLayer(size: fittedSize, container: geo.size)
                         .scaleEffect(scale)
                         .offset(offset)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipped()
                 .contentShape(Rectangle())
+                // Named coordinate space consumed by moveGesture / resizeGesture.
+                // Gestures on views *inside* imageLayer (which has .scaleEffect applied
+                // from outside) would otherwise report locations in the pre-scale view
+                // coordinate space rather than container-space, making normalised deltas
+                // wrong at any zoom level other than 1×.  By declaring a named space
+                // here and requesting it in those gestures, both add-new and move/resize
+                // paths go through the same imageNormalizedPoint conversion pipeline.
+                .coordinateSpace(name: "zoomablePreviewContainer")
                 .gesture(zoomGesture(container: geo.size, image: fittedSize))
                 .simultaneousGesture(panGesture(container: geo.size, image: fittedSize))
                 .simultaneousGesture(addRedactionGesture(image: fittedSize, container: geo.size))
@@ -142,22 +158,27 @@ struct ZoomableImagePreview: View {
 
     // MARK: - Image layer
 
-    private func imageLayer(size: CGSize) -> some View {
+    private func imageLayer(size: CGSize, container: CGSize) -> some View {
         ZStack(alignment: .topLeading) {
-            Image(uiImage: image)
-                .resizable()
-                .frame(width: size.width, height: size.height)
-
-            if !highlightedResults.isEmpty {
-                detectionOverlay(results: highlightedResults, size: size, style: .subtle)
-            }
-
-            if let focusedResult {
-                detectionOverlay(results: [focusedResult], size: size, style: .focused)
-            }
+            // Static content: source image bitmap, detection-highlight overlays,
+            // and the scan sweep animation.  None of these change while the user
+            // is dragging or resizing a redaction box.  Wrapping in an Equatable
+            // view lets SwiftUI skip StaticImageLayer.body entirely on every
+            // dragLiveRect update (60–120×/sec on ProMotion), keeping only the
+            // redaction overlay in the hot-render path.
+            StaticImageLayer(
+                image: image,
+                size: size,
+                highlightedResults: highlightedResults,
+                focusedResult: focusedResult,
+                focusPulse: focusPulse,
+                isScanning: isScanning,
+                reduceMotion: reduceMotion
+            )
+            .equatable()
 
             if !redactionRegions.isEmpty {
-                redactionRegionOverlay(size: size)
+                redactionRegionOverlay(size: size, container: container)
             }
 
             // Draft box while the user is still drawing a new redaction.
@@ -176,13 +197,6 @@ struct ZoomableImagePreview: View {
                     y: (draftRedactionRect.minY + draftRedactionRect.height / 2) * size.height
                 )
             }
-
-            if isScanning {
-                PhotoScanSweep(reduceMotion: reduceMotion)
-                    .frame(width: size.width, height: size.height)
-                    .allowsHitTesting(false)
-                    .transition(.opacity)
-            }
         }
         .frame(width: size.width, height: size.height)
     }
@@ -197,53 +211,6 @@ struct ZoomableImagePreview: View {
             return "Drag boxes to adjust"
         }
         return scale > 1.01 ? "Double tap to reset" : "Pinch to zoom"
-    }
-
-    // MARK: - Detection overlay (display-only, no gestures)
-
-    private enum DetectionOverlayStyle: Equatable {
-        case subtle
-        case focused
-    }
-
-    private func detectionOverlay(
-        results: [DetectionResult],
-        size: CGSize,
-        style: DetectionOverlayStyle
-    ) -> some View {
-        ZStack(alignment: .topLeading) {
-            ForEach(results) { result in
-                ForEach(result.instances) { instance in
-                    let box = instance.boundingBox
-                    RoundedRectangle(cornerRadius: style == .focused ? 4 : 2)
-                        .strokeBorder(
-                            style == .focused ? Color.red : Color.orange,
-                            lineWidth: style == .focused ? (focusPulse ? 4 : 2.5) : 1.5
-                        )
-                        .background(
-                            RoundedRectangle(cornerRadius: style == .focused ? 4 : 2)
-                                .fill((style == .focused ? Color.red : Color.orange).opacity(style == .focused ? 0.22 : 0.10))
-                        )
-                        .shadow(
-                            color: style == .focused ? Color.red.opacity(focusPulse ? 0.45 : 0.22) : Color.clear,
-                            radius: style == .focused ? 8 : 0
-                        )
-                        .frame(
-                            width: box.width * size.width,
-                            height: box.height * size.height
-                        )
-                        .scaleEffect(style == .focused && focusPulse ? 1.04 : 1)
-                        // .offset() is fine here — detection overlays are display-only
-                        // and never have gesture targets that need correct hit-testing.
-                        .offset(
-                            x: box.minX * size.width,
-                            y: box.minY * size.height
-                        )
-                }
-            }
-        }
-        .animation(.spring(response: 0.35, dampingFraction: 0.72), value: highlightedResults)
-        .animation(.spring(response: 0.35, dampingFraction: 0.72), value: focusedResult)
     }
 
     // MARK: - Gestures
@@ -321,14 +288,20 @@ struct ZoomableImagePreview: View {
     /// SwiftUI's `.offset()` only moves pixels — the layout/hit-test frame
     /// stays at the origin — which is why taps and drags previously landed in
     /// the wrong place.
-    private func redactionRegionOverlay(size: CGSize) -> some View {
+    private func redactionRegionOverlay(size: CGSize, container: CGSize) -> some View {
         ZStack {
             ForEach(redactionRegions) { region in
-                let cx = (region.rect.minX + region.rect.width  / 2) * size.width
-                let cy = (region.rect.minY + region.rect.height / 2) * size.height
+                // During drag/resize, use the local live rect for visual feedback
+                // so only ZoomableImagePreview re-renders — not ContentView.
+                let isActiveDrag = isDraggingRedaction
+                    && selectedRedactionRegionID?.wrappedValue == region.id
+                let effectiveRect = isActiveDrag ? (dragLiveRect ?? region.rect) : region.rect
+
+                let cx = (effectiveRect.minX + effectiveRect.width  / 2) * size.width
+                let cy = (effectiveRect.minY + effectiveRect.height / 2) * size.height
 
                 redactionShape(
-                    rect: region.rect,
+                    rect: effectiveRect,
                     size: size,
                     isSelected: selectedRedactionRegionID?.wrappedValue == region.id,
                     isEnabled: region.isEnabled,
@@ -339,19 +312,28 @@ struct ZoomableImagePreview: View {
                     guard isRedactionEditing else { return }
                     selectRedaction(region.id)
                 }
-                .gesture(moveGesture(for: region, image: size))
+                .gesture(moveGesture(for: region, image: size, container: container))
                 // .position() correctly places BOTH the visual layer and the
                 // hit-test frame at the region's centre in image coordinates.
                 .position(x: cx, y: cy)
 
                 if isRedactionEditing, selectedRedactionRegionID?.wrappedValue == region.id {
-                    resizeHandle(for: region, size: size)
+                    resizeHandle(rect: effectiveRect, size: size)
+                        .gesture(resizeGesture(for: region, image: size, container: container))
                 }
             }
         }
         // Explicit frame ensures .position() coordinates map 1-to-1 with image pixels.
         .frame(width: size.width, height: size.height)
-        .animation(.spring(response: 0.25, dampingFraction: 0.78), value: selectedRedactionRegionID?.wrappedValue)
+        // Suppress the spring when a drag is active: selectedRedactionRegionID
+        // won't change during drag anyway, but suppressing is defensive and avoids
+        // any SwiftUI batching edge case re-animating the position at gesture end.
+        .animation(
+            isDraggingRedaction
+                ? nil
+                : .spring(response: 0.25, dampingFraction: 0.78),
+            value: selectedRedactionRegionID?.wrappedValue
+        )
     }
 
     /// Renders the redaction box border + fill using the region's chosen overlay colour.
@@ -386,22 +368,28 @@ struct ZoomableImagePreview: View {
 
     /// Resize handle pinned to the bottom-right corner of the selected region.
     ///
-    /// Uses `.position()` so its hit-test area lands on the correct pixel.
-    private func resizeHandle(for region: RedactionRegion, size: CGSize) -> some View {
+    /// Accepts the pre-computed `effectiveRect` (live during drag, model rect otherwise)
+    /// so the handle tracks the finger without going through the view model.
+    /// The caller is responsible for attaching `resizeGesture` to the returned view.
+    private func resizeHandle(rect: CGRect, size: CGSize) -> some View {
         Circle()
             .fill(Color.red)
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.white, lineWidth: 2))
             .position(
-                x: region.rect.maxX * size.width,
-                y: region.rect.maxY * size.height
+                x: rect.maxX * size.width,
+                y: rect.maxY * size.height
             )
-            .gesture(resizeGesture(for: region, image: size))
             .accessibilityLabel("Resize redaction")
     }
 
-    private func moveGesture(for region: RedactionRegion, image: CGSize) -> some Gesture {
-        DragGesture(minimumDistance: 2)
+    private func moveGesture(for region: RedactionRegion, image: CGSize, container: CGSize) -> some Gesture {
+        // Use the named coordinate space declared on the outer ZStack so that
+        // value.startLocation / value.location arrive in container space rather
+        // than the pre-scaleEffect view space.  imageNormalizedPoint then converts
+        // both points through the same centering + scale + pan pipeline, so the
+        // computed delta is correct at any zoom level.
+        DragGesture(minimumDistance: 2, coordinateSpace: .named("zoomablePreviewContainer"))
             .onChanged { value in
                 guard isRedactionEditing, !isAddingRedaction else { return }
                 if dragStartRect == nil {
@@ -410,31 +398,41 @@ struct ZoomableImagePreview: View {
                     // Notify the view model once per gesture so it can push exactly
                     // one undo snapshot regardless of how many drag events follow.
                     onBeginUpdateRedaction?(region.id)
-                    // Select the region in its own transaction so the selection-state
-                    // spring (line 354) only has the visual style change to animate
-                    // (border/fill), not a position delta.  Calling onUpdateRedaction
-                    // in the same pass as selectRedaction would batch a rect mutation
-                    // together with the selectedRedactionRegionID change, causing the
-                    // value:-keyed spring to animate the position — visible as a jump.
-                    // The first event's translation is ≤ minimumDistance (2 pt) in
-                    // screen space, so skipping it here is imperceptible.
+                    // Select the region in its own render pass so the selection-state
+                    // spring (see .animation modifier on the overlay) only animates the
+                    // visual style change (border/fill), not a position delta.
                     var t = Transaction()
-                    t.disablesAnimations = false   // let the selection style animate nicely
+                    t.disablesAnimations = false
                     withTransaction(t) { selectRedaction(region.id) }
+                    // Return early — first event translation ≤ minimumDistance (2 pt);
+                    // skipping it is imperceptible and avoids batching a rect mutation
+                    // with the selectedRedactionRegionID change on the same frame.
                     return
                 }
                 guard let dragStartRect else { return }
-                let delta = normalizedDelta(value.translation, image: image)
-                onUpdateRedaction?(region.id, RedactionRegion.moved(dragStartRect, by: delta))
+                let delta = normalizedDelta(
+                    from: value.startLocation,
+                    to: value.location,
+                    image: image,
+                    container: container
+                )
+                // Write only local @State — does NOT mutate the view model, so
+                // ContentView does not re-render on every gesture event.
+                dragLiveRect = RedactionRegion.moved(dragStartRect, by: delta)
             }
             .onEnded { _ in
+                // Commit the final position to the model exactly once per gesture.
+                if let live = dragLiveRect {
+                    onUpdateRedaction?(region.id, live)
+                }
                 dragStartRect = nil
+                dragLiveRect = nil
                 isDraggingRedaction = false
             }
     }
 
-    private func resizeGesture(for region: RedactionRegion, image: CGSize) -> some Gesture {
-        DragGesture(minimumDistance: 2)
+    private func resizeGesture(for region: RedactionRegion, image: CGSize, container: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 2, coordinateSpace: .named("zoomablePreviewContainer"))
             .onChanged { value in
                 guard isRedactionEditing else { return }
                 if dragStartRect == nil {
@@ -442,19 +440,26 @@ struct ZoomableImagePreview: View {
                     isDraggingRedaction = true
                     onBeginUpdateRedaction?(region.id)
                     // Same split as moveGesture: select first, skip the first delta.
-                    // Prevents the position-jump caused by the value:-keyed spring at
-                    // line 354 animating a batched rect + selectedID change together.
                     var t = Transaction()
                     t.disablesAnimations = false
                     withTransaction(t) { selectRedaction(region.id) }
                     return
                 }
                 guard let dragStartRect else { return }
-                let delta = normalizedDelta(value.translation, image: image)
-                onUpdateRedaction?(region.id, RedactionRegion.resized(dragStartRect, by: delta))
+                let delta = normalizedDelta(
+                    from: value.startLocation,
+                    to: value.location,
+                    image: image,
+                    container: container
+                )
+                dragLiveRect = RedactionRegion.resized(dragStartRect, by: delta)
             }
             .onEnded { _ in
+                if let live = dragLiveRect {
+                    onUpdateRedaction?(region.id, live)
+                }
                 dragStartRect = nil
+                dragLiveRect = nil
                 isDraggingRedaction = false
             }
     }
@@ -488,11 +493,32 @@ struct ZoomableImagePreview: View {
         return RedactionRegion.clamped(CGRect(x: minX, y: minY, width: width, height: height))
     }
 
-    /// Converts a drag translation (in the image layer's coordinate space,
-    /// already scaled by SwiftUI's gesture system) to normalised image-space delta.
-    private func normalizedDelta(_ translation: CGSize, image: CGSize) -> CGSize {
+    /// Converts two absolute container-space touch points into a normalised
+    /// image-space delta, correctly accounting for zoom scale and pan offset.
+    ///
+    /// Using `startLocation` / `location` (absolute container-space positions)
+    /// rather than `value.translation` is essential: `translation` is reported in
+    /// the coordinate space of the *gesture's view*, but that view has
+    /// `.scaleEffect(scale)` applied from outside.  At zoom>1 the gesture view is
+    /// scaled *visually* but SwiftUI's gesture system still delivers translation in
+    /// the *pre-scale* (display) coordinate space, so dividing by `imageSize` alone
+    /// undercounts the delta by a factor of `scale`.
+    ///
+    /// By going through `imageNormalizedPoint` for both endpoints the pan offset
+    /// cancels out (it's added to both numerator and denominator) and the scale
+    /// factor is divided out correctly:
+    ///
+    ///     imageNormalizedPoint(end) – imageNormalizedPoint(start)
+    ///       = (end – start) / (scale × imageSize)
+    ///       = translation / (scale × imageSize)   ✓
+    private func normalizedDelta(from start: CGPoint, to end: CGPoint,
+                                 image: CGSize, container: CGSize) -> CGSize {
         guard image.width > 0, image.height > 0 else { return .zero }
-        return CGSize(width: translation.width / image.width, height: translation.height / image.height)
+        let s = imageNormalizedPoint(start, imageSize: image, containerSize: container,
+                                     scale: scale, panOffset: offset)
+        let e = imageNormalizedPoint(end,   imageSize: image, containerSize: container,
+                                     scale: scale, panOffset: offset)
+        return CGSize(width: e.x - s.x, height: e.y - s.y)
     }
 
     // MARK: - Zoom helpers
@@ -556,6 +582,119 @@ struct ZoomableImagePreview: View {
 
     private func clamp(_ value: CGFloat, min lower: CGFloat, max upper: CGFloat) -> CGFloat {
         Swift.min(Swift.max(value, lower), upper)
+    }
+}
+
+// MARK: - StaticImageLayer
+
+/// The parts of `ZoomableImagePreview` that are **never mutated during a drag**:
+/// the source image bitmap, detection-highlight overlays, and the scan sweep.
+///
+/// Conforming to `Equatable` and calling `.equatable()` at the call site instructs
+/// SwiftUI to call `==` before evaluating `body`.  During a redaction drag only
+/// `dragLiveRect` (local `@State`) changes; all inputs passed to `StaticImageLayer`
+/// remain identical, so `body` is skipped entirely — reducing per-frame work from
+/// O(image + overlays) down to O(redaction box only) and eliminating the CPU spike
+/// that was causing dropped frames and visible jitter.
+private struct StaticImageLayer: View, Equatable {
+    let image: UIImage
+    let size: CGSize
+    let highlightedResults: [DetectionResult]
+    let focusedResult: DetectionResult?
+    /// Forwarded from `ZoomableImagePreview.focusPulse` so the pulse animation
+    /// still fires correctly; changes here are rare and intentional.
+    let focusPulse: Bool
+    let isScanning: Bool
+    let reduceMotion: Bool
+
+    // MARK: Equatable
+
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        // UIImage is a reference type — pointer equality is the right check here.
+        // Two distinct UIImage objects representing the same photo are still different
+        // renders from the user's perspective (e.g. after undo), so we must re-draw.
+        lhs.image === rhs.image
+            && lhs.size == rhs.size
+            && lhs.highlightedResults == rhs.highlightedResults
+            && lhs.focusedResult == rhs.focusedResult
+            && lhs.focusPulse == rhs.focusPulse
+            && lhs.isScanning == rhs.isScanning
+            && lhs.reduceMotion == rhs.reduceMotion
+    }
+
+    // MARK: Body
+
+    var body: some View {
+        ZStack(alignment: .topLeading) {
+            Image(uiImage: image)
+                .resizable()
+                .frame(width: size.width, height: size.height)
+
+            if !highlightedResults.isEmpty {
+                detectionOverlay(results: highlightedResults, style: .subtle)
+            }
+
+            if let focusedResult {
+                detectionOverlay(results: [focusedResult], style: .focused)
+            }
+
+            if isScanning {
+                PhotoScanSweep(reduceMotion: reduceMotion)
+                    .frame(width: size.width, height: size.height)
+                    .allowsHitTesting(false)
+                    .transition(.opacity)
+            }
+        }
+        .frame(width: size.width, height: size.height)
+    }
+
+    // MARK: Detection overlay
+
+    private enum OverlayStyle: Equatable {
+        case subtle
+        case focused
+    }
+
+    /// Detection-highlight overlay.  Display-only: uses `.offset()` because these
+    /// boxes never have gesture targets that need correct hit-testing.
+    private func detectionOverlay(
+        results: [DetectionResult],
+        style: OverlayStyle
+    ) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(results) { result in
+                ForEach(result.instances) { instance in
+                    let box = instance.boundingBox
+                    RoundedRectangle(cornerRadius: style == .focused ? 4 : 2)
+                        .strokeBorder(
+                            style == .focused ? Color.red : Color.orange,
+                            lineWidth: style == .focused ? (focusPulse ? 4 : 2.5) : 1.5
+                        )
+                        .background(
+                            RoundedRectangle(cornerRadius: style == .focused ? 4 : 2)
+                                .fill((style == .focused ? Color.red : Color.orange)
+                                    .opacity(style == .focused ? 0.22 : 0.10))
+                        )
+                        .shadow(
+                            color: style == .focused
+                                ? Color.red.opacity(focusPulse ? 0.45 : 0.22)
+                                : Color.clear,
+                            radius: style == .focused ? 8 : 0
+                        )
+                        .frame(
+                            width:  box.width  * size.width,
+                            height: box.height * size.height
+                        )
+                        .scaleEffect(style == .focused && focusPulse ? 1.04 : 1)
+                        .offset(
+                            x: box.minX * size.width,
+                            y: box.minY * size.height
+                        )
+                }
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.72), value: highlightedResults)
+        .animation(.spring(response: 0.35, dampingFraction: 0.72), value: focusedResult)
     }
 }
 
