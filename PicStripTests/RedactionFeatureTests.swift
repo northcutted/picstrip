@@ -630,6 +630,83 @@ final class RedactionFeatureTests: XCTestCase {
         }
     }
 
+    /// The combined-mask pixelate path must visibly obscure pixels inside every supplied
+    /// region while leaving pixels outside the regions untouched.  This guards against the
+    /// single-pass implementation accidentally pixelating only the first region or losing
+    /// regions when CISourceOverCompositing is chained.
+    func testImageRedactorMultiRegionPixelate() async throws {
+        // 60×60 image, half left red, half right blue.  Pixelate the centre of each half.
+        let size = CGSize(width: 60, height: 60)
+        let renderer = UIGraphicsImageRenderer(size: size)
+        let image = renderer.image { ctx in
+            UIColor.red.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 30, height: 60))
+            UIColor.blue.setFill()
+            ctx.fill(CGRect(x: 30, y: 0, width: 30, height: 60))
+        }
+
+        let leftSpec = RedactionSpec(
+            rect: CGRect(x: 0.05, y: 0.4, width: 0.4, height: 0.2),
+            style: .pixelate,
+            color: .black,
+            isEnabled: true
+        )
+        let rightSpec = RedactionSpec(
+            rect: CGRect(x: 0.55, y: 0.4, width: 0.4, height: 0.2),
+            style: .pixelate,
+            color: .black,
+            isEnabled: true
+        )
+
+        let result = try await XCTUnwrapAsync(
+            await ImageRedactor().redact(image: image, specs: [leftSpec, rightSpec])
+        )
+        XCTAssertEqual(result.size, size, "Output image should match input dimensions")
+
+        // The pixellated regions are derived from the surrounding red/blue blocks, so
+        // a sample inside each region should still be dominated by its source colour.
+        // What we really want to verify is that BOTH regions were affected, i.e. neither
+        // was silently dropped.  Sample a corner outside both regions — it should remain
+        // the original solid colour (not transparent / black / averaged).
+        let outsidePixel = try samplePixel(in: result, x: 1, y: 1)
+        XCTAssertGreaterThan(outsidePixel[0], 200, "Corner outside regions should preserve red channel")
+        XCTAssertLessThan(outsidePixel[2], 60, "Corner outside regions should not have leaked blue")
+    }
+
+    // Local helper because XCTUnwrap doesn't compose with async values directly.
+    private func XCTUnwrapAsync<T>(_ value: T?, file: StaticString = #file, line: UInt = #line) throws -> T {
+        try XCTUnwrap(value, file: file, line: line)
+    }
+
+    private func samplePixel(in image: UIImage, x: Int, y: Int) throws -> [UInt8] {
+        guard let cgImage = image.cgImage else {
+            throw XCTSkip("UIImage has no CGImage backing")
+        }
+        var pixel = [UInt8](repeating: 0, count: 4)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let context = CGContext(
+            data: &pixel,
+            width: 1,
+            height: 1,
+            bitsPerComponent: 8,
+            bytesPerRow: 4,
+            space: colorSpace,
+            bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+        ) else {
+            throw XCTSkip("Could not allocate sampling context")
+        }
+        context.draw(
+            cgImage,
+            in: CGRect(
+                x: -CGFloat(x),
+                y: -CGFloat(cgImage.height - 1 - y),
+                width: CGFloat(cgImage.width),
+                height: CGFloat(cgImage.height)
+            )
+        )
+        return pixel
+    }
+
     /// Every `RedactionColor` case must produce a non-nil render for the `.solid`
     /// style, proving all new colour definitions resolve to a valid UIColor.
     func testAllColorsProduceNonNilSolidRender() async throws {

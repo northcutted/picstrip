@@ -99,14 +99,16 @@ final class ScrubberViewModel {
         didSet { selectedPreset = selectedExportFormat.exportPreset }
     }
 
-    /// The active export preset. Changing it re-triggers processing if data is loaded.
+    /// The active export preset. Changing it re-triggers processing only when the
+    /// review sheet is currently open; otherwise the change is recorded and a
+    /// fresh encode runs the next time the user opens review.  This avoids
+    /// re-encoding on every preset toggle when nothing on screen actually depends
+    /// on `processedData`.
     var selectedPreset: ExportPreset = .matchSource {
         didSet {
             guard rawImageData != nil else { return }
             if activeSheet == .preSave {
                 Task { await prepareAndReview(presentSheet: false) }
-            } else {
-                processCurrentImage()
             }
         }
     }
@@ -383,7 +385,7 @@ final class ScrubberViewModel {
         }
 
         startPIIScan(data: data)
-        await processCurrentImageNow()
+        await catalogSourceMetadata(from: data)
     }
 
     private func loadAndProcess(item: PhotosPickerItem) async {
@@ -432,7 +434,7 @@ final class ScrubberViewModel {
 
             startPIIScan(data: data)
 
-            await processCurrentImageNow()
+            await catalogSourceMetadata(from: data)
         } catch {
             errorMessage = error.localizedDescription
             rawImageData = nil
@@ -458,6 +460,64 @@ final class ScrubberViewModel {
             imageOverride: nil,
             updateSourceMetadata: true
         )
+    }
+
+    /// Reads source metadata properties without re-encoding the image.
+    ///
+    /// Called immediately after a photo loads so the badge row and category panels
+    /// populate without paying the cost of a full ImageProcessor encode.  The
+    /// encode itself is deferred to `prepareAndReview`, which runs only when the
+    /// user opens the review sheet to save or share.
+    private func catalogSourceMetadata(from data: Data) async {
+        struct Catalog {
+            let props: [CFString: Any]?
+            let stripped: StrippedMetadata
+            let all: StrippedMetadata
+            let utType: UTType?
+        }
+
+        let token = UUID()
+        processingToken = token
+
+        let currentConfig = stripConfig
+        let allCategoriesConfig = StripConfig(
+            categoryEnabled: Dictionary(
+                uniqueKeysWithValues: ImageProcessor.categoryMap.map { ($0.category, true) }
+            ),
+            fieldOverrides: [:]
+        )
+
+        let catalog = await Task.detached(priority: .userInitiated) { () -> Catalog in
+            guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+                return Catalog(
+                    props: nil,
+                    stripped: StrippedMetadata(fields: []),
+                    all: StrippedMetadata(fields: []),
+                    utType: nil
+                )
+            }
+            let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+            let utType: UTType?
+            if let cfType = CGImageSourceGetType(source),
+               let detected = UTType(cfType as String) {
+                utType = detected
+            } else {
+                utType = nil
+            }
+            return Catalog(
+                props: props,
+                stripped: ImageProcessor.catalogueStrippedMetadata(from: props, config: currentConfig),
+                all: ImageProcessor.catalogueStrippedMetadata(from: props, config: allCategoriesConfig),
+                utType: utType
+            )
+        }.value
+
+        guard processingToken == token else { return }
+        rawSourceProps          = catalog.props
+        pendingStrippedMetadata = catalog.stripped
+        allSourceMetadata       = catalog.all
+        sourceUTType            = catalog.utType
+        isProcessing            = false
     }
 
     private static func makePreviewImage(from data: Data) async -> UIImage? {

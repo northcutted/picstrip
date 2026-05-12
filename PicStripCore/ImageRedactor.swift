@@ -240,50 +240,71 @@ struct ImageRedactor {
 
     // MARK: - Pixellate (CIFilter pre-pass)
 
-    /// Uses `CIPixellate` to mosaic each region and composites the pixellated
-    /// areas back onto the original image.  Colour is ignored — the effect shows
-    /// scrambled source pixels, not a solid fill.
+    /// Uses a single `CIPixellate` evaluation plus one mask-driven blend to
+    /// mosaic every supplied region in one pass.  Colour is ignored — the effect
+    /// shows scrambled source pixels, not a solid fill.
+    ///
+    /// The previous implementation ran one CIPixellate + CIBlendWithMask per spec,
+    /// each iteration feeding the accumulated result forward.  That scaled poorly
+    /// when an OCR-heavy image produced many pixelate regions: every region
+    /// triggered a fresh full-image Core Image evaluation.  The combined-mask
+    /// approach evaluates the pixellated layer exactly once and composites it
+    /// against a single union-of-rects mask.
     nonisolated private static func applyPixellate(to image: UIImage, specs: [RedactionSpec]) -> UIImage? {
-        guard let ciImage = CIImage(image: image) else { return nil }
+        guard !specs.isEmpty, let ciImage = CIImage(image: image) else { return nil }
         let extent = ciImage.extent   // CI pixel space (Y-up, device pixels)
 
-        var result = ciImage
-
-        for spec in specs {
-            // Map normalised top-left-origin rect → CI pixel rect (Y-up)
-            let ciRect = CGRect(
+        // ── 1. Resolve rects in CI pixel space ───────────────────────────────
+        let ciRects: [CGRect] = specs.compactMap { spec in
+            let rect = CGRect(
                 x: spec.rect.minX * extent.width,
                 y: (1.0 - spec.rect.maxY) * extent.height,
                 width: spec.rect.width * extent.width,
                 height: spec.rect.height * extent.height
             )
-            guard ciRect.width > 0, ciRect.height > 0 else { continue }
-
-            // Block size: ~12 % of the shorter dimension, clamped to [10, 40] pixels
-            let blockSize = Float(
-                min(40, max(10, min(ciRect.width, ciRect.height) * 0.12))
-            )
-
-            guard let pixFilter = CIFilter(name: "CIPixellate") else { continue }
-            pixFilter.setValue(result, forKey: kCIInputImageKey)
-            pixFilter.setValue(
-                CIVector(cgPoint: CGPoint(x: ciRect.midX, y: ciRect.midY)),
-                forKey: kCIInputCenterKey
-            )
-            pixFilter.setValue(blockSize, forKey: "inputScale")
-            guard let pixellated = pixFilter.outputImage else { continue }
-
-            // White mask inside the region → CIBlendWithMask takes from pixellated
-            // where mask is white, from background (result) where mask is transparent.
-            let mask = CIImage(color: CIColor.white).cropped(to: ciRect)
-
-            guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { continue }
-            blendFilter.setValue(result, forKey: kCIInputBackgroundImageKey)
-            blendFilter.setValue(pixellated, forKey: kCIInputImageKey)
-            blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
-
-            result = blendFilter.outputImage ?? result
+            return (rect.width > 0 && rect.height > 0) ? rect : nil
         }
+        guard !ciRects.isEmpty else { return image }
+
+        // ── 2. Pick a single block size from the smallest region ─────────────
+        // Keeps the visual character of pixelation for the privacy-critical
+        // small regions; large regions get slightly chunkier blocks, which is
+        // still adequately obscuring.
+        let smallestDim = ciRects
+            .map { min($0.width, $0.height) }
+            .min() ?? 100
+        let blockSize = Float(min(40, max(10, smallestDim * 0.12)))
+
+        // ── 3. Run CIPixellate ONCE over the whole image ─────────────────────
+        guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
+        pixFilter.setValue(ciImage, forKey: kCIInputImageKey)
+        pixFilter.setValue(
+            CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
+            forKey: kCIInputCenterKey
+        )
+        pixFilter.setValue(blockSize, forKey: "inputScale")
+        guard let pixellated = pixFilter.outputImage else { return nil }
+
+        // ── 4. Build a single mask CIImage = union of white rects ────────────
+        // CIImage(color: white) is infinite-extent; cropping to a rect produces
+        // a white region exactly of that shape.  Stacking them with
+        // CISourceOverCompositing yields the union.  Core Image consolidates
+        // this into one render pass when fed into CIBlendWithMask.
+        var mask = CIImage(color: CIColor.clear).cropped(to: extent)
+        for rect in ciRects {
+            let whiteRect = CIImage(color: CIColor.white).cropped(to: rect)
+            guard let composite = CIFilter(name: "CISourceOverCompositing") else { continue }
+            composite.setValue(whiteRect, forKey: kCIInputImageKey)
+            composite.setValue(mask, forKey: kCIInputBackgroundImageKey)
+            mask = composite.outputImage ?? mask
+        }
+
+        // ── 5. Single blend pass ─────────────────────────────────────────────
+        guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { return nil }
+        blendFilter.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
+        blendFilter.setValue(pixellated, forKey: kCIInputImageKey)
+        blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
+        guard let result = blendFilter.outputImage else { return nil }
 
         guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
         return UIImage(cgImage: cgOut, scale: image.scale, orientation: image.imageOrientation)
