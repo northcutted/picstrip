@@ -1,3 +1,10 @@
+## [1.5.4](https://github.com/northcutted/picstrip/compare/v1.5.3...v1.5.4) (2026-05-12)
+
+
+### Bug Fixes
+
+* update localizations ([9076d25](https://github.com/northcutted/picstrip/commit/9076d259d627d76a826dd5bc59061c7d9db9024d))
+
 ## [1.5.3](https://github.com/northcutted/picstrip/compare/v1.5.2...v1.5.3) (2026-05-12)
 
 

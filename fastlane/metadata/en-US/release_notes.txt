@@ -1,4 +1,2 @@
 Bug Fixes
-• actually fix jitter issue!
-• **ci:** fix linting issue
-• update assets for next appstore release
+• update localizations
