@@ -516,7 +516,7 @@ struct ZoomableImagePreview: View {
         guard image.width > 0, image.height > 0 else { return .zero }
         let s = imageNormalizedPoint(start, imageSize: image, containerSize: container,
                                      scale: scale, panOffset: offset)
-        let e = imageNormalizedPoint(end,   imageSize: image, containerSize: container,
+        let e = imageNormalizedPoint(end, imageSize: image, containerSize: container,
                                      scale: scale, panOffset: offset)
         return CGSize(width: e.x - s.x, height: e.y - s.y)
     }
@@ -682,7 +682,7 @@ private struct StaticImageLayer: View, Equatable {
                             radius: style == .focused ? 8 : 0
                         )
                         .frame(
-                            width:  box.width  * size.width,
+                            width: box.width * size.width,
                             height: box.height * size.height
                         )
                         .scaleEffect(style == .focused && focusPulse ? 1.04 : 1)
