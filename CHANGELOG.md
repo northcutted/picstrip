@@ -1,3 +1,12 @@
+## [1.5.3](https://github.com/northcutted/picstrip/compare/v1.5.2...v1.5.3) (2026-05-12)
+
+
+### Bug Fixes
+
+* actually fix jitter issue! ([25d06fb](https://github.com/northcutted/picstrip/commit/25d06fba23d9b9c18c5bd42cf5f424f321ed5cdc))
+* **ci:** fix linting issue ([05bcc1c](https://github.com/northcutted/picstrip/commit/05bcc1c91cb22cd903597a4011aae393761abfdf))
+* update assets for next appstore release ([3ddc77e](https://github.com/northcutted/picstrip/commit/3ddc77e2a07d60d3253be4121552711fa39ff2c5))
+
 ## [1.5.2](https://github.com/northcutted/picstrip/compare/v1.5.1...v1.5.2) (2026-05-11)
 
 
