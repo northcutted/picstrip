@@ -3,14 +3,11 @@
 //
 // Pseudo-localize Apple .xcstrings catalogs for layout smoke testing.
 //
-// PicStrip's production localization process is hand-translation: an English
-// source string is reviewed and translated by a human, the result is committed
-// directly into the catalog, and that's it. Machine translation (OpenAI etc.)
-// has been deliberately removed — the privacy/security/permission copy in this
-// app is too sensitive to ship LLM output of, and the headline copy benefits
-// from per-locale tuning that an LLM can't do.
+// PicStrip's production translations are LLM-generated and committed directly
+// into the catalogs and fastlane/metadata/<locale>/ files. English is the
+// canonical source; translations are edited inline when something reads off.
 //
-// What this script *is* useful for: pre-translation layout smoke testing.
+// What this script is for: pre-translation layout smoke testing.
 // Running ``--languages de fr ja`` over a catalog produces ``[de] Save photo``
 // strings that exercise the same code paths as a real translation but with
 // loud markers, so you can spot truncation, overflow, or RTL mirroring bugs

@@ -1,0 +1,38 @@
+Dela bilder utan att dela din position, din identitet eller hemligheter du inte ser. PicStrip tar bort osynlig metadata och döljer känslig information — helt på enheten, utan konto, utan uppladdningar och utan nätverksanslutningar.
+
+METADATA-BORTTAGNING
+Varje foto bär osynligt med sig GPS-koordinater, tidsstämplar, kameramärke och modell, objektivdata, serienummer och Apple-tillverkarinformation. PicStrip tar bort allt detta innan du delar — med en tryckning.
+
+UPPTÄCKT OCH DÖLJANDE AV KÄNSLIG INFORMATION
+OCR och datorseende som körs på enheten skannar bilden efter 30 typer av känsliga personuppgifter (PII), rangordnade i fyra risknivåer:
+
+Kritisk — API-nycklar, kreditkort, personnummer, lösenord, JWT, databasanslutningssträngar
+Hög — ansikten, IBAN, ABA-routingnummer, SWIFT/BIC-koder, fysiska inloggningsuppgifter
+Medel — e-post, telefonnummer, adresser, kryptoplånböcker, chassinummer, registreringsskyltar, IP- och MAC-adresser
+Låg — födelsedatum, länkar, streckkoder
+
+Varje upptäckt visar typ, säkerhetsbedömning och risknivå så att du vet vad du ska dölja först.
+
+DÖLJ-REDIGERARE
+• Rita var som helst för att manuellt täcka över det skannern missade
+• Multimarkering och bulkändringar
+• 3 stilar: heltäckande, oskärpa eller pixelering
+• 10 färger för heltäckande markeringar
+• 50 ångra/gör om-steg
+
+IMPORTERA FRÅN VAR SOM HELST
+• Foto-biblioteket
+• Filer-appen — öppna vilken bild eller skärmbild som helst direkt
+• Dra och släpp bilder i appen
+• Delningstillägg — städa direkt från Foton, Safari eller vilken app som helst utan att öppna PicStrip
+
+INTEGRITET BY DESIGN
+• 100% på enheten — inget lämnar din telefon
+• Inget konto, ingen inloggning, ingen spårning
+• Inga annonser, inga köp i appen, inga prenumerationer
+• Öppen källkod — varje rad kod kan granskas på GitHub
+• SLSA-nivå 3 build-provenance — varje release verifieras kryptografiskt
+• Integritetsetikett: "Inga data samlas in"
+
+KORTKOMMANDON OCH AUTOMATISERING
+PicStrip innehåller en Genvägar-åtgärd som automatiskt tar bort metadata och döljer känslig information: vid import, i bulk eller som del av dina arbetsflöden.

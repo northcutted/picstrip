@@ -1,0 +1,38 @@
+Partilhe fotografias sem partilhar a sua localização, a sua identidade ou segredos que não consegue ver. O PicStrip remove os metadados invisíveis e oculta informação sensível — totalmente no dispositivo, sem conta, sem envios e sem qualquer ligação à rede.
+
+REMOÇÃO DE METADADOS
+Cada fotografia transporta de forma invisível coordenadas GPS, registos temporais, marca e modelo da câmara, dados da lente, números de série e notas do fabricante da Apple. O PicStrip remove tudo isso antes de partilhar — com um toque.
+
+DETECÇÃO E OCULTAÇÃO DE INFORMAÇÃO SENSÍVEL
+O OCR e a visão computacional executados no dispositivo analisam a fotografia à procura de 30 tipos de informação pessoal sensível (PII), organizados em quatro níveis de risco:
+
+Crítico — chaves de API, cartões de crédito, números de identificação fiscal, palavras-passe, JWTs, strings de ligação a bases de dados
+Elevado — rostos, IBANs, números ABA, códigos SWIFT/BIC, credenciais físicas
+Médio — e-mails, telefones, moradas, carteiras cripto, números de chassis, matrículas, endereços IP e MAC
+Baixo — datas de nascimento, ligações, códigos de barras
+
+Cada detecção mostra o tipo, a pontuação de confiança e o nível de risco para o ajudar a priorizar o que ocultar.
+
+EDITOR DE OCULTAÇÃO
+• Desenhe em qualquer zona para cobrir manualmente o que o scanner não detectou
+• Selecção múltipla e alterações em lote
+• 3 estilos: sólido, desfocado ou pixelizado
+• 10 cores para blocos sólidos
+• 50 níveis de anular/refazer
+
+IMPORTAÇÃO DE QUALQUER LADO
+• Biblioteca de Fotografias
+• App Ficheiros — abra qualquer imagem ou captura de ecrã directamente
+• Arraste e largue imagens na aplicação
+• Extensão de partilha — limpe directamente a partir de Fotografias, Safari ou de qualquer app sem abrir o PicStrip
+
+PRIVACIDADE POR DESENHO
+• 100% no dispositivo — nada sai do seu telemóvel
+• Sem conta, sem início de sessão, sem rastreio
+• Sem publicidade, sem compras na app, sem subscrições
+• Código aberto — cada linha de código é auditável no GitHub
+• Proveniência de compilação SLSA Nível 3 — cada versão é verificada criptograficamente
+• Rótulo de privacidade: «Não são recolhidos dados»
+
+ATALHOS E AUTOMATIZAÇÃO
+O PicStrip inclui uma acção de Atalhos para remover metadados e ocultar informação sensível automaticamente: na importação, em lote ou no seu fluxo de trabalho habitual.

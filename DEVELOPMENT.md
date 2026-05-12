@@ -934,7 +934,7 @@ PicStrip localizes user-facing app text through Apple string catalogs:
 - `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Shortcuts expose
 - `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time.
 
-**Production translations are hand-written.** Privacy-sensitive copy (permission prompts, redaction terminology, App Shortcut phrases, marketing headlines) is too high-stakes to ship LLM output of, and per-locale tuning catches idiom drift that machine translation doesn't. New strings get committed in English first, then a human review fills in target locales for each catalog.
+**Translations are LLM-generated.** English is the canonical source; catalogs and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
 
 **Pseudo-localization is available for layout smoke testing.** `scripts/translate_xcstrings.js --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries should be replaced with real translations before release.
 

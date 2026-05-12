@@ -1,0 +1,1 @@
+PicStrip tar bort dold metadata och döljer 30 sorters känslig info — ansikten, hemligheter, kort med mera — helt på enheten. Inget konto, ingen uppladdning.

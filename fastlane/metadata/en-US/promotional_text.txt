@@ -1,1 +1,1 @@
-PicStrip strips hidden metadata and redacts 30 types of PII — faces, secrets, cards, and more — all on-device. No account, no uploads.
+PicStrip strips hidden metadata and redacts 30 kinds of sensitive info — faces, secrets, cards, and more — all on-device. No account, no uploads.

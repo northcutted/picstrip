@@ -1,0 +1,1 @@
+integritet,EXIF,metadata,GPS,redigera,oskärpa,PII,ansikte,risk,detektion,anonym,säker,OCR,vision

@@ -1,0 +1,38 @@
+Udostępniaj zdjęcia bez udostępniania swojej lokalizacji, tożsamości ani niewidocznych sekretów. PicStrip usuwa niewidoczne metadane i zakrywa wrażliwe informacje — w całości na urządzeniu, bez konta, bez przesyłania i bez połączeń sieciowych.
+
+USUWANIE METADANYCH
+Każde zdjęcie niesie ze sobą niewidocznie współrzędne GPS, znaczniki czasu, markę i model aparatu, dane obiektywu, numery seryjne oraz notatki producenta Apple. PicStrip usuwa to wszystko przed udostępnieniem — jednym dotknięciem.
+
+WYKRYWANIE I ZAKRYWANIE WRAŻLIWYCH INFORMACJI
+OCR i widzenie komputerowe działające na urządzeniu skanują zdjęcie w poszukiwaniu 30 rodzajów wrażliwych danych osobowych (PII), uporządkowanych w cztery poziomy ryzyka:
+
+Krytyczny — klucze API, karty kredytowe, numery ubezpieczenia społecznego, hasła, tokeny JWT, ciągi połączeń do baz danych
+Wysoki — twarze, numery IBAN, numery ABA, kody SWIFT/BIC, dane uwierzytelniające w postaci fizycznej
+Średni — e-maile, telefony, adresy, portfele kryptowalut, numery VIN, tablice rejestracyjne, adresy IP i MAC
+Niski — daty urodzenia, linki, kody kreskowe
+
+Każde wykrycie pokazuje typ, ocenę pewności i poziom ryzyka, więc wiesz, co zakryć w pierwszej kolejności.
+
+EDYTOR ZAKRYWANIA
+• Rysuj w dowolnym miejscu, aby ręcznie zakryć to, co skaner przeoczył
+• Zaznaczanie wielokrotne i wprowadzanie zmian zbiorczo
+• 3 style: pełny kolor, rozmycie lub pikselizacja
+• 10 kolorów dla pełnych zakryć
+• 50 kroków cofania/ponawiania
+
+IMPORT ZEWSZĄD
+• Biblioteka Zdjęć
+• Aplikacja Pliki — otwórz dowolny obraz lub zrzut ekranu bezpośrednio
+• Przeciągnij i upuść obrazy w aplikacji
+• Rozszerzenie udostępniania — wyczyść zdjęcia bezpośrednio ze Zdjęć, Safari lub dowolnej aplikacji, bez otwierania PicStrip
+
+PRYWATNOŚĆ Z ZAŁOŻENIA
+• 100% na urządzeniu — nic nie opuszcza Twojego telefonu
+• Brak konta, brak logowania, brak śledzenia
+• Bez reklam, bez zakupów w aplikacji, bez subskrypcji
+• Open source — każda linia kodu jest audytowalna na GitHubie
+• Pochodzenie kompilacji SLSA poziom 3 — każde wydanie jest weryfikowane kryptograficznie
+• Etykieta prywatności: „Nie zbieramy żadnych danych"
+
+SKRÓTY I AUTOMATYZACJA
+PicStrip zawiera akcję Skrótów, dzięki której usuwasz metadane i automatycznie zakrywasz wrażliwe informacje: przy imporcie, hurtowo lub w istniejących workflow.

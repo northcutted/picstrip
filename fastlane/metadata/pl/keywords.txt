@@ -1,0 +1,1 @@
+prywatność,EXIF,metadane,GPS,redagowanie,rozmycie,PII,twarz,ryzyko,wykrycie,anonim,OCR,wizja

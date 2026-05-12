@@ -1,0 +1,38 @@
+Deel foto's zonder je locatie, identiteit of onzichtbare geheimen mee te delen. PicStrip verwijdert onzichtbare metadata en bedekt gevoelige informatie — volledig op je toestel, zonder account, zonder uploads en zonder netwerkverbindingen.
+
+METADATA VERWIJDEREN
+Elke foto bevat ongezien GPS-coördinaten, tijdstempels, camera- en lensgegevens, serienummers en Apple-fabrikantnotities. PicStrip verwijdert alles vóór het delen — met één tik.
+
+DETECTIE EN BEDEKKING VAN GEVOELIGE INFO
+OCR en computer vision op het toestel zelf scannen je foto op 30 soorten gevoelige persoonsgegevens (PII), gerangschikt in vier risiconiveaus:
+
+Kritiek — API-sleutels, creditcards, BSN-nummers, wachtwoorden, JWT's, databaseverbindingen
+Hoog — gezichten, IBAN's, ABA-routingnummers, SWIFT/BIC-codes, fysieke inloggegevens
+Middel — e-mails, telefoonnummers, adressen, crypto-wallets, VIN's, kentekens, IP- en MAC-adressen
+Laag — geboortedata, links, barcodes
+
+Elke detectie toont het type, een betrouwbaarheidsscore en het risiconiveau, zodat je weet wat je als eerste moet afdekken.
+
+BEDEKKINGSEDITOR
+• Teken overal om handmatig af te dekken wat de scanner miste
+• Selecteer meerdere gebieden tegelijk en pas wijzigingen in bulk toe
+• 3 stijlen: effen, vervaging of pixelvorming
+• 10 kleuren voor effen vlakken
+• 50 stappen ongedaan maken/opnieuw
+
+OVERAL VANDAAN IMPORTEREN
+• Foto's-bibliotheek
+• Bestanden-app — open elke afbeelding of schermafbeelding direct
+• Sleep afbeeldingen in de app
+• Deel-extensie — opschonen vanuit Foto's, Safari of welke app dan ook, zonder PicStrip te openen
+
+PRIVACY BY DESIGN
+• 100% op het toestel — niets verlaat je telefoon
+• Geen account, geen login, geen tracking
+• Geen advertenties, geen in-app-aankopen, geen abonnementen
+• Open source — elke regel code is auditeerbaar op GitHub
+• SLSA niveau 3 build-provenance — elke release is cryptografisch geverifieerd
+• Privacylabel: "Geen gegevens verzameld"
+
+OPDRACHTEN EN AUTOMATISERING
+PicStrip bevat een Opdrachten-actie waarmee je metadata verwijdert en gevoelige informatie automatisch afdekt: bij het importeren, in bulk of als onderdeel van je workflow.

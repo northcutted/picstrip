@@ -300,7 +300,7 @@ npm install
 | `make build` | Runs `bundle exec fastlane build` |
 | `make audit-localization` | Checks shared core/extension string-returning code for literals that should use localization helpers |
 | `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
-| `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing (production translations are hand-written) |
+| `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
 | `make test-fixture` | Regenerates the OCR test fixture (`PicStripUITests/test_list.png`) via `scripts/make_fixture.py` |
 | `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
@@ -327,7 +327,7 @@ PicStrip uses Apple string catalogs:
 - `PicStrip/AppShortcuts.xcstrings` — Siri / Shortcuts phrases
 - `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headlines
 
-**Production translations are hand-written.** Privacy-sensitive copy (permission prompts, redaction labels, App Shortcut phrases, marketing headlines) is too high-stakes to ship LLM output of, and per-locale tuning catches idiom drift that machine translation misses. New strings get committed in English first, then a human review fills in target locales.
+**Translations are LLM-generated.** English is the canonical source; the catalog and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
 
 For layout smoke testing — exercising the UI against longer strings, RTL mirroring, and non-ASCII glyphs *before* the real translations land — use the pseudo-localizer:
 
@@ -348,66 +348,11 @@ make localization-export
 
 ## CI/CD Pipeline
 
-### On pull request
+- **PRs** — `pr.yml` runs SwiftLint (strict), `xcodebuild analyze`, and unit tests in parallel. An optional `screenshots`-labelled job captures the full 2-device set as a PR artifact.
+- **Releases** — `main.yml` runs 11 jobs across 9 sequential stages, gated by a semantic-release dry-run. The pipeline signs the IPA, generates SLSA Level 3 provenance, verifies attestations against the exact workflow source commit, uploads to TestFlight, and requires manual approval to submit for App Review.
+- **Screenshots** — `screenshots.yml` is manually dispatched. The fast path uploads the committed marketing PNGs from Git LFS; `generate_new=true` regenerates them by capturing fresh simulator screenshots and running the Python compositor (custom frame, brand gradient, localized headline per locale).
 
-`pr.yml` runs three parallel jobs on every PR targeting `main`:
-
-- **Lint** — SwiftLint strict mode; downloads a pinned `portable_swiftlint.zip` and verifies its SHA-256 before use
-- **Static Analysis** — `xcodebuild analyze`; caches DerivedData keyed on `project.pbxproj`
-- **Unit Tests** — `PicStripTests` on iPhone 17 simulator; JUnit XML uploaded as an artifact (7-day retention)
-
-A fourth job runs only when the `screenshots` label is applied to the PR:
-
-- **PR Screenshots** — boots both simulators explicitly, overrides status bars to a clean state (9:41, full Wi-Fi/cellular/battery), runs the full 2-device capture, and uploads results as a PR artifact (14-day retention). Snapshot logs are uploaded separately on failure. No upload to App Store Connect from PRs.
-
-### On push to `main`
-
-`main.yml` runs 11 jobs across 9 sequential stages. A semantic-release dry-run in the `version` job gates the entire pipeline — if no releasable commits exist, all downstream jobs are skipped.
-
-```mermaid
-flowchart TD
-    version["version · ubuntu\nSemantic-release dry-run\nNo releasable commits — all downstream skipped"]
-    lint["lint · macos-26\nSwiftLint"]
-    analyze["analyze · macos-26\nxcodebuild analyze"]
-    test["test · macos-26\nUnit tests"]
-    build["build · macos-26\nRecords toolchain + signing env\nSigns + exports IPA · clean build · no cache\nSHA-256 + GitHub attestation"]
-    release["release · ubuntu\nTags commit · publishes GitHub release\nUpdates CHANGELOG + release_notes.txt"]
-    provenance["provenance · slsa-github-generator\nSLSA Build Level 3\nCovers IPA + env manifests"]
-    attach["attach-release-assets · ubuntu\nAttaches IPA + SHA-256 to GitHub Release"]
-    verify["verify-provenance · ubuntu\nVerifies GitHub attestation + SLSA provenance\nagainst exact workflow source commit"]
-    testflight["upload-testflight · macos-26\nDownloads verified IPA · uploads to TestFlight"]
-    submit["submit · ubuntu\nManual approval — production environment\nChecks out release_sha · submits for App Review"]
-
-    version --> lint & analyze & test
-    lint & analyze & test --> build
-    build --> release
-    release --> provenance
-    provenance --> attach
-    attach --> verify
-    verify --> testflight
-    testflight --> submit
-
-    classDef ubuntu fill:#e0e7ff,stroke:#4338ca,color:#1e1b4b
-    classDef macos  fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
-    classDef slsa   fill:#1f7a61,stroke:#0a2a22,color:#ffffff
-    classDef manual fill:#fef3c7,stroke:#d97706,color:#78350f
-
-    class version,release,attach,verify ubuntu
-    class lint,analyze,test,build,testflight macos
-    class provenance slsa
-    class submit manual
-```
-
-### Screenshot workflow
-
-`screenshots.yml` is **manually dispatched** (not part of the release pipeline) and runs in two modes selected by the `generate_new` workflow input:
-
-- **`generate_new=false` (default — fast path).** Runs on `ubuntu-latest`. Pulls the localized marketing PNGs from Git LFS (`fastlane/screenshots/processed/<locale>/...`) and uploads them to App Store Connect as-is. ~2 minutes, no simulator, no macOS runner cost.
-- **`generate_new=true` (full regen).** Runs on `macos-26`. Captures fresh screenshots for iPhone 17 Pro Max and iPad Pro 13-inch (M5), runs the Python compositor (`scripts/process_screenshots.py`) to wrap each capture in a custom matte-black device frame on the brand gradient with a localized headline above, commits the regenerated PNGs back to LFS with `[skip ci]`, and then uploads. The full 16-locale × 2-device matrix is ~2 hours; the optional `languages` input narrows the run to a comma-separated subset (e.g. `en-US,de-DE,ja`).
-
-The marketing PNGs in `fastlane/screenshots/processed/` are the single source of truth for App Store Connect — uploads always read from there, never from raw captures. The App Store auto-scales the 6.9" iPhone set to the 6.7"/6.5"/5.5" device classes, so additional iPhone sizes are intentionally omitted from the capture matrix. All XCUITests land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
-
-Marketing screenshot copy is sourced from [`fastlane/MarketingHeadlines.xcstrings`](fastlane/MarketingHeadlines.xcstrings) (16 locales × 5 screens). The compositor picks fonts per script (Latin, CJK, Korean, Arabic), reshapes Arabic for cursive ligatures + RTL display, and runs a multi-pass fit so localized strings never produce orphan-word lines.
+See [DEVELOPMENT.md → CI/CD Pipeline](DEVELOPMENT.md#cicd-pipeline) for the full job graph, fastlane lanes, and screenshot compositor details.
 
 ---
 
@@ -437,39 +382,11 @@ Both the main app and the share extension declare zero data collection and zero 
 
 ## Supply Chain Security (SLSA Level 3)
 
-Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was built by GitHub Actions — not a developer's machine — with no post-build tampering.
+Every release ships with SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was produced by GitHub Actions (not a developer's machine) with no post-build tampering. TestFlight upload is gated on attestation verification against the exact workflow source commit.
 
-- Verifiable proof of origin: built by GitHub Actions infrastructure
-- Immutable audit trail: every build is logged and timestamped
-- Tamper detection: SHA-256 checksum cryptographically binds the attestation to the IPA
-- GitHub-native attestations: `actions/attest-build-provenance` uploads provenance to the repository Attestations API for the IPA
-- Distribution gate: TestFlight upload happens only after GitHub and SLSA provenance verification pass
-- Transparent: all build logs and provenance are publicly auditable
+This claim applies to the GitHub-built IPA attached to the release. It does not claim that the same digest identifies the App Store-installed app, because Apple may re-sign, encrypt, or thin the distributed binary.
 
-This claim applies to the GitHub-built IPA attached to the release. It does not claim that the same digest identifies the App Store-installed app, because Apple may re-sign, encrypt, thin, or otherwise transform the distributed binary.
-
-**Verify an IPA with GitHub artifact attestations:**
-
-```bash
-gh attestation verify PicStrip.ipa \
-  --repo northcutted/picstrip \
-  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
-  --source-ref refs/heads/main \
-  --source-digest <release-workflow-source-commit>
-```
-
-**Verify the release-attached SLSA provenance:**
-
-```bash
-slsa-verifier verify-artifact PicStrip.ipa \
-  --provenance-path PicStrip.ipa.intoto.jsonl \
-  --source-uri github.com/northcutted/picstrip \
-  --source-branch main
-```
-
-The source commit is verified from provenance, not inferred from the release tag.
-
-See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-build-provenance-level-3) for detailed verification steps.
+See [DEVELOPMENT.md → SLSA Build Provenance Level 3](DEVELOPMENT.md#slsa-build-provenance-level-3) for the `gh attestation verify` and `slsa-verifier` commands and the threat-model details.
 
 ---
 

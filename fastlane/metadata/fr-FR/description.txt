@@ -1,10 +1,10 @@
-PicStrip combine deux outils de confidentialité en un : la suppression des métadonnées invisibles et la rédaction visuelle de données sensibles — entièrement sur votre appareil, sans compte, sans envoi, sans connexion réseau.
+Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau.
 
 SUPPRESSION DES MÉTADONNÉES
 Chaque photo contient secrètement des coordonnées GPS, des horodatages, la marque et le modèle de l'appareil, les données de l'objectif et des numéros de série. PicStrip supprime tout cela avant le partage — en un clic.
 
-DÉTECTION & RÉDACTION DE DONNÉES PERSONNELLES
-L'OCR et la vision par ordinateur, exécutés sur l'appareil, détectent 30 types de données sensibles répartis en quatre niveaux de risque :
+DÉTECTION & MASQUAGE D'INFORMATIONS SENSIBLES
+L'OCR et la vision par ordinateur, exécutés sur l'appareil, détectent 30 types d'informations personnelles sensibles (PII), répartis en quatre niveaux de risque :
 
 Critique — clés API, cartes bancaires, numéros de sécurité sociale, mots de passe, JWT, chaînes de connexion
 Élevé — visages, IBAN, numéros ABA, codes SWIFT/BIC, identifiants physiques
@@ -13,7 +13,7 @@ Faible — dates de naissance, liens, codes-barres
 
 Chaque détection affiche son type, son score de confiance et son niveau de risque pour vous aider à prioriser ce qu'il faut masquer.
 
-ÉDITEUR DE RÉDACTION
+ÉDITEUR DE MASQUAGE
 • Dessinez n'importe où pour couvrir manuellement ce que le scanner a manqué
 • Sélection multiple et modifications en masse
 • 3 styles : plein, flou ou pixelisé
@@ -35,4 +35,4 @@ CONFIDENTIALITÉ PAR CONCEPTION
 • Étiquette de confidentialité : « Aucune donnée collectée »
 
 RACCOURCIS & AUTOMATISATION
-PicStrip inclut une action Raccourcis pour supprimer les métadonnées et masquer les données personnelles automatiquement : à l'import, par lots ou dans vos workflows existants.
+PicStrip inclut une action Raccourcis pour supprimer les métadonnées et masquer les informations sensibles automatiquement : à l'import, par lots ou dans vos workflows existants.

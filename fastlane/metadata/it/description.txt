@@ -1,0 +1,38 @@
+Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza alcuna connessione di rete.
+
+RIMOZIONE DEI METADATI
+Ogni foto contiene di nascosto coordinate GPS, timestamp, marca e modello della fotocamera, dati dell'obiettivo, numeri di serie e note del produttore Apple. PicStrip rimuove tutto prima della condivisione — con un tocco.
+
+RILEVAMENTO E OSCURAMENTO DI INFORMAZIONI SENSIBILI
+OCR e visione artificiale, eseguiti sul dispositivo, individuano 30 tipi di informazioni personali sensibili (PII), classificati in quattro livelli di rischio:
+
+Critico — chiavi API, carte di credito, codici fiscali, password, JWT, stringhe di connessione a database
+Alto — volti, IBAN, codici ABA, codici SWIFT/BIC, credenziali fisiche
+Medio — e-mail, telefoni, indirizzi, wallet crypto, numeri telaio, targhe, indirizzi IP e MAC
+Basso — date di nascita, link, codici a barre
+
+Ogni rilevamento mostra tipo, punteggio di affidabilità e livello di rischio, così sai cosa oscurare per primo.
+
+EDITOR DI OSCURAMENTO
+• Disegna ovunque per coprire manualmente ciò che lo scanner ha mancato
+• Selezione multipla e modifiche in blocco
+• 3 stili: pieno, sfocato o pixelato
+• 10 colori per i blocchi pieni
+• 50 livelli di annullamento/ripristino
+
+IMPORTA DA QUALSIASI POSTO
+• Libreria Foto
+• App File — apri qualsiasi immagine o screenshot direttamente
+• Trascina e rilascia le immagini nell'app
+• Estensione di condivisione — ripulisci direttamente da Foto, Safari o qualsiasi app senza aprire PicStrip
+
+PRIVACY BY DESIGN
+• 100% sul dispositivo — niente lascia il tuo iPhone
+• Nessun account, nessun login, nessun tracciamento
+• Niente pubblicità, niente acquisti in-app, niente abbonamenti
+• Open source — ogni riga di codice è verificabile su GitHub
+• Provenienza di build SLSA Livello 3 — ogni rilascio è verificato crittograficamente
+• Etichetta privacy: «Nessun dato raccolto»
+
+SCORCIATOIE E AUTOMAZIONE
+PicStrip include un'azione Comandi Rapidi per rimuovere i metadati e oscurare le informazioni sensibili automaticamente: all'importazione, in blocco o all'interno dei tuoi flussi di lavoro.

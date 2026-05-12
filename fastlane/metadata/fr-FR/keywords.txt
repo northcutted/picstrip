@@ -1,1 +1,1 @@
-confidentialité,EXIF,métadonnées,GPS,masquer,flouter,visage,risque,détection,anonymiser,sécurité
+confidentialité,EXIF,métadonnées,GPS,masquer,flouter,visage,risque,détection,sécurité,OCR,vision

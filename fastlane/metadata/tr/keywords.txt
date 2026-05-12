@@ -1,0 +1,1 @@
+gizlilik,EXIF,metadata,GPS,sansürle,bulanıklık,PII,yüz,risk,tespit,anonim,güvenli,paylaş,OCR,görme

@@ -1,0 +1,1 @@
+privacy,EXIF,metadata,GPS,redigeren,vervagen,PII,gezicht,risico,detectie,anoniem,veilig,OCR,visie

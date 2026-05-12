@@ -1,0 +1,1 @@
+PicStrip remove metadados ocultos e oculta 30 tipos de informações sensíveis — rostos, segredos, cartões e mais — tudo no dispositivo. Sem conta, sem uploads.

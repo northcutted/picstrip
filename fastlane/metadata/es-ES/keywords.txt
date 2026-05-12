@@ -1,1 +1,1 @@
-privacidad,EXIF,metadatos,GPS,redactar,difuminar,rostro,riesgo,detección,anonimizar,seguro
+privacidad,EXIF,metadatos,GPS,redactar,difuminar,rostro,riesgo,detección,anonimizar,OCR,visión

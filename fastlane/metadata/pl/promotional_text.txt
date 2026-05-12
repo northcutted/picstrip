@@ -1,0 +1,1 @@
+PicStrip usuwa ukryte metadane i zakrywa 30 rodzajów wrażliwych danych — twarze, sekrety, karty i więcej — w całości na urządzeniu. Bez konta, bez przesyłania.

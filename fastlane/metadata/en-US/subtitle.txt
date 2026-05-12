@@ -1,1 +1,1 @@
-See what your eyes miss
+Strip metadata. Hide secrets.

@@ -6,7 +6,7 @@ Single source of truth for everything App-Store-shaped. The release pipeline pul
 
 | Asset | Source of truth | What it ships into |
 |-------|-----------------|--------------------|
-| **App Store text** (name, subtitle, description, keywords, promotional text, URLs) | [`fastlane/metadata/<locale>/`](../../fastlane/metadata) — 5 locales (`en-US`, `de-DE`, `fr-FR`, `es-ES`, `ja`) | Uploaded by `bundle exec fastlane submit` on every release |
+| **App Store text** (name, subtitle, description, keywords, promotional text, URLs) | [`fastlane/metadata/<locale>/`](../../fastlane/metadata) — all 16 supported locales | Uploaded by `bundle exec fastlane submit` on every release |
 | **Canonical English copy + structure for review** | [`MARKETING.md`](MARKETING.md) | Reviewed/edited by humans; mirrored back into `fastlane/metadata/en-US/` |
 | **Screenshot headlines** (5 keys × 16 locales) | [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) | Read by `scripts/process_screenshots.py` at compose time |
 | **Marketing screenshots** (5 screens × 2 devices × 16 locales) | [`fastlane/screenshots/processed/<locale>/`](../../fastlane/screenshots/processed) (Git LFS) | Uploaded by the `screenshots.yml` workflow |

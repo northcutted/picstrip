@@ -1,0 +1,38 @@
+Fotoğraflarınızı; konumunuzu, kimliğinizi ya da göremediğiniz sırları paylaşmadan paylaşın. PicStrip görünmez üst verileri kaldırır ve hassas bilgileri sansürler — tamamen cihazınızda, hesapsız, yüklemesiz ve hiçbir ağ bağlantısı olmadan.
+
+ÜST VERİLERİ KALDIRMA
+Her fotoğraf gizlice GPS koordinatları, zaman damgaları, kamera marka ve modeli, lens bilgileri, seri numaraları ve Apple üretici notları taşır. PicStrip paylaşmadan önce bunların tümünü tek dokunuşla kaldırır.
+
+HASSAS BİLGİ TESPİTİ VE SANSÜRLEME
+Cihazınızda çalışan OCR ve bilgisayarla görme, fotoğrafı dört risk seviyesinde sınıflandırılmış 30 tür hassas kişisel bilgi (PII) için tarar:
+
+Kritik — API anahtarları, kredi kartları, sosyal güvenlik numaraları, parolalar, JWT'ler, veritabanı bağlantı dizileri
+Yüksek — yüzler, IBAN'lar, ABA yönlendirme numaraları, SWIFT/BIC kodları, fiziksel kimlik bilgileri
+Orta — e-postalar, telefonlar, adresler, kripto cüzdanları, VIN'ler, plakalar, IP ve MAC adresleri
+Düşük — doğum tarihleri, bağlantılar, barkodlar
+
+Her tespit; tür, güven puanı ve risk seviyesi bilgisini gösterir, böylece neyi öncelikle sansürleyeceğinizi bilirsiniz.
+
+SANSÜR EDİTÖRÜ
+• Tarayıcının kaçırdığını manuel olarak örtmek için istediğiniz yere çizin
+• Çoklu seçim ve toplu değişiklik
+• 3 stil: dolu renk, bulanıklık veya pikselleştirme
+• Dolu renk için 10 renk seçeneği
+• 50 adım geri al/yinele
+
+HER YERDEN İÇE AKTARMA
+• Fotoğraflar kütüphanesi
+• Dosyalar uygulaması — herhangi bir görseli veya ekran görüntüsünü doğrudan açın
+• Görselleri sürükleyip uygulamaya bırakın
+• Paylaşım uzantısı — PicStrip'i açmadan Fotoğraflar, Safari veya herhangi bir uygulamadan doğrudan temizleyin
+
+TASARIM GEREĞİ GİZLİLİK
+• %100 cihazınızda — hiçbir şey telefonunuzdan çıkmaz
+• Hesap yok, oturum açma yok, izleme yok
+• Reklam yok, uygulama içi satın alma yok, abonelik yok
+• Açık kaynak — her kod satırı GitHub'da denetlenebilir
+• SLSA Seviye 3 yapı kanıtı — her sürüm kriptografik olarak doğrulanır
+• Gizlilik etiketi: "Veri toplanmıyor"
+
+KISAYOLLAR VE OTOMASYON
+PicStrip; içe aktarmada, toplu işlemde veya mevcut iş akışlarınızda üst verileri kaldırıp hassas bilgileri otomatik olarak sansürlemenizi sağlayan bir Kısayollar eylemi içerir.

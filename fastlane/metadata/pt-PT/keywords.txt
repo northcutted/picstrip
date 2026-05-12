@@ -1,0 +1,1 @@
+privacidade,EXIF,metadados,GPS,redacção,desfoque,PII,rosto,risco,detecção,anónimo,seguro,OCR,visão

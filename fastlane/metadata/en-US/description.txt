@@ -1,10 +1,10 @@
-PicStrip combines two privacy tools in one: invisible metadata stripping and on-device visual redaction — with no account, no uploads, and no network connections of any kind.
+Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and zero network calls.
 
 METADATA STRIPPING
 Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.
 
-PII DETECTION & REDACTION
-On-device OCR and computer vision scan your photo for 30 types of sensitive information, risk-ranked across four tiers:
+SENSITIVE INFO DETECTION & REDACTION
+On-device OCR and computer vision scan your photo for 30 kinds of sensitive personal information (PII), risk-ranked across four tiers:
 
 Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
 High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
@@ -35,4 +35,4 @@ PRIVACY BY DESIGN
 • Privacy nutrition label: Data Not Collected
 
 SHORTCUTS & AUTOMATION
-PicStrip includes a Shortcuts action so you can strip metadata and redact PII automatically: on import, in bulk, or as part of any workflow.
+PicStrip includes a Shortcuts action so you can strip metadata and redact sensitive info automatically: on import, in bulk, or as part of any workflow.

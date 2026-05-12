@@ -1,1 +1,1 @@
-PicStrip supprime les métadonnées cachées et détecte 30 types de données sensibles — visages, clés, cartes et plus — tout sur l'appareil. Sans compte.
+PicStrip efface les métadonnées cachées et masque 30 types d'informations sensibles — visages, clés, cartes et plus — tout sur l'appareil. Sans compte, sans envoi.

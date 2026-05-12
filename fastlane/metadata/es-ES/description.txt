@@ -1,17 +1,17 @@
-PicStrip combina dos herramientas de privacidad en una: la eliminación de metadatos invisibles y la redacción visual de información sensible — todo en tu dispositivo, sin cuenta, sin subidas ni conexiones de red.
+Comparte fotos sin compartir tu ubicación, tu identidad ni secretos que no puedes ver. PicStrip elimina los metadatos invisibles y oculta la información sensible — totalmente en tu dispositivo, sin cuenta, sin subidas y sin conexiones de red.
 
 ELIMINACIÓN DE METADATOS
 Cada foto lleva GPS, marcas de tiempo, datos del dispositivo, información del objetivo y números de serie incrustados de forma invisible. PicStrip lo elimina todo antes de compartir — en un toque.
 
-DETECCIÓN Y REDACCIÓN DE DATOS PERSONALES
-El OCR y la visión artificial, ejecutados en el dispositivo, detectan 30 tipos de información sensible clasificados en cuatro niveles de riesgo:
+DETECCIÓN Y OCULTACIÓN DE INFORMACIÓN SENSIBLE
+El OCR y la visión artificial, ejecutados en el dispositivo, detectan 30 tipos de información personal sensible (PII), clasificados en cuatro niveles de riesgo:
 
 Crítico — claves de API, tarjetas de crédito, números de seguridad social, contraseñas, JWT, cadenas de conexión a bases de datos
 Alto — rostros, IBAN, números ABA, códigos SWIFT/BIC, credenciales físicas
 Medio — correos, teléfonos, direcciones, carteras cripto, VIN, matrículas, direcciones IP y MAC
 Bajo — fechas de nacimiento, enlaces, códigos de barras
 
-Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para ayudarte a priorizar qué redactar.
+Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para ayudarte a priorizar qué ocultar.
 
 EDITOR DE REDACCIÓN
 • Dibuja en cualquier zona para cubrir manualmente lo que el escáner no detectó
@@ -35,4 +35,4 @@ PRIVACIDAD POR DISEÑO
 • Etiqueta de privacidad: «No se recopilan datos»
 
 ATAJOS Y AUTOMATIZACIÓN
-PicStrip incluye una acción de Atajos para eliminar metadatos y redactar datos personales automáticamente: al importar, en lotes o dentro de tus flujos de trabajo.
+PicStrip incluye una acción de Atajos para eliminar metadatos y ocultar información sensible automáticamente: al importar, en lotes o dentro de tus flujos de trabajo.
