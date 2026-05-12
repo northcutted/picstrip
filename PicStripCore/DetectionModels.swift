@@ -42,6 +42,52 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
     }
 }
 
+// MARK: - RiskLevel
+
+/// Editorial risk assessment — how sensitive this data type is if it is accidentally disclosed.
+///
+/// This is a separate axis from `ConfidenceLevel`:
+///   • **Confidence** answers "how certain are we that this pattern is really what we think it is?"
+///     (derived from Vision OCR quality and regex specificity)
+///   • **Risk** answers "how bad would it be if this information were exposed?"
+///     (an editorial judgement assigned per `PIIType`, independent of detection quality)
+///
+/// Levels:
+///   • critical — immediate account takeover / major financial fraud risk (SSNs, API keys, credit cards)
+///   • high     — significant personal or financial harm (IBANs, faces, physical credentials)
+///   • medium   — useful to attackers but not immediately dangerous alone (emails, phone numbers, IPs)
+///   • low      — contextual; risk depends heavily on the recipient and setting (URLs, dates, barcodes)
+enum RiskLevel: Int, Comparable, CaseIterable {
+    case low      = 0
+    case medium   = 1
+    case high     = 2
+    case critical = 3
+
+    static func < (lhs: RiskLevel, rhs: RiskLevel) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+
+    /// Full human-readable label: "Critical Risk", "High Risk", etc.
+    nonisolated var label: String {
+        switch self {
+        case .low:      return String(localized: "Low Risk")
+        case .medium:   return String(localized: "Medium Risk")
+        case .high:     return String(localized: "High Risk")
+        case .critical: return String(localized: "Critical Risk")
+        }
+    }
+
+    /// Short label used in compact UI contexts: "Low", "Medium", "High", "Critical".
+    nonisolated var shortLabel: String {
+        switch self {
+        case .low:      return String(localized: "Low")
+        case .medium:   return String(localized: "Medium")
+        case .high:     return String(localized: "High")
+        case .critical: return String(localized: "Critical")
+        }
+    }
+}
+
 // MARK: - DetectedInstance
 
 /// A single occurrence of a PII pattern within the image.

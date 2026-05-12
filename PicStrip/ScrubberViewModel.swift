@@ -602,6 +602,84 @@ final class ScrubberViewModel {
         redactedUIImage = nil
     }
 
+    // MARK: - Bulk Redaction Operations
+
+    /// Applies `style` to every region whose ID is in `ids`.
+    ///
+    /// A single undo snapshot is pushed for the entire batch so the user can
+    /// reverse the operation with one tap. Regions that already have the target
+    /// style are skipped to avoid creating a redundant snapshot.
+    func bulkChangeRedactionStyle(ids: Set<String>, style: RedactionStyle) {
+        let indicesToChange = redactionRegions.indices.filter {
+            ids.contains(redactionRegions[$0].id) && redactionRegions[$0].style != style
+        }
+        guard !indicesToChange.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indicesToChange {
+            redactionRegions[index].style = style
+        }
+        redactedUIImage = nil
+    }
+
+    /// Applies `color` to every region whose ID is in `ids` and whose style supports colour.
+    ///
+    /// Regions using `.pixelate` are silently skipped.
+    /// A single undo snapshot is pushed for the batch.
+    func bulkChangeRedactionColor(ids: Set<String>, color: RedactionColor) {
+        let indicesToChange = redactionRegions.indices.filter {
+            ids.contains(redactionRegions[$0].id)
+                && redactionRegions[$0].style.supportsColor
+                && redactionRegions[$0].color != color
+        }
+        guard !indicesToChange.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indicesToChange {
+            redactionRegions[index].color = color
+        }
+        redactedUIImage = nil
+    }
+
+    /// Deletes all regions whose IDs are in `ids`.
+    ///
+    /// A single undo snapshot is pushed for the batch.
+    /// `typesToRedact` is cleaned up for any PII type that has no remaining
+    /// enabled regions after the deletion.
+    func bulkDeleteRedactionRegions(ids: Set<String>) {
+        guard !ids.isEmpty else { return }
+        let indicesToRemove = redactionRegions.indices.filter { ids.contains(redactionRegions[$0].id) }
+        guard !indicesToRemove.isEmpty else { return }
+        pushUndoSnapshot()
+        let removedTypes = Set(indicesToRemove.compactMap { redactionRegions[$0].type })
+        redactionRegions.removeAll { ids.contains($0.id) }
+        if let id = selectedRedactionRegionID, ids.contains(id) {
+            selectedRedactionRegionID = nil
+        }
+        for type in removedTypes where !redactionRegions.contains(where: { $0.type == type && $0.isEnabled }) {
+            typesToRedact.remove(type)
+        }
+        redactedUIImage = nil
+    }
+
+    /// Toggles the `isEnabled` state of every region whose ID is in `ids`.
+    ///
+    /// **Policy:** if any region in the set is currently disabled, ALL are enabled
+    /// (opt-in first). Only when all are already enabled are they all disabled.
+    /// This matches the iOS multi-select convention used in Mail and Reminders.
+    /// A single undo snapshot is pushed for the batch.
+    func bulkToggleRedactionRegions(ids: Set<String>) {
+        guard !ids.isEmpty else { return }
+        let indices = redactionRegions.indices.filter { ids.contains(redactionRegions[$0].id) }
+        guard !indices.isEmpty else { return }
+        pushUndoSnapshot()
+        // Enable all if any are disabled; otherwise disable all.
+        let anyDisabled = indices.contains { !redactionRegions[$0].isEnabled }
+        let newState = anyDisabled
+        for index in indices {
+            redactionRegions[index].isEnabled = newState
+        }
+        redactedUIImage = nil
+    }
+
     func resetDetectedRedactionRegions() {
         replaceDetectedRedactionRegions(from: detectedPII)
         selectedRedactionRegionID = nil

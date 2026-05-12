@@ -1,33 +1,38 @@
-Sent someone a photo lately? You probably also sent your home GPS coordinates, the exact time it was taken, and your camera's serial number — embedded invisibly in the file. PicStrip removes all of it before you share, in one tap, 100% on your device.
+PicStrip combines two privacy tools in one: invisible metadata stripping and on-device visual redaction — with no account, no uploads, and no network connections of any kind.
 
-No account. No uploads. No tracking. Just clean photos.
+METADATA STRIPPING
+Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.
 
-WHAT GETS REMOVED
-• GPS location — precise coordinates embedded in every photo
-• Timestamps — when the photo was taken, edited, and digitized
-• Device info — camera make, model, lens, and software version
-• Personal identifiers — author name, copyright, and serial numbers
-• Private camera analysis — Apple maker-note data where present
+PII DETECTION & REDACTION
+On-device OCR and computer vision scan your photo for 30 types of sensitive information, risk-ranked across four tiers:
+
+Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
+High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
+Medium — emails, phones, addresses, crypto wallets, VINs, license plates, IP and MAC addresses
+Low — dates of birth, links, barcodes
+
+Each detection shows its type, confidence score, and risk level so you can prioritize what to redact.
+
+REDACTION EDITOR
+• Draw anywhere to cover anything the scanner missed
+• Multi-select regions and bulk-apply changes at once
+• 3 redaction styles: solid, blur, or pixelate
+• 10 colors for solid redactions
+• 50-step undo/redo
+
+IMPORT FROM ANYWHERE
+• Photos library
+• Files app — open any image or screenshot directly
+• Drag and drop images into the app
+• Share Extension — clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 
 PRIVACY BY DESIGN
-• Runs entirely on-device — nothing is uploaded anywhere
+• 100% on-device — nothing leaves your phone
 • No account, no login, no tracking
 • No ads, no in-app purchases, no subscriptions
-
-WHY YOU CAN TRUST IT
-• Open source — every line of code is public and auditable on GitHub
+• Open source — every line of code is auditable on GitHub
 • SLSA Level 3 build provenance — every release is cryptographically verified
-• Zero third-party SDKs in the final binary; no analytics, no network calls
-• Privacy nutrition label declares "Data Not Collected" — the strongest possible answer
-
-HOW IT WORKS
-1. Tap to select a photo from your library
-2. PicStrip scans for all embedded metadata
-3. Review exactly what was found
-4. Strip it — your clean photo saves to your library instantly
-
-SHARE EXTENSION
-Strip metadata directly from the share sheet in Photos, Safari, or any app — without ever opening PicStrip.
+• Privacy nutrition label: Data Not Collected
 
 SHORTCUTS & AUTOMATION
-PicStrip includes a Shortcuts action so you can build automated workflows: strip metadata on import, process photos in bulk, or integrate with your existing shortcuts.
+PicStrip includes a Shortcuts action so you can strip metadata and redact PII automatically: on import, in bulk, or as part of any workflow.

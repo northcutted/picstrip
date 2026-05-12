@@ -1,1 +1,1 @@
-Every iPhone photo carries your exact GPS, the time, and your camera fingerprint. PicStrip removes it all in one tap — 100% on-device. No account, no uploads.
+PicStrip strips hidden metadata and redacts 30 types of PII — faces, secrets, cards, and more — all on-device. No account, no uploads.

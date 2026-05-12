@@ -7,7 +7,7 @@
 | **Bundle ID** | `com.northcutt.PicStrip` |
 | **Extension Bundle ID** | `com.northcutt.PicStrip.ShareExtension` |
 | **Source of truth (App Store text)** | [`fastlane/metadata/en-US/`](../../fastlane/metadata/en-US) (+ `de-DE`, `fr-FR`, `es-ES`, `ja`) |
-| **Source of truth (screenshot copy)** | [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) — 7 keys × 16 locales |
+| **Source of truth (screenshot copy)** | [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) — 5 keys × 16 locales |
 | **Source of truth (screenshots)** | [`fastlane/screenshots/processed/`](../../fastlane/screenshots/processed) (Git LFS) |
 | **App version** | Tracked in `MARKETING_VERSION` (auto-bumped by `semantic-release`) — see [`CHANGELOG.md`](../../CHANGELOG.md) for history |
 | **Per-version release notes** | [`fastlane/metadata/en-US/release_notes.txt`](../../fastlane/metadata/en-US/release_notes.txt) — auto-generated from commits |
@@ -32,11 +32,11 @@
 | Field | Value |
 |------|------|
 | **App name** | PicStrip |
-| **Subtitle** | Photo privacy in one tap |
+| **Subtitle** | See what your eyes miss |
 | **Primary category** | Photo & Video |
 | **Secondary category** | Utilities |
 | **Bundle ID** | `com.northcutt.PicStrip` |
-| **App Store URL** | _Replace `idTODO_REPLACE_WITH_REAL_ID` in [`README.md`](../../README.md) once published_ |
+| **App Store URL** | https://apps.apple.com/app/picstrip/id6765989071 |
 
 **Brand palette** (used in marketing screenshots):
 
@@ -62,83 +62,94 @@ PicStrip
 ### 2.2 Subtitle · max 30
 
 ```
-Photo privacy in one tap
+See what your eyes miss
 ```
 
-> 24/30 characters. The previous subtitle ("Strip photo metadata instantly") was 30/30 but feature-led — "metadata" is jargon non-technical users don't search for. This version trades the tight word "instantly" for the benefit framing ("privacy") that drives App Store browse-and-tap conversion. Room remains to add a region or qualifier in localized variants.
+> 23/30 characters.
 
 ### 2.3 Promotional Text · max 170
 
 ```
-Every iPhone photo carries your exact GPS, the time, and your camera fingerprint. PicStrip removes it all in one tap — 100% on-device. No account, no uploads.
+PicStrip strips hidden metadata and redacts 30 types of PII — faces, secrets, cards, and more — all on-device. No account, no uploads.
 ```
 
-> 158/170 characters. Promotional text can be edited without resubmitting for review — use it for time-bound campaigns (launches, World Privacy Day) or audience-specific hooks (real-estate sellers, Marketplace listers, journalists). The current version leads with the *threat* the user didn't know they had, then resolves it; consider rotating the opener seasonally.
+> 134/170 characters.
 
 ### 2.4 Description · max 4,000
 
 ```
-Sent someone a photo lately? You probably also sent your home GPS coordinates, the exact time it was taken, and your camera's serial number — embedded invisibly in the file. PicStrip removes all of it before you share, in one tap, 100% on your device.
+PicStrip combines two privacy tools in one: invisible metadata stripping and on-device visual redaction — with no account, no uploads, and no network connections of any kind.
 
-No account. No uploads. No tracking. Just clean photos.
+METADATA STRIPPING
+Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.
 
-WHAT GETS REMOVED
-• GPS location — precise coordinates embedded in every photo
-• Timestamps — when the photo was taken, edited, and digitized
-• Device info — camera make, model, lens, and software version
-• Personal identifiers — author name, copyright, and serial numbers
-• Private camera analysis — Apple maker-note data where present
+PII DETECTION & REDACTION
+On-device OCR and computer vision scan your photo for 30 types of sensitive information, risk-ranked across four tiers:
+
+Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
+High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
+Medium — emails, phones, addresses, crypto wallets, VINs, license plates, IP and MAC addresses
+Low — dates of birth, links, barcodes
+
+Each detection shows its type, confidence score, and risk level so you can prioritize what to redact.
+
+REDACTION EDITOR
+• Draw anywhere to cover anything the scanner missed
+• Multi-select regions and bulk-apply changes at once
+• 3 redaction styles: solid, blur, or pixelate
+• 10 colors for solid redactions
+• 50-step undo/redo
+
+IMPORT FROM ANYWHERE
+• Photos library
+• Files app — open any image or screenshot directly
+• Drag and drop images into the app
+• Share Extension — clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 
 PRIVACY BY DESIGN
-• Runs entirely on-device — nothing is uploaded anywhere
+• 100% on-device — nothing leaves your phone
 • No account, no login, no tracking
 • No ads, no in-app purchases, no subscriptions
-
-WHY YOU CAN TRUST IT
-• Open source — every line of code is public and auditable on GitHub
+• Open source — every line of code is auditable on GitHub
 • SLSA Level 3 build provenance — every release is cryptographically verified
-• Zero third-party SDKs in the final binary; no analytics, no network calls
-• Privacy nutrition label declares "Data Not Collected" — the strongest possible answer
-
-HOW IT WORKS
-1. Tap to select a photo from your library
-2. PicStrip scans for all embedded metadata
-3. Review exactly what was found
-4. Strip it — your clean photo saves to your library instantly
-
-SHARE EXTENSION
-Strip metadata directly from the share sheet in Photos, Safari, or any app — without ever opening PicStrip.
+• Privacy nutrition label: Data Not Collected
 
 SHORTCUTS & AUTOMATION
-PicStrip includes a Shortcuts action so you can build automated workflows: strip metadata on import, process photos in bulk, or integrate with your existing shortcuts.
+PicStrip includes a Shortcuts action so you can strip metadata and redact PII automatically: on import, in bulk, or as part of any workflow.
 ```
-
-> 1702/4000 characters. The new "WHY YOU CAN TRUST IT" block surfaces the unique trust signals (open source, SLSA Level 3 provenance, zero SDKs, "Data Not Collected" nutrition label) that competitor metadata strippers can't match. These signals matter most to the privacy-conscious user who reads reviews and writes them — i.e. exactly the audience that drives word-of-mouth for utility apps.
 
 ### 2.5 Keywords · max 100
 
 ```
-privacy,EXIF,metadata,GPS,location,redact,blur,anonymize,geotag,scrub,sensitive,secure,share
+privacy,EXIF,metadata,GPS,redact,blur,PII,face,risk,detection,anonymize,scrub,secure,share
 ```
 
-> 92/100 characters. Comma-separated, no spaces, no trailing punctuation. Apple ranks keywords above the description, so this is the highest-leverage ASO lever. Notes on the current set:
->
-> - Removed `photo` (implied by the Photo & Video category — Apple already indexes that signal), `strip` (already in app name), `clean` and `remove` (overlap with `strip`/`scrub`).
-> - Added `redact`, `blur`, `anonymize` to grab users searching for the *redaction* feature, not just metadata stripping.
-> - Added `geotag` because it's the term most non-technical users actually search when they want to remove location data.
-> - Added `share` because intent-driven phrasing ("anonymize before share") shows up well in autocomplete.
+> 90/100 characters.
 
 ### 2.6 What's New (Release Notes) · max 4,000
 
 ```
-Features
-• Add support for handling alpha channel in PNG metadata
-Bug Fixes
-• harden unit tests, rename Fastfile lane, refresh screenshots
-• replace fixed sleep with polling wait in testFocusPIIResult
-```
+What's New
 
-> Auto-generated by `semantic-release` from commit messages and committed to [`fastlane/metadata/en-US/release_notes.txt`](../../fastlane/metadata/en-US/release_notes.txt) at release time. If you want different copy in the App Store than what semantic-release produced, edit the file in the same commit and the submission lane will pick it up.
+PII DETECTION — 30 TYPES ACROSS 4 RISK TIERS
+Every detection is now labelled Critical, High, Medium, or Low so you know exactly what matters most:
+• Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
+• High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
+• Medium — emails, phones, addresses, crypto wallets, VINs, license plates, IP/MAC addresses
+• Low — dates of birth, links, barcodes
+
+MULTI-SELECT REDACTION EDITOR
+Select multiple regions at once and apply style, color, enable/disable, or delete — all in bulk.
+
+3 REDACTION STYLES, 10 COLORS
+Solid, blur, or pixelate. Solid blocks support 10 color options per-region or bulk-applied.
+
+50-STEP UNDO/REDO
+Every edit is now undoable up to 50 steps.
+
+IMPORT FROM FILES & DRAG AND DROP
+Open any image from the Files app or drag and drop directly into PicStrip.
+```
 
 ### 2.7 URLs
 
@@ -160,32 +171,30 @@ Copyright 2025 Eddie Northcutt
 
 Marketing screenshots are composed in `scripts/process_screenshots.py`: brand-gradient canvas, custom matte-black device frame, localized headline above. Source-of-truth text lives in [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings) and is hand-translated into all 16 supported locales.
 
-**Display order** — the App Store carousel shows screenshots 1–3 above the fold (~60% of conversion attribution). Slot 1 is the emotional hook, 2 proves the product works, 3 closes the loop:
+**Display order** — the App Store carousel shows screenshots 1–3 above the fold (~60% of conversion attribution). Slot 1 is the emotional hook, 2 proves trust, 3 proves detection, 4 shows the redaction editor, 5 closes the loop:
 
 | Display order | Screen key | Headline (en) | Role |
 |--------------:|------------|---------------|------|
 | 1 | `01_Home` | Share the photo.<br/>Not the story behind it. | Lead with the value prop (strongest emotional hook) |
-| 2 | `04_PhotoLoaded` | Sensitive data<br/>caught instantly. | Prove it works (detection) |
-| 3 | `07_ReviewAndSave` | Export clean.<br/>Share confidently. | Close the loop (clean export) |
-| 4 | `05_RedactionEditor` | Draw to hide<br/>anything sensitive. | Power feature — manual redaction |
-| 5 | `06_SensitiveData` | See exactly<br/>what gets hidden. | Trust / transparency |
-| 6 | `02_PrivacyImpact` | GPS. Time. Camera ID.<br/>All stripped automatically. | Breadth of metadata stripped |
-| 7 | `03_About` | Open source.<br/>Auditable privacy. | Brand close — the durable differentiator |
+| 2 | `02_About` | Open source.<br/>Auditable privacy. | Brand trust — the durable differentiator |
+| 3 | `03_PhotoLoaded` | Risks ranked.<br/>Nothing missed. | Prove it works — 30-type detection with risk tiers |
+| 4 | `04_RedactionEditor` | Multi-select.<br/>Redact your way. | Power feature — multi-select bulk editor |
+| 5 | `05_ReviewAndSave` | Export clean.<br/>Share confidently. | Close the loop — clean export |
 
 Display order is set by `SCREENSHOT_DISPLAY_ORDER` in `scripts/process_screenshots.py`. Filenames in `fastlane/screenshots/processed/<locale>/` are renamed at compose time to match this order. To change the order, edit the dict and re-run the compositor — `process_screenshots` wipes `processed/` first so stale PNGs from the previous order don't accumulate.
 
 **Localized variants:** see the full 16-locale matrix in [`fastlane/MarketingHeadlines.xcstrings`](../../fastlane/MarketingHeadlines.xcstrings). Spot-check pairs:
 
-| Locale | `01_Home` | `03_About` |
+| Locale | `01_Home` | `02_About` |
 |--------|-----------|------------|
 | **en** | Share the photo. / Not the story behind it. | Open source. / Auditable privacy. |
 | **de** | Teile das Foto. / Nicht die Geschichte dahinter. | Open Source. / Prüfbare Privatsphäre. |
 | **es** | Comparte la foto. / No la historia detrás. | Código abierto. / Privacidad auditable. |
 | **fr** | Partagez la photo. / Pas l'histoire derrière. | Open source. / Confidentialité auditable. |
-| **ja** | 写真は共有。/ 背景の情報は守る。 | オープンソース。 / 検証可能なプライバシー。 |
+| **ja** | 写真は共有。/ 背景の情報は守る。 | オープンソース。/ 検証可能なプライバシー。 |
 | **ko** | 사진은 공유하세요. / 그 안의 정보는 빼고. | 오픈 소스. / 검증 가능한 프라이버시. |
 | **ar** | شارك الصورة. / لا القصة وراءها. | مفتوح المصدر. / خصوصية يمكن تدقيقها. |
-| **zh-Hans** | 分享照片。/ 不分享背后的故事。 | 开源代码。 / 隐私可审计。 |
+| **zh-Hans** | 分享照片。/ 不分享背后的故事。 | 开源代码。/ 隐私可审计。 |
 
 ---
 

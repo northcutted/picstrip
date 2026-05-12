@@ -30,10 +30,15 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .ipAddress, icon: "network", color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
     .init(type: .macAddress, icon: "wifi", color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
     .init(type: .link, icon: "link", color: .blue, detail: "URLs and web links"),
+    // Vehicle
+    .init(type: .vehicleIdentificationNumber, icon: "car.fill", color: .brown, detail: "17-character ISO 3779 VIN (no I/O/Q)"),
+    .init(type: .licensePlate, icon: "rectangle.fill", color: .brown, detail: "California-style plates detected structurally; other formats require a nearby plate label"),
     // Financial
     .init(type: .creditCard, icon: "creditcard.fill", color: .pink, detail: "Visa, Mastercard, Amex, Discover — with or without spaces"),
     .init(type: .iban, icon: "building.columns.fill", color: .brown, detail: "International bank account numbers (2-letter country code + check digits)"),
     .init(type: .cryptoWallet, icon: "bitcoinsign.circle.fill", color: .orange, detail: "Ethereum (0x... 40 hex) and Bitcoin Bech32 (bc1...)"),
+    .init(type: .swiftBIC, icon: "globe", color: .teal, detail: "SWIFT/BIC bank codes — requires a SWIFT/BIC label nearby to prevent false positives"),
+    .init(type: .abaRoutingNumber, icon: "banknote.fill", color: .green, detail: "US ABA 9-digit routing numbers — requires a routing/ABA keyword nearby"),
     // Developer Secrets
     .init(type: .awsAccessKey, icon: "cloud.fill", color: .orange, detail: "AWS Access Key IDs (AKIA... prefix)"),
     .init(type: .githubToken, icon: "chevron.left.forwardslash.chevron.right", color: .gray, detail: "Classic ghp_, gho_, ghu_, ghs_, ghr_ tokens"),
@@ -61,15 +66,37 @@ private let metadataEntries: [MetadataEntry] = [
     .init(name: "Apple Maker Note", icon: "iphone.gen2", color: .gray, detail: "Private Apple metadata: face detection data, HDR analysis, scene classification, front/rear camera ID")
 ]
 
+// MARK: - Risk Level display helpers
+
+private func riskColor(_ level: RiskLevel) -> Color {
+    switch level {
+    case .critical: return .red
+    case .high:     return .orange
+    case .medium:   return .blue
+    case .low:      return .green
+    }
+}
+
+private func riskIcon(_ level: RiskLevel) -> String {
+    switch level {
+    case .critical: return "exclamationmark.octagon.fill"
+    case .high:     return "exclamationmark.triangle.fill"
+    case .medium:   return "info.circle.fill"
+    case .low:      return "checkmark.circle.fill"
+    }
+}
+
 // MARK: - About view
 
-/// Native iOS "About" sheet — instructions, privacy guarantee, and project links.
+/// Native iOS "About" sheet — instructions, privacy guarantee, scoring system explanation,
+/// and detection catalogue.
 struct AboutView: View {
 
     @Environment(\.dismiss) private var dismiss
 
-    @State private var visualExpanded  = false
+    @State private var visualExpanded   = false
     @State private var metadataExpanded = false
+    @State private var scoringExpanded  = false
 
     private var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -124,28 +151,131 @@ struct AboutView: View {
                         instructionRow(
                             icon: "photo.badge.plus",
                             color: .blue,
-                            text: "Select one or more photos from your library."
+                            text: "**Select a photo** from your library, import from Files, or drag an image directly onto PicStrip."
                         )
                         instructionRow(
-                            icon: "eye.slash.fill",
+                            icon: "viewfinder",
+                            color: .purple,
+                            text: "**PicStrip scans on-device** using Apple's Vision OCR, face detection, and barcode reader to find sensitive content in the image."
+                        )
+                        instructionRow(
+                            icon: "square.dashed",
                             color: .orange,
-                            text: "PicStrip scans for sensitive visual data (passwords, emails, phone numbers) and blacks it out on-device."
+                            text: "**Review detections** in the Redaction Editor. Each finding shows its match confidence and a risk rating so you can make informed decisions about what to cover."
+                        )
+                        instructionRow(
+                            icon: "hand.tap.fill",
+                            color: .indigo,
+                            text: "**Adjust redactions** by tapping to select, dragging to reposition, or pinching to resize. Use the **Select** button to choose multiple regions at once and apply the same style or color to all of them in one step."
                         )
                         instructionRow(
                             icon: "tag.slash.fill",
-                            color: .purple,
-                            text: "Hidden metadata like GPS coordinates, camera model, and timestamps is stripped from the file before it ever leaves your device."
+                            color: .teal,
+                            text: "**Hidden metadata** like GPS coordinates, camera model, and timestamps is stripped from the file before it ever leaves your device."
                         )
                         instructionRow(
                             icon: "square.and.arrow.down.fill",
                             color: .green,
-                            text: "Save the cleaned photo back to your library or replace the original. An audit report is always available."
+                            text: "**Save the cleaned photo** back to your library. You can also share directly from the Photos app using the PicStrip Share Extension."
                         )
                     }
                     .padding(.vertical, 6)
                 }
 
-                // ── Section 3: What PicStrip Detects ──────────────────────
+                // ── Section 3: Getting Photos Into PicStrip ────────────────
+                Section(header: Text("Ways to Import")) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        instructionRow(
+                            icon: "photo",
+                            color: .blue,
+                            text: "**Photos Library** — tap \u{201C}Select a Photo\u{201D} or \u{201C}Select Multiple Photos\u{201D} to pick from your camera roll."
+                        )
+                        instructionRow(
+                            icon: "folder",
+                            color: .orange,
+                            text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
+                        )
+                        instructionRow(
+                            icon: "arrow.down.to.line",
+                            color: .purple,
+                            text: "**Drag & Drop** — drag any image from Safari, Files, or another app and drop it onto PicStrip to load it instantly."
+                        )
+                        instructionRow(
+                            icon: "square.and.arrow.up",
+                            color: .teal,
+                            text: "**Share Extension** — in any app, tap Share → PicStrip to send an image to PicStrip, then open the app to edit it."
+                        )
+                    }
+                    .padding(.vertical, 6)
+                }
+
+                // ── Section 4: Understanding Your Results ──────────────────
+                Section {
+                    DisclosureGroup(isExpanded: $scoringExpanded) {
+                        VStack(alignment: .leading, spacing: 16) {
+
+                            // Confidence explanation
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label {
+                                    Text("Match Confidence")
+                                        .font(.subheadline.weight(.semibold))
+                                } icon: {
+                                    Image(systemName: "percent")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 26, height: 26)
+                                        .background(Color.blue, in: RoundedRectangle(cornerRadius: 6))
+                                }
+                                Text("The **match confidence** percentage tells you how certain our on-device models are that the detected pattern is really what we think it is. It is derived from two factors:\n• **Pattern specificity** — how structurally unambiguous the detection rule is. An AWS key with its exact AKIA prefix scores 98%; a date string scores only 48% because dates appear in many non-sensitive contexts.\n• **OCR quality** — Apple's Vision OCR confidence for the specific text observation. A crisp screenshot produces a higher score than a blurry photograph of the same text.\n\nA higher confidence means fewer false positives, but low-confidence detections can still be real — use your judgement.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+
+                            Divider()
+
+                            // Risk explanation
+                            VStack(alignment: .leading, spacing: 8) {
+                                Label {
+                                    Text("Risk Level")
+                                        .font(.subheadline.weight(.semibold))
+                                } icon: {
+                                    Image(systemName: "exclamationmark.triangle.fill")
+                                        .font(.system(size: 13, weight: .semibold))
+                                        .foregroundStyle(.white)
+                                        .frame(width: 26, height: 26)
+                                        .background(Color.orange, in: RoundedRectangle(cornerRadius: 6))
+                                }
+                                Text("The **risk level** is our editorial assessment of how harmful it would be if this type of data were accidentally shared. It does not change based on detection confidence — a critical-risk item is critical regardless of whether we detected it at 60% or 99%.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+
+                                // Risk level rows
+                                VStack(alignment: .leading, spacing: 8) {
+                                    ForEach(RiskLevel.allCases.reversed(), id: \.self) { level in
+                                        riskLevelRow(level)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.vertical, 8)
+                    } label: {
+                        disclosureLabel(
+                            icon: "chart.bar.xaxis",
+                            color: .indigo,
+                            title: "Confidence & Risk Scores",
+                            count: "How to read them"
+                        )
+                    }
+                } header: {
+                    Text("Understanding Your Results")
+                } footer: {
+                    Text("Both scores are shown together for every detection so you can see exactly what was found, how certain we are, and how serious exposure would be.")
+                        .font(.caption)
+                }
+
+                // ── Section 5: What PicStrip Detects ──────────────────────
                 Section {
                     // Visual content
                     DisclosureGroup(isExpanded: $visualExpanded) {
@@ -154,7 +284,7 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: LocalizedStringKey(entry.type.description),
+                                    type: entry.type,
                                     detail: LocalizedStringKey(entry.detail)
                                 )
                             }
@@ -197,7 +327,39 @@ struct AboutView: View {
                         .font(.caption)
                 }
 
-                // ── Section 4: Privacy Guarantee ───────────────────────────
+                // ── Section 6: Redaction Editor Tips ──────────────────────
+                Section(header: Text("Redaction Editor Tips")) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        instructionRow(
+                            icon: "hand.tap",
+                            color: .blue,
+                            text: "**Tap a region row** in the editor to select it and reveal its style and color options."
+                        )
+                        instructionRow(
+                            icon: "checkmark.circle.fill",
+                            color: .orange,
+                            text: "**Tap the circle** on the right of each row to enable or disable a redaction individually. Disabled regions are shown at reduced opacity."
+                        )
+                        instructionRow(
+                            icon: "checklist",
+                            color: .indigo,
+                            text: "**Select multiple regions** using the \u{201C}Select\u{201D} button. Tap \u{201C}Select All\u{201D} to grab everything at once, then choose a style or color to apply to the entire selection in one tap."
+                        )
+                        instructionRow(
+                            icon: "arrow.uturn.backward",
+                            color: .gray,
+                            text: "**Undo / Redo** every style change, move, resize, or delete — every action is fully reversible."
+                        )
+                        instructionRow(
+                            icon: "plus.circle.fill",
+                            color: .green,
+                            text: "**Draw a custom region** using the \u{201C}Add Region\u{201D} button, then drag on the photo to cover anything the automatic scan missed."
+                        )
+                    }
+                    .padding(.vertical, 6)
+                }
+
+                // ── Section 7: Privacy Guarantee ───────────────────────────
                 Section(header: Text("Privacy")) {
                     privacyRow(
                         icon: "lock.fill",
@@ -225,7 +387,7 @@ struct AboutView: View {
                     )
                 }
 
-                // ── Section 5: Open Source & Developer ─────────────────────
+                // ── Section 8: Open Source & Developer ─────────────────────
                 Section(header: Text("About the Project")) {
                     if let sourceURL = URL(string: "https://github.com/northcutted/picstrip") {
                         Link(destination: sourceURL) {
@@ -267,9 +429,9 @@ struct AboutView: View {
                     }
                 }
 
-                // ── Section 6: Privacy promise footer ─────────────────────
+                // ── Section 9: Privacy promise footer ─────────────────────
                 Section {
-                    Text("PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don’t intend to.")
+                    Text("PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don't intend to.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -352,7 +514,53 @@ struct AboutView: View {
         .padding(.vertical, 2)
     }
 
-    private func detectionRow(icon: String, color: Color, title: LocalizedStringKey, detail: LocalizedStringKey) -> some View {
+    /// Detection row with an inline risk badge (used for PIIType entries).
+    private func detectionRow(
+        icon: String,
+        color: Color,
+        type: PIIType,
+        detail: LocalizedStringKey
+    ) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 26, height: 26)
+                .background(color, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(LocalizedStringKey(type.description))
+                        .font(.subheadline.weight(.medium))
+
+                    // Inline risk badge
+                    Text(type.riskLevel.shortLabel)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(riskColor(type.riskLevel))
+                        .padding(.horizontal, 5)
+                        .padding(.vertical, 1)
+                        .background(riskColor(type.riskLevel).opacity(0.12), in: Capsule())
+                }
+
+                Text(detail)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .padding(.vertical, 5)
+    }
+
+    /// Detection row without a risk badge (used for metadata entries that have no PIIType).
+    private func detectionRow(
+        icon: String,
+        color: Color,
+        title: LocalizedStringKey,
+        detail: LocalizedStringKey
+    ) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: icon)
                 .font(.system(size: 12, weight: .semibold))
@@ -373,6 +581,42 @@ struct AboutView: View {
             Spacer(minLength: 0)
         }
         .padding(.vertical, 5)
+    }
+
+    /// Single risk-level explanatory row used inside the scoring disclosure group.
+    private func riskLevelRow(_ level: RiskLevel) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: riskIcon(level))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 22, height: 22)
+                .background(riskColor(level), in: RoundedRectangle(cornerRadius: 5))
+                .accessibilityHidden(true)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(level.label)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(riskColor(level))
+
+                Text(riskDescription(level))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    private func riskDescription(_ level: RiskLevel) -> String {
+        switch level {
+        case .critical:
+            return "Immediate account takeover or major financial fraud risk. SSNs, credit card numbers, API keys, private keys, database credentials."
+        case .high:
+            return "Significant personal, financial, or identity harm. Bank account numbers, faces, physical credentials written on paper."
+        case .medium:
+            return "Useful to attackers in combination with other data. Email addresses, phone numbers, IP addresses, vehicle plates."
+        case .low:
+            return "Contextual information. Exposure risk depends on the recipient. Dates, URLs, barcodes."
+        }
     }
 }
 

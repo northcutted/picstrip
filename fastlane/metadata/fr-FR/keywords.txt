@@ -1,1 +1,1 @@
-confidentialité,EXIF,métadonnées,GPS,localisation,masquer,flouter,anonymiser,géotag,partager
+confidentialité,EXIF,métadonnées,GPS,masquer,flouter,visage,risque,détection,anonymiser,sécurité

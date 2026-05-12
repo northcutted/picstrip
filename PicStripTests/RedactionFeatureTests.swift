@@ -662,6 +662,197 @@ final class RedactionFeatureTests: XCTestCase {
         }
     }
 
+    // MARK: - RiskLevel tests
+
+    /// Every PIIType must return a valid RiskLevel; the ordering must also be correct.
+    func testRiskLevelOrdering() {
+        XCTAssertLessThan(RiskLevel.low, RiskLevel.medium)
+        XCTAssertLessThan(RiskLevel.medium, RiskLevel.high)
+        XCTAssertLessThan(RiskLevel.high, RiskLevel.critical)
+    }
+
+    /// High-value credential types must be classified as `.critical`.
+    func testCriticalRiskTypes() {
+        let criticalTypes: [PIIType] = [
+            .socialSecurityNumber, .nationalInsuranceNumber, .governmentID,
+            .creditCard,
+            .awsAccessKey, .githubToken, .googleAPIKey, .openAIKey,
+            .slackToken, .stripeKey, .genericPrivateKey, .jwtToken,
+            .developerSecret, .connectionString
+        ]
+        for type in criticalTypes {
+            XCTAssertEqual(type.riskLevel, .critical,
+                "\(type) should be .critical risk")
+        }
+    }
+
+    /// Financial account identifiers and biometric data must be `.high`.
+    func testHighRiskTypes() {
+        let highTypes: [PIIType] = [.face, .iban, .abaRoutingNumber, .swiftBIC, .unstructuredCredential]
+        for type in highTypes {
+            XCTAssertEqual(type.riskLevel, .high,
+                "\(type) should be .high risk")
+        }
+    }
+
+    /// Contact and network identifiers must be `.medium`.
+    func testMediumRiskTypes() {
+        let mediumTypes: [PIIType] = [
+            .email, .phoneNumber, .address,
+            .cryptoWallet, .vehicleIdentificationNumber, .licensePlate,
+            .macAddress, .ipAddress
+        ]
+        for type in mediumTypes {
+            XCTAssertEqual(type.riskLevel, .medium,
+                "\(type) should be .medium risk")
+        }
+    }
+
+    /// Contextual / structural data that carries low inherent risk must be `.low`.
+    func testLowRiskTypes() {
+        let lowTypes: [PIIType] = [.dateOfBirth, .link, .barcode]
+        for type in lowTypes {
+            XCTAssertEqual(type.riskLevel, .low,
+                "\(type) should be .low risk")
+        }
+    }
+
+    /// Every PIIType must have a riskLevel — no case should be missing.
+    func testAllPIITypesHaveRiskLevel() {
+        for type in PIIType.allCases {
+            let level = type.riskLevel
+            XCTAssertTrue(RiskLevel.allCases.contains(level),
+                "\(type).riskLevel returned an unexpected value")
+        }
+    }
+
+    /// RiskLevel short labels must be non-empty and distinct.
+    func testRiskLevelLabelsDistinct() {
+        let shortLabels = RiskLevel.allCases.map(\.shortLabel)
+        XCTAssertEqual(shortLabels.count, Set(shortLabels).count,
+            "RiskLevel.shortLabel values must be unique")
+        for label in shortLabels {
+            XCTAssertFalse(label.isEmpty, "RiskLevel.shortLabel must not be empty")
+        }
+        let fullLabels = RiskLevel.allCases.map(\.label)
+        XCTAssertEqual(fullLabels.count, Set(fullLabels).count,
+            "RiskLevel.label values must be unique")
+    }
+
+    // MARK: - Bulk operation tests
+
+    /// `bulkChangeRedactionStyle` changes every targeted region and pushes one undo.
+    func testBulkChangeStyleAppliesAndIsUndoable() async {
+        let vm = ScrubberViewModel()
+        // Seed two regions
+        vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
+        vm.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
+        XCTAssertEqual(vm.redactionRegions.count, 2)
+
+        let ids = Set(vm.redactionRegions.map(\.id))
+        vm.bulkChangeRedactionStyle(ids: ids, style: .pixelate)
+
+        for region in vm.redactionRegions {
+            XCTAssertEqual(region.style, .pixelate,
+                "All regions should have .pixelate style after bulk change")
+        }
+
+        // Must be undoable as a single step
+        XCTAssertTrue(vm.canUndo, "Undo should be available after bulk style change")
+        vm.undoRedaction()
+        // Original style was .solid (default)
+        for region in vm.redactionRegions {
+            XCTAssertEqual(region.style, .solid,
+                "All regions should revert to .solid after undo")
+        }
+    }
+
+    /// `bulkChangeRedactionColor` skips pixelate regions and only changes colour-supporting ones.
+    func testBulkChangeColorSkipsPixelateRegions() async {
+        let vm = ScrubberViewModel()
+        vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2))
+        vm.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
+
+        // Set first region to pixelate
+        let firstID = vm.redactionRegions[0].id
+        let secondID = vm.redactionRegions[1].id
+        vm.bulkChangeRedactionStyle(ids: [firstID], style: .pixelate)
+
+        // Bulk change color for both
+        let ids = Set([firstID, secondID])
+        vm.bulkChangeRedactionColor(ids: ids, color: .red)
+
+        // First region (pixelate) color must remain unchanged
+        XCTAssertEqual(vm.redactionRegions[0].color, .black,
+            "Pixelate region color should not be changed by bulkChangeColor")
+        // Second region should change
+        XCTAssertEqual(vm.redactionRegions[1].color, .red,
+            "Solid region color should change to .red")
+    }
+
+    /// `bulkDeleteRedactionRegions` removes all targeted regions in one undoable step.
+    func testBulkDeleteRegionsAndUndo() async {
+        let vm = ScrubberViewModel()
+        vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.1, height: 0.1))
+        vm.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.1, height: 0.1))
+        vm.addCustomRedaction(rect: CGRect(x: 0.3, y: 0.3, width: 0.1, height: 0.1))
+        XCTAssertEqual(vm.redactionRegions.count, 3)
+
+        let firstTwoIDs = Set(vm.redactionRegions.prefix(2).map(\.id))
+        vm.bulkDeleteRedactionRegions(ids: firstTwoIDs)
+
+        XCTAssertEqual(vm.redactionRegions.count, 1,
+            "Two regions should be deleted, leaving one")
+        XCTAssertFalse(vm.redactionRegions.contains(where: { firstTwoIDs.contains($0.id) }),
+            "Deleted region IDs should no longer be present")
+
+        vm.undoRedaction()
+        XCTAssertEqual(vm.redactionRegions.count, 3,
+            "Undo should restore all three regions")
+    }
+
+    /// `bulkToggleRedactionRegions` enables all when any is disabled; disables all when all enabled.
+    func testBulkTogglePolicy() async {
+        let vm = ScrubberViewModel()
+        vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.1, height: 0.1))
+        vm.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.1, height: 0.1))
+        let ids = Set(vm.redactionRegions.map(\.id))
+
+        // Both start enabled — toggle should disable all
+        XCTAssertTrue(vm.redactionRegions.allSatisfy(\.isEnabled))
+        vm.bulkToggleRedactionRegions(ids: ids)
+        XCTAssertTrue(vm.redactionRegions.allSatisfy { !$0.isEnabled },
+            "All should be disabled when all were enabled")
+
+        // Disable one then toggle — should enable all (any-disabled policy)
+        vm.bulkToggleRedactionRegions(ids: [vm.redactionRegions[0].id])
+        // Now first is enabled, second still disabled — bulk toggle of both should enable all
+        vm.bulkToggleRedactionRegions(ids: ids)
+        XCTAssertTrue(vm.redactionRegions.allSatisfy(\.isEnabled),
+            "All should be enabled when any was disabled")
+    }
+
+    /// `bulkChangeRedactionStyle` with no actual change must not push an undo snapshot.
+    ///
+    /// Strategy: `addCustomRedaction` pushes exactly one snapshot.  A no-op bulk
+    /// call must not push a second one.  After a single `undoRedaction()` the
+    /// stack must therefore be empty — if the no-op had pushed a snapshot there
+    /// would still be one remaining after the undo.
+    func testBulkChangeStyleNoOpDoesNotPushUndo() async {
+        let vm = ScrubberViewModel()
+        vm.addCustomRedaction(rect: CGRect(x: 0.1, y: 0.1, width: 0.1, height: 0.1))
+        let ids = Set(vm.redactionRegions.map(\.id))
+
+        // All are already .solid; calling bulkChangeRedactionStyle with .solid is a no-op.
+        vm.bulkChangeRedactionStyle(ids: ids, style: .solid)
+
+        // Undo the one real snapshot (the add).  The stack must now be empty,
+        // proving the no-op did not push a second snapshot.
+        vm.undoRedaction()
+        XCTAssertFalse(vm.canUndo,
+            "Only the add snapshot should exist; the no-op must not push an additional one")
+    }
+
     // MARK: - Helpers
 
     private func makeImage(color: UIColor, size: CGSize = CGSize(width: 4, height: 4)) throws -> UIImage {

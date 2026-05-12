@@ -66,6 +66,64 @@ enum PIIType: String, Hashable, Identifiable, CaseIterable {
     // MARK: - Unstructured / Contextual
     case unstructuredCredential
 
+    // MARK: - Risk Level
+
+    /// Editorial risk classification for this PII type.
+    ///
+    /// Risk is independent of detection confidence.  A face may be detected with 99% confidence
+    /// but still only represent a medium risk depending on context; an API key found with 80%
+    /// confidence is still critical-risk because of what it unlocks.
+    nonisolated var riskLevel: RiskLevel {
+        switch self {
+
+        // ── Critical ─────────────────────────────────────────────────────────────
+        // Immediate account takeover or large-scale financial fraud risk.
+        case .socialSecurityNumber,
+             .nationalInsuranceNumber,
+             .governmentID,
+             .creditCard,
+             .awsAccessKey,
+             .githubToken,
+             .googleAPIKey,
+             .openAIKey,
+             .slackToken,
+             .stripeKey,
+             .genericPrivateKey,
+             .jwtToken,
+             .developerSecret,
+             .connectionString:
+            return .critical
+
+        // ── High ─────────────────────────────────────────────────────────────────
+        // Significant personal, financial, or identity harm.
+        case .face,
+             .iban,
+             .abaRoutingNumber,
+             .swiftBIC,
+             .unstructuredCredential:
+            return .high
+
+        // ── Medium ───────────────────────────────────────────────────────────────
+        // Useful to attackers or stalkers in combination with other data.
+        case .email,
+             .phoneNumber,
+             .address,
+             .cryptoWallet,
+             .vehicleIdentificationNumber,
+             .licensePlate,
+             .macAddress,
+             .ipAddress:
+            return .medium
+
+        // ── Low ──────────────────────────────────────────────────────────────────
+        // Contextual information; exposure risk depends heavily on the recipient.
+        case .dateOfBirth,
+             .link,
+             .barcode:
+            return .low
+        }
+    }
+
     // MARK: - Identifiable
 
     var id: String { rawValue }

@@ -1,1 +1,1 @@
-privacy,EXIF,metadata,GPS,location,redact,blur,anonymize,geotag,scrub,sensitive,secure,share
+privacy,EXIF,metadata,GPS,redact,blur,PII,face,risk,detection,anonymize,scrub,secure,share

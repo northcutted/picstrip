@@ -1,2 +1,31 @@
-Bug Fixes
-• fix other jitter issue
+What's New
+
+PII DETECTION — 30 TYPES ACROSS 4 RISK TIERS
+Every detection is now labelled Critical, High, Medium, or Low so you know exactly what matters most:
+• Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
+• High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
+• Medium — emails, phones, addresses, crypto wallets, VINs, license plates, IP/MAC addresses
+• Low — dates of birth, links, barcodes
+
+Each detection also shows its confidence score alongside the risk label.
+
+MULTI-SELECT REDACTION EDITOR
+• Tap "Select" to enter multi-select mode
+• Tap any region to add it to the selection
+• Apply style, color, enable/disable, or delete — all at once
+• Exits automatically when the last selected region is removed
+
+3 REDACTION STYLES, 10 COLORS
+Choose between solid, blur, and pixelate for each region. Solid blocks support 10 color options. Style and color can be set per-region or bulk-applied across a selection.
+
+50-STEP UNDO/REDO
+Every edit — draw, move, resize, style change, bulk action — is now undoable up to 50 steps.
+
+IMPORT FROM FILES & DRAG AND DROP
+• Open any image directly from the Files app
+• Drag and drop an image onto PicStrip from anywhere
+
+BUG FIXES
+• Fixed pan locking during redaction drag at high zoom levels
+• Fixed coordinate drift at zoom > 1 when repositioning regions
+• Fixed spring-animation overshoot on region drag release

@@ -1,1 +1,1 @@
-Datenschutz,EXIF,Metadaten,GPS,Standort,zensieren,unkenntlich,anonym,Geotag,sensibel,sicher,teilen
+Datenschutz,EXIF,Metadaten,GPS,schwärzen,Gesicht,PII,Risiko,Erkennung,anonym,sicher,teilen

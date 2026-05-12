@@ -4,6 +4,51 @@
     "" : {
       "shouldTranslate" : false
     },
+    "**Adjust redactions** by tapping to select, dragging to reposition, or pinching to resize. Use the **Select** button to choose multiple regions at once and apply the same style or color to all of them in one step." : {
+
+    },
+    "**Drag & Drop** — drag any image from Safari, Files, or another app and drop it onto PicStrip to load it instantly." : {
+
+    },
+    "**Draw a custom region** using the “Add Region” button, then drag on the photo to cover anything the automatic scan missed." : {
+
+    },
+    "**Files App** — tap “Browse Files” to import images stored locally or in iCloud Drive, Dropbox, and other providers." : {
+
+    },
+    "**Hidden metadata** like GPS coordinates, camera model, and timestamps is stripped from the file before it ever leaves your device." : {
+
+    },
+    "**Photos Library** — tap “Select a Photo” or “Select Multiple Photos” to pick from your camera roll." : {
+
+    },
+    "**PicStrip scans on-device** using Apple's Vision OCR, face detection, and barcode reader to find sensitive content in the image." : {
+
+    },
+    "**Review detections** in the Redaction Editor. Each finding shows its match confidence and a risk rating so you can make informed decisions about what to cover." : {
+
+    },
+    "**Save the cleaned photo** back to your library. You can also share directly from the Photos app using the PicStrip Share Extension." : {
+
+    },
+    "**Select a photo** from your library, import from Files, or drag an image directly onto PicStrip." : {
+
+    },
+    "**Select multiple regions** using the “Select” button. Tap “Select All” to grab everything at once, then choose a style or color to apply to the entire selection in one tap." : {
+
+    },
+    "**Share Extension** — in any app, tap Share → PicStrip to send an image to PicStrip, then open the app to edit it." : {
+
+    },
+    "**Tap a region row** in the editor to select it and reveal its style and color options." : {
+
+    },
+    "**Tap the circle** on the right of each row to enable or disable a redaction individually. Disabled regions are shown at reduced opacity." : {
+
+    },
+    "**Undo / Redo** every style change, move, resize, or delete — every action is fully reversible." : {
+
+    },
     "%@ %@ fields" : {
       "localizations" : {
         "ar" : {
@@ -199,6 +244,7 @@
       }
     },
     "%@ match" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -994,6 +1040,9 @@
         }
       }
     },
+    "%lld%% match confidence" : {
+
+    },
     "^[%@ photo](inflect: true) selected" : {
       "localizations" : {
         "ar" : {
@@ -1669,6 +1718,9 @@
           }
         }
       }
+    },
+    "^[%lld region](inflect: true) selected" : {
+
     },
     "^[%lld sensitive data region](inflect: true) highlighted" : {
       "localizations" : {
@@ -2937,6 +2989,12 @@
         }
       }
     },
+    "Apply %@ color to selected regions" : {
+
+    },
+    "Apply %@ style to selected regions" : {
+
+    },
     "Apply a single privacy policy to all of them." : {
       "localizations" : {
         "ar" : {
@@ -3030,6 +3088,9 @@
           }
         }
       }
+    },
+    "Apply to ^[%lld region](inflect: true)" : {
+
     },
     "AWS Access Key" : {
       "localizations" : {
@@ -3518,6 +3579,9 @@
           }
         }
       }
+    },
+    "Both scores are shown together for every detection so you can see exactly what was found, how certain we are, and how serious exposure would be." : {
+
     },
     "Browse Files" : {
 
@@ -4961,6 +5025,9 @@
         }
       }
     },
+    "Confidence & Risk Scores" : {
+
+    },
     "Confidence summarizes automatic visual detections only. Custom redactions are counted without a confidence score." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -5957,6 +6024,12 @@
         }
       }
     },
+    "Critical" : {
+
+    },
+    "Critical Risk" : {
+
+    },
     "Crosshatch" : {
       "localizations" : {
         "ar" : {
@@ -6655,6 +6728,9 @@
           }
         }
       }
+    },
+    "Delete selected regions" : {
+
     },
     "Deselect All" : {
       "extractionState" : "manual",
@@ -7612,6 +7688,9 @@
           }
         }
       }
+    },
+    "Double tap to add to selection" : {
+
     },
     "Double tap to close" : {
       "localizations" : {
@@ -8871,6 +8950,12 @@
     "Encoded barcode" : {
 
     },
+    "Enter multi-select mode" : {
+
+    },
+    "Exit multi-select mode" : {
+
+    },
     "Export Batch Audit Log (JSON)" : {
       "localizations" : {
         "ar" : {
@@ -10047,6 +10132,7 @@
       }
     },
     "Hidden metadata like GPS coordinates, camera model, and timestamps is stripped from the file before it ever leaves your device." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -10533,6 +10619,9 @@
           }
         }
       }
+    },
+    "High Risk" : {
+
     },
     "How It Works" : {
       "localizations" : {
@@ -12122,6 +12211,9 @@
         }
       }
     },
+    "Low Risk" : {
+
+    },
     "Low-level image properties including software version, color profile, and copyright strings — which sometimes contain your real name or organisation." : {
       "localizations" : {
         "ar" : {
@@ -12321,6 +12413,9 @@
           }
         }
       }
+    },
+    "Match Confidence" : {
+
     },
     "Match Original" : {
       "localizations" : {
@@ -12709,6 +12804,9 @@
           }
         }
       }
+    },
+    "Medium Risk" : {
+
     },
     "Metadata found in this photo" : {
       "localizations" : {
@@ -15596,6 +15694,7 @@
 
     },
     "PicStrip scans for sensitive visual data (passwords, emails, phone numbers) and blacks it out on-device." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -15689,7 +15788,11 @@
         }
       }
     },
+    "PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don't intend to." : {
+
+    },
     "PicStrip was built on a single principle: Privacy. The app exists to help you avoid sharing things you don’t intend to." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -18107,6 +18210,9 @@
         }
       }
     },
+    "Redaction Editor Tips" : {
+
+    },
     "Redaction Regions" : {
       "localizations" : {
         "ar" : {
@@ -19148,6 +19254,9 @@
         }
       }
     },
+    "Risk Level" : {
+
+    },
     "Same as Original" : {
       "localizations" : {
         "ar" : {
@@ -19719,6 +19828,7 @@
       }
     },
     "Save the cleaned photo back to your library or replace the original. An audit report is always available." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20201,6 +20311,9 @@
         }
       }
     },
+    "Select" : {
+
+    },
     "Select a Photo" : {
       "localizations" : {
         "ar" : {
@@ -20389,6 +20502,9 @@
         }
       }
     },
+    "Select All" : {
+
+    },
     "Select Multiple Photos" : {
       "localizations" : {
         "ar" : {
@@ -20484,6 +20600,7 @@
       }
     },
     "Select one or more photos from your library." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -22226,6 +22343,12 @@
         }
       }
     },
+    "The **match confidence** percentage tells you how certain our on-device models are that the detected pattern is really what we think it is. It is derived from two factors:\n• **Pattern specificity** — how structurally unambiguous the detection rule is. An AWS key with its exact AKIA prefix scores 98%; a date string scores only 48% because dates appear in many non-sensitive contexts.\n• **OCR quality** — Apple's Vision OCR confidence for the specific text observation. A crisp screenshot produces a higher score than a blurry photograph of the same text.\n\nA higher confidence means fewer false positives, but low-confidence detections can still be real — use your judgement." : {
+
+    },
+    "The **risk level** is our editorial assessment of how harmful it would be if this type of data were accidentally shared. It does not change based on detection confidence — a critical-risk item is critical regardless of whether we detected it at 60% or 99%." : {
+
+    },
     "The original photo could not be identified. It may be stored in iCloud and not yet downloaded. Would you like to save as a new photo instead?" : {
       "localizations" : {
         "ar" : {
@@ -22808,6 +22931,12 @@
         }
       }
     },
+    "Toggle visibility of selected regions" : {
+
+    },
+    "Understanding Your Results" : {
+
+    },
     "Undo" : {
       "localizations" : {
         "ar" : {
@@ -23280,6 +23409,9 @@
           }
         }
       }
+    },
+    "Ways to Import" : {
+
     },
     "Web-Friendly JPEG" : {
       "localizations" : {

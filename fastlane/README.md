@@ -93,7 +93,7 @@ Compose marketing screenshots from raw captures into ./fastlane/screenshots/proc
 [bundle exec] fastlane ios upload_screenshots
 ```
 
-Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged)
+Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. On CI, screenshot upload is handled inside the submit lane which runs at a pinned release SHA so screenshots are always versioned with code.
 
 ### ios submit
 
@@ -101,7 +101,15 @@ Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to 
 [bundle exec] fastlane ios submit
 ```
 
-Upload metadata + submit the processed TestFlight build for App Review
+Upload metadata + screenshots + submit the processed TestFlight build for App Review
+
+### ios preflight
+
+```sh
+[bundle exec] fastlane ios preflight
+```
+
+Push metadata + screenshots to a pending App Store version WITHOUT submitting for review. Use this to verify Fastlane metadata automation in App Store Connect before a real release. Requires MARKETING_VERSION env var (e.g. '1.2.0'). BUILD_NUMBER is optional — omit it to let deliver attach the latest processed TestFlight build for that version.
 
 ### ios accessibility
 

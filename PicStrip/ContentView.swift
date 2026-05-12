@@ -444,6 +444,18 @@ struct ContentView: View {
                     onChangeColor: { id, color in
                         viewModel.changeRedactionColor(id: id, color: color)
                     },
+                    onBulkChangeStyle: { ids, style in
+                        viewModel.bulkChangeRedactionStyle(ids: ids, style: style)
+                    },
+                    onBulkChangeColor: { ids, color in
+                        viewModel.bulkChangeRedactionColor(ids: ids, color: color)
+                    },
+                    onBulkDelete: { ids in
+                        viewModel.bulkDeleteRedactionRegions(ids: ids)
+                    },
+                    onBulkToggle: { ids in
+                        viewModel.bulkToggleRedactionRegions(ids: ids)
+                    },
                     onUndo: { viewModel.undoRedaction() },
                     onRedo: { viewModel.redoRedaction() },
                     onFit: { zoomResetRequest += 1 },
@@ -793,21 +805,23 @@ struct ContentView: View {
         .accessibilityIdentifier("editRedactionsButton")
     }
 
-    // MARK: - Confidence helpers
+    // MARK: - Risk helpers (used by edit-redactions row and other in-body callouts)
 
-    private func confidenceIcon(_ level: ConfidenceLevel) -> String {
+    private func riskIcon(_ level: RiskLevel) -> String {
         switch level {
-        case .high:   return "exclamationmark.octagon.fill"
-        case .medium: return "exclamationmark.triangle.fill"
-        case .low:    return "info.circle.fill"
+        case .critical: return "exclamationmark.octagon.fill"
+        case .high:     return "exclamationmark.triangle.fill"
+        case .medium:   return "info.circle.fill"
+        case .low:      return "checkmark.circle.fill"
         }
     }
 
-    private func confidenceColor(_ level: ConfidenceLevel) -> Color {
+    private func riskColor(_ level: RiskLevel) -> Color {
         switch level {
-        case .high:   return .red
-        case .medium: return .orange
-        case .low:    return .blue
+        case .critical: return .red
+        case .high:     return .orange
+        case .medium:   return .blue
+        case .low:      return .green
         }
     }
 
@@ -816,8 +830,15 @@ struct ContentView: View {
 // MARK: - Redaction Editor Drawer
 
 /// Bottom-panel UI that replaces `controlPanel` while the user is editing redaction regions.
-/// All state is passed in as value types + action callbacks — no `@Binding` — for clean
-/// separation from `ContentView`'s state machine.
+///
+/// **Single-select mode (default):** tapping a row selects it for image-preview focus and shows
+/// the style / colour panel. The toggle and delete buttons appear on each row.
+///
+/// **Multi-select mode:** activated by the "Select" button in the header.
+/// Each row shows a checkbox; tapping toggles it in `multiSelectedIDs`.
+/// When at least one region is selected, a bulk style / colour panel appears and the
+/// action bar shows Enable/Disable + Delete buttons for the whole selection.
+/// Exiting multi-select (via the header "Done" button) clears the selection.
 private struct RedactionEditorDrawer: View {
 
     let regions: [RedactionRegion]
@@ -826,16 +847,29 @@ private struct RedactionEditorDrawer: View {
     let canRedo: Bool
     let isAddingRedaction: Bool
 
+    // Single-region callbacks
     let onSelect: (String?) -> Void
     let onAdd: () -> Void
     let onToggleRegion: (String) -> Void
     let onDeleteRegion: (String) -> Void
     let onChangeStyle: (String, RedactionStyle) -> Void
     let onChangeColor: (String, RedactionColor) -> Void
+
+    // Bulk callbacks
+    let onBulkChangeStyle: (Set<String>, RedactionStyle) -> Void
+    let onBulkChangeColor: (Set<String>, RedactionColor) -> Void
+    let onBulkDelete: (Set<String>) -> Void
+    let onBulkToggle: (Set<String>) -> Void
+
     let onUndo: () -> Void
     let onRedo: () -> Void
     let onFit: () -> Void
     let onDone: () -> Void
+
+    // MARK: - Multi-select local state
+
+    @State private var isMultiSelectMode: Bool = false
+    @State private var multiSelectedIDs: Set<String> = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -848,26 +882,74 @@ private struct RedactionEditorDrawer: View {
 
                 Spacer()
 
-                // Add / Cancel-Add toggle
-                Button(action: onAdd) {
-                    Label(
-                        isAddingRedaction ? "Cancel" : "Add Region",
-                        systemImage: isAddingRedaction ? "xmark" : "plus"
-                    )
-                    .font(.caption.weight(.semibold))
+                // Select / Done — multi-select mode toggle
+                if !regions.isEmpty {
+                    Button(isMultiSelectMode ? "Done" : "Select") {
+                        withAnimation(.spring(duration: 0.22)) {
+                            isMultiSelectMode.toggle()
+                            if !isMultiSelectMode {
+                                multiSelectedIDs.removeAll()
+                            } else {
+                                // Clear VM single-select when entering multi-select
+                                onSelect(nil)
+                            }
+                        }
+                    }
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.accentColor)
+                    .accessibilityLabel(isMultiSelectMode ? "Exit multi-select mode" : "Enter multi-select mode")
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(isAddingRedaction ? .secondary : .accentColor)
-                .controlSize(.small)
-                .accessibilityIdentifier("addRedactionButton")
-                .accessibilityLabel(isAddingRedaction ? "Cancel drawing redaction" : "Draw a new redaction region")
+
+                if !isMultiSelectMode {
+                    // Add / Cancel-Add toggle (only in normal mode)
+                    Button(action: onAdd) {
+                        Label(
+                            isAddingRedaction ? "Cancel" : "Add Region",
+                            systemImage: isAddingRedaction ? "xmark" : "plus"
+                        )
+                        .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(isAddingRedaction ? .secondary : .accentColor)
+                    .controlSize(.small)
+                    .accessibilityIdentifier("addRedactionButton")
+                    .accessibilityLabel(isAddingRedaction ? "Cancel drawing redaction" : "Draw a new redaction region")
+                }
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
             .padding(.bottom, 8)
 
-            // ── Draw-mode hint ────────────────────────────────────────────
-            if isAddingRedaction {
+            // ── Multi-select sub-header ───────────────────────────────────
+            if isMultiSelectMode {
+                HStack(spacing: 12) {
+                    Button(multiSelectedIDs.count == regions.count ? "Deselect All" : "Select All") {
+                        withAnimation(.spring(duration: 0.18)) {
+                            if multiSelectedIDs.count == regions.count {
+                                multiSelectedIDs.removeAll()
+                            } else {
+                                multiSelectedIDs = Set(regions.map(\.id))
+                            }
+                        }
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.accentColor)
+
+                    Spacer()
+
+                    if !multiSelectedIDs.isEmpty {
+                        Text("^[\(multiSelectedIDs.count) region](inflect: true) selected")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+                .padding(.horizontal, 16)
+                .padding(.bottom, 8)
+                .transition(.opacity.combined(with: .move(edge: .top)))
+            }
+
+            // ── Draw-mode hint (single-select only) ──────────────────────
+            if isAddingRedaction && !isMultiSelectMode {
                 HStack(spacing: 8) {
                     Image(systemName: "hand.draw")
                         .font(.system(size: 13, weight: .medium))
@@ -911,67 +993,142 @@ private struct RedactionEditorDrawer: View {
                     }
                 }
                 .frame(maxHeight: 160)
+                .onChange(of: regions) { _, newRegions in
+                    // Prune stale IDs (e.g. after undo removes regions)
+                    let validIDs = Set(newRegions.map(\.id))
+                    let stale = multiSelectedIDs.subtracting(validIDs)
+                    if !stale.isEmpty {
+                        multiSelectedIDs.subtract(stale)
+                        if multiSelectedIDs.isEmpty {
+                            withAnimation { isMultiSelectMode = false }
+                        }
+                    }
+                }
             }
 
             Divider()
 
-            // ── Style + Color panel (visible when a region is selected) ────
-            if let selectedRegion = regions.first(where: { $0.id == selectedRegionID }) {
+            // ── Style + Colour panel ──────────────────────────────────────
+            // Single-select: show for the VM-selected region.
+            // Multi-select: show bulk panel when at least one region is selected.
+            if !isMultiSelectMode,
+               let selectedRegion = regions.first(where: { $0.id == selectedRegionID }) {
                 styleColorPanel(for: selectedRegion)
+                Divider()
+            } else if isMultiSelectMode && !multiSelectedIDs.isEmpty {
+                bulkStyleColorPanel()
                 Divider()
             }
 
             // ── Action bar ────────────────────────────────────────────────
-            HStack(spacing: 8) {
-                Button(action: onUndo) {
-                    Image(systemName: "arrow.uturn.backward")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(!canUndo)
-                .accessibilityLabel("Undo")
-                .accessibilityIdentifier("undoRedactionButton")
-
-                Button(action: onRedo) {
-                    Image(systemName: "arrow.uturn.forward")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .disabled(!canRedo)
-                .accessibilityLabel("Redo")
-                .accessibilityIdentifier("redoRedactionButton")
-
-                Button(action: onFit) {
-                    Image(systemName: "arrow.down.right.and.arrow.up.left")
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .accessibilityLabel("Reset zoom to fit image")
-                .accessibilityIdentifier("resetZoomButton")
-
-                Spacer()
-
-                Button(action: onDone) {
-                    Text("Done")
-                        .font(.subheadline.weight(.semibold))
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.regular)
-                .accessibilityLabel("Done editing redactions")
-                .accessibilityIdentifier("doneEditingRedactionsButton")
+            if isMultiSelectMode {
+                bulkActionBar
+            } else {
+                normalActionBar
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
         }
         .animation(.spring(duration: 0.22), value: isAddingRedaction)
         .animation(.spring(duration: 0.22), value: regions.count)
+        .animation(.spring(duration: 0.22), value: isMultiSelectMode)
+        .animation(.spring(duration: 0.18), value: multiSelectedIDs)
     }
 
-    // MARK: - Style + Color Panel
+    // MARK: - Normal action bar
 
-    /// Compact contextual panel shown when a region is selected.
-    /// Style choices are always visible; the colour row is hidden for `.pixelate`
-    /// (which shows scrambled source pixels — colour is irrelevant).
+    private var normalActionBar: some View {
+        HStack(spacing: 8) {
+            Button(action: onUndo) {
+                Image(systemName: "arrow.uturn.backward")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(!canUndo)
+            .accessibilityLabel("Undo")
+            .accessibilityIdentifier("undoRedactionButton")
+
+            Button(action: onRedo) {
+                Image(systemName: "arrow.uturn.forward")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(!canRedo)
+            .accessibilityLabel("Redo")
+            .accessibilityIdentifier("redoRedactionButton")
+
+            Button(action: onFit) {
+                Image(systemName: "arrow.down.right.and.arrow.up.left")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .accessibilityLabel("Reset zoom to fit image")
+            .accessibilityIdentifier("resetZoomButton")
+
+            Spacer()
+
+            Button(action: onDone) {
+                Text("Done")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+            .accessibilityLabel("Done editing redactions")
+            .accessibilityIdentifier("doneEditingRedactionsButton")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    // MARK: - Bulk action bar
+
+    private var bulkActionBar: some View {
+        HStack(spacing: 8) {
+            // Toggle enable / disable for all selected
+            Button {
+                onBulkToggle(multiSelectedIDs)
+            } label: {
+                Image(systemName: "eye.slash")
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.small)
+            .disabled(multiSelectedIDs.isEmpty)
+            .accessibilityLabel("Toggle visibility of selected regions")
+
+            // Delete all selected
+            Button {
+                let ids = multiSelectedIDs
+                onBulkDelete(ids)
+                withAnimation(.spring(duration: 0.22)) {
+                    multiSelectedIDs.removeAll()
+                    isMultiSelectMode = false
+                }
+            } label: {
+                Image(systemName: "trash")
+            }
+            .buttonStyle(.bordered)
+            .tint(.red)
+            .controlSize(.small)
+            .disabled(multiSelectedIDs.isEmpty)
+            .accessibilityLabel("Delete selected regions")
+
+            Spacer()
+
+            Button(action: onDone) {
+                Text("Done")
+                    .font(.subheadline.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.regular)
+            .accessibilityLabel("Done editing redactions")
+            .accessibilityIdentifier("doneEditingRedactionsButton")
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 12)
+    }
+
+    // MARK: - Single-region Style + Colour Panel
+
+    /// Compact contextual panel shown when exactly one region is selected.
+    /// Style choices are always visible; the colour row is hidden for `.pixelate`.
     @ViewBuilder
     private func styleColorPanel(for region: RedactionRegion) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1070,22 +1227,155 @@ private struct RedactionEditorDrawer: View {
         .animation(.easeInOut(duration: 0.18), value: region.color)
     }
 
+    // MARK: - Bulk Style + Colour Panel
+
+    /// Style / colour panel shown in multi-select mode.
+    ///
+    /// Neither style nor colour shows an "active" selection when the set of selected
+    /// regions has mixed values; tapping any option applies it to all selected regions.
+    /// When all selected regions share the same style or colour, that option is highlighted.
+    @ViewBuilder
+    private func bulkStyleColorPanel() -> some View {
+        let selectedRegions = regions.filter { multiSelectedIDs.contains($0.id) }
+
+        // Shared style (non-nil only when ALL selected agree)
+        let sharedStyle: RedactionStyle? = {
+            let styles = Set(selectedRegions.map(\.style))
+            return styles.count == 1 ? styles.first : nil
+        }()
+
+        // Shared colour (non-nil only when ALL selected agree and support colour)
+        let sharedColor: RedactionColor? = {
+            let colours = Set(selectedRegions.map(\.color))
+            return colours.count == 1 ? colours.first : nil
+        }()
+
+        // Show colour row unless ALL selected regions are currently pixelated
+        let showColorRow = !selectedRegions.allSatisfy { $0.style == .pixelate }
+
+        VStack(alignment: .leading, spacing: 10) {
+
+            // Context label
+            Text("Apply to ^[\(multiSelectedIDs.count) region](inflect: true)")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+
+            // ── Style row ─────────────────────────────────────────────────
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Style")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.secondary)
+
+                HStack(spacing: 6) {
+                    ForEach(RedactionStyle.allCases, id: \.self) { style in
+                        let isActive = sharedStyle == style
+                        Button {
+                            onBulkChangeStyle(multiSelectedIDs, style)
+                        } label: {
+                            VStack(spacing: 3) {
+                                Image(systemName: style.symbolName)
+                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
+                                Text(style.displayName)
+                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
+                            }
+                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 7)
+                            .background(
+                                isActive
+                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
+                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
+                                in: RoundedRectangle(cornerRadius: 8)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(
+                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
+                                        lineWidth: 1
+                                    )
+                            )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Apply \(style.displayName) style to selected regions")
+                        .accessibilityAddTraits(isActive ? .isSelected : [])
+                    }
+                }
+            }
+
+            // ── Colour row ────────────────────────────────────────────────
+            if showColorRow {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Color")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
+                        spacing: 8
+                    ) {
+                        ForEach(RedactionColor.allCases, id: \.self) { color in
+                            let isActive = sharedColor == color
+                            Button {
+                                onBulkChangeColor(multiSelectedIDs, color)
+                            } label: {
+                                ZStack {
+                                    Circle()
+                                        .fill(color.color)
+                                        .frame(width: 28, height: 28)
+                                    if color.isLight {
+                                        Circle()
+                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
+                                            .frame(width: 28, height: 28)
+                                    }
+                                    if isActive {
+                                        Circle()
+                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
+                                            .frame(width: 34, height: 34)
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
+                                    }
+                                }
+                                .frame(width: 36, height: 36)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel("Apply \(color.displayName) color to selected regions")
+                            .accessibilityAddTraits(isActive ? .isSelected : [])
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
     // MARK: - Region Row
 
     @ViewBuilder
     private func regionRow(_ region: RedactionRegion) -> some View {
-        let isSelected = region.id == selectedRegionID
+        let isSingleSelected = !isMultiSelectMode && region.id == selectedRegionID
+        let isMultiChecked   = isMultiSelectMode  && multiSelectedIDs.contains(region.id)
+        let isHighlighted    = isSingleSelected || isMultiChecked
 
         Button {
-            onSelect(isSelected ? nil : region.id)
+            if isMultiSelectMode {
+                if multiSelectedIDs.contains(region.id) {
+                    multiSelectedIDs.remove(region.id)
+                } else {
+                    multiSelectedIDs.insert(region.id)
+                }
+            } else {
+                onSelect(isSingleSelected ? nil : region.id)
+            }
         } label: {
             HStack(spacing: 12) {
 
-                // ── Leading icon: confidence-colored for detected, accent for custom ──
+                // ── Leading icon: risk-level colour for detected, accent for custom ──
                 Group {
-                    if let level = region.confidence {
-                        Image(systemName: confidenceIcon(level))
-                            .foregroundStyle(confidenceColor(level))
+                    if let type = region.type {
+                        Image(systemName: riskIcon(type.riskLevel))
+                            .foregroundStyle(riskColor(type.riskLevel))
                     } else {
                         Image(systemName: "square.dashed")
                             .foregroundStyle(.accent)
@@ -1094,16 +1384,16 @@ private struct RedactionEditorDrawer: View {
                 .font(.system(size: 16, weight: .semibold))
                 .frame(width: 28, height: 28)
                 .background(
-                    (region.confidence.map(confidenceColor) ?? .accentColor).opacity(0.12),
+                    (region.type.map { riskColor($0.riskLevel) } ?? Color.accentColor).opacity(0.12),
                     in: RoundedRectangle(cornerRadius: 7)
                 )
                 .accessibilityHidden(true)
 
-                // ── Middle: name + snippet + confidence score ──────────────
+                // ── Middle: name + snippet + confidence + risk ──────────────
                 VStack(alignment: .leading, spacing: 2) {
                     Text(region.displayName)
                         .font(.subheadline.weight(.medium))
-                        .foregroundStyle(isSelected ? Color.accentColor : .primary)
+                        .foregroundStyle(isSingleSelected ? Color.accentColor : .primary)
 
                     if let snippet = region.snippet, !snippet.isEmpty {
                         Text(snippet)
@@ -1113,58 +1403,84 @@ private struct RedactionEditorDrawer: View {
                             .truncationMode(.tail)
                     }
 
-                    if let score = region.score, let level = region.confidence {
-                        Text("\(score, format: .percent.precision(.fractionLength(0))) match")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(confidenceColor(level))
+                    // Confidence score + risk badge on the same line
+                    HStack(spacing: 6) {
+                        if let score = region.score {
+                            Text("\(Int(round(score * 100)))% match confidence")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                        }
+                        if let type = region.type {
+                            Text(type.riskLevel.shortLabel)
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(riskColor(type.riskLevel))
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(
+                                    riskColor(type.riskLevel).opacity(0.12),
+                                    in: Capsule()
+                                )
+                        }
                     }
                 }
 
                 Spacer(minLength: 4)
 
-                // ── Trailing: enable/disable toggle + delete ───────────────
-                HStack(spacing: 4) {
-                    // Enable / disable toggle
-                    Button {
-                        onToggleRegion(region.id)
-                    } label: {
-                        Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
-                            .font(.title3)
-                            .foregroundStyle(region.isEnabled ? .red : .secondary)
-                            .frame(width: 36, height: 36)
-                            .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel(region.isEnabled
-                        ? "Disable redaction for \(region.displayName)"
-                        : "Enable redaction for \(region.displayName)")
-                    .accessibilityIdentifier("toggleRegionButton-\(region.id)")
+                // ── Trailing: checkbox in multi-select; toggle+delete in normal ──
+                if isMultiSelectMode {
+                    Image(systemName: isMultiChecked ? "checkmark.circle.fill" : "circle")
+                        .font(.title3)
+                        .foregroundStyle(isMultiChecked ? Color.accentColor : .secondary)
+                        .frame(width: 36, height: 36)
+                        .accessibilityHidden(true)
+                } else {
+                    HStack(spacing: 4) {
+                        // Enable / disable toggle
+                        Button {
+                            onToggleRegion(region.id)
+                        } label: {
+                            Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
+                                .font(.title3)
+                                .foregroundStyle(region.isEnabled ? .red : .secondary)
+                                .frame(width: 36, height: 36)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel(region.isEnabled
+                            ? "Disable redaction for \(region.displayName)"
+                            : "Enable redaction for \(region.displayName)")
+                        .accessibilityIdentifier("toggleRegionButton-\(region.id)")
 
-                    // Delete
-                    Button {
-                        onDeleteRegion(region.id)
-                    } label: {
-                        Image(systemName: "trash")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundStyle(.red)
-                            .frame(width: 30, height: 30)
-                            .contentShape(Rectangle())
+                        // Delete
+                        Button {
+                            onDeleteRegion(region.id)
+                        } label: {
+                            Image(systemName: "trash")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.red)
+                                .frame(width: 30, height: 30)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityLabel("Delete \(region.displayName) region")
+                        .accessibilityIdentifier("deleteRedactionButton")
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Delete \(region.displayName) region")
-                    .accessibilityIdentifier("deleteRedactionButton")
                 }
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
-            .background(isSelected ? Color.accentColor.opacity(0.07) : Color.clear)
+            .background(isHighlighted ? Color.accentColor.opacity(0.07) : Color.clear)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .opacity(region.isEnabled ? 1 : 0.45)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(region.displayName + (isSelected ? ", selected" : ""))
-        .accessibilityHint(isSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
+        .accessibilityLabel(region.displayName + (isSingleSelected ? ", selected" : ""))
+        .accessibilityHint(
+            isMultiSelectMode
+                ? (isMultiChecked ? "Double tap to deselect" : "Double tap to add to selection")
+                : (isSingleSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
+        )
         .accessibilityIdentifier("regionRow-\(region.id)")
         .accessibilityAction(named: region.isEnabled ? "Disable redaction" : "Enable redaction") {
             onToggleRegion(region.id)
@@ -1174,21 +1490,23 @@ private struct RedactionEditorDrawer: View {
         }
     }
 
-    // MARK: - Confidence helpers
+    // MARK: - Risk helpers
 
-    private func confidenceIcon(_ level: ConfidenceLevel) -> String {
+    private func riskIcon(_ level: RiskLevel) -> String {
         switch level {
-        case .high:   return "exclamationmark.octagon.fill"
-        case .medium: return "exclamationmark.triangle.fill"
-        case .low:    return "info.circle.fill"
+        case .critical: return "exclamationmark.octagon.fill"
+        case .high:     return "exclamationmark.triangle.fill"
+        case .medium:   return "info.circle.fill"
+        case .low:      return "checkmark.circle.fill"
         }
     }
 
-    private func confidenceColor(_ level: ConfidenceLevel) -> Color {
+    private func riskColor(_ level: RiskLevel) -> Color {
         switch level {
-        case .high:   return .red
-        case .medium: return .orange
-        case .low:    return .blue
+        case .critical: return .red
+        case .high:     return .orange
+        case .medium:   return .blue
+        case .low:      return .green
         }
     }
 }

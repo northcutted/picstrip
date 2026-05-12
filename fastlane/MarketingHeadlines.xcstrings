@@ -209,97 +209,97 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "بيانات حساسة\nتُكتشف فورًا."
+            "value": "مصنّفة حسب الخطورة.\nلا شيء يفوت."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensible Daten\nsofort erkannt."
+            "value": "Risiken eingestuft.\nNichts übersehen."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Sensitive data\ncaught instantly."
+            "value": "Risks ranked.\nNothing missed."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Datos sensibles\ndetectados al instante."
+            "value": "Riesgos ordenados.\nNada se escapa."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Données sensibles\ndétectées instantanément."
+            "value": "Risques classés.\nRien de manqué."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dati sensibili\nrilevati all'istante."
+            "value": "Rischi classificati.\nNulla sfugge."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "機密データを\n即座に検出。"
+            "value": "リスク評価済み。\n見逃しゼロ。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "민감한 데이터\n즉시 감지."
+            "value": "위험 등급 분류.\n놓치는 것 없이."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Gevoelige data\ndirect herkend."
+            "value": "Risico's gerangschikt.\nNiets gemist."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Wrażliwe dane\nwykryte natychmiast."
+            "value": "Ryzyka ocenione.\nNic nie umknie."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dados sensíveis\ndetectados na hora."
+            "value": "Riscos classificados.\nNada passa despercebido."
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dados sensíveis\ndetetados de imediato."
+            "value": "Riscos classificados.\nNada passa despercebido."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Känslig data\nupptäcks direkt."
+            "value": "Risker rangordnade.\nIngenting missas."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hassas veri\nanında yakalanır."
+            "value": "Riskler sıralandı.\nHiçbir şey gözden kaçmıyor."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "敏感信息\n即时识别。"
+            "value": "风险已评级。\n无一遗漏。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "敏感資訊\n即時識別。"
+            "value": "風險已評級。\n無一遺漏。"
           }
         }
       }
@@ -310,97 +310,97 @@
         "ar": {
           "stringUnit": {
             "state": "translated",
-            "value": "ارسم لإخفاء\nأي شيء حساس."
+            "value": "تحديد متعدد.\nبالطريقة التي تريدها."
           }
         },
         "de": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zeichne über alles,\nwas privat bleibt."
+            "value": "Mehrfachauswahl.\nNach deinen Regeln."
           }
         },
         "en": {
           "stringUnit": {
             "state": "translated",
-            "value": "Draw to hide\nanything sensitive."
+            "value": "Multi-select.\nRedact your way."
           }
         },
         "es": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pinta para ocultar\nlo sensible."
+            "value": "Selección múltiple.\nA tu manera."
           }
         },
         "fr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Dessinez pour masquer\nce qui est sensible."
+            "value": "Sélection multiple.\nÀ votre façon."
           }
         },
         "it": {
           "stringUnit": {
             "state": "translated",
-            "value": "Disegna per nascondere\ndati sensibili."
+            "value": "Selezione multipla.\nA modo tuo."
           }
         },
         "ja": {
           "stringUnit": {
             "state": "translated",
-            "value": "なぞって隠す\n気になる部分を。"
+            "value": "複数選択。\n自分流に編集。"
           }
         },
         "ko": {
           "stringUnit": {
             "state": "translated",
-            "value": "민감한 부분은\n그려서 가리기."
+            "value": "다중 선택.\n나만의 방식으로."
           }
         },
         "nl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Teken om alles\ngevoeligs te verbergen."
+            "value": "Meerdere selecteren.\nOp jouw manier."
           }
         },
         "pl": {
           "stringUnit": {
             "state": "translated",
-            "value": "Zaznacz, by ukryć\nco wrażliwe."
+            "value": "Zaznacz wiele.\nRedaguj po swojemu."
           }
         },
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desenhe para ocultar\no que for sensível."
+            "value": "Seleção múltipla.\nDo seu jeito."
           }
         },
         "pt-PT": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desenhe para esconder\no que for sensível."
+            "value": "Seleção múltipla.\nÀ sua maneira."
           }
         },
         "sv": {
           "stringUnit": {
             "state": "translated",
-            "value": "Rita för att dölja\nkänsligt innehåll."
+            "value": "Välj flera.\nRedigera som du vill."
           }
         },
         "tr": {
           "stringUnit": {
             "state": "translated",
-            "value": "Hassas her şeyi\nçizerek gizle."
+            "value": "Çoklu seçim.\nKendi yönteminle."
           }
         },
         "zh-Hans": {
           "stringUnit": {
             "state": "translated",
-            "value": "随手涂抹\n隐藏敏感信息。"
+            "value": "多选模式。\n按你的方式涂抹。"
           }
         },
         "zh-Hant": {
           "stringUnit": {
             "state": "translated",
-            "value": "隨手塗抹\n隱藏敏感資訊。"
+            "value": "多選模式。\n照你的方式遮蓋。"
           }
         }
       }

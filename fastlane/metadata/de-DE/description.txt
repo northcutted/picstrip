@@ -1,33 +1,38 @@
-Hast du in letzter Zeit jemandem ein Foto geschickt? Dann hast du wahrscheinlich auch deine GPS-Koordinaten zu Hause, den genauen Aufnahmezeitpunkt und die Seriennummer deiner Kamera mitgeschickt — unsichtbar in der Datei eingebettet. PicStrip entfernt all das, bevor du teilst — per Tipp, zu 100% auf deinem Gerät.
+PicStrip vereint zwei Datenschutz-Tools in einem: unsichtbares Metadaten-Stripping und visuelle Schwärzung — komplett auf deinem Gerät, ohne Konto, ohne Uploads und ohne Netzwerkverbindungen.
 
-Kein Konto. Kein Upload. Kein Tracking. Nur saubere Fotos.
+METADATEN ENTFERNEN
+Jedes Foto trägt unsichtbar GPS-Koordinaten, Zeitstempel, Kameradaten, Objektivinfos und Seriennummern. PicStrip entfernt all das vor dem Teilen — per Tipp.
 
-WAS ENTFERNT WIRD
-• GPS-Standort — die exakten Koordinaten in jedem Foto
-• Zeitstempel — wann das Foto aufgenommen, bearbeitet und digitalisiert wurde
-• Geräteinfo — Kamera-Hersteller, Modell, Objektiv und Software-Version
-• Persönliche Identifikatoren — Autor, Copyright und Seriennummern
-• Private Kameradaten — Apple Maker-Note-Daten, sofern vorhanden
+PII-ERKENNUNG & SCHWÄRZUNG
+OCR und Computer Vision auf deinem Gerät erkennen 30 Typen sensibler Daten, eingeteilt in vier Risikostufen:
+
+Kritisch — API-Schlüssel, Kreditkarten, Sozialversicherungsnummern, Passwörter, JWTs, Datenbankverbindungen
+Hoch — Gesichter, IBANs, ABA-Routing-Nummern, SWIFT/BIC-Codes, physische Zugangsdaten
+Mittel — E-Mails, Telefonnummern, Adressen, Krypto-Wallets, Fahrzeugidentifikationsnummern, Kennzeichen, IP- und MAC-Adressen
+Niedrig — Geburtsdaten, Links, Barcodes
+
+Jede Erkennung zeigt Typ, Konfidenz-Score und Risikostufe — damit du weißt, was wirklich zählt.
+
+SCHWÄRZUNGSEDITOR
+• Zeichne überall, um manuell abzudecken, was der Scanner übersehen hat
+• Mehrfachauswahl und Massenaktionen für Bereiche
+• 3 Stile: Vollton, Weichzeichner oder Pixelierung
+• 10 Farben für Volltonschwärzungen
+• 50-Schritte Rückgängig/Wiederherstellen
+
+IMPORT VON ÜBERALL
+• Fotomediathek
+• Dateien-App — Bilder und Screenshots direkt öffnen
+• Drag & Drop in die App
+• Teilen-Erweiterung — direkt aus Fotos, Safari oder jeder App bereinigen, ohne PicStrip zu öffnen
 
 PRIVATSPHÄRE BY DESIGN
-• Läuft komplett auf dem Gerät — nichts wird hochgeladen
+• 100% auf dem Gerät — nichts verlässt dein iPhone
 • Kein Konto, kein Login, kein Tracking
 • Keine Werbung, keine In-App-Käufe, keine Abos
+• Open Source — jede Codezeile auf GitHub prüfbar
+• SLSA Level 3 Build-Provenance — jede Veröffentlichung kryptografisch verifiziert
+• Datenschutz-Etikett: „Keine Daten erfasst"
 
-WARUM DU PICSTRIP VERTRAUEN KANNST
-• Open Source — jede Codezeile ist auf GitHub öffentlich und prüfbar
-• SLSA Level 3 Build-Provenance — jede Veröffentlichung ist kryptografisch verifiziert
-• Null Drittanbieter-SDKs im finalen Binary; keine Analytics, keine Netzwerk-Aufrufe
-• Datenschutz-Etikett: „Keine Daten erfasst" — die stärkstmögliche Aussage
-
-SO FUNKTIONIERT'S
-1. Tippe, um ein Foto aus deiner Mediathek auszuwählen
-2. PicStrip prüft alle eingebetteten Metadaten
-3. Sieh genau, was gefunden wurde
-4. Entfernen — dein sauberes Foto wird sofort in der Mediathek gespeichert
-
-TEILEN-ERWEITERUNG
-Entferne Metadaten direkt aus dem Teilen-Menü in Fotos, Safari oder jeder App — ohne PicStrip überhaupt zu öffnen.
-
-KURZBEFEHLE & AUTOMATION
-PicStrip enthält eine Kurzbefehl-Aktion für automatisierte Workflows: Metadaten beim Import entfernen, Stapel verarbeiten oder in bestehende Kurzbefehle integrieren.
+KURZBEFEHLE & AUTOMATISIERUNG
+PicStrip enthält eine Kurzbefehl-Aktion zum automatischen Entfernen von Metadaten und Schwärzen von Inhalten: beim Import, als Stapelverarbeitung oder in deinen bestehenden Workflows.

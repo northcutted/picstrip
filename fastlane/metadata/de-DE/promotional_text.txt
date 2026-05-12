@@ -1,1 +1,1 @@
-Jedes iPhone-Foto enthält GPS-Standort, Uhrzeit und Kamera-Fingerabdruck. PicStrip entfernt alles per Tipp — 100% auf dem Gerät. Kein Konto, kein Upload.
+PicStrip entfernt versteckte Metadaten und erkennt 30 Arten sensibler Daten – Gesichter, Schlüssel, Karten und mehr – 100% auf dem Gerät. Kein Konto, kein Upload.

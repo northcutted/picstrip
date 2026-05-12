@@ -1,33 +1,38 @@
-¿Has enviado una foto últimamente? Probablemente también enviaste las coordenadas GPS de tu casa, la hora exacta de la captura y el número de serie de tu cámara — incrustados de forma invisible en el archivo. PicStrip lo elimina todo antes de compartir, en un toque, 100% en tu dispositivo.
+PicStrip combina dos herramientas de privacidad en una: la eliminación de metadatos invisibles y la redacción visual de información sensible — todo en tu dispositivo, sin cuenta, sin subidas ni conexiones de red.
 
-Sin cuenta. Sin envíos. Sin rastreo. Solo fotos limpias.
+ELIMINACIÓN DE METADATOS
+Cada foto lleva GPS, marcas de tiempo, datos del dispositivo, información del objetivo y números de serie incrustados de forma invisible. PicStrip lo elimina todo antes de compartir — en un toque.
 
-QUÉ SE ELIMINA
-• Ubicación GPS — coordenadas precisas incrustadas en cada foto
-• Marcas de tiempo — cuándo se hizo la foto, se editó y se digitalizó
-• Información del dispositivo — marca, modelo, objetivo y versión de software
-• Identificadores personales — autor, copyright y números de serie
-• Análisis privado de cámara — datos Apple maker-note cuando estén presentes
+DETECCIÓN Y REDACCIÓN DE DATOS PERSONALES
+El OCR y la visión artificial, ejecutados en el dispositivo, detectan 30 tipos de información sensible clasificados en cuatro niveles de riesgo:
+
+Crítico — claves de API, tarjetas de crédito, números de seguridad social, contraseñas, JWT, cadenas de conexión a bases de datos
+Alto — rostros, IBAN, números ABA, códigos SWIFT/BIC, credenciales físicas
+Medio — correos, teléfonos, direcciones, carteras cripto, VIN, matrículas, direcciones IP y MAC
+Bajo — fechas de nacimiento, enlaces, códigos de barras
+
+Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para ayudarte a priorizar qué redactar.
+
+EDITOR DE REDACCIÓN
+• Dibuja en cualquier zona para cubrir manualmente lo que el escáner no detectó
+• Selección múltiple y cambios masivos
+• 3 estilos: sólido, desenfoque o pixelado
+• 10 colores para bloques sólidos
+• 50 pasos de deshacer/rehacer
+
+IMPORTA DESDE CUALQUIER LUGAR
+• Fototeca de Fotos
+• App Archivos — abre imágenes y capturas directamente
+• Arrastra y suelta imágenes en la app
+• Extensión de compartir — limpia desde Fotos, Safari o cualquier app sin abrir PicStrip
 
 PRIVACIDAD POR DISEÑO
-• Funciona totalmente en el dispositivo — no se sube nada a ninguna parte
+• 100% en el dispositivo — nada sale de tu teléfono
 • Sin cuenta, sin inicio de sesión, sin rastreo
-• Sin anuncios, sin compras dentro de la app, sin suscripciones
-
-POR QUÉ PUEDES CONFIAR
-• Código abierto — cada línea de código es pública y auditable en GitHub
-• Procedencia de compilación SLSA Nivel 3 — cada lanzamiento se verifica criptográficamente
-• Cero SDK de terceros en el binario final; sin analíticas, sin llamadas de red
-• Etiqueta de privacidad: «No se recopilan datos» — la respuesta más contundente posible
-
-CÓMO FUNCIONA
-1. Toca para elegir una foto de tu fototeca
-2. PicStrip escanea todos los metadatos incrustados
-3. Revisa exactamente qué se encontró
-4. Bórralos — tu foto limpia se guarda al instante en la fototeca
-
-EXTENSIÓN DE COMPARTIR
-Elimina metadatos directamente desde el menú compartir en Fotos, Safari o cualquier app — sin abrir PicStrip.
+• Sin anuncios, sin compras en la app, sin suscripciones
+• Código abierto — cada línea de código es auditable en GitHub
+• Procedencia de compilación SLSA Nivel 3 — cada versión se verifica criptográficamente
+• Etiqueta de privacidad: «No se recopilan datos»
 
 ATAJOS Y AUTOMATIZACIÓN
-PicStrip incluye una acción de Atajos para crear flujos automáticos: eliminar metadatos al importar, procesar fotos por lotes o integrar con tus atajos existentes.
+PicStrip incluye una acción de Atajos para eliminar metadatos y redactar datos personales automáticamente: al importar, en lotes o dentro de tus flujos de trabajo.

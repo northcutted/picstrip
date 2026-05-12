@@ -18,7 +18,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 
 ## Screenshots
 
-The App Store carousel and the marketing PNGs uploaded to App Store Connect live in [`fastlane/screenshots/processed/<locale>/`](fastlane/screenshots/processed/) (Git LFS — 7 screens × 2 devices × 16 locales). Raw simulator captures live in [`fastlane/screenshots/<locale>/`](fastlane/screenshots/). Both regenerate via `gh workflow run screenshots.yml -f generate_new=true`.
+The App Store carousel and the marketing PNGs uploaded to App Store Connect live in [`fastlane/screenshots/processed/<locale>/`](fastlane/screenshots/processed/) (Git LFS — 5 screens × 2 devices × 16 locales). Raw simulator captures live in [`fastlane/screenshots/<locale>/`](fastlane/screenshots/). Both regenerate via `gh workflow run screenshots.yml -f generate_new=true`.
 
 ---
 
@@ -27,8 +27,9 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 | Feature | Description |
 |---------|-------------|
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata |
-| **Visual PII Detection** | On-device OCR scans image content for 20 sensitive data types across 5 categories |
-| **Visual PII Redaction** | Burns opaque black boxes over detected regions before export |
+| **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
+| **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
+| **Files & Drag-and-Drop** | Import from Photos library, Files app, or drag and drop directly into the app |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
 | **Save or Replace** | Save a new cleaned asset, or replace the original in your Photos library |
 | **Flexible Export** | PNG (privacy default), JPEG, HEIC, or match original format |
@@ -53,8 +54,8 @@ Each image in a batch is processed, saved, and explicitly deallocated before the
 **Preview memory discipline.**
 PicStrip keeps full-resolution source bytes for export, but decodes bounded ImageIO thumbnails for display and review. Heavy encode/decode work runs off the MainActor, then the view model publishes only final state back to SwiftUI.
 
-**Layered PII detection.**
-Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; a reused `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins.
+**Layered PII detection across 30 types.**
+Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; a reused `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Face and barcode detection run as separate Vision requests (`VNDetectFaceRectanglesRequest`, `VNDetectBarcodesRequest`). Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins. Every type carries a static `RiskLevel` (critical / high / medium / low) that is independent of detection confidence.
 
 **Zero runtime third-party dependencies.**
 Every framework is Apple-native: `ImageIO`, `Vision`, `Photos`, `PhotosUI`, `AppIntents`, `CoreGraphics`, `UIKit`, `SwiftUI`. No package manager dependencies appear in the final binary.
@@ -131,32 +132,42 @@ flowchart TD
 
 ---
 
-## PII Detection — 20 Types
+## PII Detection — 30 Types
 
-| Category | Type | Detection method |
-|----------|------|-----------------|
-| **Contact** | Phone Number | `NSDataDetector` |
-| **Contact** | Email Address | Regex (RFC 5322) + `NSDataDetector` |
-| **Web** | Link / URL | `NSDataDetector` |
-| **Web** | IP Address | Regex |
-| **Web** | MAC Address | Regex |
-| **Identity** | Address | `NSDataDetector` |
-| **Identity** | Social Security Number | Regex (`XXX-XX-XXXX`) |
-| **Identity** | Date of Birth | Regex |
-| **Identity** | National Insurance Number | Regex |
-| **Financial** | Credit Card Number | Regex (Luhn-pattern) |
-| **Financial** | IBAN | Regex |
-| **Financial** | Crypto Wallet Address | Regex |
-| **Developer Secrets** | AWS Access Key | Regex (`AKIA…`) |
-| **Developer Secrets** | GitHub Token | Regex (`ghp_…`) |
-| **Developer Secrets** | Google API Key | Regex |
-| **Developer Secrets** | OpenAI API Key | Regex |
-| **Developer Secrets** | Slack Token | Regex (`xox…`) |
-| **Developer Secrets** | Stripe Key | Regex |
-| **Developer Secrets** | Private Key (generic) | Regex (PEM header) |
-| **Unstructured** | Physical Credential / Password | Cross-observation heuristic |
+| Risk | Type | Detection method |
+|------|------|-----------------|
+| **Critical** | Social Security Number | Regex (`XXX-XX-XXXX`) |
+| **Critical** | National Insurance Number | Regex |
+| **Critical** | Government ID | Regex (CA SIN, IN PAN/Aadhaar, ES DNI/NIE, BR CPF, DE Steuer-ID, IT Codice Fiscale, FR INSEE, JP My Number) |
+| **Critical** | Credit Card Number | Regex (Luhn-pattern) |
+| **Critical** | AWS Access Key | Regex (`AKIA…`) |
+| **Critical** | GitHub Token | Regex (`ghp_…`) |
+| **Critical** | Google API Key | Regex |
+| **Critical** | OpenAI API Key | Regex |
+| **Critical** | Slack Token | Regex (`xox…`) |
+| **Critical** | Stripe Key | Regex |
+| **Critical** | Private Key | Regex (PEM header) |
+| **Critical** | JWT Token | Regex (double `eyJ` header) |
+| **Critical** | Developer Secret | Regex (Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord) |
+| **Critical** | Database Connection String | Regex (inline credentials in URI) |
+| **High** | Face | Vision `VNDetectFaceRectanglesRequest` |
+| **High** | IBAN | Regex |
+| **High** | ABA Routing Number | Regex + context keyword (`routing`, `ABA`) |
+| **High** | SWIFT / BIC Code | Regex + context keyword |
+| **High** | Physical Credential / Password | Cross-observation heuristic |
+| **Medium** | Email Address | Regex (RFC 5322) + `NSDataDetector` |
+| **Medium** | Phone Number | `NSDataDetector` |
+| **Medium** | Address | `NSDataDetector` |
+| **Medium** | Crypto Wallet Address | Regex |
+| **Medium** | Vehicle Identification Number | Regex (17-char, no I/O/Q) |
+| **Medium** | License Plate Number | Regex (structural CA-style + keyword fallback for regional formats) |
+| **Medium** | MAC Address | Regex |
+| **Medium** | IP Address | Regex |
+| **Low** | Date of Birth | Regex |
+| **Low** | Link / URL | `NSDataDetector` |
+| **Low** | QR Code / Barcode | Vision `VNDetectBarcodesRequest` |
 
-Each match is scored as `baseScore × ocrConfidence`. The result-level score upgrades when a later pass finds a stronger hit for the same type, ensuring the regex pass (higher base scores) always wins over `NSDataDetector` for overlapping types such as email.
+Each match is scored as `baseScore × ocrConfidence`. The result-level score upgrades when a later pass finds a stronger hit for the same type, ensuring the regex pass (higher base scores) always wins over `NSDataDetector` for overlapping types such as email. Risk level is a static, editorial property of the type itself — it does not change with confidence score.
 
 ---
 
@@ -204,7 +215,7 @@ PicStrip/
 │   │   ├── manifest.json    # Expected raw-capture filename inventory
 │   │   ├── <locale>/        # Raw App Store captures, one folder per locale (16 locales)
 │   │   └── processed/       # Marketing PNGs uploaded to App Store Connect (Git LFS)
-│   │       └── <locale>/    # 7 screens × 2 devices, framed + composed per locale
+│   │       └── <locale>/    # 5 screens × 2 devices, framed + composed per locale
 │   └── metadata/            # App Store metadata (title, description, keywords, release notes)
 │
 ├── scripts/
@@ -396,7 +407,7 @@ flowchart TD
 
 The marketing PNGs in `fastlane/screenshots/processed/` are the single source of truth for App Store Connect — uploads always read from there, never from raw captures. The App Store auto-scales the 6.9" iPhone set to the 6.7"/6.5"/5.5" device classes, so additional iPhone sizes are intentionally omitted from the capture matrix. All XCUITests land in one `testAllScreenshots()` method to avoid XCTest's terminate-and-relaunch behavior between separate test methods, which fails reliably in headless CI.
 
-Marketing screenshot copy is sourced from [`fastlane/MarketingHeadlines.xcstrings`](fastlane/MarketingHeadlines.xcstrings) (16 locales × 7 screens). The compositor picks fonts per script (Latin, CJK, Korean, Arabic), reshapes Arabic for cursive ligatures + RTL display, and runs a multi-pass fit so localized strings never produce orphan-word lines.
+Marketing screenshot copy is sourced from [`fastlane/MarketingHeadlines.xcstrings`](fastlane/MarketingHeadlines.xcstrings) (16 locales × 5 screens). The compositor picks fonts per script (Latin, CJK, Korean, Arabic), reshapes Arabic for cursive ligatures + RTL display, and runs a multi-pass fit so localized strings never produce orphan-word lines.
 
 ---
 
@@ -467,8 +478,6 @@ See [DEVELOPMENT.md](DEVELOPMENT.md#slsa-build-provenance-level-3) for detailed 
 PicStrip is available on the App Store.
 
 [![Download on the App Store](https://img.shields.io/badge/Download-App%20Store-black?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/app/picstrip/id6765989071)
-
-> Replace `TODO_REPLACE_WITH_REAL_ID` with the actual App Store ID once published.
 
 ---
 
