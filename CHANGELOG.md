@@ -1,3 +1,17 @@
+## [1.6.0](https://github.com/northcutted/picstrip/compare/v1.5.4...v1.6.0) (2026-05-13)
+
+
+### Features
+
+* add ability to detect credit cards, and some ids ([42cdc55](https://github.com/northcutted/picstrip/commit/42cdc5597e8676cf71e86868fea434c9703f9938))
+* enhance confidence scoring and conflict resolution for credit card and phone number detections ([a40594f](https://github.com/northcutted/picstrip/commit/a40594fab337b7df2fb21d1743ab9c2a6d2ef2a3))
+* enhance PII detection with keyword-anchored date of birth and international government ID patterns ([05ac472](https://github.com/northcutted/picstrip/commit/05ac472d4250814744df4738128cfd331786c4f5))
+
+
+### Bug Fixes
+
+* **ci:** fix linting errors ([bc12585](https://github.com/northcutted/picstrip/commit/bc1258591275ce9e9d7385bc03afb4f5a8b5dd2a))
+
 ## [1.5.4](https://github.com/northcutted/picstrip/compare/v1.5.3...v1.5.4) (2026-05-12)
 
 
