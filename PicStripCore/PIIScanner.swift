@@ -18,6 +18,17 @@ enum PIIScannerError: Error, LocalizedError {
 // MARK: - Scanner
 
 struct PIIScanner {
+    struct ConfidenceInput {
+        let type: PIIType
+        let subtype: PIISubtype?
+        let baseScore: Double
+        let ocrConfidence: Float
+        let candidateRank: Int
+        let snippet: String
+        let boundingBox: CGRect
+        let lineBounds: CGRect
+        let spatialEvidence: Bool
+    }
 
     func scanImage(data: Data) async throws -> [DetectionResult] {
         // Offload CPU-bound work off the calling thread.
@@ -107,6 +118,20 @@ struct PIIScanner {
     }
 
     // MARK: - Private
+
+    private struct MatchEvidence {
+        let baseScore: Double
+        let ocrConfidence: Float
+        let candidateRank: Int
+        let lineBounds: CGRect
+        let spatialEvidence: Bool
+    }
+
+    private struct NearestValueCandidate {
+        let line: OCRLine
+        let range: NSRange
+        let distance: CGFloat
+    }
 
     /// Builds a `VNRecognizeTextRequest` configured for credential-safe OCR.
     nonisolated private static func makeTextRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
@@ -352,23 +377,21 @@ struct PIIScanner {
         func record(
             _ type: PIIType,
             subtype: PIISubtype? = nil,
-            baseScore: Double,
-            ocrConfidence: Float,
+            evidence: MatchEvidence,
             instance: DetectedInstance,
-            candidateRank: Int,
-            lineBounds: CGRect,
-            spatialEvidence: Bool = false
         ) {
             let instanceScore = Self.confidenceScore(
-                type: type,
-                subtype: subtype ?? instance.subtype,
-                baseScore: baseScore,
-                ocrConfidence: ocrConfidence,
-                candidateRank: candidateRank,
-                snippet: instance.snippet,
-                boundingBox: instance.boundingBox,
-                lineBounds: lineBounds,
-                spatialEvidence: spatialEvidence
+                ConfidenceInput(
+                    type: type,
+                    subtype: subtype ?? instance.subtype,
+                    baseScore: evidence.baseScore,
+                    ocrConfidence: evidence.ocrConfidence,
+                    candidateRank: evidence.candidateRank,
+                    snippet: instance.snippet,
+                    boundingBox: instance.boundingBox,
+                    lineBounds: evidence.lineBounds,
+                    spatialEvidence: evidence.spatialEvidence
+                )
             )
             let scoredInstance = DetectedInstance(
                 snippet: instance.snippet,
@@ -441,12 +464,15 @@ struct PIIScanner {
                 let snippet = Self.snippet(text, max: 60)
                 // Base score 0.65: cross-observation heuristic; structurally weaker.
                 record(.unstructuredCredential,
-                       baseScore: 0.65,
-                       ocrConfidence: ocrConfidence,
+                       evidence: MatchEvidence(
+                           baseScore: 0.65,
+                           ocrConfidence: ocrConfidence,
+                           candidateRank: line.rank,
+                           lineBounds: lineBounds,
+                           spatialEvidence: true
+                       ),
                        instance: DetectedInstance(snippet: "\(label) \(snippet)", boundingBox: lineBounds, score: 0),
-                       candidateRank: line.rank,
-                       lineBounds: lineBounds,
-                       spatialEvidence: true)
+                )
                 // Don't skip the remaining analysis — the password line might
                 // also contain independently detectable PII (e.g., an email).
             }
@@ -485,11 +511,14 @@ struct PIIScanner {
 
                     record(rule.type,
                            subtype: rule.subtype,
-                           baseScore: effectiveBaseScore,
-                           ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                           candidateRank: line.rank,
-                           lineBounds: lineBounds)
+                           evidence: MatchEvidence(
+                               baseScore: effectiveBaseScore,
+                               ocrConfidence: ocrConfidence,
+                               candidateRank: line.rank,
+                               lineBounds: lineBounds,
+                               spatialEvidence: false
+                           ),
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                 }
             }
 
@@ -511,30 +540,50 @@ struct PIIScanner {
                 switch match.resultType {
                 case .phoneNumber:
                     // Base 0.72: NLP-based; good but not structurally verifiable.
-                    record(.phoneNumber, baseScore: 0.72, ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                           candidateRank: line.rank,
-                           lineBounds: lineBounds)
+                    record(.phoneNumber,
+                           evidence: MatchEvidence(
+                               baseScore: 0.72,
+                               ocrConfidence: ocrConfidence,
+                               candidateRank: line.rank,
+                               lineBounds: lineBounds,
+                               spatialEvidence: false
+                           ),
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                 case .address:
                     // Base 0.68: NLP + address grammar; context-dependent.
-                    record(.address, baseScore: 0.68, ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                           candidateRank: line.rank,
-                           lineBounds: lineBounds)
+                    record(.address,
+                           evidence: MatchEvidence(
+                               baseScore: 0.68,
+                               ocrConfidence: ocrConfidence,
+                               candidateRank: line.rank,
+                               lineBounds: lineBounds,
+                               spatialEvidence: false
+                           ),
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                 case .link:
                     if let url = match.url, url.scheme == "mailto" {
                         // Base 0.75 for mailto: links — lower than the regex (0.93)
                         // so a prior regex hit on the same email won't be downgraded.
-                        record(.email, baseScore: 0.75, ocrConfidence: ocrConfidence,
-                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                               candidateRank: line.rank,
-                               lineBounds: lineBounds)
+                        record(.email,
+                               evidence: MatchEvidence(
+                                   baseScore: 0.75,
+                                   ocrConfidence: ocrConfidence,
+                                   candidateRank: line.rank,
+                                   lineBounds: lineBounds,
+                                   spatialEvidence: false
+                               ),
+                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                     } else {
                         // Base 0.52: generic link — appears in many non-sensitive contexts.
-                        record(.link, baseScore: 0.52, ocrConfidence: ocrConfidence,
-                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                               candidateRank: line.rank,
-                               lineBounds: lineBounds)
+                        record(.link,
+                               evidence: MatchEvidence(
+                                   baseScore: 0.52,
+                                   ocrConfidence: ocrConfidence,
+                                   candidateRank: line.rank,
+                                   lineBounds: lineBounds,
+                                   spatialEvidence: false
+                               ),
+                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                     }
                 default:
                     break
@@ -578,12 +627,14 @@ struct PIIScanner {
                 )
                 record(rule.type,
                        subtype: rule.subtype,
-                       baseScore: effectiveBaseScore,
-                       ocrConfidence: min(labelLine.confidence, value.line.confidence),
-                       instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
-                       candidateRank: value.line.rank,
-                       lineBounds: value.line.lineBounds,
-                       spatialEvidence: true)
+                       evidence: MatchEvidence(
+                           baseScore: effectiveBaseScore,
+                           ocrConfidence: min(labelLine.confidence, value.line.confidence),
+                           candidateRank: value.line.rank,
+                           lineBounds: value.line.lineBounds,
+                           spatialEvidence: true
+                       ),
+                       instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
             }
         }
 
@@ -609,22 +660,12 @@ struct PIIScanner {
     /// changes from image to image: OCR confidence, whether the match came from
     /// an alternate OCR candidate, how much usable geometry Vision gave us, and
     /// whether the value was found through nearby label/value context.
-    nonisolated static func confidenceScore(
-        type: PIIType,
-        subtype: PIISubtype?,
-        baseScore: Double,
-        ocrConfidence: Float,
-        candidateRank: Int,
-        snippet: String,
-        boundingBox: CGRect,
-        lineBounds: CGRect,
-        spatialEvidence: Bool = false
-    ) -> Double {
-        var score = baseScore * Double(ocrConfidence)
-        score *= candidateRankFactor(candidateRank)
-        score *= geometryFactor(for: boundingBox, lineBounds: lineBounds)
-        score *= ambiguityFactor(type: type, subtype: subtype, snippet: snippet)
-        if spatialEvidence {
+    nonisolated static func confidenceScore(_ input: ConfidenceInput) -> Double {
+        var score = input.baseScore * Double(input.ocrConfidence)
+        score *= candidateRankFactor(input.candidateRank)
+        score *= geometryFactor(for: input.boundingBox, lineBounds: input.lineBounds)
+        score *= ambiguityFactor(type: input.type, subtype: input.subtype, snippet: input.snippet)
+        if input.spatialEvidence {
             score *= 1.06
         }
         return min(0.99, max(0.05, score))
@@ -711,7 +752,7 @@ struct PIIScanner {
         in lines: [OCRLine],
         using valueRegex: NSRegularExpression
     ) -> (line: OCRLine, range: NSRange)? {
-        var best: (line: OCRLine, range: NSRange, distance: CGFloat)?
+        var best: NearestValueCandidate?
 
         for line in lines {
             guard line.observation !== labelLine.observation else { continue }
@@ -733,8 +774,8 @@ struct PIIScanner {
             let dx = max(0, line.lineBounds.minX - labelLine.lineBounds.maxX)
             let dy = max(0, verticalDelta)
             let distance = (dx * dx) + (dy * dy * 4)
-            if best == nil || distance < best!.distance {
-                best = (line, match.range, distance)
+            if best.map({ distance < $0.distance }) ?? true {
+                best = NearestValueCandidate(line: line, range: match.range, distance: distance)
             }
         }
 
@@ -909,7 +950,8 @@ struct PIIScanner {
         let weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2]
         let codes = ["1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2"]
         let sum = zip(digits, weights).map(*).reduce(0, +)
-        return String(cleaned.last!) == codes[sum % 11]
+        guard let checkCharacter = cleaned.last else { return false }
+        return String(checkCharacter) == codes[sum % 11]
     }
 
     // MARK: - Visual detection helpers

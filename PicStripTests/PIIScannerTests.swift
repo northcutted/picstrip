@@ -296,7 +296,7 @@ final class PIIScannerTests: XCTestCase {
     }
 
     func testConfidenceScoreUsesRankGeometryAndAmbiguityEvidence() {
-        let crispTopCandidate = PIIScanner.confidenceScore(
+        let crispTopCandidate = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .creditCard,
             subtype: nil,
             baseScore: 0.90,
@@ -304,10 +304,11 @@ final class PIIScannerTests: XCTestCase {
             candidateRank: 0,
             snippet: "4111 1111 1111 1111",
             boundingBox: CGRect(x: 0.2, y: 0.4, width: 0.42, height: 0.04),
-            lineBounds: CGRect(x: 0.18, y: 0.38, width: 0.50, height: 0.06)
-        )
+            lineBounds: CGRect(x: 0.18, y: 0.38, width: 0.50, height: 0.06),
+            spatialEvidence: false
+        ))
 
-        let tinyAlternateCandidate = PIIScanner.confidenceScore(
+        let tinyAlternateCandidate = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .creditCard,
             subtype: nil,
             baseScore: 0.90,
@@ -315,15 +316,16 @@ final class PIIScannerTests: XCTestCase {
             candidateRank: 3,
             snippet: "4111 1111 1111 1111",
             boundingBox: CGRect(x: 0.2, y: 0.4, width: 0.015, height: 0.008),
-            lineBounds: CGRect(x: 0.18, y: 0.38, width: 0.50, height: 0.06)
-        )
+            lineBounds: CGRect(x: 0.18, y: 0.38, width: 0.50, height: 0.06),
+            spatialEvidence: false
+        ))
 
         XCTAssertGreaterThan(crispTopCandidate, tinyAlternateCandidate,
                              "Confidence should move with OCR rank and geometry quality, not only the static rule base score")
     }
 
     func testConfidenceScoreBoostsSpatialEvidence() {
-        let directMatch = PIIScanner.confidenceScore(
+        let directMatch = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .dateOfBirth,
             subtype: nil,
             baseScore: 0.78,
@@ -333,8 +335,8 @@ final class PIIScannerTests: XCTestCase {
             boundingBox: CGRect(x: 0.45, y: 0.45, width: 0.18, height: 0.04),
             lineBounds: CGRect(x: 0.42, y: 0.43, width: 0.26, height: 0.06),
             spatialEvidence: false
-        )
-        let nearbyLabelMatch = PIIScanner.confidenceScore(
+        ))
+        let nearbyLabelMatch = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .dateOfBirth,
             subtype: nil,
             baseScore: 0.78,
@@ -344,7 +346,7 @@ final class PIIScannerTests: XCTestCase {
             boundingBox: CGRect(x: 0.45, y: 0.45, width: 0.18, height: 0.04),
             lineBounds: CGRect(x: 0.42, y: 0.43, width: 0.26, height: 0.06),
             spatialEvidence: true
-        )
+        ))
 
         XCTAssertGreaterThan(nearbyLabelMatch, directMatch,
                              "A value found next to a relevant label should score higher than the same ambiguous value alone")
@@ -355,7 +357,7 @@ final class PIIScannerTests: XCTestCase {
         let box = CGRect(x: 0.2, y: 0.4, width: 0.42, height: 0.04)
         let line = CGRect(x: 0.18, y: 0.38, width: 0.50, height: 0.06)
 
-        let cardScore = PIIScanner.confidenceScore(
+        let cardScore = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .creditCard,
             subtype: nil,
             baseScore: 0.80,
@@ -363,9 +365,10 @@ final class PIIScannerTests: XCTestCase {
             candidateRank: 0,
             snippet: cardNumber,
             boundingBox: box,
-            lineBounds: line
-        )
-        let phoneScore = PIIScanner.confidenceScore(
+            lineBounds: line,
+            spatialEvidence: false
+        ))
+        let phoneScore = PIIScanner.confidenceScore(PIIScanner.ConfidenceInput(
             type: .phoneNumber,
             subtype: nil,
             baseScore: 0.72,
@@ -373,8 +376,9 @@ final class PIIScannerTests: XCTestCase {
             candidateRank: 0,
             snippet: cardNumber,
             boundingBox: box,
-            lineBounds: line
-        )
+            lineBounds: line,
+            spatialEvidence: false
+        ))
 
         XCTAssertGreaterThan(cardScore, phoneScore,
                              "A Luhn-valid issuer-prefixed card number should not score as a stronger phone number")
