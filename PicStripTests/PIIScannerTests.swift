@@ -260,4 +260,120 @@ final class PIIScannerTests: XCTestCase {
         XCTAssertTrue(types.contains(.email),       "Scanner should detect an email address in test_list.png")
         XCTAssertTrue(types.contains(.phoneNumber), "Scanner should detect a phone number in test_list.png")
     }
+
+    // MARK: - Luhn validation
+
+    /// Known Luhn-valid card numbers should validate; corrupting any single digit
+    /// must break the checksum.  Filtering by Luhn is intentionally NOT done in the
+    /// scanner (OCR may corrupt digits on a real card); this is a pure unit test of
+    /// the helper used as a confidence booster.
+    func testLuhnValidation() {
+        // Visa, Mastercard, Amex, Discover test numbers — all Luhn-valid.
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "4111111111111111"),
+                      "Standard Visa test number must Luhn-validate")
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "5500005555555559"),
+                      "Mastercard test number must Luhn-validate")
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "378282246310005"),
+                      "Amex 15-digit test number must Luhn-validate")
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "6011000000000004"),
+                      "Discover test number must Luhn-validate")
+
+        // Same numbers reformatted with separators must still validate.
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "4111-1111-1111-1111"),
+                      "Luhn helper must ignore dashes between digits")
+        XCTAssertTrue(PIIScanner.passesLuhn(digits: "4111 1111 1111 1111"),
+                      "Luhn helper must ignore spaces between digits")
+
+        // Corrupted digit — must not pass.
+        XCTAssertFalse(PIIScanner.passesLuhn(digits: "4111111111111112"),
+                       "Single-digit corruption must fail the Luhn check")
+
+        // Too short / too long for any real card.
+        XCTAssertFalse(PIIScanner.passesLuhn(digits: "4111"),
+                       "Strings shorter than 12 digits cannot pass")
+        XCTAssertFalse(PIIScanner.passesLuhn(digits: "41111111111111111111"),
+                       "Strings longer than 19 digits cannot pass")
+    }
+
+    // MARK: - Document-region boost
+
+    /// Detections whose centre falls inside a detected document rectangle must
+    /// have their score boosted.  Detections outside any document rectangle must
+    /// retain their original score.
+    func testApplyDocumentBoost_boostsOnlyInsideDetections() {
+        let insideInstance = DetectedInstance(
+            snippet: "AB1234567890123",
+            boundingBox: CGRect(x: 0.4, y: 0.4, width: 0.1, height: 0.05),
+            score: 0.80
+        )
+        let outsideInstance = DetectedInstance(
+            snippet: "ZZ9999999999999",
+            boundingBox: CGRect(x: 0.02, y: 0.02, width: 0.1, height: 0.05),
+            score: 0.80
+        )
+        let input = [
+            DetectionResult(
+                type: .governmentID,
+                score: 0.80,
+                instances: [insideInstance, outsideInstance]
+            )
+        ]
+        // A document rectangle covering roughly the middle 60 % of the image —
+        // contains insideInstance, excludes outsideInstance.
+        let docRect = CGRect(x: 0.2, y: 0.2, width: 0.6, height: 0.6)
+
+        let boosted = PIIScanner.applyDocumentBoost(results: input, documentRects: [docRect])
+        let resultInstances = boosted.first?.instances ?? []
+        XCTAssertEqual(resultInstances.count, 2)
+
+        let inside = resultInstances.first { $0.snippet == "AB1234567890123" }
+        let outside = resultInstances.first { $0.snippet == "ZZ9999999999999" }
+        XCTAssertNotNil(inside)
+        XCTAssertNotNil(outside)
+        XCTAssertGreaterThan(inside?.score ?? 0, 0.80,
+                             "Detection whose centre lies inside the document rect must have its score boosted")
+        XCTAssertLessThanOrEqual(inside?.score ?? 0, 0.99,
+                                 "Boosted score is clamped at 0.99")
+        XCTAssertEqual(outside?.score, 0.80,
+                       "Detection outside any document rect must retain its original score")
+    }
+
+    /// Document boost only applies to ID-like types — a phone number that
+    /// happens to sit on a document should not be boosted (it would skew
+    /// risk ordering by promoting medium-risk detections above critical ones).
+    func testApplyDocumentBoost_skipsNonBoostableTypes() {
+        let phoneInstance = DetectedInstance(
+            snippet: "555-867-5309",
+            boundingBox: CGRect(x: 0.4, y: 0.4, width: 0.1, height: 0.05),
+            score: 0.72
+        )
+        let input = [
+            DetectionResult(
+                type: .phoneNumber,
+                score: 0.72,
+                instances: [phoneInstance]
+            )
+        ]
+        let docRect = CGRect(x: 0.0, y: 0.0, width: 1.0, height: 1.0)
+
+        let boosted = PIIScanner.applyDocumentBoost(results: input, documentRects: [docRect])
+        XCTAssertEqual(boosted.first?.instances.first?.score, 0.72,
+                       "Non-boostable types (.phoneNumber) must keep their original score even when inside a document rect")
+    }
+
+    /// When no document rectangles are detected the boost helper must return
+    /// the input unchanged.
+    func testApplyDocumentBoost_noopWithNoDocumentRects() {
+        let instance = DetectedInstance(
+            snippet: "AB1234567890123",
+            boundingBox: CGRect(x: 0.4, y: 0.4, width: 0.1, height: 0.05),
+            score: 0.80
+        )
+        let input = [
+            DetectionResult(type: .governmentID, score: 0.80, instances: [instance])
+        ]
+        let boosted = PIIScanner.applyDocumentBoost(results: input, documentRects: [])
+        XCTAssertEqual(boosted.first?.instances.first?.score, 0.80,
+                       "Empty document-rects list must leave scores untouched")
+    }
 }

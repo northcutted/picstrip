@@ -77,14 +77,16 @@ enum DetectionRegistry {
                  #"\b(?!000|666|9\d{2})\d{3}[\ \-](?!00)\d{2}[\ \-](?!0000)\d{4}\b"#,
                  0.94),
 
-            // Date of birth — common formats: MM/DD/YYYY and YYYY-MM-DD.
-            // Low base because date strings appear constantly in non-sensitive contexts.
+            // Date of birth — keyword-anchored.  A bare date matches receipts,
+            // expiry stamps, photo timestamps, and meeting agendas far more often
+            // than it matches a real DOB, so the rule requires an explicit label
+            // ("DOB", "D.O.B.", "Date of Birth", "Born", "Birthday", "Birth Date")
+            // in the same OCR observation.  Group 1 captures only the date so the
+            // snippet shows the value, not the label.
+            // Base 0.85 — keyword + structured date is highly specific.
             rule(.dateOfBirth,
-                 #"\b(?:0?[1-9]|1[0-2])[\/\-](?:0?[1-9]|[12]\d|3[01])[\/\-](?:19|20)\d{2}\b"#,
-                 0.48),
-            rule(.dateOfBirth,
-                 #"\b(?:19|20)\d{2}[\/\-](?:0?[1-9]|1[0-2])[\/\-](?:0?[1-9]|[12]\d|3[01])\b"#,
-                 0.48),
+                 #"(?i)(?:DOB|D\.?O\.?B\.?|date\s+of\s+birth|birth\s*date|birthday|born(?:\s+on)?)\s*:?\s*((?:0?[1-9]|1[0-2])[\/\-](?:0?[1-9]|[12]\d|3[01])[\/\-](?:19|20)\d{2}|(?:19|20)\d{2}[\/\-](?:0?[1-9]|1[0-2])[\/\-](?:0?[1-9]|[12]\d|3[01]))\b"#,
+                 0.85),
 
             // UK National Insurance number — two-letter prefix (with exclusions
             // for invalid starting letters per HMRC spec), six digits, one suffix
@@ -142,6 +144,135 @@ enum DetectionRegistry {
             rule(.governmentID,
                  #"\b\d{2} \d{3} \d{3} \d{3}\b"#,
                  0.75),
+
+            // South Korean RRN — 6 digits + dash + [1-4] + 6 digits.
+            // The first digit after the dash encodes gender + century (1/2 = born
+            // 1900s, 3/4 = born 2000s, 5/6 = foreign residents born 1900s, 7/8 =
+            // foreign residents born 2000s).  Limit to [1-4] for citizen RRNs to
+            // keep precision high while still catching the dominant format.
+            // Base 0.92 — dash placement + the [1-4] gate is very specific.
+            rule(.governmentID,
+                 #"\b\d{6}\-[1-4]\d{6}\b"#,
+                 0.92),
+
+            // Chinese Resident Identity Card — 18 chars: 6-digit address code,
+            // 8-digit YYYYMMDD birthdate, 3-digit sequence, 1-char checksum
+            // (0-9 or X).  Encoding the YYYYMMDD substring tightens the rule
+            // dramatically vs. a bare `\d{17}[\dX]\b` which would alias hashes.
+            // Base 0.90.
+            rule(.governmentID,
+                 #"\b\d{6}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dX]\b"#,
+                 0.90),
+
+            // Polish PESEL — 11 digits; positions 3-4 encode month (with century
+            // offset codes 80-92 for non-1900s, so the second digit is 0-9).
+            // Position 5-6 encodes day (01-31).  The structured `[0-3]\d[0-3]\d`
+            // middle keeps random 11-digit strings (phone-extension blocks,
+            // invoice IDs) from matching.
+            // Base 0.78 — structure helps but 11-digit strings are common.
+            rule(.governmentID,
+                 #"\b\d{2}[0-3]\d[0-3]\d\d{5}\b"#,
+                 0.78),
+
+            // Mexican CURP — 18 chars: 4 letters (name initials) + 6 digits
+            // (YYMMDD birth) + H/M (gender) + 5 letters (state + name codes) +
+            // alphanumeric homoclave + check digit.  Extremely structured.
+            // Base 0.95 — the gender H/M slot anchors the pattern and few
+            // other strings have this exact shape.
+            rule(.governmentID,
+                 #"\b[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d\b"#,
+                 0.95),
+
+            // ── United States: Federal IDs ───────────────────────────────────
+            //
+            // US ITIN — 9 + 2 digits + dash/space + [7-9] + 1 digit + dash/space
+            // + 4 digits.  The first-9 + middle-group [7-9] gate is what
+            // distinguishes ITINs from SSNs (the SSN rule above explicitly
+            // excludes `9\d{2}` as the area number).
+            // Base 0.92 — IRS allocation rules make this very specific.
+            rule(.governmentID,
+                 #"\b9\d{2}[\ \-][7-9]\d[\ \-]\d{4}\b"#,
+                 0.92),
+
+            // US EIN (Employer Identification Number) — 2 digits + dash + 7 digits.
+            // The IRS issues EINs with a mandatory dash after the prefix two
+            // digits, which is the distinguishing visual marker.
+            // Base 0.78 — short and the dashed shape can alias other 9-digit
+            // values, but the exact 2-7 split is uncommon outside payroll docs.
+            rule(.governmentID,
+                 #"\b\d{2}\-\d{7}\b"#,
+                 0.78),
+
+            // US Medicare Beneficiary ID (MBI) — 11 chars with a strict per-
+            // position character mask (per CMS spec):
+            //   pos 1     digit 1-9
+            //   pos 2     letter
+            //   pos 3     letter or digit
+            //   pos 4     digit                         (dash sometimes follows)
+            //   pos 5     letter
+            //   pos 6     letter or digit
+            //   pos 7     digit                         (dash sometimes follows)
+            //   pos 8     letter
+            //   pos 9     letter
+            //   pos 10-11 digit, digit
+            // Base 0.95 — the rule is highly specific; very few non-MBI strings
+            // satisfy this exact character mask.
+            rule(.governmentID,
+                 #"\b[1-9][A-Z][A-Z0-9]\d\-?[A-Z][A-Z0-9]\d\-?[A-Z][A-Z]\d{2}\b"#,
+                 0.95),
+
+            // US Passport — keyword-anchored.  Modern US passport books carry a
+            // 9-character number (often all digits; older books used 1 letter +
+            // 8 digits).  A bare 9-digit rule would alias every phone, invoice,
+            // and zip+4 in the world, so the rule requires the literal word
+            // "passport" (with optional separators) before the value.
+            // Base 0.85 — keyword + value-shape combination.
+            rule(.governmentID,
+                 #"(?i)passport\s*(?:#|num(?:ber)?|no\.?)?\s*:?\s*([A-Z]?\d{8,9})\b"#,
+                 0.85),
+
+            // ── United States: State Driver's Licenses ───────────────────────
+            //
+            // Structurally distinctive DL formats — those whose letter-prefix +
+            // fixed-length-digit pattern is uncommon enough to detect without a
+            // keyword anchor.  Bare patterns risk product-SKU / employee-ID
+            // false positives, so base scores reflect length-specificity:
+            // longer + more specific letter rules → higher base.  States with
+            // bare 8-9 digit DLs (NY, TX, OH, PA) are intentionally omitted
+            // because they alias SSN / zip+4 / phone-extension patterns.
+
+            // California — 1 letter + 7 digits (e.g. A1234567).
+            rule(.governmentID,
+                 #"\b[A-Z]\d{7}\b"#,
+                 0.70),
+
+            // Massachusetts — S + 8 digits.  The S-prefix is distinctive.
+            rule(.governmentID,
+                 #"\bS\d{8}\b"#,
+                 0.78),
+
+            // Illinois — 1 letter + 11 digits (12 chars).  Cards display the
+            // value in 4-4-4 groups separated by dashes or spaces
+            // (e.g. "B123-4567-8901"); both the grouped and the unseparated
+            // forms must match.
+            rule(.governmentID,
+                 #"\b[A-Z]\d{3}[\ \-]?\d{4}[\ \-]?\d{4}\b"#,
+                 0.80),
+
+            // Florida / Maryland / Michigan / Minnesota — 1 letter + 12 digits.
+            rule(.governmentID,
+                 #"\b[A-Z]\d{12}\b"#,
+                 0.82),
+
+            // Wisconsin — 1 letter + 13 digits (14 chars).
+            rule(.governmentID,
+                 #"\b[A-Z]\d{13}\b"#,
+                 0.84),
+
+            // New Jersey — 1 letter + 14 digits (15 chars).
+            rule(.governmentID,
+                 #"\b[A-Z]\d{14}\b"#,
+                 0.86),
 
             // MARK: Vehicle
             // VIN — exactly 17 chars from A-H, J-N, P-R, S-Z, 0-9 (I/O/Q excluded

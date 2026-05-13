@@ -35,24 +35,52 @@ struct PIIScanner {
                 throw PIIScannerError.invalidImageData
             }
 
-            // Stage 2: OCR via Vision — returns raw observations, not joined text.
+            // Stage 2: Single-pass Vision — submit OCR, face, barcode, and
+            // document-rectangle requests against ONE VNImageRequestHandler so
+            // the source bytes are decoded and pre-processed exactly once.
             // Raw Data (not a pre-decoded CGImage) is passed so that
             // VNImageRequestHandler can read the EXIF orientation tag and return
             // bounding boxes in the visual coordinate space — the same space that
-            // UIKit's display pipeline uses. Passing a CGImage strips the
-            // orientation metadata, causing highlights to land in the wrong
-            // position on any photo that isn't already upright in its raw pixels.
-            let observations = try Self.recognizeText(in: data)
+            // UIKit's display pipeline uses.
+            let accurateTextRequest = Self.makeTextRequest(level: .accurate)
+            let faceRequest         = VNDetectFaceRectanglesRequest()
+            let barcodeRequest      = VNDetectBarcodesRequest()
+            let rectangleRequest    = Self.makeDocumentRectangleRequest()
+
+            let handler = VNImageRequestHandler(data: data, options: [:])
+            // `try?` because a single sub-request (e.g. rectangle detection on
+            // the simulator with no Neural Engine) failing shouldn't kill OCR.
+            // Vision still populates each successful request's .results despite
+            // a thrown perform, so partial outcomes are preserved.  The OCR
+            // fast-fallback below covers the case where the accurate text
+            // recogniser was the one that failed.
+            try? handler.perform([accurateTextRequest, faceRequest, barcodeRequest, rectangleRequest])
+
+            // Fast-text fallback — if accurate returned nothing (simulator CPU
+            // path, heavily compressed image) retry text-only with the fast
+            // model.  Face / barcode / rectangle results from the primary pass
+            // are preserved, so this only re-pays the text inference cost.
+            var observations = accurateTextRequest.results ?? []
+            if observations.isEmpty {
+                let fastRequest = Self.makeTextRequest(level: .fast)
+                let fallbackHandler = VNImageRequestHandler(data: data, options: [:])
+                try? fallbackHandler.perform([fastRequest])
+                observations = fastRequest.results ?? []
+            }
 
             // Stage 3: Per-observation two-stage PII analysis with state tracking.
             var results = try Self.detectPII(in: observations)
 
-            // Stage 4: Visual detection — faces and barcodes via dedicated Vision
-            // requests.  Errors here are non-fatal: a corrupted image that still
-            // passes stage 1 shouldn't suppress a complete text-PII report.
-            let (faceResults, barcodeResults) = Self.detectFacesAndBarcodes(in: data)
-            results.append(contentsOf: faceResults)
-            results.append(contentsOf: barcodeResults)
+            // Stage 4: Append visual detections (faces, barcodes).
+            results.append(contentsOf: Self.faceResults(from: faceRequest.results ?? []))
+            results.append(contentsOf: Self.barcodeResults(from: barcodeRequest.results ?? []))
+
+            // Stage 5: Document-region prioritisation — boost ID-like detections
+            // whose bounding box falls inside a detected document quad.
+            let documentRects: [CGRect] = (rectangleRequest.results ?? []).map { obs in
+                Self.swiftUIBox(from: obs.boundingBox)
+            }
+            results = Self.applyDocumentBoost(results: results, documentRects: documentRects)
 
             // Re-sort combined results: highest score first, alphabetical tiebreak.
             return results.sorted {
@@ -65,51 +93,31 @@ struct PIIScanner {
 
     // MARK: - Private
 
-    /// Runs Vision OCR and returns the raw observation array so that each
-    /// observation's `boundingBox` is still available for spatial highlighting.
-    ///
-    /// Accepts raw image `Data` rather than a `CGImage` so that
-    /// `VNImageRequestHandler` can read the EXIF orientation tag embedded in the
-    /// file. A pre-decoded `CGImage` carries no orientation metadata, which causes
-    /// bounding boxes to be in the wrong position for any photo whose raw pixels
-    /// aren't already stored upright (virtually every camera photo taken in
-    /// portrait mode on an iPhone).
-    ///
-    /// If the `.accurate` recogniser returns no observations — which can happen on
-    /// the simulator where the Neural Engine is unavailable — the method retries
-    /// with the `.fast` model as a safety net.
-    nonisolated private static func recognizeText(in data: Data) throws -> [VNRecognizedTextObservation] {
-        func makeRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
-            let req = VNRecognizeTextRequest()
-            req.recognitionLevel = level
-            // Disable language correction so Vision preserves raw credential
-            // characters rather than autocorrecting them into dictionary words.
-            req.usesLanguageCorrection = false
-            // Let Vision pick the best model for whatever language(s) appear in
-            // the image — important for passwords and non-English labels.
-            // Available since iOS 16 / VNRecognizeTextRequestRevision3; a no-op on
-            // earlier revisions (safe to set unconditionally on our iOS 17 target).
-            req.automaticallyDetectsLanguage = true
-            return req
-        }
+    /// Builds a `VNRecognizeTextRequest` configured for credential-safe OCR.
+    nonisolated private static func makeTextRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
+        let req = VNRecognizeTextRequest()
+        req.recognitionLevel = level
+        // Disable language correction so Vision preserves raw credential
+        // characters rather than autocorrecting them into dictionary words.
+        req.usesLanguageCorrection = false
+        // Let Vision pick the best model for whatever language(s) appear in
+        // the image — important for passwords and non-English labels.
+        req.automaticallyDetectsLanguage = true
+        return req
+    }
 
-        // Primary pass — accurate model, highest quality.
-        let accurateRequest = makeRequest(level: .accurate)
-        let handler = VNImageRequestHandler(data: data, options: [:])
-        try handler.perform([accurateRequest])
-        let results = accurateRequest.results ?? []
-
-        // Fallback pass — if accurate found nothing (e.g. simulator CPU path or
-        // a heavily compressed image), retry with the fast model. A fresh handler
-        // is required because VNImageRequestHandler is single-use.
-        if results.isEmpty {
-            let fastRequest = makeRequest(level: .fast)
-            let fallbackHandler = VNImageRequestHandler(data: data, options: [:])
-            try fallbackHandler.perform([fastRequest])
-            return fastRequest.results ?? []
-        }
-
-        return results
+    /// Builds a `VNDetectRectanglesRequest` tuned for document/ID-card detection.
+    /// Aspect ratio band covers everything from portrait phone screenshots through
+    /// landscape credit cards / passports.  Minimum size of 15 % filters out small
+    /// incidental rectangles (icons, buttons).
+    nonisolated private static func makeDocumentRectangleRequest() -> VNDetectRectanglesRequest {
+        let req = VNDetectRectanglesRequest()
+        req.minimumAspectRatio  = 0.5
+        req.maximumAspectRatio  = 2.0
+        req.minimumSize         = 0.15
+        req.minimumConfidence   = 0.6
+        req.maximumObservations = 5
+        return req
     }
 
     /// Analyses each OCR observation individually, preserving bounding-box
@@ -242,8 +250,20 @@ struct PIIScanner {
                                                     in: text,
                                                     fallback: visionBox)
                     let snippet = Self.snippet(from: text, nsRange: valueRange)
+
+                    // Luhn-boost: a structurally valid credit-card pattern that ALSO
+                    // passes the Luhn checksum is dramatically more likely to be a
+                    // real card.  Bump the base score by 0.05 (capped at 0.99) so
+                    // the user sees a higher confidence on a clean read; non-Luhn
+                    // matches keep the original score rather than being rejected,
+                    // since OCR may corrupt one digit on a real card.
+                    var effectiveBaseScore = rule.baseScore
+                    if rule.type == .creditCard, Self.passesLuhn(digits: snippet) {
+                        effectiveBaseScore = min(0.99, rule.baseScore + 0.05)
+                    }
+
                     record(rule.type,
-                           baseScore: rule.baseScore,
+                           baseScore: effectiveBaseScore,
                            ocrConfidence: ocrConfidence,
                            instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
                 }
@@ -309,68 +329,124 @@ struct PIIScanner {
         }
     }
 
-    // MARK: - Visual detection (faces + barcodes)
+    // MARK: - Visual detection helpers
 
-    /// Runs face-rectangle and barcode detection on the same image data in a
-    /// single `VNImageRequestHandler` pass (one decode, two requests).
-    ///
-    /// Returns `([], [])` on any Vision error so that a successful OCR pass is
-    /// never suppressed by a failure in the visual pipeline.
-    ///
-    /// Face results carry a fixed score of 0.99 — the dedicated ML model is
-    /// highly reliable and the result needs no OCR-confidence weighting.
-    /// Barcode results also score 0.99; the decoded payload is placed in the
-    /// snippet so the user can see what the code contains.
-    nonisolated private static func detectFacesAndBarcodes(
-        in data: Data
-    ) -> (faces: [DetectionResult], barcodes: [DetectionResult]) {
-        let faceRequest    = VNDetectFaceRectanglesRequest()
-        let barcodeRequest = VNDetectBarcodesRequest()
-        let handler        = VNImageRequestHandler(data: data, options: [:])
-
-        do {
-            try handler.perform([faceRequest, barcodeRequest])
-        } catch {
-            return ([], [])
+    /// Maps `VNFaceObservation`s from the single-pass handler into one
+    /// `DetectionResult`.  Face results carry a fixed score of 0.99 — the
+    /// dedicated ML model is highly reliable and the result needs no
+    /// OCR-confidence weighting.
+    nonisolated static func faceResults(from observations: [VNFaceObservation]) -> [DetectionResult] {
+        guard !observations.isEmpty else { return [] }
+        let instances = observations.map { obs in
+            DetectedInstance(
+                snippet: String(localized: "Face detected"),
+                boundingBox: swiftUIBox(from: obs.boundingBox),
+                score: 0.99
+            )
         }
+        return [DetectionResult(type: .face, score: 0.99, instances: instances)]
+    }
 
-        // ── Faces ────────────────────────────────────────────────────────────
-        let faceResults: [DetectionResult] = {
-            guard let observations = faceRequest.results, !observations.isEmpty else {
-                return []
+    /// Maps `VNBarcodeObservation`s from the single-pass handler into one
+    /// `DetectionResult`.  The decoded payload is placed in the snippet.
+    nonisolated static func barcodeResults(from observations: [VNBarcodeObservation]) -> [DetectionResult] {
+        guard !observations.isEmpty else { return [] }
+        var instances: [DetectedInstance] = []
+        for obs in observations {
+            let payload  = obs.payloadStringValue ?? String(localized: "Encoded barcode")
+            let instance = DetectedInstance(
+                snippet: snippet(payload, max: 60),
+                boundingBox: swiftUIBox(from: obs.boundingBox),
+                score: 0.99
+            )
+            if !instances.contains(instance) {
+                instances.append(instance)
             }
-            let instances = observations.map { obs in
-                DetectedInstance(
-                    snippet: String(localized: "Face detected"),
-                    boundingBox: swiftUIBox(from: obs.boundingBox),
-                    score: 0.99
+        }
+        guard !instances.isEmpty else { return [] }
+        return [DetectionResult(type: .barcode, score: 0.99, instances: instances)]
+    }
+
+    // MARK: - Document region boost
+
+    /// PII types that meaningfully benefit from "is on a document/ID card" context.
+    /// A 9-digit number floating in random text is ambiguous; the same number on a
+    /// detected document quad is much more likely to be a real ID.
+    nonisolated static let documentBoostableTypes: Set<PIIType> = [
+        .creditCard,
+        .governmentID,
+        .socialSecurityNumber,
+        .nationalInsuranceNumber,
+        .dateOfBirth,
+        .iban,
+        .abaRoutingNumber,
+        .swiftBIC,
+        .vehicleIdentificationNumber,
+        .licensePlate
+    ]
+
+    /// Multiplier applied to the instance score when the instance bounding box
+    /// falls inside a detected document rectangle.  Chosen so a clean 0.85 base
+    /// (e.g. a regional DL) bumps to ~0.97 — confidence the user can see — without
+    /// taking weaker matches above 1.0.
+    nonisolated static let documentBoostFactor: Double = 1.15
+
+    /// Returns a copy of `results` with each ID-like instance's score multiplied
+    /// when its bounding box falls inside one of the supplied `documentRects`.
+    /// Scores are clamped to `0.99` so they remain comparable to fixed-confidence
+    /// face/barcode results.
+    nonisolated static func applyDocumentBoost(
+        results: [DetectionResult],
+        documentRects: [CGRect]
+    ) -> [DetectionResult] {
+        guard !documentRects.isEmpty else { return results }
+
+        return results.map { result -> DetectionResult in
+            guard documentBoostableTypes.contains(result.type) else { return result }
+
+            var boostedMax = result.score
+            let boostedInstances: [DetectedInstance] = result.instances.map { inst in
+                let centre = CGPoint(x: inst.boundingBox.midX, y: inst.boundingBox.midY)
+                let inside = documentRects.contains { $0.contains(centre) }
+                guard inside else { return inst }
+                let newScore = min(0.99, inst.score * documentBoostFactor)
+                if newScore > boostedMax { boostedMax = newScore }
+                return DetectedInstance(
+                    snippet: inst.snippet,
+                    boundingBox: inst.boundingBox,
+                    score: newScore
                 )
             }
-            return [DetectionResult(type: .face, score: 0.99, instances: instances)]
-        }()
 
-        // ── Barcodes / QR codes ──────────────────────────────────────────────
-        let barcodeResults: [DetectionResult] = {
-            guard let observations = barcodeRequest.results, !observations.isEmpty else {
-                return []
-            }
-            var instances: [DetectedInstance] = []
-            for obs in observations {
-                let payload  = obs.payloadStringValue ?? String(localized: "Encoded barcode")
-                let instance = DetectedInstance(
-                    snippet: snippet(payload, max: 60),
-                    boundingBox: swiftUIBox(from: obs.boundingBox),
-                    score: 0.99
-                )
-                if !instances.contains(instance) {
-                    instances.append(instance)
-                }
-            }
-            guard !instances.isEmpty else { return [] }
-            return [DetectionResult(type: .barcode, score: 0.99, instances: instances)]
-        }()
+            return DetectionResult(
+                type: result.type,
+                score: boostedMax,
+                instances: boostedInstances
+            )
+        }
+    }
 
-        return (faceResults, barcodeResults)
+    // MARK: - Luhn validation
+
+    /// Validates a string of decimal digits against the Luhn checksum.  Used as a
+    /// *confidence booster* for credit card matches (a Luhn-valid 16-digit string
+    /// is much more likely a real card than a non-validating one).  Filtering by
+    /// Luhn is intentionally avoided — OCR may corrupt a single digit on an
+    /// otherwise-real card and we'd rather flag than miss.
+    nonisolated static func passesLuhn(digits: String) -> Bool {
+        let raw = digits.filter(\.isNumber)
+        guard raw.count >= 12, raw.count <= 19 else { return false }
+        var sum = 0
+        for (offset, char) in raw.reversed().enumerated() {
+            guard let digit = char.wholeNumberValue else { return false }
+            if offset.isMultiple(of: 2) {
+                sum += digit
+            } else {
+                let doubled = digit * 2
+                sum += (doubled > 9) ? (doubled - 9) : doubled
+            }
+        }
+        return sum.isMultiple(of: 10)
     }
 
     // MARK: - Coordinate helpers

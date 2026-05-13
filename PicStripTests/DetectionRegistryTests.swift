@@ -322,6 +322,147 @@ final class DetectionRegistryTests: XCTestCase {
                       "Should detect a German Steuer-ID")
     }
 
+    // MARK: - Date of Birth (keyword-anchored)
+
+    func testDateOfBirthRegex() {
+        // Real DOB contexts with various label formats — all should match.
+        XCTAssertTrue(matches(.dateOfBirth, in: "DOB: 04/22/1985"),
+                      "Should detect DOB with 'DOB:' label")
+        XCTAssertTrue(matches(.dateOfBirth, in: "D.O.B. 04-22-1985"),
+                      "Should detect DOB with abbreviated label")
+        XCTAssertTrue(matches(.dateOfBirth, in: "Date of Birth: 1985-04-22"),
+                      "Should detect DOB with full label and ISO date format")
+        XCTAssertTrue(matches(.dateOfBirth, in: "Birthday 12/31/1999"),
+                      "Should detect DOB with 'Birthday' label")
+        XCTAssertTrue(matches(.dateOfBirth, in: "Born 03/15/1972"),
+                      "Should detect DOB with 'Born' label")
+        XCTAssertTrue(matches(.dateOfBirth, in: "Birth Date: 2001-07-04"),
+                      "Should detect DOB with 'Birth Date' label")
+
+        // Bare dates — must NOT match without a keyword.  This is the whole
+        // point of the keyword anchor: a date alone could be anything.
+        XCTAssertFalse(matches(.dateOfBirth, in: "04/22/1985"),
+                       "Bare date without DOB keyword must not match")
+        XCTAssertFalse(matches(.dateOfBirth, in: "Receipt date: 04/22/1985"),
+                       "Date with non-DOB label must not match")
+        XCTAssertFalse(matches(.dateOfBirth, in: "Expires 12/31/2025"),
+                       "Expiry dates on cards must not match")
+        XCTAssertFalse(matches(.dateOfBirth, in: "Meeting on 2025-04-22"),
+                       "Meeting / event dates must not match")
+        XCTAssertFalse(matches(.dateOfBirth, in: "Today's date is 04/22/2025"),
+                       "Today's-date strings must not match")
+    }
+
+    // MARK: - Government ID — Additional International
+
+    func testGovernmentIDRegex_internationalAdditions() {
+        // South Korean RRN — 6 digits + dash + [1-4] + 6 digits
+        XCTAssertTrue(matches(.governmentID, in: "990101-1234567"),
+                      "Should detect a South Korean RRN (citizen)")
+        XCTAssertTrue(matches(.governmentID, in: "001231-4234567"),
+                      "Should detect a South Korean RRN with century-2 code")
+        XCTAssertFalse(matches(.governmentID, in: "990101-5234567"),
+                       "RRN-shape with second-half digit 5 (foreign resident) is intentionally excluded")
+
+        // Chinese Resident ID — 18 chars with YYYYMMDD birthdate
+        XCTAssertTrue(matches(.governmentID, in: "110101199003078912"),
+                      "Should detect a Chinese resident ID with valid YYYYMMDD substring")
+        XCTAssertTrue(matches(.governmentID, in: "44030119800101234X"),
+                      "Should detect a Chinese resident ID with X checksum")
+        XCTAssertFalse(matches(.governmentID, in: "110101189003078912"),
+                       "Should reject a Chinese ID with invalid YYYY (1890)")
+
+        // Polish PESEL — 11 digits, dd-shaped month/day in positions 3-6
+        XCTAssertTrue(matches(.governmentID, in: "85021412345"),
+                      "Should detect a Polish PESEL (YY-MM-DD-NNNNN structure)")
+        XCTAssertTrue(matches(.governmentID, in: "00270112345"),
+                      "Should detect a PESEL with century-2 month offset (27)")
+        XCTAssertFalse(matches(.governmentID, in: "85451412345"),
+                       "Should reject a PESEL with implausible month digit at pos 3")
+
+        // Mexican CURP — 18 chars: 4 letters + 6 digits + H/M + 5 letters + AN + digit
+        XCTAssertTrue(matches(.governmentID, in: "GOMC850514HDFRZS09"),
+                      "Should detect a Mexican CURP (male)")
+        XCTAssertTrue(matches(.governmentID, in: "MARJ901231MDFLPL08"),
+                      "Should detect a Mexican CURP (female)")
+        XCTAssertFalse(matches(.governmentID, in: "GOMC850514XDFRZS09"),
+                       "CURP must have H or M in the gender slot, not X")
+    }
+
+    // MARK: - Government ID — US Federal
+
+    func testGovernmentIDRegex_usFederal() {
+        // ITIN — starts with 9, middle group [7-9]
+        XCTAssertTrue(matches(.governmentID, in: "912-78-3456"),
+                      "Should detect a US ITIN with dashes")
+        XCTAssertTrue(matches(.governmentID, in: "912 78 3456"),
+                      "Should detect a US ITIN with spaces")
+        XCTAssertFalse(matches(.socialSecurityNumber, in: "912-78-3456"),
+                       "ITIN must not be misclassified as SSN (SSN excludes 9XX area)")
+        XCTAssertFalse(matches(.governmentID, in: "812-78-3456"),
+                       "ITIN-shape starting with 8 (not 9) must not match")
+        XCTAssertFalse(matches(.governmentID, in: "912-65-3456"),
+                       "ITIN-shape with middle group 65 (not 7-9) must not match")
+
+        // EIN — 2 digits + dash + 7 digits
+        XCTAssertTrue(matches(.governmentID, in: "12-3456789"),
+                      "Should detect a US EIN")
+        XCTAssertTrue(matches(.governmentID, in: "EIN: 47-1234567 was assigned"),
+                      "Should detect an EIN embedded in text")
+
+        // Medicare MBI — 11 chars: C-A-AN-A-AN-A-AN-AN-N-N (dashes optional)
+        XCTAssertTrue(matches(.governmentID, in: "1AB2-CD3-EF45"),
+                      "Should detect a Medicare MBI with dashes")
+        XCTAssertTrue(matches(.governmentID, in: "1AB2CD3EF45"),
+                      "Should detect a Medicare MBI without dashes")
+        XCTAssertFalse(matches(.governmentID, in: "0AB2CD3EF45"),
+                       "Medicare MBI must not start with 0")
+
+        // US Passport — keyword-anchored
+        XCTAssertTrue(matches(.governmentID, in: "Passport: 123456789"),
+                      "Should detect a US Passport number with 'Passport:' keyword")
+        XCTAssertTrue(matches(.governmentID, in: "passport no. C12345678"),
+                      "Should detect a passport with letter prefix")
+        XCTAssertFalse(matches(.governmentID, in: "123456789"),
+                       "Bare 9-digit string must not match without the passport keyword")
+    }
+
+    // MARK: - Government ID — US State Driver's Licenses
+
+    func testGovernmentIDRegex_usStateDLs() {
+        // California DL — 1 letter + 7 digits
+        XCTAssertTrue(matches(.governmentID, in: "A1234567"),
+                      "Should detect a California-format DL")
+
+        // Massachusetts DL — S + 8 digits
+        XCTAssertTrue(matches(.governmentID, in: "S12345678"),
+                      "Should detect a Massachusetts-format DL")
+
+        // Illinois DL — 1 letter + 11 digits, with or without 4-4-4 separators
+        XCTAssertTrue(matches(.governmentID, in: "B12345678901"),
+                      "Should detect an Illinois-format DL (no separators)")
+        XCTAssertTrue(matches(.governmentID, in: "B123-4567-8901"),
+                      "Should detect an Illinois-format DL with dashes (card display format)")
+        XCTAssertTrue(matches(.governmentID, in: "B123 4567 8901"),
+                      "Should detect an Illinois-format DL with spaces")
+
+        // Florida / Maryland / Michigan / Minnesota — 1 letter + 12 digits
+        XCTAssertTrue(matches(.governmentID, in: "F123456789012"),
+                      "Should detect a Florida/Maryland/Michigan/Minnesota-format DL")
+
+        // Wisconsin — 1 letter + 13 digits
+        XCTAssertTrue(matches(.governmentID, in: "W1234567890123"),
+                      "Should detect a Wisconsin-format DL")
+
+        // New Jersey — 1 letter + 14 digits
+        XCTAssertTrue(matches(.governmentID, in: "J12345678901234"),
+                      "Should detect a New Jersey-format DL")
+
+        // Shape-only collisions that must NOT match:
+        XCTAssertFalse(matches(.governmentID, in: "ABCDEFG12345"),
+                       "All-letters or mixed pattern must not match any state DL rule")
+    }
+
     // MARK: - VIN (Vehicle Identification Number)
 
     func testVehicleIdentificationNumberRegex() {
