@@ -3,8 +3,7 @@
 #
 # Extracts the latest release section from CHANGELOG.md (written by
 # @semantic-release/changelog), strips Markdown formatting, and writes
-# plain-text App Store "What's New" copy to
-# fastlane/metadata/en-US/release_notes.txt.
+# plain-text App Store "What's New" copy to every Fastlane metadata locale.
 #
 # Called by the @semantic-release/exec publishCmd in .releaserc.json.
 # Runs on ubuntu-latest (GNU sed/awk).
@@ -15,9 +14,7 @@
 
 set -euo pipefail
 
-OUT="fastlane/metadata/en-US/release_notes.txt"
-
-mkdir -p "$(dirname "$OUT")"
+METADATA_ROOT="fastlane/metadata"
 
 # ── 1. Extract the latest release block from CHANGELOG.md ─────────────────
 # CHANGELOG sections start with "## [x.y.z]". Grab everything between the
@@ -32,6 +29,7 @@ fi
 # ── 2. Strip Markdown formatting ──────────────────────────────────────────
 PLAIN=$(printf '%s\n' "$NOTES" \
   | sed -E 's/^### (.+)$/\1/'            \
+  | sed -E 's/^\* \*\*([^*]+):\*\* /• \1: /' \
   | sed -E 's/^\* \*\*[^*]+\*\*: /• /'  \
   | sed -E 's/^\* /• /'                  \
   | sed -E 's/ \(\[#[0-9]+\]\([^)]+\)\)//g' \
@@ -43,7 +41,21 @@ PLAIN=$(printf '%s\n' "$NOTES" \
 # ── 3. Enforce 4000-byte App Store limit ──────────────────────────────────
 PLAIN=$(printf '%s\n' "$PLAIN" | head -c 4000)
 
-printf '%s\n' "$PLAIN" > "$OUT"
+mapfile -t LOCALE_DIRS < <(
+  find "$METADATA_ROOT" -mindepth 1 -maxdepth 1 -type d \
+    ! -name "review_information" \
+    | sort
+)
 
-echo "write_release_notes: wrote $OUT"
-cat "$OUT"
+if [[ ${#LOCALE_DIRS[@]} -eq 0 ]]; then
+  echo "write_release_notes: no metadata locale directories found under $METADATA_ROOT" >&2
+  exit 1
+fi
+
+for locale_dir in "${LOCALE_DIRS[@]}"; do
+  out="$locale_dir/release_notes.txt"
+  printf '%s\n' "$PLAIN" > "$out"
+  echo "write_release_notes: wrote $out"
+done
+
+cat "$METADATA_ROOT/en-US/release_notes.txt"

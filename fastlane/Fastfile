@@ -9,10 +9,54 @@ platform :ios do
   PROJECT        = "PicStrip.xcodeproj"
   OUTPUT_DIR     = "build"
   IPA_NAME       = "PicStrip.ipa"
+  APP_STORE_PRIMARY_CATEGORY = "Photo & Video"
+  APP_STORE_SECONDARY_CATEGORY = "Utilities"
   SCREENSHOT_DEVICES = [
     "iPhone 17 Pro Max",
     "iPad Pro 13-inch (M5)"
   ]
+  EXPORT_COMPLIANCE_PLISTS = [
+    "PicStrip-Info.plist",
+    "PicStripShareExtension/Info.plist"
+  ].freeze
+  EXPORT_COMPLIANCE_SUBMISSION = {
+    # PicStrip uses only standard platform encryption, so it does not use
+    # non-exempt encryption. Keep this in sync with ITSAppUsesNonExemptEncryption=false.
+    export_compliance_uses_encryption: false
+  }.freeze
+
+  private_lane :validate_export_compliance do
+    require "plist"
+
+    invalid = EXPORT_COMPLIANCE_PLISTS.filter_map do |relative_path|
+      path = File.join(ROOT, relative_path)
+      plist = Plist.parse_xml(path)
+      relative_path unless plist && plist["ITSAppUsesNonExemptEncryption"] == false
+    end
+
+    UI.user_error!(
+      "Expected ITSAppUsesNonExemptEncryption=false in: #{invalid.join(', ')}"
+    ) if invalid.any?
+  end
+
+  private_lane :validate_release_notes do
+    metadata_root = File.join(ROOT, "fastlane", "metadata")
+    locale_dirs = Dir.children(metadata_root)
+                     .map { |entry| File.join(metadata_root, entry) }
+                     .select { |path| File.directory?(path) }
+                     .reject { |path| File.basename(path) == "review_information" }
+                     .sort
+
+    missing = locale_dirs.filter_map do |path|
+      notes_path = File.join(path, "release_notes.txt")
+      File.basename(path) unless File.exist?(notes_path) && !File.read(notes_path).strip.empty?
+    end
+
+    UI.user_error!(
+      "Missing App Store release_notes.txt for locale(s): #{missing.join(', ')}. " \
+      "Run scripts/write_release_notes.sh before preflight or submit."
+    ) if missing.any?
+  end
 
   # ── PR lanes (no signing) ────────────────────────────────────────────────────
 
@@ -129,6 +173,7 @@ platform :ios do
   desc "Upload an already-built IPA to TestFlight"
   lane :upload_testflight do
     ipa_path = ENV.fetch("IPA_PATH", "#{OUTPUT_DIR}/#{IPA_NAME}")
+    validate_export_compliance
 
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -140,6 +185,7 @@ platform :ios do
     upload_to_testflight(
       ipa:              ipa_path,
       api_key:          api_key,
+      uses_non_exempt_encryption: false,
       skip_waiting_for_build_processing: false
     )
   end
@@ -320,6 +366,8 @@ platform :ios do
     )
 
     accessibility
+    validate_export_compliance
+    validate_release_notes
 
     # The binary was already uploaded to TestFlight by the release pipeline.
     # skip_binary_upload: true tells deliver to find the existing build
@@ -339,12 +387,15 @@ platform :ios do
       submit_for_review:                 true,
       automatic_release:                 true,   # release automatically on approval
       phased_release:                    true,   # roll out over 7 days
+      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
+      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
       metadata_path:                     "./fastlane/metadata",
       screenshots_path:                  processed_path,
       skip_screenshots:                  false,
       overwrite_screenshots:             true,   # replace any existing shots for this version
       run_precheck_before_submit:        false,
       precheck_include_in_app_purchases: false,
+      submission_information:            EXPORT_COMPLIANCE_SUBMISSION,
       force:                             true    # skip interactive HTML diff preview
     )
   end
@@ -362,6 +413,8 @@ platform :ios do
     )
 
     accessibility
+    validate_export_compliance
+    validate_release_notes
 
     # Same as the submit lane but submit_for_review: false and no release options.
     # deliver will create the pending "Prepare for Submission" version if one does
@@ -377,6 +430,8 @@ platform :ios do
       submit_for_review:                 false,  # ← key difference: does NOT submit
       automatic_release:                 false,
       phased_release:                    false,
+      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
+      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
       metadata_path:                     "./fastlane/metadata",
       screenshots_path:                  processed_path,
       skip_screenshots:                  false,

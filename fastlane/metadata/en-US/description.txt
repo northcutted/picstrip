@@ -1,15 +1,15 @@
-Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and zero network calls.
+Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info - fully on-device, with no account, no uploads, and zero network calls.
 
 METADATA STRIPPING
-Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.
+Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share - in one tap.
 
 SENSITIVE INFO DETECTION & REDACTION
-On-device OCR and computer vision scan your photo for 30 kinds of sensitive personal information (PII), risk-ranked across four tiers:
+On-device artificial intelligence scans your photo for 30 kinds of sensitive personal information (PII), risk-ranked across four tiers:
 
-Critical — API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
-High — faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
-Medium — emails, phones, addresses, crypto wallets, VINs, license plates, IP and MAC addresses
-Low — dates of birth, links, barcodes
+Critical - API keys, credit cards, social security numbers, passwords, JWTs, database connection strings
+High - faces, IBANs, ABA routing numbers, SWIFT/BIC codes, physical credentials
+Medium - emails, phones, addresses, crypto wallets, VINs, license plates, IP and MAC addresses
+Low - dates of birth, links, barcodes
 
 Each detection shows its type, confidence score, and risk level so you can prioritize what to redact.
 
@@ -22,16 +22,16 @@ REDACTION EDITOR
 
 IMPORT FROM ANYWHERE
 • Photos library
-• Files app — open any image or screenshot directly
+• Files app - open any image or screenshot directly
 • Drag and drop images into the app
-• Share Extension — clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
+• Share Extension - clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 
 PRIVACY BY DESIGN
-• 100% on-device — nothing leaves your phone
+• 100% on-device - nothing leaves your phone
 • No account, no login, no tracking
 • No ads, no in-app purchases, no subscriptions
-• Open source — every line of code is auditable on GitHub
-• SLSA Level 3 build provenance — every release is cryptographically verified
+• Open source - every line of code is auditable on GitHub
+• SLSA Level 3 build provenance - every release is cryptographically verified
 • Privacy nutrition label: Data Not Collected
 
 SHORTCUTS & AUTOMATION
