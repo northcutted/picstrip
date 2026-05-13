@@ -1,3 +1,10 @@
+## [1.6.2](https://github.com/northcutted/picstrip/compare/v1.6.1...v1.6.2) (2026-05-13)
+
+
+### Bug Fixes
+
+* **ci:** fix app store category ([dc66002](https://github.com/northcutted/picstrip/commit/dc6600209dbc78bea58c183f2d57c48b1a90677a))
+
 ## [1.6.1](https://github.com/northcutted/picstrip/compare/v1.6.0...v1.6.1) (2026-05-13)
 
 

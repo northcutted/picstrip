@@ -1,2 +1,2 @@
 Bug Fixes
-• update release notes and metadata for enhanced credit card and PII detection features
+• ci: fix app store category
