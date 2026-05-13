@@ -95,6 +95,7 @@ struct PIIScanner {
                 barcodeContexts: barcodeContexts,
                 textLines: primaryLineContexts
             )
+            results = Self.resolveCreditCardPhoneConflicts(results)
 
             // Re-sort combined results: highest score first, alphabetical tiebreak.
             return results.sorted {
@@ -353,9 +354,22 @@ struct PIIScanner {
             subtype: PIISubtype? = nil,
             baseScore: Double,
             ocrConfidence: Float,
-            instance: DetectedInstance
+            instance: DetectedInstance,
+            candidateRank: Int,
+            lineBounds: CGRect,
+            spatialEvidence: Bool = false
         ) {
-            let instanceScore = baseScore * Double(ocrConfidence)
+            let instanceScore = Self.confidenceScore(
+                type: type,
+                subtype: subtype ?? instance.subtype,
+                baseScore: baseScore,
+                ocrConfidence: ocrConfidence,
+                candidateRank: candidateRank,
+                snippet: instance.snippet,
+                boundingBox: instance.boundingBox,
+                lineBounds: lineBounds,
+                spatialEvidence: spatialEvidence
+            )
             let scoredInstance = DetectedInstance(
                 snippet: instance.snippet,
                 subtype: subtype ?? instance.subtype,
@@ -429,7 +443,10 @@ struct PIIScanner {
                 record(.unstructuredCredential,
                        baseScore: 0.65,
                        ocrConfidence: ocrConfidence,
-                       instance: DetectedInstance(snippet: "\(label) \(snippet)", boundingBox: lineBounds, score: 0))
+                       instance: DetectedInstance(snippet: "\(label) \(snippet)", boundingBox: lineBounds, score: 0),
+                       candidateRank: line.rank,
+                       lineBounds: lineBounds,
+                       spatialEvidence: true)
                 // Don't skip the remaining analysis — the password line might
                 // also contain independently detectable PII (e.g., an email).
             }
@@ -470,7 +487,9 @@ struct PIIScanner {
                            subtype: rule.subtype,
                            baseScore: effectiveBaseScore,
                            ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                           candidateRank: line.rank,
+                           lineBounds: lineBounds)
                 }
             }
 
@@ -493,21 +512,29 @@ struct PIIScanner {
                 case .phoneNumber:
                     // Base 0.72: NLP-based; good but not structurally verifiable.
                     record(.phoneNumber, baseScore: 0.72, ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                           candidateRank: line.rank,
+                           lineBounds: lineBounds)
                 case .address:
                     // Base 0.68: NLP + address grammar; context-dependent.
                     record(.address, baseScore: 0.68, ocrConfidence: ocrConfidence,
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                           candidateRank: line.rank,
+                           lineBounds: lineBounds)
                 case .link:
                     if let url = match.url, url.scheme == "mailto" {
                         // Base 0.75 for mailto: links — lower than the regex (0.93)
                         // so a prior regex hit on the same email won't be downgraded.
                         record(.email, baseScore: 0.75, ocrConfidence: ocrConfidence,
-                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                               candidateRank: line.rank,
+                               lineBounds: lineBounds)
                     } else {
                         // Base 0.52: generic link — appears in many non-sensitive contexts.
                         record(.link, baseScore: 0.52, ocrConfidence: ocrConfidence,
-                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                               candidateRank: line.rank,
+                               lineBounds: lineBounds)
                     }
                 default:
                     break
@@ -553,7 +580,10 @@ struct PIIScanner {
                        subtype: rule.subtype,
                        baseScore: effectiveBaseScore,
                        ocrConfidence: min(labelLine.confidence, value.line.confidence),
-                       instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                       instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0),
+                       candidateRank: value.line.rank,
+                       lineBounds: value.line.lineBounds,
+                       spatialEvidence: true)
             }
         }
 
@@ -570,6 +600,99 @@ struct PIIScanner {
         case valid
         case invalid
         case unknown
+    }
+
+    /// Computes the final visible confidence for a detected instance.
+    ///
+    /// The scanner still starts from each rule's calibrated base score, but this
+    /// layer keeps the result from feeling static by folding in evidence that
+    /// changes from image to image: OCR confidence, whether the match came from
+    /// an alternate OCR candidate, how much usable geometry Vision gave us, and
+    /// whether the value was found through nearby label/value context.
+    nonisolated static func confidenceScore(
+        type: PIIType,
+        subtype: PIISubtype?,
+        baseScore: Double,
+        ocrConfidence: Float,
+        candidateRank: Int,
+        snippet: String,
+        boundingBox: CGRect,
+        lineBounds: CGRect,
+        spatialEvidence: Bool = false
+    ) -> Double {
+        var score = baseScore * Double(ocrConfidence)
+        score *= candidateRankFactor(candidateRank)
+        score *= geometryFactor(for: boundingBox, lineBounds: lineBounds)
+        score *= ambiguityFactor(type: type, subtype: subtype, snippet: snippet)
+        if spatialEvidence {
+            score *= 1.06
+        }
+        return min(0.99, max(0.05, score))
+    }
+
+    nonisolated private static func candidateRankFactor(_ rank: Int) -> Double {
+        switch rank {
+        case 0: return 1.0
+        case 1: return 0.93
+        case 2: return 0.87
+        case 3: return 0.81
+        default: return 0.75
+        }
+    }
+
+    nonisolated private static func geometryFactor(for boundingBox: CGRect, lineBounds: CGRect) -> Double {
+        guard boundingBox.width > 0, boundingBox.height > 0 else { return 0.78 }
+
+        var factor = 1.0
+        let area = boundingBox.width * boundingBox.height
+        if boundingBox.height < 0.010 || boundingBox.width < 0.020 {
+            factor *= 0.88
+        } else if boundingBox.height >= 0.024 && area >= 0.002 {
+            factor *= 1.03
+        }
+
+        let lineArea = max(lineBounds.width * lineBounds.height, 0.0001)
+        let coverage = area / lineArea
+        if coverage < 0.025 {
+            factor *= 0.94
+        } else if coverage > 0.30 {
+            factor *= 1.02
+        }
+
+        return min(1.05, max(0.78, factor))
+    }
+
+    nonisolated private static func ambiguityFactor(
+        type: PIIType,
+        subtype: PIISubtype?,
+        snippet: String
+    ) -> Double {
+        let trimmed = snippet.trimmingCharacters(in: .whitespacesAndNewlines)
+        let digitCount = trimmed.filter(\.isNumber).count
+        let alphanumericCount = trimmed.filter { $0.isLetter || $0.isNumber }.count
+
+        switch type {
+        case .dateOfBirth:
+            return 0.96
+        case .licensePlate:
+            return alphanumericCount < 5 ? 0.86 : 1.0
+        case .link:
+            return trimmed.localizedCaseInsensitiveContains("://") ? 1.02 : 0.94
+        case .governmentID:
+            if subtype == nil && digitCount <= 9 {
+                return 0.92
+            }
+            return 1.0
+        case .creditCard:
+            return passesLuhn(digits: trimmed) ? 1.02 : 0.96
+        case .phoneNumber:
+            if isLikelyCreditCardNumber(trimmed) {
+                return 0.32
+            }
+            return digitCount < 10 ? 0.92 : 1.0
+        default:
+            return 1.0
+        }
     }
 
     nonisolated private static func readingOrder(_ lhs: OCRLine, _ rhs: OCRLine) -> Bool {
@@ -982,6 +1105,49 @@ struct PIIScanner {
         return updated
     }
 
+    nonisolated static func resolveCreditCardPhoneConflicts(_ results: [DetectionResult]) -> [DetectionResult] {
+        guard
+            let cardResult = results.first(where: { $0.type == .creditCard }),
+            let phoneIndex = results.firstIndex(where: { $0.type == .phoneNumber })
+        else {
+            return results
+        }
+
+        var resolved = results
+        var phoneResult = resolved[phoneIndex]
+        let adjustedPhoneInstances = phoneResult.instances.compactMap { phone -> DetectedInstance? in
+            let sameDigitsAsCard = cardResult.instances.contains { card in
+                Self.instancesRepresentSameDigits(phone, card)
+            }
+            if sameDigitsAsCard {
+                return nil
+            }
+
+            let overlapsCard = cardResult.instances.contains { card in
+                Self.representsSameRegion(phone.boundingBox, card.boundingBox)
+            }
+            guard overlapsCard else { return phone }
+
+            let dampenedScore = min(phone.score, max(0.20, phone.score * 0.35))
+            guard dampenedScore >= 0.30 else { return nil }
+            return DetectedInstance(
+                snippet: phone.snippet,
+                subtype: phone.subtype,
+                boundingBox: phone.boundingBox,
+                score: dampenedScore
+            )
+        }
+
+        if adjustedPhoneInstances.isEmpty {
+            resolved.remove(at: phoneIndex)
+        } else {
+            phoneResult.instances = adjustedPhoneInstances
+            phoneResult.score = adjustedPhoneInstances.map(\.score).max() ?? phoneResult.score
+            resolved[phoneIndex] = phoneResult
+        }
+        return resolved
+    }
+
     nonisolated static func inferDocumentContexts(
         results: [DetectionResult],
         documentRects: [CGRect],
@@ -1123,6 +1289,43 @@ struct PIIScanner {
         let width = max(rect.width, 0.0001)
         let height = max(rect.height, 0.0001)
         return max(width, height) / min(width, height)
+    }
+
+    nonisolated private static func instancesRepresentSameDigits(
+        _ lhs: DetectedInstance,
+        _ rhs: DetectedInstance
+    ) -> Bool {
+        let lhsDigits = digitsOnly(lhs.snippet)
+        let rhsDigits = digitsOnly(rhs.snippet)
+        guard !lhsDigits.isEmpty, !rhsDigits.isEmpty else { return false }
+        return lhsDigits == rhsDigits || lhsDigits.contains(rhsDigits) || rhsDigits.contains(lhsDigits)
+    }
+
+    nonisolated private static func isLikelyCreditCardNumber(_ value: String) -> Bool {
+        let digits = digitsOnly(value)
+        guard (13...19).contains(digits.count),
+              passesLuhn(digits: digits),
+              hasCreditCardIssuerPrefix(digits)
+        else {
+            return false
+        }
+        return true
+    }
+
+    nonisolated private static func hasCreditCardIssuerPrefix(_ digits: String) -> Bool {
+        guard let first = digits.first?.wholeNumberValue else { return false }
+        if first == 4 { return true }
+
+        let prefix2 = Int(String(digits.prefix(2))) ?? -1
+        if (34...37).contains(prefix2) || (51...55).contains(prefix2) || prefix2 == 65 {
+            return true
+        }
+
+        let prefix4 = Int(String(digits.prefix(4))) ?? -1
+        if prefix4 == 6011 { return true }
+
+        let prefix6 = Int(String(digits.prefix(6))) ?? -1
+        return (222100...272099).contains(prefix6)
     }
 
     // MARK: - Luhn validation
