@@ -50,6 +50,7 @@ struct RedactionRegion: Identifiable, Hashable {
     var rect: CGRect
     var source: RedactionRegionSource
     var type: PIIType?
+    var subtype: PIISubtype?
     var score: Double?
     var snippet: String?
     var isEnabled: Bool
@@ -59,7 +60,7 @@ struct RedactionRegion: Identifiable, Hashable {
     var color: RedactionColor = .black
 
     var displayName: String {
-        type?.description ?? "Custom Redaction"
+        subtype?.displayName ?? type?.description ?? "Custom Redaction"
     }
 
     var confidence: ConfidenceLevel? {
@@ -86,6 +87,7 @@ struct RedactionRegion: Identifiable, Hashable {
             rect: Self.clamped(instance.boundingBox),
             source: .detected,
             type: result.type,
+            subtype: instance.subtype,
             score: instance.score,
             snippet: instance.snippet,
             isEnabled: isEnabled
@@ -98,6 +100,7 @@ struct RedactionRegion: Identifiable, Hashable {
             rect: Self.clamped(rect),
             source: .custom,
             type: nil,
+            subtype: nil,
             score: nil,
             snippet: nil,
             isEnabled: true

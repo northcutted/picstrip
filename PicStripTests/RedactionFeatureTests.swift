@@ -41,6 +41,28 @@ final class RedactionFeatureTests: XCTestCase {
         XCTAssertTrue(viewModel.enabledRedactionRegions.isEmpty)
     }
 
+    func testDetectedRedactionRegionUsesSubtypeDisplayName() async {
+        let viewModel = ScrubberViewModel()
+        let passport = DetectionResult(
+            type: .governmentID,
+            score: 0.90,
+            instances: [
+                DetectedInstance(
+                    snippet: "123456789",
+                    subtype: .usPassport,
+                    boundingBox: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.1),
+                    score: 0.90
+                )
+            ]
+        )
+
+        viewModel.detectedPII = [passport]
+        viewModel.typesToRedact = [.governmentID]
+
+        XCTAssertEqual(viewModel.redactionRegions.first?.subtype, .usPassport)
+        XCTAssertEqual(viewModel.redactionRegions.first?.displayName, PIISubtype.usPassport.displayName)
+    }
+
     func testRedactionRegionMoveAndResizeClampToImageBounds() {
         let original = CGRect(x: 0.9, y: 0.9, width: 0.3, height: 0.3)
         let clamped = RedactionRegion.clamped(original)

@@ -2114,6 +2114,9 @@
         }
       }
     },
+    "Aadhaar / My Number" : {
+
+    },
     "ABA Routing Number" : {
 
     },
@@ -3583,10 +3586,16 @@
     "Both scores are shown together for every detection so you can see exactly what was found, how certain we are, and how serious exposure would be." : {
 
     },
+    "Brazilian CPF" : {
+
+    },
     "Browse Files" : {
 
     },
     "Browse files to select an image" : {
+
+    },
+    "California Driver License" : {
 
     },
     "Camera settings, the exact date and time the photo was taken, and your device model. The timestamp can expose your daily routine; the device model identifies your phone or camera." : {
@@ -3688,6 +3697,9 @@
           }
         }
       }
+    },
+    "Canadian SIN" : {
+
     },
     "Cancel" : {
       "localizations" : {
@@ -4264,6 +4276,9 @@
           }
         }
       }
+    },
+    "Chinese Resident ID" : {
+
     },
     "Clean and save a photo to build an aggregate privacy summary." : {
       "extractionState" : "stale",
@@ -5923,6 +5938,12 @@
           }
         }
       }
+    },
+    "Credit Card" : {
+
+    },
+    "Credit card detected" : {
+
     },
     "Credit Card Number" : {
       "localizations" : {
@@ -8445,6 +8466,12 @@
         }
       }
     },
+    "Driver License" : {
+
+    },
+    "Driver license detected" : {
+
+    },
     "Edit Redactions" : {
       "extractionState" : "manual",
       "localizations" : {
@@ -9538,6 +9565,12 @@
           }
         }
       }
+    },
+    "French INSEE" : {
+
+    },
+    "German Tax ID" : {
+
     },
     "GitHub Token" : {
       "localizations" : {
@@ -10817,6 +10850,12 @@
         }
       }
     },
+    "Identity Document" : {
+
+    },
+    "Identity document detected" : {
+
+    },
     "Identity details can support impersonation, account recovery abuse, or public-record matching." : {
       "extractionState" : "stale",
       "localizations" : {
@@ -10918,6 +10957,9 @@
         }
       }
     },
+    "Illinois Driver License" : {
+
+    },
     "Image is already clean" : {
       "localizations" : {
         "ar" : {
@@ -11013,6 +11055,9 @@
       }
     },
     "Image Prepared" : {
+
+    },
+    "Indian PAN" : {
 
     },
     "IP Address" : {
@@ -11215,6 +11260,9 @@
           }
         }
       }
+    },
+    "Italian Codice Fiscale" : {
+
     },
     "JPEG" : {
       "localizations" : {
@@ -12414,6 +12462,9 @@
         }
       }
     },
+    "Massachusetts Driver License" : {
+
+    },
     "Match Confidence" : {
 
     },
@@ -12704,6 +12755,9 @@
           }
         }
       }
+    },
+    "Medicare MBI" : {
+
     },
     "Medium" : {
       "localizations" : {
@@ -13090,6 +13144,9 @@
         }
       }
     },
+    "Mexican CURP" : {
+
+    },
     "MIT License" : {
       "localizations" : {
         "ar" : {
@@ -13383,6 +13440,9 @@
           }
         }
       }
+    },
+    "New Jersey Driver License" : {
+
     },
     "No Analytics or Tracking" : {
       "localizations" : {
@@ -15496,6 +15556,12 @@
         }
       }
     },
+    "Passport" : {
+
+    },
+    "Passport detected" : {
+
+    },
     "Physical Credential / Password" : {
       "localizations" : {
         "ar" : {
@@ -16561,6 +16627,9 @@
           }
         }
       }
+    },
+    "Polish PESEL" : {
+
     },
     "Preview" : {
       "localizations" : {
@@ -21482,6 +21551,15 @@
         }
       }
     },
+    "South Korean RRN" : {
+
+    },
+    "Spanish DNI" : {
+
+    },
+    "Spanish NIE" : {
+
+    },
     "Standard file format header required for display. Does not contain personal data." : {
       "localizations" : {
         "ar" : {
@@ -23031,6 +23109,18 @@
         }
       }
     },
+    "US Driver License" : {
+
+    },
+    "US EIN" : {
+
+    },
+    "US ITIN" : {
+
+    },
+    "US Passport" : {
+
+    },
     "Vehicle Identification Number" : {
 
     },
@@ -23706,6 +23796,9 @@
           }
         }
       }
+    },
+    "Wisconsin Driver License" : {
+
     },
     "Yellow" : {
       "localizations" : {

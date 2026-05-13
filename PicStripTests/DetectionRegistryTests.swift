@@ -18,6 +18,14 @@ final class DetectionRegistryTests: XCTestCase {
         }
     }
 
+    private func firstRule(_ type: PIIType, subtype: PIISubtype? = nil) -> DetectionRule {
+        guard let rule = rules(for: type).first(where: { $0.subtype == subtype }) else {
+            XCTFail("Missing rule for \(type.rawValue) / \(subtype?.rawValue ?? "none")")
+            return rules(for: type).first!
+        }
+        return rule
+    }
+
     // MARK: - AWS Access Key
 
     func testAWSAccessKeyRegex() {
@@ -138,6 +146,38 @@ final class DetectionRegistryTests: XCTestCase {
                       "Should detect a German IBAN")
         XCTAssertFalse(matches(.iban, in: "123456789"),
                        "Should not match a plain number as IBAN")
+    }
+
+    func testChecksumAdjustedScores() {
+        let ibanRule = firstRule(.iban)
+        XCTAssertGreaterThan(
+            PIIScanner.adjustedBaseScore(for: ibanRule, snippet: "GB82WEST12345698765432"),
+            ibanRule.baseScore,
+            "Valid IBAN checksums should boost confidence")
+        XCTAssertLessThan(
+            PIIScanner.adjustedBaseScore(for: ibanRule, snippet: "GB82WEST12345698765433"),
+            ibanRule.baseScore,
+            "Invalid IBAN checksums should lower confidence without suppressing the match")
+
+        let abaRule = firstRule(.abaRoutingNumber)
+        XCTAssertGreaterThan(
+            PIIScanner.adjustedBaseScore(for: abaRule, snippet: "021000021"),
+            abaRule.baseScore,
+            "Valid ABA routing checksums should boost confidence")
+        XCTAssertLessThan(
+            PIIScanner.adjustedBaseScore(for: abaRule, snippet: "021000022"),
+            abaRule.baseScore,
+            "Invalid ABA routing checksums should lower confidence")
+
+        let cpfRule = firstRule(.governmentID, subtype: .brazilianCPF)
+        XCTAssertGreaterThan(
+            PIIScanner.adjustedBaseScore(for: cpfRule, snippet: "529.982.247-25"),
+            cpfRule.baseScore,
+            "Valid CPF check digits should boost confidence")
+        XCTAssertLessThan(
+            PIIScanner.adjustedBaseScore(for: cpfRule, snippet: "529.982.247-26"),
+            cpfRule.baseScore,
+            "Invalid CPF check digits should lower confidence")
     }
 
     // MARK: - Registry completeness
@@ -320,6 +360,38 @@ final class DetectionRegistryTests: XCTestCase {
         // German Steuer-ID — 2-3-3-3 with spaces
         XCTAssertTrue(matches(.governmentID, in: "86 095 742 719"),
                       "Should detect a German Steuer-ID")
+    }
+
+    func testGovernmentIDRulesCarrySubtypes() {
+        let requiredSubtypes: Set<PIISubtype> = [
+            .brazilianCPF,
+            .italianCodiceFiscale,
+            .spanishNIE,
+            .indianPAN,
+            .frenchINSEE,
+            .spanishDNI,
+            .aadhaarOrMyNumber,
+            .canadianSIN,
+            .germanTaxID,
+            .southKoreanRRN,
+            .chineseResidentID,
+            .polishPESEL,
+            .mexicanCURP,
+            .usITIN,
+            .usEIN,
+            .medicareMBI,
+            .usPassport,
+            .usDriversLicenseCalifornia,
+            .usDriversLicenseMassachusetts,
+            .usDriversLicenseIllinois,
+            .usDriversLicenseLetter12Digit,
+            .usDriversLicenseWisconsin,
+            .usDriversLicenseNewJersey
+        ]
+        let actualSubtypes = Set(rules(for: .governmentID).compactMap(\.subtype))
+        XCTAssertTrue(
+            requiredSubtypes.isSubset(of: actualSubtypes),
+            "Government ID rules should preserve subtype evidence for UI rows and scoring")
     }
 
     // MARK: - Date of Birth (keyword-anchored)

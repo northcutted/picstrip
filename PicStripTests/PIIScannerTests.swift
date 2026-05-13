@@ -376,4 +376,105 @@ final class PIIScannerTests: XCTestCase {
         XCTAssertEqual(boosted.first?.instances.first?.score, 0.80,
                        "Empty document-rects list must leave scores untouched")
     }
+
+    // MARK: - Document context
+
+    func testApplyDocumentContextAddsWholeCreditCardAndDampensIncompatibleIDs() {
+        let cardRect = CGRect(x: 0.1, y: 0.25, width: 0.8, height: 0.5)
+        let cardNumber = DetectedInstance(
+            snippet: "4111 1111 1111 1111",
+            boundingBox: CGRect(x: 0.22, y: 0.48, width: 0.45, height: 0.06),
+            score: 0.88
+        )
+        let ambiguousID = DetectedInstance(
+            snippet: "123456789",
+            boundingBox: CGRect(x: 0.2, y: 0.35, width: 0.22, height: 0.05),
+            score: 0.82
+        )
+        let results = [
+            DetectionResult(type: .creditCard, score: 0.88, instances: [cardNumber]),
+            DetectionResult(type: .governmentID, score: 0.82, instances: [ambiguousID])
+        ]
+        let lines = [
+            PIIScanner.RecognizedLineContext(
+                text: "VISA",
+                boundingBox: CGRect(x: 0.18, y: 0.30, width: 0.12, height: 0.05),
+                confidence: 0.96
+            ),
+            PIIScanner.RecognizedLineContext(
+                text: "VALID THRU 12/29",
+                boundingBox: CGRect(x: 0.22, y: 0.62, width: 0.24, height: 0.05),
+                confidence: 0.94
+            )
+        ]
+
+        let contextual = PIIScanner.applyDocumentContext(
+            results: results,
+            documentRects: [cardRect],
+            faceRects: [],
+            barcodeContexts: [],
+            textLines: lines
+        )
+
+        let creditCard = contextual.first { $0.type == .creditCard }
+        XCTAssertTrue(
+            creditCard?.instances.contains(where: { $0.subtype == .creditCardDocument && $0.boundingBox == cardRect }) ?? false,
+            "A strong credit-card context should add a whole-card redaction region")
+        XCTAssertGreaterThan(
+            creditCard?.instances.first(where: { $0.snippet == cardNumber.snippet })?.score ?? 0,
+            cardNumber.score,
+            "Card-number evidence inside a credit-card context should be boosted")
+
+        let dampenedID = contextual
+            .first { $0.type == .governmentID }?
+            .instances
+            .first { $0.snippet == ambiguousID.snippet }
+        XCTAssertLessThan(dampenedID?.score ?? 1, ambiguousID.score,
+                          "Known credit-card context should dampen incompatible ID-like false positives inside the card")
+    }
+
+    func testInferDocumentContextsDetectsDriversLicenseFromFacePDF417AndLabels() {
+        let cardRect = CGRect(x: 0.08, y: 0.22, width: 0.84, height: 0.52)
+        let results = [
+            DetectionResult(
+                type: .dateOfBirth,
+                score: 0.78,
+                instances: [
+                    DetectedInstance(
+                        snippet: "01/02/1980",
+                        boundingBox: CGRect(x: 0.45, y: 0.45, width: 0.18, height: 0.05),
+                        score: 0.78
+                    )
+                ]
+            )
+        ]
+        let lines = [
+            PIIScanner.RecognizedLineContext(
+                text: "DRIVER LICENSE",
+                boundingBox: CGRect(x: 0.36, y: 0.27, width: 0.28, height: 0.05),
+                confidence: 0.95
+            ),
+            PIIScanner.RecognizedLineContext(
+                text: "DOB 01/02/1980",
+                boundingBox: CGRect(x: 0.42, y: 0.45, width: 0.24, height: 0.05),
+                confidence: 0.93
+            )
+        ]
+        let barcode = PIIScanner.BarcodeContext(
+            boundingBox: CGRect(x: 0.18, y: 0.62, width: 0.58, height: 0.08),
+            symbology: "PDF417",
+            payload: nil
+        )
+
+        let contexts = PIIScanner.inferDocumentContexts(
+            results: results,
+            documentRects: [cardRect],
+            faceRects: [CGRect(x: 0.16, y: 0.34, width: 0.18, height: 0.22)],
+            barcodeContexts: [barcode],
+            textLines: lines
+        )
+
+        XCTAssertEqual(contexts.first?.kind, .driversLicense)
+        XCTAssertEqual(contexts.first?.boundingBox, cardRect)
+    }
 }

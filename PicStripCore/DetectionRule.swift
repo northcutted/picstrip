@@ -15,6 +15,10 @@ import Foundation
 /// registry initialisation time and reused across every scan.
 struct DetectionRule {
     let type: PIIType
+    /// Optional subtype used to distinguish formats that share one broad
+    /// user-facing category, such as the many national IDs grouped under
+    /// `PIIType.governmentID`.
+    let subtype: PIISubtype?
     let regex: NSRegularExpression
     /// Pattern specificity weight, independent of OCR quality. Multiply by
     /// the Vision OCR confidence to get the final instance score.
@@ -36,10 +40,15 @@ enum DetectionRegistry {
     /// Builds the rule list using an explicit local helper to avoid dot-syntax
     /// ambiguity inside array literals.
     private static func build() -> [DetectionRule] {
-        func rule(_ type: PIIType, _ pattern: String, _ baseScore: Double) -> DetectionRule {
+        func rule(
+            _ type: PIIType,
+            _ pattern: String,
+            _ baseScore: Double,
+            subtype: PIISubtype? = nil
+        ) -> DetectionRule {
             do {
                 let regex = try NSRegularExpression(pattern: pattern, options: [])
-                return DetectionRule(type: type, regex: regex, baseScore: baseScore)
+                return DetectionRule(type: type, subtype: subtype, regex: regex, baseScore: baseScore)
             } catch {
                 fatalError("Invalid detection regex for \(type): \(error)")
             }
@@ -100,50 +109,59 @@ enum DetectionRegistry {
             // Brazilian CPF — 3.3.3-2 with mandatory dots and dash; very specific.
             rule(.governmentID,
                  #"\b\d{3}\.\d{3}\.\d{3}\-\d{2}\b"#,
-                 0.93),
+                 0.93,
+                 subtype: .brazilianCPF),
 
             // Italian Codice Fiscale — 6 letters + 2 digits + month letter + 2
             // digits + municipality letter + 3 digits + check letter.
             rule(.governmentID,
                  #"\b[A-Z]{6}\d{2}[A-EHLMPRST]\d{2}[A-Z]\d{3}[A-Z]\b"#,
-                 0.95),
+                 0.95,
+                 subtype: .italianCodiceFiscale),
 
             // Spanish NIE — X/Y/Z + 7 digits + check letter.
             rule(.governmentID,
                  #"\b[XYZ]\d{7}[A-Z]\b"#,
-                 0.88),
+                 0.88,
+                 subtype: .spanishNIE),
 
             // Indian PAN — 5 letters + 4 digits + check letter.
             rule(.governmentID,
                  #"\b[A-Z]{5}\d{4}[A-Z]\b"#,
-                 0.87),
+                 0.87,
+                 subtype: .indianPAN),
 
             // French INSEE social security number — starts with 1 or 2,
             // 13 remaining digits, optional spaces between groups.
             rule(.governmentID,
                  #"\b[12][ ]?\d{2}[ ]?\d{2}[ ]?\d{2}[ ]?\d{3}[ ]?\d{3}[ ]?\d{2}\b"#,
-                 0.83),
+                 0.83,
+                 subtype: .frenchINSEE),
 
             // Spanish DNI — 8 digits + check letter.
             rule(.governmentID,
                  #"\b\d{8}[A-Z]\b"#,
-                 0.82),
+                 0.82,
+                 subtype: .spanishDNI),
 
             // Indian Aadhaar / Japanese My Number — 4-4-4 space-separated
             // (both are 12-digit IDs displayed in this grouping).
             rule(.governmentID,
                  #"\b\d{4} \d{4} \d{4}\b"#,
-                 0.80),
+                 0.80,
+                 subtype: .aadhaarOrMyNumber),
 
             // Canadian SIN — 3-3-3 with space or hyphen separators.
             rule(.governmentID,
                  #"\b\d{3}[ \-]\d{3}[ \-]\d{3}\b"#,
-                 0.75),
+                 0.75,
+                 subtype: .canadianSIN),
 
             // German Steuer-ID — 11 digits in 2-3-3-3 space-separated grouping.
             rule(.governmentID,
                  #"\b\d{2} \d{3} \d{3} \d{3}\b"#,
-                 0.75),
+                 0.75,
+                 subtype: .germanTaxID),
 
             // South Korean RRN — 6 digits + dash + [1-4] + 6 digits.
             // The first digit after the dash encodes gender + century (1/2 = born
@@ -153,7 +171,8 @@ enum DetectionRegistry {
             // Base 0.92 — dash placement + the [1-4] gate is very specific.
             rule(.governmentID,
                  #"\b\d{6}\-[1-4]\d{6}\b"#,
-                 0.92),
+                 0.92,
+                 subtype: .southKoreanRRN),
 
             // Chinese Resident Identity Card — 18 chars: 6-digit address code,
             // 8-digit YYYYMMDD birthdate, 3-digit sequence, 1-char checksum
@@ -162,7 +181,8 @@ enum DetectionRegistry {
             // Base 0.90.
             rule(.governmentID,
                  #"\b\d{6}(?:19|20)\d{2}(?:0[1-9]|1[0-2])(?:0[1-9]|[12]\d|3[01])\d{3}[\dX]\b"#,
-                 0.90),
+                 0.90,
+                 subtype: .chineseResidentID),
 
             // Polish PESEL — 11 digits; positions 3-4 encode month (with century
             // offset codes 80-92 for non-1900s, so the second digit is 0-9).
@@ -172,7 +192,8 @@ enum DetectionRegistry {
             // Base 0.78 — structure helps but 11-digit strings are common.
             rule(.governmentID,
                  #"\b\d{2}[0-3]\d[0-3]\d\d{5}\b"#,
-                 0.78),
+                 0.78,
+                 subtype: .polishPESEL),
 
             // Mexican CURP — 18 chars: 4 letters (name initials) + 6 digits
             // (YYMMDD birth) + H/M (gender) + 5 letters (state + name codes) +
@@ -181,7 +202,8 @@ enum DetectionRegistry {
             // other strings have this exact shape.
             rule(.governmentID,
                  #"\b[A-Z]{4}\d{6}[HM][A-Z]{5}[A-Z0-9]\d\b"#,
-                 0.95),
+                 0.95,
+                 subtype: .mexicanCURP),
 
             // ── United States: Federal IDs ───────────────────────────────────
             //
@@ -192,7 +214,8 @@ enum DetectionRegistry {
             // Base 0.92 — IRS allocation rules make this very specific.
             rule(.governmentID,
                  #"\b9\d{2}[\ \-][7-9]\d[\ \-]\d{4}\b"#,
-                 0.92),
+                 0.92,
+                 subtype: .usITIN),
 
             // US EIN (Employer Identification Number) — 2 digits + dash + 7 digits.
             // The IRS issues EINs with a mandatory dash after the prefix two
@@ -201,7 +224,8 @@ enum DetectionRegistry {
             // values, but the exact 2-7 split is uncommon outside payroll docs.
             rule(.governmentID,
                  #"\b\d{2}\-\d{7}\b"#,
-                 0.78),
+                 0.78,
+                 subtype: .usEIN),
 
             // US Medicare Beneficiary ID (MBI) — 11 chars with a strict per-
             // position character mask (per CMS spec):
@@ -219,7 +243,8 @@ enum DetectionRegistry {
             // satisfy this exact character mask.
             rule(.governmentID,
                  #"\b[1-9][A-Z][A-Z0-9]\d\-?[A-Z][A-Z0-9]\d\-?[A-Z][A-Z]\d{2}\b"#,
-                 0.95),
+                 0.95,
+                 subtype: .medicareMBI),
 
             // US Passport — keyword-anchored.  Modern US passport books carry a
             // 9-character number (often all digits; older books used 1 letter +
@@ -229,7 +254,8 @@ enum DetectionRegistry {
             // Base 0.85 — keyword + value-shape combination.
             rule(.governmentID,
                  #"(?i)passport\s*(?:#|num(?:ber)?|no\.?)?\s*:?\s*([A-Z]?\d{8,9})\b"#,
-                 0.85),
+                 0.85,
+                 subtype: .usPassport),
 
             // ── United States: State Driver's Licenses ───────────────────────
             //
@@ -244,12 +270,14 @@ enum DetectionRegistry {
             // California — 1 letter + 7 digits (e.g. A1234567).
             rule(.governmentID,
                  #"\b[A-Z]\d{7}\b"#,
-                 0.70),
+                 0.70,
+                 subtype: .usDriversLicenseCalifornia),
 
             // Massachusetts — S + 8 digits.  The S-prefix is distinctive.
             rule(.governmentID,
                  #"\bS\d{8}\b"#,
-                 0.78),
+                 0.78,
+                 subtype: .usDriversLicenseMassachusetts),
 
             // Illinois — 1 letter + 11 digits (12 chars).  Cards display the
             // value in 4-4-4 groups separated by dashes or spaces
@@ -257,22 +285,26 @@ enum DetectionRegistry {
             // forms must match.
             rule(.governmentID,
                  #"\b[A-Z]\d{3}[\ \-]?\d{4}[\ \-]?\d{4}\b"#,
-                 0.80),
+                 0.80,
+                 subtype: .usDriversLicenseIllinois),
 
             // Florida / Maryland / Michigan / Minnesota — 1 letter + 12 digits.
             rule(.governmentID,
                  #"\b[A-Z]\d{12}\b"#,
-                 0.82),
+                 0.82,
+                 subtype: .usDriversLicenseLetter12Digit),
 
             // Wisconsin — 1 letter + 13 digits (14 chars).
             rule(.governmentID,
                  #"\b[A-Z]\d{13}\b"#,
-                 0.84),
+                 0.84,
+                 subtype: .usDriversLicenseWisconsin),
 
             // New Jersey — 1 letter + 14 digits (15 chars).
             rule(.governmentID,
                  #"\b[A-Z]\d{14}\b"#,
-                 0.86),
+                 0.86,
+                 subtype: .usDriversLicenseNewJersey),
 
             // MARK: Vehicle
             // VIN — exactly 17 chars from A-H, J-N, P-R, S-Z, 0-9 (I/O/Q excluded
