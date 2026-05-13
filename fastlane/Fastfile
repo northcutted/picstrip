@@ -9,8 +9,10 @@ platform :ios do
   PROJECT        = "PicStrip.xcodeproj"
   OUTPUT_DIR     = "build"
   IPA_NAME       = "PicStrip.ipa"
-  APP_STORE_PRIMARY_CATEGORY = "Photo & Video"
-  APP_STORE_SECONDARY_CATEGORY = "Utilities"
+  # App Store Connect category IDs. Display names like "Photo & Video" are not
+  # valid relationship IDs when Fastlane patches app info categories.
+  APP_STORE_PRIMARY_CATEGORY = "PHOTO_AND_VIDEO"
+  APP_STORE_SECONDARY_CATEGORY = "UTILITIES"
   SCREENSHOT_DEVICES = [
     "iPhone 17 Pro Max",
     "iPad Pro 13-inch (M5)"
