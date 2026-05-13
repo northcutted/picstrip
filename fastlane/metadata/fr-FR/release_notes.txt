@@ -1,6 +1,2 @@
-Features
-• add ability to detect credit cards, and some ids
-• enhance confidence scoring and conflict resolution for credit card and phone number detections
-• enhance PII detection with keyword-anchored date of birth and international government ID patterns
 Bug Fixes
-• ci: fix linting errors
+• update release notes and metadata for enhanced credit card and PII detection features

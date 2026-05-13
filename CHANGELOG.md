@@ -1,3 +1,10 @@
+## [1.6.1](https://github.com/northcutted/picstrip/compare/v1.6.0...v1.6.1) (2026-05-13)
+
+
+### Bug Fixes
+
+* update release notes and metadata for enhanced credit card and PII detection features ([5dbe17f](https://github.com/northcutted/picstrip/commit/5dbe17f4a9408a0e237bc7cba02e9852580afb00))
+
 ## [1.6.0](https://github.com/northcutted/picstrip/compare/v1.5.4...v1.6.0) (2026-05-13)
 
 
