@@ -600,7 +600,11 @@ jobs:
     permissions:
       actions: read
       id-token: write
-      contents: read
+      # The reusable SLSA workflow declares an internal upload-assets job with
+      # contents: write even when upload-assets is false. The caller must grant
+      # the maximum permission any nested job requests, or GitHub rejects the
+      # workflow at parse time.
+      contents: write
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: ${{ needs.release-evidence.outputs.base64_subjects }}
