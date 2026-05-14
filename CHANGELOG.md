@@ -1,3 +1,11 @@
+## [1.6.3](https://github.com/northcutted/picstrip/compare/v1.6.2...v1.6.3) (2026-05-14)
+
+
+### Bug Fixes
+
+* **ci:** disable concurrent tests to see if that fixes it ([5f061bc](https://github.com/northcutted/picstrip/commit/5f061bc24616864f246be6b6d9996d63c7499ae4))
+* update appstore metadata ([7e57bd5](https://github.com/northcutted/picstrip/commit/7e57bd5d261c3ea6aebcb92ea953bb01ab94257c))
+
 ## [1.6.2](https://github.com/northcutted/picstrip/compare/v1.6.1...v1.6.2) (2026-05-13)
 
 

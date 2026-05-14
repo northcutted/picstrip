@@ -1,2 +1,3 @@
 Bug Fixes
-• ci: fix app store category
+• ci: disable concurrent tests to see if that fixes it
+• update appstore metadata
