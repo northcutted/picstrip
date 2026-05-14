@@ -141,6 +141,7 @@ platform :ios do
       scheme:      SCHEME,
       device:      "iPhone 17",     # available on macos-26 / Xcode 26 runners
       clean:       true,
+      disable_concurrent_testing: true,
       output_directory:  "build/test_output",
       output_files: "report.junit",
       output_types: "junit",
