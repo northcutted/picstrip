@@ -28,6 +28,7 @@ IMPORT FROM ANYWHERE
 
 PRIVACY BY DESIGN
 • 100% on-device - nothing leaves your phone
+• Face detection stays on-device; PicStrip does not collect, store, transmit, or share face data
 • No account, no login, no tracking
 • No ads, no in-app purchases, no subscriptions
 • Open source - every line of code is auditable on GitHub

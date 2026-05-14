@@ -28,6 +28,7 @@ IMPORT ZEWSZĄD
 
 PRYWATNOŚĆ Z ZAŁOŻENIA
 • 100% na urządzeniu — nic nie opuszcza Twojego telefonu
+• Wykrywanie twarzy pozostaje na urządzeniu; PicStrip nie zbiera, nie przechowuje, nie przesyła ani nie udostępnia danych twarzy
 • Brak konta, brak logowania, brak śledzenia
 • Bez reklam, bez zakupów w aplikacji, bez subskrypcji
 • Open source — każda linia kodu jest audytowalna na GitHubie

@@ -111,6 +111,14 @@ Upload metadata + screenshots + submit the processed TestFlight build for App Re
 
 Push metadata + screenshots to a pending App Store version WITHOUT submitting for review. Use this to verify Fastlane metadata automation in App Store Connect before a real release. Requires MARKETING_VERSION env var (e.g. '1.2.0'). BUILD_NUMBER is optional — omit it to let deliver attach the latest processed TestFlight build for that version.
 
+### ios metadata_only
+
+```sh
+[bundle exec] fastlane ios metadata_only
+```
+
+Push metadata/review information only to an existing App Store version/build. Does not rebuild, upload a binary, or replace screenshots. Defaults to the current editable App Store version and its selected build. Set SUBMIT_FOR_REVIEW=true only when intentionally resubmitting.
+
 ### ios accessibility
 
 ```sh

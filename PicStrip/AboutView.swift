@@ -365,7 +365,13 @@ struct AboutView: View {
                         icon: "lock.fill",
                         color: .green,
                         title: "100% On-Device Processing",
-                        detail: "Your photos are never uploaded to any server. All scanning, redaction, and metadata stripping happens entirely on your iPhone."
+                        detail: "Your photos are never uploaded to any server. All scanning, redaction, and metadata stripping happens entirely on your iPhone or iPad."
+                    )
+                    privacyRow(
+                        icon: "face.dashed",
+                        color: .pink,
+                        title: "Face Data Is Not Collected",
+                        detail: "Face detection uses temporary on-device rectangles only. PicStrip does not identify people or store, transmit, or share face data."
                     )
                     privacyRow(
                         icon: "wifi.slash",

@@ -1,1 +1,21 @@
 No login or demo credentials required. The app works entirely with photos from the device library. Select any photo to begin.
+
+Face data information:
+
+- What face data does the app collect?
+  PicStrip does not collect face data. When visual redaction is enabled, PicStrip uses Apple's on-device Vision face-rectangle detector to find where faces appear in the current photo. The app uses only temporary bounding rectangles for the current photo. It does not collect face images, faceprints, biometric templates, face embeddings, landmarks, identity, names, or recognition profiles.
+
+- What are the planned uses?
+  The temporary face bounding rectangles are used only to show editable redaction boxes and, if the user chooses to save/share the cleaned image, to burn those redactions into the output image. The app may also use the presence of a face as one local signal when ranking whether a document-like photo may contain sensitive identity content. PicStrip does not identify people, compare faces, track people, authenticate users, personalize content, train models, or use face data for analytics or advertising.
+
+- Will face data be shared with third parties? Where is it stored?
+  No face data is shared with third parties. It is not uploaded, transmitted, or stored on PicStrip servers or third-party servers. PicStrip does not use third-party SDKs, analytics, advertising, or crash reporting. Processing happens on device. The only persistent output is the cleaned image the user explicitly saves to their own Photos library or shares through the system share sheet.
+
+- How long is face data retained?
+  PicStrip does not retain face data. Face detection results exist only in memory for the current photo/session so the user can review and edit redactions. They are discarded when the photo is cleared, the session ends, or the app state is reset. PicStrip does not keep photo history, face rectangles, redaction coordinates, OCR snippets, removed metadata values, or separate face data records.
+
+- Privacy policy sections and quote:
+  The privacy policy explains this in "On-Device Processing Only", "Face Data", and "Third-Party Services". Specific text:
+  "PicStrip does not collect face data. When visual redaction is enabled, PicStrip uses Apple's on-device Vision face-rectangle detector to find where faces appear in the current photo so the app can show redaction boxes and, if you choose, burn those redactions into the cleaned copy."
+  "PicStrip does not identify people, perform face recognition, compare faces across photos, create faceprints or biometric templates, infer identity, or use face landmarks/profiles. The only face-related result used by the app is a temporary bounding rectangle for each face detected in the photo being processed."
+  "Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared."

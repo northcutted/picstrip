@@ -1,1 +1,1 @@
-PicStrip rimuove i metadati nascosti e oscura 30 tipi di dati sensibili — volti, segreti, carte e altro — tutto sul dispositivo. Nessun account, nessun caricamento.
+PicStrip rimuove metadati e oscura dati sensibili, inclusi i volti, sul dispositivo. Nessun dato facciale raccolto, nessun upload.

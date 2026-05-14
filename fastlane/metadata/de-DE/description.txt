@@ -28,6 +28,7 @@ IMPORT VON ÜBERALL
 
 PRIVATSPHÄRE BY DESIGN
 • 100% auf dem Gerät — nichts verlässt dein iPhone
+• Gesichtserkennung bleibt auf dem Gerät; PicStrip erfasst, speichert, überträgt oder teilt keine Gesichtsdaten
 • Kein Konto, kein Login, kein Tracking
 • Keine Werbung, keine In-App-Käufe, keine Abos
 • Open Source — jede Codezeile auf GitHub prüfbar

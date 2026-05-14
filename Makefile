@@ -3,8 +3,11 @@ DEVICE ?=
 DEVICES ?=
 ALLOW_PARTIAL ?= false
 LANGUAGES ?=
+MARKETING_VERSION ?=
+BUILD_NUMBER ?=
+SUBMIT_FOR_REVIEW ?= false
 
-.PHONY: help lint analyze test build audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
+.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -14,6 +17,9 @@ help:
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
+	@echo "  make metadata-only                Infer current App Store version/build and upload metadata only"
+	@echo "  make metadata-only MARKETING_VERSION=1.6.2 BUILD_NUMBER=62"
+	@echo "                                    Override the inferred metadata target"
 	@echo "  make audit-localization           Check core/extension string-returning literals"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
 	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
@@ -52,6 +58,12 @@ test-fixture:
 
 build:
 	$(FASTLANE) build
+
+metadata-only:
+	MARKETING_VERSION="$(MARKETING_VERSION)" \
+	BUILD_NUMBER="$(BUILD_NUMBER)" \
+	SUBMIT_FOR_REVIEW="$(SUBMIT_FOR_REVIEW)" \
+	$(FASTLANE) metadata_only
 
 audit-localization:
 	scripts/audit_localization_strings.sh

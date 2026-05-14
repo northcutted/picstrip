@@ -1,1 +1,1 @@
-PicStrip gizli üst verileri kaldırır ve 30 tür hassas bilgiyi — yüzler, sırlar, kartlar ve daha fazlasını — cihazınızda sansürler. Hesap yok, yükleme yok.
+PicStrip üst verileri kaldırır ve yüzler dahil hassas bilgileri cihazda sansürler. Yüz verisi toplanmaz, yükleme yok.

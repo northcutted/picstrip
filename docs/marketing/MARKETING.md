@@ -70,10 +70,10 @@ Strip metadata. Hide secrets.
 ### 2.3 Promotional Text · max 170
 
 ```
-PicStrip strips hidden metadata and redacts 30 kinds of sensitive info — faces, secrets, cards, and more — all on-device. No account, no uploads.
+PicStrip strips hidden metadata and redacts sensitive info, including faces, on-device. No face data collected, no uploads.
 ```
 
-> 144/170 characters.
+> 118/170 characters.
 
 ### 2.4 Description · max 4,000
 
@@ -108,6 +108,7 @@ IMPORT FROM ANYWHERE
 
 PRIVACY BY DESIGN
 • 100% on-device — nothing leaves your phone
+• Face detection stays on-device; PicStrip does not collect, store, transmit, or share face data
 • No account, no login, no tracking
 • No ads, no in-app purchases, no subscriptions
 • Open source — every line of code is auditable on GitHub
@@ -240,6 +241,10 @@ PicStrip declares **zero data collection** and **zero tracking** in [`PrivacyInf
 | Do you or your third-party partners collect data from this app? | **No** |
 | Does your app use third-party SDKs? | **No** |
 | Required-reason API usage | `NSPrivacyAccessedAPICategoryFileTimestamp` (`C617.1`) — for ImageIO file timestamp access during metadata extraction. **Not** for fingerprinting or tracking. |
+
+**Face data disclosure:**
+
+PicStrip does not collect face data. Face detection uses Apple's on-device Vision face-rectangle detector only to create temporary redaction boxes for the current photo. Face detection results are not used to identify people, compare faces, create biometric templates, train models, run analytics, or personalize content. They are not uploaded, shared, or retained after the current photo/session is cleared.
 
 **Permission strings (Info.plist):**
 

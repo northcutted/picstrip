@@ -28,6 +28,7 @@ HER YERDEN İÇE AKTARMA
 
 TASARIM GEREĞİ GİZLİLİK
 • %100 cihazınızda — hiçbir şey telefonunuzdan çıkmaz
+• Yüz algılama cihazda kalır; PicStrip yüz verilerini toplamaz, saklamaz, iletmez veya paylaşmaz
 • Hesap yok, oturum açma yok, izleme yok
 • Reklam yok, uygulama içi satın alma yok, abonelik yok
 • Açık kaynak — her kod satırı GitHub'da denetlenebilir

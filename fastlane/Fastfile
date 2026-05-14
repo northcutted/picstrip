@@ -60,6 +60,60 @@ platform :ios do
     ) if missing.any?
   end
 
+  private_lane :infer_metadata_target do |options|
+    client = Spaceship::ConnectAPI
+    app = Spaceship::ConnectAPI::App.find(APP_ID, client: client)
+
+    UI.user_error!("Could not find App Store Connect app for bundle id #{APP_ID}") if app.nil?
+
+    version = app.get_edit_app_store_version(
+      client: client,
+      platform: Spaceship::ConnectAPI::Platform::IOS,
+      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
+    )
+
+    version ||= app.get_pending_release_app_store_version(
+      client: client,
+      platform: Spaceship::ConnectAPI::Platform::IOS,
+      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
+    )
+
+    version ||= app.get_in_review_app_store_version(
+      client: client,
+      platform: Spaceship::ConnectAPI::Platform::IOS,
+      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
+    )
+
+    UI.user_error!(
+      "Could not infer an editable App Store version. Pass MARKETING_VERSION and BUILD_NUMBER explicitly."
+    ) if version.nil?
+
+    build = begin
+      version.get_build(client: client)
+    rescue
+      nil
+    end
+    build ||= Spaceship::ConnectAPI::Build.all(
+      client: client,
+      app_id: app.id,
+      version: version.version_string,
+      platform: Spaceship::ConnectAPI::Platform::IOS,
+      processing_states: Spaceship::ConnectAPI::Build::ProcessingState::VALID,
+      limit: 1
+    ).first
+
+    UI.user_error!(
+      "Could not infer a selected or valid build for App Store version #{version.version_string}. " \
+      "Pass BUILD_NUMBER explicitly."
+    ) if build.nil?
+
+    {
+      marketing_version: version.version_string,
+      build_number: build.version,
+      app_version_state: version.app_version_state || version.app_store_state
+    }
+  end
+
   # ── PR lanes (no signing) ────────────────────────────────────────────────────
 
   desc "Run SwiftLint"
@@ -442,6 +496,58 @@ platform :ios do
       precheck_include_in_app_purchases: false,
       force:                             true
     )
+  end
+
+  desc "Push metadata/review information only to an existing App Store version/build. " \
+       "Does not rebuild, upload a binary, or replace screenshots. Defaults to the current " \
+       "editable App Store version and its selected build. Set SUBMIT_FOR_REVIEW=true only " \
+       "when intentionally resubmitting."
+  lane :metadata_only do
+    marketing_version = ENV.fetch("MARKETING_VERSION", nil).to_s.strip
+    build_number = ENV.fetch("BUILD_NUMBER", nil).to_s.strip
+    submit_for_review = ENV.fetch("SUBMIT_FOR_REVIEW", "false").casecmp("true").zero?
+
+    api_key = app_store_connect_api_key(
+      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
+      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
+      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
+      is_key_content_base64: false
+    )
+
+    if marketing_version.empty? || build_number.empty?
+      inferred = infer_metadata_target(api_key: api_key)
+      marketing_version = inferred[:marketing_version] if marketing_version.empty?
+      build_number = inferred[:build_number] if build_number.empty?
+      UI.message(
+        "Inferred App Store metadata target: #{marketing_version} (#{build_number})" \
+        " from state #{inferred[:app_version_state]}"
+      )
+    end
+
+    UI.user_error!("MARKETING_VERSION is required, e.g. 1.6.2") if marketing_version.empty?
+    UI.user_error!("BUILD_NUMBER is required, e.g. 62") if build_number.empty?
+
+    validate_release_notes
+
+    deliver_options = {
+      api_key:                           api_key,
+      app_version:                       marketing_version,
+      build_number:                      build_number,
+      skip_binary_upload:                true,
+      skip_screenshots:                  true,
+      submit_for_review:                 submit_for_review,
+      automatic_release:                 false,
+      phased_release:                    false,
+      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
+      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
+      metadata_path:                     "./fastlane/metadata",
+      run_precheck_before_submit:        false,
+      precheck_include_in_app_purchases: false,
+      force:                             true
+    }
+    deliver_options[:submission_information] = EXPORT_COMPLIANCE_SUBMISSION if submit_for_review
+
+    upload_to_app_store(deliver_options)
   end
 
   desc "Sync App Store Accessibility Nutrition Label declarations"

@@ -7,7 +7,9 @@
         ─────────────────────────
         PicStrip processes images entirely on-device. It does not transmit any
         data to external servers, does not use advertising or analytics SDKs,
-        and does not track users in any way.
+        and does not track users in any way. Face detection uses temporary
+        on-device face rectangles only; no face data is collected, stored,
+        transmitted, or shared.
 
         Required reason API usage is documented below per Apple's mandate.
     -->

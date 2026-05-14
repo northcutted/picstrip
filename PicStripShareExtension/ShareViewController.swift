@@ -394,7 +394,7 @@ private struct ExtensionConfigView: View {
                 Toggle("Auto-Redact Sensitive Data", isOn: $redactPII)
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
-                    .accessibilityHint("Scans visible text on device and burns redaction boxes over likely sensitive data.")
+                    .accessibilityHint("Scans visible text and faces on device and burns redaction boxes over likely sensitive data.")
             }
 
             Divider()

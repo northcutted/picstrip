@@ -28,6 +28,7 @@ IMPORTER DE N'IMPORTE OÙ
 
 CONFIDENTIALITÉ PAR CONCEPTION
 • 100% sur l'appareil — rien ne quitte votre téléphone
+• La détection des visages reste sur l'appareil ; PicStrip ne collecte, ne stocke, ne transmet ni ne partage aucune donnée faciale
 • Sans compte, sans connexion, sans traçage
 • Sans publicité, sans achats intégrés, sans abonnements
 • Open source — chaque ligne de code est auditable sur GitHub

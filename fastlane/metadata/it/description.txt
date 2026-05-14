@@ -28,6 +28,7 @@ IMPORTA DA QUALSIASI POSTO
 
 PRIVACY BY DESIGN
 • 100% sul dispositivo — niente lascia il tuo iPhone
+• Il rilevamento dei volti resta sul dispositivo; PicStrip non raccoglie, conserva, trasmette né condivide dati facciali
 • Nessun account, nessun login, nessun tracciamento
 • Niente pubblicità, niente acquisti in-app, niente abbonamenti
 • Open source — ogni riga di codice è verificabile su GitHub

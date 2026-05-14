@@ -28,6 +28,7 @@ OVERAL VANDAAN IMPORTEREN
 
 PRIVACY BY DESIGN
 • 100% op het toestel — niets verlaat je telefoon
+• Gezichtsdetectie blijft op het toestel; PicStrip verzamelt, bewaart, verzendt of deelt geen gezichtsgegevens
 • Geen account, geen login, geen tracking
 • Geen advertenties, geen in-app-aankopen, geen abonnementen
 • Open source — elke regel code is auditeerbaar op GitHub

@@ -1,1 +1,1 @@
-PicStrip elimina metadatos ocultos y oculta 30 tipos de información sensible — rostros, claves, tarjetas y más — todo en el dispositivo. Sin cuenta, sin subidas.
+PicStrip elimina metadatos y oculta datos sensibles, incluidos rostros, en el dispositivo. Sin recopilar datos faciales ni subidas.

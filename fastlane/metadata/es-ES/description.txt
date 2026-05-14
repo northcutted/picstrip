@@ -28,6 +28,7 @@ IMPORTA DESDE CUALQUIER LUGAR
 
 PRIVACIDAD POR DISEÑO
 • 100% en el dispositivo — nada sale de tu teléfono
+• La detección de rostros permanece en el dispositivo; PicStrip no recopila, almacena, transmite ni comparte datos faciales
 • Sin cuenta, sin inicio de sesión, sin rastreo
 • Sin anuncios, sin compras en la app, sin suscripciones
 • Código abierto — cada línea de código es auditable en GitHub

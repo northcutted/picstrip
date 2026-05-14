@@ -28,6 +28,7 @@ IMPORTERA FRÅN VAR SOM HELST
 
 INTEGRITET BY DESIGN
 • 100% på enheten — inget lämnar din telefon
+• Ansiktsdetektering stannar på enheten; PicStrip samlar inte in, lagrar, överför eller delar ansiktsdata
 • Inget konto, ingen inloggning, ingen spårning
 • Inga annonser, inga köp i appen, inga prenumerationer
 • Öppen källkod — varje rad kod kan granskas på GitHub
