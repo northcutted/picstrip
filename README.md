@@ -203,7 +203,9 @@ PicStrip/
 │
 ├── .github/workflows/
 │   ├── pr.yml               # PR checks: lint, analyze, test
-│   ├── main.yml             # Release pipeline: version → build → release → provenance → submit
+│   ├── main.yml             # Release prep: version → QA → build → provenance → TestFlight → tag
+│   ├── app-store-deploy.yml # Tag deploy: verify handoff, then request review
+│   ├── metadata-only.yml    # Manual App Store metadata amendments
 │   └── screenshots.yml      # Manual: capture App Store screenshots
 │
 ├── fastlane/
@@ -221,6 +223,8 @@ PicStrip/
 ├── scripts/
 │   ├── process_screenshots.py  # Marketing compositor: custom frame + headline + brand gradient
 │   ├── requirements.txt        # Python deps for the compositor (Pillow, arabic-reshaper, python-bidi)
+│   ├── semantic_dry_run.mjs    # Semantic-release dry-run JSON writer for release prep
+│   ├── render_app_store_metadata.sh  # Applies generated notes to App Store metadata artifacts
 │   ├── translate_xcstrings.js  # Localization automation (pseudo + OpenAI providers)
 │   └── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
 │
@@ -315,7 +319,8 @@ npm install
 | `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 17 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
 | `bundle exec fastlane process_screenshots` | Runs the Python compositor over every locale present under `fastlane/screenshots/<locale>/` |
 | `bundle exec fastlane upload_screenshots` | Uploads the marketing PNGs in `fastlane/screenshots/processed/` to App Store Connect; refuses partial sets unless `allow_partial:true` is passed |
-| `bundle exec fastlane submit` | Submits the processed TestFlight build for App Review |
+| `bundle exec fastlane app_store_stage` | Stages metadata, screenshots, declarations, and the selected TestFlight build without submitting |
+| `bundle exec fastlane request_review` | Requests App Review for the already-staged version |
 
 ---
 
@@ -349,7 +354,7 @@ make localization-export
 ## CI/CD Pipeline
 
 - **PRs** — `pr.yml` runs SwiftLint (strict), `xcodebuild analyze`, and unit tests in parallel. An optional `screenshots`-labelled job captures the full 2-device set as a PR artifact.
-- **Releases** — `main.yml` runs 11 jobs across 9 sequential stages, gated by a semantic-release dry-run. The pipeline signs the IPA, generates SLSA Level 3 provenance, verifies attestations against the exact workflow source commit, uploads to TestFlight, and requires manual approval to submit for App Review.
+- **Releases** — `main.yml` performs release prep from `main`: semantic dry-run, QA evidence, signed IPA, SBOMs, attestations, SLSA Level 3 provenance, TestFlight upload, and final `vX.Y.Z` tag/release creation. The tag triggers `app-store-deploy.yml`, which stages repo metadata/screenshots/build in App Store Connect, then waits for manual approval before submitting the current draft as-is.
 - **Screenshots** — `screenshots.yml` is manually dispatched. The fast path uploads the committed marketing PNGs from Git LFS; `generate_new=true` regenerates them by capturing fresh simulator screenshots and running the Python compositor (custom frame, brand gradient, localized headline per locale).
 
 See [DEVELOPMENT.md → CI/CD Pipeline](DEVELOPMENT.md#cicd-pipeline) for the full job graph, fastlane lanes, and screenshot compositor details.

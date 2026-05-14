@@ -5,10 +5,9 @@ name: Capture Screenshots
 # the repo via Git LFS (with [skip ci]).
 #
 # Upload to App Store Connect does NOT happen here. Screenshots are uploaded
-# inside the `submit` lane in main.yml, which runs at a pinned post-release
-# SHA and checks out LFS so the processed PNGs are present on disk. This
-# ensures every release's screenshots are versioned alongside the exact code
-# that produced them and gated behind the same App Review submission approval.
+# by app-store-deploy.yml after the release-prep workflow creates the release
+# tag. The deploy workflow checks out LFS at that tag so the processed PNGs
+# are versioned alongside the exact code that produced the release.
 
 on:
   workflow_dispatch:

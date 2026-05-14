@@ -1,26 +1,31 @@
-name: Release
+name: Release Prep
 
 on:
   push:
     branches: [main]
 
 concurrency:
-  group: release-main
+  group: release-prep-main
   cancel-in-progress: false
 
 permissions:
   contents: read
 
+env:
+  ACTIONS_ATTEST_SHA: 59d89421af93a897026c735860bf21b6eb4f7b26
+  SYFT_VERSION: "1.44.0"
+  SYFT_LINUX_AMD64_SHA256: "0e91737aee2b5baf1d255b959630194a302335d848ff97bb07921eb6205b5f5a"
+
 jobs:
-  # ── 1. Semantic Release dry run — determine next version ──────────────────
   version:
     name: Determine Next Version
     runs-on: ubuntu-latest
-    permissions:
-      contents: write   # @semantic-release/github v10 checks write access in verifyConditions even on dry-run
     outputs:
       will_release: ${{ steps.semrel.outputs.will_release }}
-      version:      ${{ steps.semrel.outputs.version }}
+      version: ${{ steps.semrel.outputs.version }}
+      tag: ${{ steps.semrel.outputs.tag }}
+      build_number: ${{ steps.semrel.outputs.build_number }}
+      source_sha: ${{ steps.semrel.outputs.source_sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -34,25 +39,61 @@ jobs:
           node-version: "24"
           cache: "npm"
 
-      - name: Install semantic-release
+      - name: Install semantic-release dependencies
         run: npm ci
 
       - name: Dry-run semantic-release
         id: semrel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          OUTPUT=$(npx semantic-release --dry-run 2>&1)
-          echo "$OUTPUT"
-          if echo "$OUTPUT" | grep -q "next release version"; then
-            VERSION=$(echo "$OUTPUT" | grep -oP 'next release version is \K[^\s]+')
-            echo "will_release=true"  >> "$GITHUB_OUTPUT"
-            echo "version=$VERSION"   >> "$GITHUB_OUTPUT"
-          else
-            echo "will_release=false" >> "$GITHUB_OUTPUT"
-          fi
+          mkdir -p build/release
+          node scripts/semantic_dry_run.mjs build/semantic-release.json
+          WILL_RELEASE="$(node -e "const r=require('./build/semantic-release.json'); console.log(r.will_release)")"
+          VERSION="$(node -e "const r=require('./build/semantic-release.json'); console.log(r.version || '')")"
+          TAG="${VERSION:+v${VERSION}}"
+          {
+            echo "will_release=${WILL_RELEASE}"
+            echo "version=${VERSION}"
+            echo "tag=${TAG}"
+            echo "build_number=${GITHUB_RUN_NUMBER}"
+            echo "source_sha=${GITHUB_SHA}"
+          } >> "$GITHUB_OUTPUT"
 
-  # ── 2. Validate the exact release SHA ───────────────────────────────────────
+      - name: Render release metadata artifacts
+        if: steps.semrel.outputs.will_release == 'true'
+        run: |
+          node - <<'NODE'
+          const fs = require("fs");
+          const data = JSON.parse(fs.readFileSync("build/semantic-release.json", "utf8"));
+          fs.writeFileSync("build/release/release-notes.md", `${data.notes || `Release ${data.version}`}\n`);
+          fs.writeFileSync("build/release/release-notes.txt", `${(data.notes || `Release ${data.version}`).replace(/[#*_`]/g, "").trim()}\n`);
+          NODE
+          bash scripts/render_app_store_metadata.sh \
+            build/release/release-notes.md \
+            build/app-store-metadata \
+            build/release/app-store-metadata.tar.zst
+          git archive --format=tar --prefix="picstrip-${{ steps.semrel.outputs.version }}/" HEAD \
+            | zstd -19 -o build/release/release-source.tar.zst
+          mkdir -p build/version-artifacts
+          cp build/semantic-release.json build/version-artifacts/
+          cp build/release/release-notes.md build/version-artifacts/
+          cp build/release/release-notes.txt build/version-artifacts/
+          cp build/release/app-store-metadata.tar.zst build/version-artifacts/
+          cp build/release/release-source.tar.zst build/version-artifacts/
+          (cd build/version-artifacts && shasum -a 256 \
+            semantic-release.json \
+            release-notes.md \
+            release-notes.txt \
+            app-store-metadata.tar.zst \
+            release-source.tar.zst) > build/version-artifacts/version-assets.sha256
+
+      - name: Upload version artifacts
+        if: steps.semrel.outputs.will_release == 'true'
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-version-${{ steps.semrel.outputs.version }}
+          path: build/version-artifacts/
+          retention-days: 90
+
   lint:
     name: SwiftLint
     runs-on: macos-26
@@ -80,7 +121,30 @@ jobs:
           bundler-cache: true
 
       - name: Run SwiftLint
-        run: bundle exec fastlane lint
+        run: |
+          mkdir -p qa-results/lint
+          set +e
+          bundle exec fastlane lint > qa-results/lint/output.log 2>&1
+          status=$?
+          set -e
+          cat qa-results/lint/output.log
+          STATUS="$status" python3 - <<'PY'
+          import json, os, pathlib
+          pathlib.Path("qa-results/lint/manifest.json").write_text(json.dumps({
+              "check": "swiftlint",
+              "status": int(os.environ["STATUS"]),
+              "workflow": "release-prep",
+          }, indent=2) + "\n")
+          PY
+          exit "$status"
+
+      - name: Upload lint QA artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qa-lint-${{ needs.version.outputs.version }}
+          path: qa-results/
+          retention-days: 30
 
   analyze:
     name: Static Analysis
@@ -108,8 +172,31 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deriveddata-
 
-      - name: Run xcodebuild analyze
-        run: bundle exec fastlane analyze
+      - name: Run static analysis
+        run: |
+          mkdir -p qa-results/analyze
+          set +e
+          bundle exec fastlane analyze > qa-results/analyze/output.log 2>&1
+          status=$?
+          set -e
+          cat qa-results/analyze/output.log
+          STATUS="$status" python3 - <<'PY'
+          import json, os, pathlib
+          pathlib.Path("qa-results/analyze/manifest.json").write_text(json.dumps({
+              "check": "xcodebuild-analyze",
+              "status": int(os.environ["STATUS"]),
+              "workflow": "release-prep",
+          }, indent=2) + "\n")
+          PY
+          exit "$status"
+
+      - name: Upload analyze QA artifact
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qa-analyze-${{ needs.version.outputs.version }}
+          path: qa-results/
+          retention-days: 30
 
   test:
     name: Unit Tests
@@ -137,21 +224,37 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-deriveddata-
 
-      - name: Run Tests
-        run: bundle exec fastlane test
+      - name: Run unit tests
+        run: |
+          mkdir -p qa-results/test
+          set +e
+          bundle exec fastlane test > qa-results/test/output.log 2>&1
+          status=$?
+          set -e
+          cat qa-results/test/output.log
+          cp build/test_output/report.junit qa-results/test/report.junit 2>/dev/null || true
+          STATUS="$status" python3 - <<'PY'
+          import json, os, pathlib
+          pathlib.Path("qa-results/test/manifest.json").write_text(json.dumps({
+              "check": "unit-tests",
+              "status": int(os.environ["STATUS"]),
+              "workflow": "release-prep",
+              "junit": "report.junit",
+          }, indent=2) + "\n")
+          PY
+          exit "$status"
 
-      - name: Upload test results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      - name: Upload test QA artifact
         if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: release-test-results
-          path: build/test_output/
-          retention-days: 7
+          name: qa-test-${{ needs.version.outputs.version }}
+          path: qa-results/
+          retention-days: 30
 
-  # ── 3. Build + sign IPA, then attest the exact artifact ────────────────────
-  build:
-    name: Build & Attest IPA
-    runs-on: macos-26
+  qa-attest:
+    name: Package & Attest QA Results
+    runs-on: ubuntu-latest
     needs: [version, lint, analyze, test]
     if: needs.version.outputs.will_release == 'true'
     permissions:
@@ -159,21 +262,75 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
-    outputs:
-      ipa-hashes: ${{ steps.digest.outputs.hashes }}
+    steps:
+      - name: Download QA artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: qa-*-${{ needs.version.outputs.version }}
+          path: qa-results
+          merge-multiple: true
+
+      - name: Build QA manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          files = []
+          for path in sorted(pathlib.Path("qa-results").rglob("*")):
+              if path.is_file():
+                  data = path.read_bytes()
+                  files.append({
+                      "path": path.as_posix(),
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                      "bytes": len(data),
+                  })
+          pathlib.Path("qa-manifest.json").write_text(json.dumps({
+              "predicate": "https://northcutted.github.io/picstrip/attestations/qa/v1",
+              "version": "${{ needs.version.outputs.version }}",
+              "build_number": "${{ needs.version.outputs.build_number }}",
+              "source_sha": "${{ needs.version.outputs.source_sha }}",
+              "checks": ["swiftlint", "xcodebuild-analyze", "unit-tests"],
+              "files": files,
+          }, indent=2) + "\n")
+          PY
+          tar --zstd -cf qa-results.tar.zst qa-results qa-manifest.json
+          shasum -a 256 qa-results.tar.zst qa-manifest.json > qa-evidence.sha256
+
+      - name: Attest QA results
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
+        with:
+          subject-path: qa-results.tar.zst
+          predicate-type: https://northcutted.github.io/picstrip/attestations/qa/v1
+          predicate-path: qa-manifest.json
+
+      - name: Upload QA evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: qa-evidence-${{ needs.version.outputs.version }}
+          path: |
+            qa-results.tar.zst
+            qa-manifest.json
+            qa-evidence.sha256
+          retention-days: 90
+
+  build:
+    name: Build, Sign & Attest IPA
+    runs-on: macos-26
+    needs: [version, qa-attest]
+    if: needs.version.outputs.will_release == 'true'
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.version.outputs.source_sha }}
 
       - name: Select Xcode
         run: sudo xcode-select -s /Applications/Xcode.app
 
-      # Record the exact toolchain state so it is captured in the attestation
-      # and SLSA provenance. Caches (DerivedData, SPM) are intentionally omitted
-      # from this job: gym runs with clean:true but restoring shared cache state
-      # from earlier runs would violate the SLSA L3 isolation requirement.
       - name: Record build environment
         run: |
           mkdir -p build
@@ -200,12 +357,9 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
 
-      # Capture the exact commit of the Match certificate repo so that the
-      # signing inputs are recorded in the attestation alongside the IPA.
       - name: Record signing material state
         run: |
-          MATCH_HEAD=$(git ls-remote git@github.com:northcutted/picstrip-certs.git HEAD \
-            | cut -f1)
+          MATCH_HEAD=$(git ls-remote git@github.com:northcutted/picstrip-certs.git HEAD | cut -f1)
           {
             echo "match_repo: git@github.com:northcutted/picstrip-certs.git"
             echo "match_head: ${MATCH_HEAD}"
@@ -215,38 +369,32 @@ jobs:
 
       - name: Sync signing assets
         env:
-          MATCH_PASSWORD:                       ${{ secrets.MATCH_PASSWORD }}
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
         run: bundle exec fastlane certificates
 
       - name: Build IPA
         env:
-          BUILD_NUMBER:                         ${{ github.run_number }}
-          MARKETING_VERSION:                    ${{ needs.version.outputs.version }}
+          BUILD_NUMBER: ${{ needs.version.outputs.build_number }}
+          MARKETING_VERSION: ${{ needs.version.outputs.version }}
         run: bundle exec fastlane build
 
-      - name: Compute SHA-256 of IPA and build environment
-        id: digest
+      - name: Compute build checksums
         run: |
-          # Include the IPA plus both environment manifests so that the SLSA
-          # provenance covers toolchain and signing inputs, not just the binary.
-          HASHES=$(shasum -a 256 build/PicStrip.ipa build/build-env.txt build/signing-env.txt \
-            | awk '{n=split($2,a,"/"); print $1 "  " a[n]}' \
-            | base64 | tr -d '\n')
-          echo "hashes=$HASHES" >> "$GITHUB_OUTPUT"
+          shasum -a 256 build/PicStrip.ipa build/build-env.txt build/signing-env.txt > build/build-evidence.sha256
           shasum -a 256 build/PicStrip.ipa | awk '{print $1 "  PicStrip.ipa"}' > build/PicStrip.ipa.sha256
 
-      - name: Create GitHub artifact attestation
-        uses: actions/attest-build-provenance@a2bbfa25375fe432b6a289bc6b6cd05ecd0c4c32 # v4.1.0
+      - name: Attest IPA build evidence
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
         with:
           subject-path: |
             build/PicStrip.ipa
             build/build-env.txt
             build/signing-env.txt
 
-      - name: Upload IPA artifact
+      - name: Upload build evidence
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: PicStrip-${{ needs.version.outputs.version }}
@@ -255,147 +403,285 @@ jobs:
             build/PicStrip.ipa.sha256
             build/build-env.txt
             build/signing-env.txt
+            build/build-evidence.sha256
           retention-days: 90
 
-  # ── 3. Publish GitHub Release + tag ───────────────────────────────────────
-  release:
-    name: Publish Release
+  sbom:
+    name: Generate & Attest SBOMs
     runs-on: ubuntu-latest
     needs: [version, build]
     if: needs.version.outputs.will_release == 'true'
     permissions:
-      contents: write
-    outputs:
-      version: ${{ needs.version.outputs.version }}
-      release_sha: ${{ steps.semrel.outputs.release_sha }}
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          fetch-depth: 0
-          persist-credentials: false
+          ref: ${{ needs.version.outputs.source_sha }}
+          fetch-depth: 1
 
-      - name: Setup Node
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
-        with:
-          node-version: "24"
-          cache: "npm"
-
-      - name: Install semantic-release
-        run: npm ci
-
-      - name: Publish release
-        id: semrel
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install pinned Syft
         run: |
-          npx semantic-release
-          # Capture the post-release HEAD (includes the commit that
-          # semantic-release made for CHANGELOG/project.pbxproj/release_notes.txt)
-          # so downstream jobs can pin to this exact state instead of floating main.
-          echo "release_sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          curl -fsSLO "https://github.com/anchore/syft/releases/download/v${SYFT_VERSION}/syft_${SYFT_VERSION}_linux_amd64.tar.gz"
+          echo "${SYFT_LINUX_AMD64_SHA256}  syft_${SYFT_VERSION}_linux_amd64.tar.gz" | sha256sum -c -
+          tar -xzf "syft_${SYFT_VERSION}_linux_amd64.tar.gz" syft
+          sudo mv syft /usr/local/bin/syft
+          syft version
 
-  # ── 5. SLSA L3 Provenance ─────────────────────────────────────────────────
-  provenance:
-    name: SLSA Provenance
-    needs: [version, build, release]
-    if: needs.version.outputs.will_release == 'true'
-    permissions:
-      actions:  read
-      id-token: write
-      contents: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
-    with:
-      base64-subjects: "${{ needs.build.outputs.ipa-hashes }}"
-      upload-assets: true
-      upload-tag-name: "v${{ needs.version.outputs.version }}"
+      - name: Generate source SBOM
+        run: |
+          mkdir -p sbom
+          syft dir:. \
+            --exclude './.git' \
+            --exclude './sbom' \
+            -o spdx-json=sbom/source.spdx.json
 
-  # ── 6. Attach artifacts to GitHub Release ─────────────────────────────────
-  attach-release-assets:
-    name: Attach Release Assets
-    runs-on: ubuntu-latest
-    needs: [version, build, release, provenance]
-    if: needs.version.outputs.will_release == 'true'
-    permissions:
-      contents: write
-    steps:
-      - name: Download IPA artifact
+      - name: Download build artifact
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: PicStrip-${{ needs.version.outputs.version }}
-          path: artifacts/
+          path: evidence
 
-      - name: Attach IPA + digest to GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Download source artifact
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-version-${{ needs.version.outputs.version }}
+          path: evidence
+
+      - name: Generate IPA SBOM
         run: |
-          gh release upload "v${{ needs.version.outputs.version }}" \
-            artifacts/PicStrip.ipa \
-            artifacts/PicStrip.ipa.sha256 \
-            --repo ${{ github.repository }} \
-            --clobber
+          mkdir -p sbom/ipa-root
+          unzip -q evidence/PicStrip.ipa -d sbom/ipa-root
+          syft dir:sbom/ipa-root -o spdx-json=sbom/ipa.spdx.json
+          shasum -a 256 sbom/source.spdx.json sbom/ipa.spdx.json > sbom/sbom-evidence.sha256
 
-  # ── 7. Verify provenance before distribution ───────────────────────────────
-  verify-provenance:
-    name: Verify Provenance
+      - name: Attest source SBOM
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
+        with:
+          subject-path: evidence/release-source.tar.zst
+          sbom-path: sbom/source.spdx.json
+
+      - name: Attest IPA SBOM
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
+        with:
+          subject-path: evidence/PicStrip.ipa
+          sbom-path: sbom/ipa.spdx.json
+
+      - name: Upload SBOM evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: sbom-evidence-${{ needs.version.outputs.version }}
+          path: |
+            sbom/source.spdx.json
+            sbom/ipa.spdx.json
+            sbom/sbom-evidence.sha256
+          retention-days: 90
+
+  release-evidence:
+    name: Assemble Release Evidence
     runs-on: ubuntu-latest
-    needs: [version, build, release, provenance, attach-release-assets]
+    needs: [version, qa-attest, build, sbom]
+    if: needs.version.outputs.will_release == 'true'
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write
+    outputs:
+      base64_subjects: ${{ steps.subjects.outputs.base64_subjects }}
+    steps:
+      - name: Download build evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: PicStrip-${{ needs.version.outputs.version }}
+          path: evidence/build
+
+      - name: Download QA evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: qa-evidence-${{ needs.version.outputs.version }}
+          path: evidence/qa
+
+      - name: Download SBOM evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: sbom-evidence-${{ needs.version.outputs.version }}
+          path: evidence/sbom
+
+      - name: Download version evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: release-version-${{ needs.version.outputs.version }}
+          path: evidence/version
+
+      - name: Assemble release assets and SLSA subjects
+        id: subjects
+        run: |
+          mkdir -p release-assets
+          cp evidence/build/PicStrip.ipa release-assets/
+          cp evidence/build/PicStrip.ipa.sha256 release-assets/
+          cp evidence/build/build-env.txt release-assets/
+          cp evidence/build/signing-env.txt release-assets/
+          cp evidence/build/build-evidence.sha256 release-assets/
+          cp evidence/qa/qa-results.tar.zst release-assets/
+          cp evidence/qa/qa-manifest.json release-assets/
+          cp evidence/qa/qa-evidence.sha256 release-assets/
+          cp evidence/sbom/source.spdx.json release-assets/
+          cp evidence/sbom/ipa.spdx.json release-assets/
+          cp evidence/sbom/sbom-evidence.sha256 release-assets/
+          cp evidence/version/release-notes.md release-assets/
+          cp evidence/version/release-notes.txt release-assets/
+          cp evidence/version/app-store-metadata.tar.zst release-assets/
+          cp evidence/version/release-source.tar.zst release-assets/
+          cp evidence/version/version-assets.sha256 release-assets/
+
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          assets = []
+          for path in sorted(pathlib.Path("release-assets").iterdir()):
+              if path.is_file():
+                  data = path.read_bytes()
+                  assets.append({
+                      "name": path.name,
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                      "bytes": len(data),
+                  })
+          pathlib.Path("release-assets/release-build-manifest.json").write_text(json.dumps({
+              "version": "${{ needs.version.outputs.version }}",
+              "tag": "${{ needs.version.outputs.tag }}",
+              "build_number": "${{ needs.version.outputs.build_number }}",
+              "source_sha": "${{ needs.version.outputs.source_sha }}",
+              "testflight_upload_status": "pending",
+              "artifacts": assets,
+          }, indent=2) + "\n")
+          PY
+
+          (cd release-assets && shasum -a 256 \
+            PicStrip.ipa \
+            PicStrip.ipa.sha256 \
+            build-env.txt \
+            signing-env.txt \
+            build-evidence.sha256 \
+            qa-results.tar.zst \
+            qa-manifest.json \
+            qa-evidence.sha256 \
+            source.spdx.json \
+            ipa.spdx.json \
+            sbom-evidence.sha256 \
+            release-notes.md \
+            release-notes.txt \
+            app-store-metadata.tar.zst \
+            release-source.tar.zst \
+            version-assets.sha256 \
+            release-build-manifest.json) > release-assets/slsa-subjects.txt
+          echo "base64_subjects=$(base64 -w0 release-assets/slsa-subjects.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Attest release build manifest
+        uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4
+        with:
+          subject-path: release-assets/release-build-manifest.json
+          predicate-type: https://northcutted.github.io/picstrip/attestations/release-build/v1
+          predicate-path: release-assets/release-build-manifest.json
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: release-evidence-${{ needs.version.outputs.version }}
+          path: release-assets/
+          retention-days: 90
+
+  provenance:
+    name: SLSA L3 Provenance
+    needs: [version, release-evidence]
+    if: needs.version.outputs.will_release == 'true'
+    permissions:
+      actions: read
+      id-token: write
+      contents: read
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: ${{ needs.release-evidence.outputs.base64_subjects }}
+      upload-assets: false
+      provenance-name: PicStrip-${{ needs.version.outputs.version }}.intoto.jsonl
+
+  verify-release-evidence:
+    name: Verify Release Evidence
+    runs-on: ubuntu-latest
+    needs: [version, release-evidence, provenance]
     if: needs.version.outputs.will_release == 'true'
     permissions:
       contents: read
       attestations: read
     steps:
-      - name: Download IPA artifact
+      - name: Download release evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: PicStrip-${{ needs.version.outputs.version }}
-          path: verification/
+          name: release-evidence-${{ needs.version.outputs.version }}
+          path: verification/release-assets
 
-      - name: Verify GitHub artifact attestation
+      - name: Download SLSA provenance
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: ${{ needs.provenance.outputs.provenance-name }}
+          path: verification/provenance
+
+      - name: Verify GitHub artifact attestations
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh attestation verify verification/PicStrip.ipa \
+          gh attestation verify verification/release-assets/PicStrip.ipa \
             --repo ${{ github.repository }} \
             --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
             --source-ref "refs/heads/main" \
-            --source-digest "${{ github.sha }}"
-
-      - name: Download SLSA release provenance
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release download "v${{ needs.version.outputs.version }}" \
+            --source-digest "${{ needs.version.outputs.source_sha }}"
+          gh attestation verify verification/release-assets/qa-results.tar.zst \
             --repo ${{ github.repository }} \
-            --pattern "*.intoto.jsonl" \
-            --dir verification
+            --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
+            --source-ref "refs/heads/main" \
+            --source-digest "${{ needs.version.outputs.source_sha }}"
+          gh attestation verify verification/release-assets/release-source.tar.zst \
+            --repo ${{ github.repository }} \
+            --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
+            --source-ref "refs/heads/main" \
+            --source-digest "${{ needs.version.outputs.source_sha }}"
 
       - name: Install slsa-verifier
         uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
 
       - name: Verify SLSA release provenance
         run: |
-          PROVENANCE_PATH="$(find verification -name '*.intoto.jsonl' -type f | head -n 1)"
+          PROVENANCE_PATH="$(find verification/provenance -name '*.intoto.jsonl' -type f | head -n 1)"
           test -n "$PROVENANCE_PATH"
-
-          slsa-verifier verify-artifact verification/PicStrip.ipa \
+          slsa-verifier verify-artifact verification/release-assets/PicStrip.ipa \
             --provenance-path "$PROVENANCE_PATH" \
             --source-uri "github.com/${{ github.repository }}" \
             --source-branch main \
             --print-provenance > verification/verified-provenance.json
-
+          slsa-verifier verify-artifact verification/release-assets/release-source.tar.zst \
+            --provenance-path "$PROVENANCE_PATH" \
+            --source-uri "github.com/${{ github.repository }}" \
+            --source-branch main
           jq -e \
-            --arg sha "${{ github.sha }}" \
+            --arg sha "${{ needs.version.outputs.source_sha }}" \
             --arg repo "${{ github.repository }}" \
             '.predicate.invocation.configSource.uri == ("git+https://github.com/" + $repo + "@refs/heads/main")
               and .predicate.invocation.configSource.digest.sha1 == $sha' \
             verification/verified-provenance.json > /dev/null
 
-  # ── 8. Upload the verified IPA to TestFlight ───────────────────────────────
+      - name: Upload verified provenance evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: verified-evidence-${{ needs.version.outputs.version }}
+          path: verification/verified-provenance.json
+          retention-days: 90
+
   upload-testflight:
     name: Upload Verified IPA to TestFlight
     runs-on: macos-26
-    needs: [version, verify-provenance]
+    needs: [version, verify-release-evidence]
     if: needs.version.outputs.will_release == 'true'
     permissions:
       contents: read
@@ -403,7 +689,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ needs.version.outputs.source_sha }}
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
@@ -411,89 +697,101 @@ jobs:
           ruby-version: "3.2"
           bundler-cache: true
 
-      - name: Download IPA artifact
+      - name: Download release evidence
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: PicStrip-${{ needs.version.outputs.version }}
-          path: artifacts/
+          name: release-evidence-${{ needs.version.outputs.version }}
+          path: release-evidence
 
       - name: Upload verified IPA to TestFlight
         env:
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          IPA_PATH:                             artifacts/PicStrip.ipa
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          IPA_PATH: release-evidence/PicStrip.ipa
         run: bundle exec fastlane upload_testflight
 
-  # ── 9. Preflight — push metadata + screenshots, no submit ─────────────────
-  # Runs automatically (no gate) immediately after the TestFlight upload so
-  # that by the time a reviewer is asked to approve the production gate below,
-  # the pending "Prepare for Submission" version in App Store Connect already
-  # has all metadata, descriptions, keywords, What's New, and screenshots
-  # populated and ready to inspect.
-  preflight:
-    name: Push Metadata to App Store Connect (no submit)
+      - name: Record TestFlight status
+        run: |
+          python3 - <<'PY'
+          import json, pathlib
+          pathlib.Path("testflight-status.json").write_text(json.dumps({
+              "version": "${{ needs.version.outputs.version }}",
+              "build_number": "${{ needs.version.outputs.build_number }}",
+              "source_sha": "${{ needs.version.outputs.source_sha }}",
+              "status": "uploaded",
+          }, indent=2) + "\n")
+          PY
+
+      - name: Upload TestFlight status
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: testflight-status-${{ needs.version.outputs.version }}
+          path: testflight-status.json
+          retention-days: 90
+
+  publish-release:
+    name: Create GitHub Release and Deployment Tag
     runs-on: ubuntu-latest
-    needs: [version, release, upload-testflight]
+    needs: [version, release-evidence, provenance, verify-release-evidence, upload-testflight]
     if: needs.version.outputs.will_release == 'true'
+    permissions:
+      contents: write
     steps:
-      - name: Checkout (post-release commit — includes release_notes.txt and LFS screenshots)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Download release evidence
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          ref: ${{ needs.release.outputs.release_sha }}
-          fetch-depth: 1
-          lfs: true
+          name: release-evidence-${{ needs.version.outputs.version }}
+          path: release-assets
 
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+      - name: Download SLSA provenance
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          ruby-version: "3.2"
-          bundler-cache: true
+          name: ${{ needs.provenance.outputs.provenance-name }}
+          path: release-assets
 
-      - name: Push metadata + screenshots (no submit)
+      - name: Download verified provenance
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: verified-evidence-${{ needs.version.outputs.version }}
+          path: release-assets
+
+      - name: Download TestFlight status
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: testflight-status-${{ needs.version.outputs.version }}
+          path: release-assets
+
+      - name: Create final release manifest
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, pathlib
+          assets = []
+          for path in sorted(pathlib.Path("release-assets").iterdir()):
+              if path.is_file() and path.name != "release-manifest.json":
+                  data = path.read_bytes()
+                  assets.append({
+                      "name": path.name,
+                      "sha256": hashlib.sha256(data).hexdigest(),
+                      "bytes": len(data),
+                  })
+          pathlib.Path("release-assets/release-manifest.json").write_text(json.dumps({
+              "version": "${{ needs.version.outputs.version }}",
+              "tag": "${{ needs.version.outputs.tag }}",
+              "build_number": "${{ needs.version.outputs.build_number }}",
+              "source_sha": "${{ needs.version.outputs.source_sha }}",
+              "testflight_upload_status": "uploaded",
+              "artifacts": assets,
+          }, indent=2) + "\n")
+          PY
+
+      - name: Create GitHub Release and tag
         env:
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          MARKETING_VERSION:                    ${{ needs.version.outputs.version }}
-          BUILD_NUMBER:                         ${{ github.run_number }}
-        run: bundle exec fastlane preflight
-
-  # ── 10. Submit for App Review ──────────────────────────────────────────────
-  # Requires manual approval via the "production" GitHub environment.
-  # To enable: Settings → Environments → production → add required reviewers.
-  #
-  # By the time this gate appears, the preflight job above will have already
-  # created the pending version in App Store Connect with all metadata and
-  # screenshots populated. Review it there, then approve here to submit.
-  #
-  # The binary is already in TestFlight; skip_binary_upload avoids a duplicate-
-  # binary error and just submits the already-populated version for review.
-  submit:
-    name: Submit for App Review
-    runs-on: ubuntu-latest
-    environment: production
-    needs: [version, release, upload-testflight, preflight]
-    if: needs.version.outputs.will_release == 'true'
-    steps:
-      - name: Checkout (post-release commit — includes release_notes.txt and LFS screenshots)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          ref: ${{ needs.release.outputs.release_sha }}
-          fetch-depth: 1
-          lfs: true
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Submit for App Review
-        env:
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          MARKETING_VERSION:                    ${{ needs.version.outputs.version }}
-          BUILD_NUMBER:                         ${{ github.run_number }}
-        run: bundle exec fastlane submit
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ needs.version.outputs.tag }}" \
+            --repo "${{ github.repository }}" \
+            --target "${{ needs.version.outputs.source_sha }}" \
+            --title "${{ needs.version.outputs.tag }}" \
+            --notes-file release-assets/release-notes.md \
+            release-assets/*

@@ -93,15 +93,23 @@ Compose marketing screenshots from raw captures into ./fastlane/screenshots/proc
 [bundle exec] fastlane ios upload_screenshots
 ```
 
-Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. On CI, screenshot upload is handled inside the submit lane which runs at a pinned release SHA so screenshots are always versioned with code.
+Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. The release deploy workflow stages screenshots before the production approval gate, then submits the current App Store Connect draft as-is.
 
-### ios submit
+### ios app_store_stage
 
 ```sh
-[bundle exec] fastlane ios submit
+[bundle exec] fastlane ios app_store_stage
 ```
 
-Upload metadata + screenshots + submit the processed TestFlight build for App Review
+Stage repo metadata, screenshots, and the processed TestFlight build in App Store Connect without submitting
+
+### ios request_review
+
+```sh
+[bundle exec] fastlane ios request_review
+```
+
+Request App Review for the current App Store Connect draft. Does not upload metadata, screenshots, or choose a build unless BUILD_NUMBER is explicitly provided.
 
 ### ios preflight
 
@@ -109,7 +117,15 @@ Upload metadata + screenshots + submit the processed TestFlight build for App Re
 [bundle exec] fastlane ios preflight
 ```
 
-Push metadata + screenshots to a pending App Store version WITHOUT submitting for review. Use this to verify Fastlane metadata automation in App Store Connect before a real release. Requires MARKETING_VERSION env var (e.g. '1.2.0'). BUILD_NUMBER is optional — omit it to let deliver attach the latest processed TestFlight build for that version.
+Alias for app_store_stage
+
+### ios submit
+
+```sh
+[bundle exec] fastlane ios submit
+```
+
+Alias for request_review
 
 ### ios metadata_only
 

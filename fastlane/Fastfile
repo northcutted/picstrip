@@ -56,7 +56,7 @@ platform :ios do
 
     UI.user_error!(
       "Missing App Store release_notes.txt for locale(s): #{missing.join(', ')}. " \
-      "Run scripts/write_release_notes.sh before preflight or submit."
+      "Render release metadata before app_store_stage."
     ) if missing.any?
   end
 
@@ -193,9 +193,8 @@ platform :ios do
       xcodeproj:    PROJECT
     )
 
-    # Inject MARKETING_VERSION from the semantic-release dry-run so the IPA
-    # carries the correct version string before semantic-release commits the
-    # patch back to project.pbxproj (which happens after this job runs).
+    # Inject MARKETING_VERSION from the semantic-release dry run so the IPA
+    # carries the release version without committing generated version bumps.
     marketing_version = ENV.fetch("MARKETING_VERSION", nil)
     version_xcargs = marketing_version ? "MARKETING_VERSION=#{marketing_version}" : ""
 
@@ -352,7 +351,7 @@ platform :ios do
     end
   end
 
-  desc "Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. On CI, screenshot upload is handled inside the submit lane which runs at a pinned release SHA so screenshots are always versioned with code."
+  desc "Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. The release deploy workflow stages screenshots before the production approval gate, then submits the current App Store Connect draft as-is."
   lane :upload_screenshots do |options|
     # NOTE: this lane uploads the marketing PNGs already on disk under
     # ``fastlane/screenshots/processed/<locale>/``. Run
@@ -363,9 +362,9 @@ platform :ios do
     # IMPORTANT: App Store Connect requires a pending "Prepare for Submission"
     # version to exist before screenshots can be uploaded. Create one first in
     # App Store Connect, or use ``use_live_version: true`` only if you
-    # understand the consequences (bypasses the review gate). On CI this lane
-    # is NOT called — the submit lane handles screenshot upload so they are
-    # always tied to the exact release version.
+    # understand the consequences (bypasses the review gate). Release deploy
+    # stages screenshots through app_store_stage before the manual approval
+    # gate; request_review then preserves any edits made in Connect.
 
     processed_path = "#{ROOT}/fastlane/screenshots/processed"
 
@@ -413,8 +412,8 @@ platform :ios do
     )
   end
 
-  desc "Upload metadata + screenshots + submit the processed TestFlight build for App Review"
-  lane :submit do
+  desc "Stage metadata, screenshots, and the processed TestFlight build in App Store Connect without submitting"
+  lane :app_store_stage do
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
@@ -428,12 +427,11 @@ platform :ios do
 
     # The binary was already uploaded to TestFlight by the release pipeline.
     # skip_binary_upload: true tells deliver to find the existing build
-    # (matched by app_version + build_number) and submit it for review
+    # (matched by app_version + build_number) and attach it to the version
     # rather than re-uploading, which would fail with a duplicate-binary error.
     #
-    # Screenshots are uploaded here (not in a separate screenshots.yml workflow)
-    # so they are always coupled to the exact release version and commit. The
-    # CI submit job checks out the post-release SHA with LFS enabled so the
+    # Screenshots are uploaded here so they are coupled to the exact release
+    # tag and commit. The tag-triggered deploy workflow checks out LFS so the
     # processed PNGs from fastlane/screenshots/processed/ are present on disk.
     processed_path = "#{ROOT}/fastlane/screenshots/processed"
     upload_to_app_store(
@@ -441,9 +439,9 @@ platform :ios do
       app_version:                       ENV["MARKETING_VERSION"],
       build_number:                      ENV["BUILD_NUMBER"],
       skip_binary_upload:                true,
-      submit_for_review:                 true,
-      automatic_release:                 true,   # release automatically on approval
-      phased_release:                    true,   # roll out over 7 days
+      submit_for_review:                 false,
+      automatic_release:                 false,
+      phased_release:                    false,
       primary_category:                  APP_STORE_PRIMARY_CATEGORY,
       secondary_category:                APP_STORE_SECONDARY_CATEGORY,
       metadata_path:                     "./fastlane/metadata",
@@ -452,16 +450,12 @@ platform :ios do
       overwrite_screenshots:             true,   # replace any existing shots for this version
       run_precheck_before_submit:        false,
       precheck_include_in_app_purchases: false,
-      submission_information:            EXPORT_COMPLIANCE_SUBMISSION,
       force:                             true    # skip interactive HTML diff preview
     )
   end
 
-  desc "Push metadata + screenshots to a pending App Store version WITHOUT submitting for review. " \
-       "Use this to verify Fastlane metadata automation in App Store Connect before a real release. " \
-       "Requires MARKETING_VERSION env var (e.g. '1.2.0'). BUILD_NUMBER is optional — omit it to " \
-       "let deliver attach the latest processed TestFlight build for that version."
-  lane :preflight do
+  desc "Request App Review for the current App Store Connect draft"
+  lane :request_review do
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
       issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
@@ -469,34 +463,40 @@ platform :ios do
       is_key_content_base64: false
     )
 
-    accessibility
     validate_export_compliance
-    validate_release_notes
 
-    # Same as the submit lane but submit_for_review: false and no release options.
-    # deliver will create the pending "Prepare for Submission" version if one does
-    # not already exist, populate all metadata, and upload screenshots — then stop.
-    # You can then open App Store Connect, review everything, and either approve
-    # the CI production gate or click Submit manually when satisfied.
-    processed_path = "#{ROOT}/fastlane/screenshots/processed"
-    upload_to_app_store(
+    deliver_options = {
       api_key:                           api_key,
       app_version:                       ENV["MARKETING_VERSION"],
-      build_number:                      ENV.fetch("BUILD_NUMBER", nil),
       skip_binary_upload:                true,
-      submit_for_review:                 false,  # ← key difference: does NOT submit
-      automatic_release:                 false,
-      phased_release:                    false,
-      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
-      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
-      metadata_path:                     "./fastlane/metadata",
-      screenshots_path:                  processed_path,
-      skip_screenshots:                  false,
-      overwrite_screenshots:             true,
+      skip_metadata:                     true,
+      skip_screenshots:                  true,
+      skip_app_version_update:           true,
+      submit_for_review:                 true,
+      automatic_release:                 true,   # release automatically on approval
+      phased_release:                    true,   # roll out over 7 days
       run_precheck_before_submit:        false,
       precheck_include_in_app_purchases: false,
-      force:                             true
-    )
+      submission_information:            EXPORT_COMPLIANCE_SUBMISSION,
+      force:                             true    # skip interactive HTML diff preview
+    }
+
+    # Default release deploy behavior is "submit what's already staged in App
+    # Store Connect." Set BUILD_NUMBER only for an intentional override.
+    build_number = ENV.fetch("BUILD_NUMBER", "").strip
+    deliver_options[:build_number] = build_number unless build_number.empty?
+
+    upload_to_app_store(deliver_options)
+  end
+
+  desc "Alias for app_store_stage"
+  lane :preflight do
+    app_store_stage
+  end
+
+  desc "Alias for request_review"
+  lane :submit do
+    request_review
   end
 
   desc "Push metadata/review information only to an existing App Store version/build. " \

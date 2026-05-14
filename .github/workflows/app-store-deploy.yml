@@ -1,0 +1,144 @@
+name: App Store Deploy
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: app-store-deploy-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify-release-handoff:
+    name: Verify Release Handoff
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.manifest.outputs.version }}
+      build_number: ${{ steps.manifest.outputs.build_number }}
+      source_sha: ${{ steps.manifest.outputs.source_sha }}
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Download release manifest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          for attempt in $(seq 1 30); do
+            rm -f release-assets/release-manifest.json
+            if gh release download "${GITHUB_REF_NAME}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --pattern release-manifest.json \
+              --dir release-assets; then
+              test -s release-assets/release-manifest.json && exit 0
+            fi
+            echo "Release manifest is not indexed yet; retrying (${attempt}/30)..."
+            sleep 10
+          done
+          echo "Timed out waiting for release manifest" >&2
+          exit 1
+
+      - name: Validate handoff manifest
+        id: manifest
+        run: |
+          VERSION="$(jq -r '.version' release-assets/release-manifest.json)"
+          BUILD_NUMBER="$(jq -r '.build_number' release-assets/release-manifest.json)"
+          SOURCE_SHA="$(jq -r '.source_sha' release-assets/release-manifest.json)"
+          STATUS="$(jq -r '.testflight_upload_status' release-assets/release-manifest.json)"
+          test "$STATUS" = "uploaded"
+          test "$SOURCE_SHA" = "$(git rev-parse HEAD)"
+          {
+            echo "version=${VERSION}"
+            echo "build_number=${BUILD_NUMBER}"
+            echo "source_sha=${SOURCE_SHA}"
+          } >> "$GITHUB_OUTPUT"
+
+  stage-app-store:
+    name: Stage App Store Draft
+    runs-on: ubuntu-latest
+    needs: verify-release-handoff
+    steps:
+      - name: Checkout release tag with LFS screenshots
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+          lfs: true
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Download generated App Store metadata
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p release-assets
+          for attempt in $(seq 1 30); do
+            rm -f release-assets/app-store-metadata.tar.zst
+            if gh release download "${GITHUB_REF_NAME}" \
+              --repo "${GITHUB_REPOSITORY}" \
+              --pattern app-store-metadata.tar.zst \
+              --dir release-assets; then
+              test -s release-assets/app-store-metadata.tar.zst && exit 0
+            fi
+            echo "App Store metadata artifact is not indexed yet; retrying (${attempt}/30)..."
+            sleep 10
+          done
+          echo "Timed out waiting for App Store metadata artifact" >&2
+          exit 1
+
+      - name: Expand generated App Store metadata
+        run: tar --zstd -xf release-assets/app-store-metadata.tar.zst -C .
+
+      - name: Stage App Store metadata, screenshots, and build
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MARKETING_VERSION: ${{ needs.verify-release-handoff.outputs.version }}
+          BUILD_NUMBER: ${{ needs.verify-release-handoff.outputs.build_number }}
+          DELIVER_NUMBER_OF_THREADS: "1"
+          FL_NUMBER_OF_THREADS: "1"
+          FL_MAX_NUMBER_OF_THREADS: "1"
+          SPACESHIP_SCREENSHOT_UPLOAD_TIMEOUT: "5"
+        run: bundle exec fastlane app_store_stage
+
+  request-app-review:
+    name: Request App Review
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [verify-release-handoff, stage-app-store]
+    steps:
+      - name: Checkout release tag
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          ref: ${{ github.ref }}
+          fetch-depth: 1
+          persist-credentials: false
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
+        with:
+          ruby-version: "3.2"
+          bundler-cache: true
+
+      - name: Request App Review
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+          MARKETING_VERSION: ${{ needs.verify-release-handoff.outputs.version }}
+        run: bundle exec fastlane request_review

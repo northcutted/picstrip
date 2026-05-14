@@ -34,26 +34,6 @@
           ]
         }
       }
-    ],
-    "@semantic-release/changelog",
-    [
-      "@semantic-release/exec",
-      {
-        "prepareCmd": "sed -i 's/MARKETING_VERSION = [^;]*/MARKETING_VERSION = ${nextRelease.version}/' PicStrip.xcodeproj/project.pbxproj && bash scripts/write_release_notes.sh"
-      }
-    ],
-    [
-      "@semantic-release/git",
-      {
-        "assets": ["CHANGELOG.md", "PicStrip.xcodeproj/project.pbxproj", "fastlane/metadata/*/release_notes.txt"],
-        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
-      }
-    ],
-    [
-      "@semantic-release/github",
-      {
-        "assets": []
-      }
     ]
   ]
 }

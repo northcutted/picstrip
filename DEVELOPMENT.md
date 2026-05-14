@@ -44,8 +44,9 @@ PicStrip/
 │
 ├── .github/workflows/
 │   ├── pr.yml                  # PR checks: lint, analyze, test
-│   ├── main.yml                # Release pipeline (7 jobs)
-│   └── screenshots.yml         # Manual: App Store screenshot capture
+│   ├── main.yml                # Release prep: QA, build, attest, TestFlight, tag/release
+│   ├── app-store-deploy.yml    # Tag-triggered App Store staging + manual review request
+│   └── screenshots.yml         # Manual: App Store screenshot capture/refresh
 │
 ├── fastlane/
 │   ├── Fastfile                # Lane definitions
@@ -58,13 +59,15 @@ PicStrip/
 │   │   └── processed/          # Final marketing PNGs (Git LFS) — uploaded to App Store Connect
 │   └── metadata/               # App Store metadata (title, description, keywords, release notes)
 │
-├── scripts/                    # Utility scripts (release notes, localization, screenshot compositor)
+├── scripts/                    # Utility scripts (release metadata, localization, screenshot compositor)
 │   ├── process_screenshots.py  # Marketing screenshot compositor (custom frame + brand bg + headline)
 │   ├── make_fixture.py         # Regenerates the OCR test fixture (PicStripUITests/test_list.png)
 │   ├── requirements.txt        # Pillow, arabic-reshaper, python-bidi
+│   ├── semantic_dry_run.mjs    # Semantic-release dry-run JSON writer for release prep
+│   ├── render_app_store_metadata.sh  # Copies metadata and applies generated release notes
 │   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
 │   ├── audit_localization_strings.sh  # Flags string-returning literals that should be localized
-│   └── write_release_notes.sh  # Generates fastlane/metadata/en-US/release_notes.txt at release time
+│   └── write_release_notes.sh  # Utility for local/manual release-note generation
 │
 ├── docs/
 │   ├── icons/                  # Generated app icon variants (Default, Dark, Tinted)
@@ -675,8 +678,9 @@ Network Inspector in Xcode will show zero outbound connections from the app.
 | File | Trigger | Purpose |
 |------|---------|---------|
 | `pr.yml` | PR to `main` | Lint, static analysis, unit tests |
-| `main.yml` | Push to `main` | Release pipeline (7 jobs) |
-| `screenshots.yml` | Manual dispatch | App Store screenshot capture |
+| `main.yml` | Push to `main` | Release prep: semantic dry run, QA, attestations, signed IPA, SBOMs, SLSA verification, TestFlight, tag/release |
+| `app-store-deploy.yml` | Push tag `v*` | Stage repo metadata/screenshots/build, then manually submit the current App Store Connect draft |
+| `screenshots.yml` | Manual dispatch | App Store screenshot capture/refresh |
 
 ### PR Workflow (`pr.yml`)
 
@@ -689,67 +693,90 @@ Four jobs run on `macos-26`:
 
 #### PR Screenshots (`screenshots` label)
 
-Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same two devices used in `screenshots.yml` (iPhone 17 Pro Max, iPad Pro 13-inch M5). The App Store auto-scales the 6.9" iPhone set to 6.7"/6.5"/5.5", so the iPhone Air capture is intentionally omitted. Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs — that step is only performed by `screenshots.yml` when dispatched against `main`.
+Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same two devices used in `screenshots.yml` (iPhone 17 Pro Max, iPad Pro 13-inch M5). The App Store auto-scales the 6.9" iPhone set to 6.7"/6.5"/5.5", so the iPhone Air capture is intentionally omitted. Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs; release screenshots are uploaded by the tag-triggered App Store staging job before the manual approval gate.
 
-### Release Workflow (`main.yml`)
+### Release Prep Workflow (`main.yml`)
 
 ```
 version (ubuntu-latest)
-  └─ semantic-release --dry-run
+  └─ scripts/semantic_dry_run.mjs
+     ├─ version / git tag / generated notes
+     ├─ app-store-metadata.tar.zst
+     └─ release-source.tar.zst
      If no releasable commits → all downstream jobs are skipped
 
 lint + analyze + test (macos-26, parallel)
+  └─ compact QA artifacts under qa-results/
+
+qa-attest (ubuntu-latest)
+  └─ qa-results.tar.zst + qa-manifest.json
+     Creates a GitHub artifact attestation with the PicStrip QA predicate
 
 build (macos-26)
   └─ bundle exec fastlane certificates
      bundle exec fastlane build
-       ├─ fastlane match appstore (readonly, SSH key from secret)
-       ├─ gym (Release config, App Store export method, manual signing)
-       │     MARKETING_VERSION injected from semantic-release dry-run output
-       │     BUILD_NUMBER = github.run_number
-       └─ shasum -a 256 build/PicStrip.ipa → PicStrip.ipa.sha256
-     Outputs: ipa-hashes (base64 SHA-256 for SLSA subject)
-     Creates GitHub artifact attestation for build/PicStrip.ipa
-     Restores DerivedData/SPM caches to reduce release build time
+       ├─ MARKETING_VERSION = semantic dry-run version
+       ├─ BUILD_NUMBER = release-prep github.run_number
+       ├─ build-env.txt / signing-env.txt
+       └─ PicStrip.ipa + PicStrip.ipa.sha256
+     Creates GitHub provenance attestations for the IPA and build/signing manifests
 
-release (ubuntu-latest)
-  └─ npx semantic-release
-       ├─ Patches MARKETING_VERSION in project.pbxproj via sed
-       ├─ Generates release_notes.txt (prepareCmd) → committed to main
-       ├─ Creates GitHub Release + git tag
-       └─ Updates CHANGELOG.md
+sbom (ubuntu-latest)
+  └─ pinned Syft CLI
+     ├─ source.spdx.json for release-source.tar.zst
+     └─ ipa.spdx.json for unzipped IPA payload
+     Creates GitHub SBOM attestations
+
+release-evidence (ubuntu-latest)
+  └─ release-build-manifest.json + slsa-subjects.txt
+     Creates a custom release manifest attestation
 
 provenance (reusable — slsa-framework/slsa-github-generator)
-  └─ SLSA Level 3 provenance signed by Sigstore/Rekor
-     Generator workflow referenced by release tag v2.1.0
-     Attached to the GitHub Release
+  └─ generator_generic_slsa3.yml@v2.1.0 with upload-assets: false
+     Produces PicStrip-<version>.intoto.jsonl for release evidence subjects
 
-attach-release-assets (ubuntu-latest)
-  └─ gh release upload v<version>
-       PicStrip.ipa + PicStrip.ipa.sha256
-
-verify-provenance (ubuntu-latest)
-  ├─ gh attestation verify PicStrip.ipa
-  │    --source-digest = github.sha
-  │    --source-ref = refs/heads/main
-  └─ slsa-verifier verify-artifact PicStrip.ipa
-       --source-uri github.com/northcutted/picstrip
-       --source-branch main
-       plus exact github.sha check in the verified provenance JSON
+verify-release-evidence (ubuntu-latest)
+  ├─ gh attestation verify PicStrip.ipa / qa-results.tar.zst / release-source.tar.zst
+  └─ slsa-verifier verify-artifact PicStrip.ipa and release-source.tar.zst
 
 upload-testflight (macos-26)
   └─ bundle exec fastlane upload_testflight
        Uploads the already-built and verified IPA artifact
 
-submit (ubuntu-latest, "production" environment — requires manual approval)
-  needs: [version, upload-testflight]
-  ← approval gate appears only after provenance verification and TestFlight upload succeed
-  └─ bundle exec fastlane submit
-       ├─ upload_to_app_store (skip_binary_upload: true)
-       ├─ submit_for_review: true
-       ├─ automatic_release: true  (rolls out on approval)
-       └─ phased_release: true     (7-day staged rollout)
+publish-release (ubuntu-latest)
+  └─ release-manifest.json with TestFlight status
+     gh release create v<version> --target <source_sha> <all evidence assets>
 ```
+
+The `vX.Y.Z` tag points to the exact source commit that produced the QA evidence, signed IPA, SBOMs, and SLSA provenance. Generated release notes and expanded App Store metadata are release artifacts rather than post-build commits.
+
+### App Store Deploy Workflow (`app-store-deploy.yml`)
+
+```
+verify-release-handoff (ubuntu-latest, tag push v*)
+  ├─ polls release assets for release-manifest.json
+  ├─ verifies manifest source_sha matches the checked-out tag
+  └─ verifies TestFlight upload status is recorded as uploaded
+
+stage-app-store (ubuntu-latest)
+  ├─ checks out the release tag with LFS screenshots
+  ├─ extracts app-store-metadata.tar.zst
+  └─ bundle exec fastlane app_store_stage
+       ├─ metadata + release notes from the repo-generated artifact
+       ├─ processed LFS screenshots from the release tag
+       ├─ category/export/accessibility declarations
+       └─ attach the already-uploaded TestFlight build
+
+request-app-review (ubuntu-latest, production environment)
+  └─ waits for manual approval, then bundle exec fastlane request_review
+       ├─ skip_binary_upload: true
+       ├─ skip_metadata: true
+       ├─ skip_screenshots: true
+       ├─ skip_app_version_update: true
+       └─ submit_for_review: true
+```
+
+The deploy workflow stages repo metadata, release notes, screenshots, categories, accessibility declarations, export compliance, and build selection before the manual approval gate. After that staging job completes, App Store Connect is the source of truth: any manual edits made in App Store Connect before approving the `production` job are preserved because `request_review` skips binary upload, metadata, screenshots, and app-version updates.
 
 ### Fastlane Lanes
 
@@ -765,14 +792,16 @@ submit (ubuntu-latest, "production" environment — requires manual approval)
 | `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`); accepts `device:"..."`, `devices:"a,b"`, and `languages:"en-US,de-DE"` overrides for local runs |
 | `process_screenshots` | Iterates every locale folder under `fastlane/screenshots/` and runs `scripts/process_screenshots.py` to produce the marketing PNGs in `processed/<locale>/` |
 | `upload_screenshots` | Pushes the marketing PNGs in `fastlane/screenshots/processed/` to App Store Connect; validates the full required device set unless `allow_partial:true` is passed |
-| `submit` | `upload_to_app_store` with `skip_binary_upload: true`; submits for App Review |
+| `app_store_stage` | Uploads repo metadata, release notes, processed screenshots, categories, accessibility declarations, export compliance, and attaches the TestFlight build without submitting |
+| `request_review` | Submits the current App Store Connect draft for review with binary upload, metadata, screenshots, and app-version updates skipped |
+| `preflight` / `submit` | Backward-compatible aliases for `app_store_stage` / `request_review` |
 | `accessibility` | Sync App Store Accessibility Nutrition Label declarations from `fastlane/accessibility_declarations.json` |
 
 ### Screenshot Workflow (`screenshots.yml`)
 
-Manually dispatched (not part of the release pipeline). Two modes selected by workflow inputs:
+Manually dispatched for screenshot refreshes. The release deploy workflow uploads the committed processed screenshots from the tag before the approval gate, so this workflow exists to regenerate or manually refresh that repo-managed screenshot set. Two modes are selected by workflow inputs:
 
-- **`generate_new=false` (default — fast upload).** Runs on `ubuntu-latest`. Checkout uses `lfs: true` to pull the marketing PNGs from `fastlane/screenshots/processed/`, then `bundle exec fastlane upload_screenshots` ships them to App Store Connect. ~2 minutes, no simulator, no macOS-runner cost. This is the right path when the on-disk PNGs already match what you want shipped.
+- **`generate_new=false` (default — fast upload).** Runs on `ubuntu-latest`. Checkout uses `lfs: true` to pull the marketing PNGs from `fastlane/screenshots/processed/`, then `bundle exec fastlane upload_screenshots` ships them to App Store Connect. ~2 minutes, no simulator, no macOS-runner cost. This is useful for manual screenshot refreshes; the tag deploy workflow uploads the same processed screenshot tree before the production approval gate.
 - **`generate_new=true` (full regen).** Runs on `macos-26`. Boots both simulators, overrides status bars to `9:41` / full battery / Wi-Fi+cellular, runs the screenshot capture lane (optionally narrowed by the `languages` input), runs the Python compositor to produce the marketing PNGs, commits the result back to `main` via Git LFS with `[skip ci]`, and then uploads. Full 16-locale × 2-device matrix is ~2 hours; the `languages` input narrows the run when you only need a subset.
 
 #### Marketing screenshot compositor
@@ -810,20 +839,20 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/):
 | `fix:` / `perf:` / `revert:` | patch (1.0.0 → 1.0.1) |
 | `BREAKING CHANGE:` anywhere | major (1.0.0 → 2.0.0) |
 
-On release, semantic-release runs a `prepareCmd` that generates `fastlane/metadata/en-US/release_notes.txt` from the commit log, then commits `release_notes.txt` and the updated `project.pbxproj` (MARKETING_VERSION patch) back to `main`.
+The release prep workflow runs semantic-release in dry-run mode through `scripts/semantic_dry_run.mjs`. The resulting version, tag name, and notes are written to workflow artifacts and used to render `app-store-metadata.tar.zst`; semantic-release does not publish, tag, update `CHANGELOG.md`, or commit generated release notes back to `main`.
 
 ---
 
 ## SLSA Build Provenance Level 3
 
-Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was produced by GitHub Actions.
+Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built release evidence set, including `PicStrip.ipa`, the source archive, QA evidence, SBOMs, and build/signing manifests.
 
 This claim is intentionally scoped to the IPA built and attested by GitHub Actions. It does not claim that the same digest identifies the App Store-installed application, because Apple may re-sign, encrypt, thin, or otherwise transform apps during distribution.
 
-The release pipeline creates two complementary provenance records:
+The release pipeline creates complementary provenance and attestation records:
 
-- **GitHub artifact attestation**: the `build` job runs `actions/attest-build-provenance` against `build/PicStrip.ipa`, which uploads provenance to GitHub's repository Attestations API so the release shows attestation coverage in GitHub.
-- **Release-attached SLSA provenance**: the `provenance` job runs the SLSA GitHub Generator reusable workflow and attaches the SLSA Level 3 provenance file to the GitHub Release.
+- **GitHub artifact attestations**: the prep workflow uses `actions/attest` for build provenance, SBOM attestations, and custom PicStrip predicates for QA and release manifests.
+- **Release-attached SLSA provenance**: the `provenance` job runs the SLSA GitHub Generator reusable workflow with `upload-assets: false`; the final `publish-release` job uploads the `.intoto.jsonl` file to the GitHub Release with the rest of the evidence.
 
 ### What SLSA Level 3 Guarantees
 
@@ -835,17 +864,17 @@ The release pipeline creates two complementary provenance records:
 | Ephemeral environment | Fresh runner per job; no persistent state |
 | Isolated build | Hosted GitHub runner; provenance verification gates distribution |
 | Non-falsifiable provenance | Signed by Sigstore/Rekor (public, immutable transparency log) |
-| Distribution gate | TestFlight upload waits for GitHub attestation and SLSA release provenance verification |
+| Distribution gate | TestFlight upload and tag creation wait for GitHub attestation and SLSA release provenance verification |
 
 ### GitHub Artifact Attestations
 
-The `build` job grants only the extra permissions required for native artifact attestations:
+Attestation jobs grant only the extra permissions required for native artifact attestations:
 
 - `id-token: write` to mint the OIDC token used for Sigstore signing
 - `attestations: write` to persist the attestation in GitHub
 - `artifact-metadata: write` to create the linked artifact metadata record
 
-The attestation action is pinned by immutable commit SHA (`a2bbfa25…`, `actions/attest-build-provenance@v4.1.0`) and runs after the IPA and SHA-256 digest are created, before the workflow artifact is uploaded.
+The attestation action is pinned by immutable commit SHA and runs after each evidence artifact is created, before distribution steps consume it.
 
 The release workflow verifies this attestation before TestFlight upload using:
 
@@ -857,13 +886,13 @@ gh attestation verify PicStrip.ipa \
   --source-digest <release-workflow-source-commit>
 ```
 
-Because semantic-release creates the public tag after the IPA is built, the primary source identity for the attested IPA is the workflow source commit (`github.sha`), not the release tag commit.
+The final `vX.Y.Z` tag is created only after these verification gates pass, and it targets the same source commit recorded in `release-manifest.json`.
 
 ### SLSA Generator Ref
 
-The `provenance` job references the SLSA reusable workflow by upstream release tag (`v2.1.0`). That tag resolves to the previously pinned generator commit (`f7dd8c54…`), but the tag form is important for compatibility with `slsa-verifier`: provenance generated from a SHA-only reusable workflow ref can surface the generator identity as an untyped commit ref, which `slsa-verifier` rejects with `unexpected ref type`.
+The `provenance` job references the SLSA reusable workflow by upstream release tag (`v2.1.0`). The tag form is important for compatibility with `slsa-verifier`: provenance generated from a SHA-only reusable workflow ref can surface the generator identity as an untyped commit ref, which `slsa-verifier` rejects with `unexpected ref type`.
 
-PicStrip's app source identity remains commit-based. The release workflow verifies `refs/heads/main` plus the exact `github.sha` that built the IPA, so semantic-release's later tag creation does not become the trust anchor for the attested binary.
+PicStrip's app source identity remains commit-based. The release prep workflow verifies `refs/heads/main` plus the exact source SHA that built the IPA before creating the public tag.
 
 ### Verify an IPA
 
