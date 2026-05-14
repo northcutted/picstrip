@@ -127,10 +127,11 @@ jobs:
         run: |
           mkdir -p qa-results/lint
           set +e
-          bundle exec fastlane lint > qa-results/lint/output.log 2>&1
-          status=$?
+          set -o pipefail
+          bundle exec fastlane lint 2>&1 | tee qa-results/lint/output.log
+          status=${PIPESTATUS[0]}
+          set +o pipefail
           set -e
-          cat qa-results/lint/output.log
           STATUS="$status" python3 - <<'PY'
           import json, os, pathlib
           pathlib.Path("qa-results/lint/manifest.json").write_text(json.dumps({
@@ -179,10 +180,11 @@ jobs:
         run: |
           mkdir -p qa-results/analyze
           set +e
-          bundle exec fastlane analyze > qa-results/analyze/output.log 2>&1
-          status=$?
+          set -o pipefail
+          bundle exec fastlane analyze 2>&1 | tee qa-results/analyze/output.log
+          status=${PIPESTATUS[0]}
+          set +o pipefail
           set -e
-          cat qa-results/analyze/output.log
           STATUS="$status" python3 - <<'PY'
           import json, os, pathlib
           pathlib.Path("qa-results/analyze/manifest.json").write_text(json.dumps({
@@ -231,10 +233,11 @@ jobs:
         run: |
           mkdir -p qa-results/test
           set +e
-          bundle exec fastlane test > qa-results/test/output.log 2>&1
-          status=$?
+          set -o pipefail
+          bundle exec fastlane test 2>&1 | tee qa-results/test/output.log
+          status=${PIPESTATUS[0]}
+          set +o pipefail
           set -e
-          cat qa-results/test/output.log
           cp build/test_output/report.junit qa-results/test/report.junit 2>/dev/null || true
           STATUS="$status" python3 - <<'PY'
           import json, os, pathlib
@@ -639,21 +642,44 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          echo "Verifying IPA build provenance attestation"
           gh attestation verify verification/release-assets/PicStrip.ipa \
             --repo ${{ github.repository }} \
             --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
             --source-ref "refs/heads/main" \
             --source-digest "${{ needs.version.outputs.source_sha }}"
+
+          echo "Verifying IPA SBOM attestation"
+          gh attestation verify verification/release-assets/PicStrip.ipa \
+            --repo ${{ github.repository }} \
+            --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
+            --source-ref "refs/heads/main" \
+            --source-digest "${{ needs.version.outputs.source_sha }}" \
+            --predicate-type "https://spdx.dev/Document"
+
+          echo "Verifying QA custom attestation"
           gh attestation verify verification/release-assets/qa-results.tar.zst \
             --repo ${{ github.repository }} \
             --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
             --source-ref "refs/heads/main" \
-            --source-digest "${{ needs.version.outputs.source_sha }}"
+            --source-digest "${{ needs.version.outputs.source_sha }}" \
+            --predicate-type "https://northcutted.github.io/picstrip/attestations/qa/v1"
+
+          echo "Verifying source SBOM attestation"
           gh attestation verify verification/release-assets/release-source.tar.zst \
             --repo ${{ github.repository }} \
             --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
             --source-ref "refs/heads/main" \
-            --source-digest "${{ needs.version.outputs.source_sha }}"
+            --source-digest "${{ needs.version.outputs.source_sha }}" \
+            --predicate-type "https://spdx.dev/Document"
+
+          echo "Verifying release-build manifest custom attestation"
+          gh attestation verify verification/release-assets/release-build-manifest.json \
+            --repo ${{ github.repository }} \
+            --signer-workflow "github.com/${{ github.repository }}/.github/workflows/main.yml" \
+            --source-ref "refs/heads/main" \
+            --source-digest "${{ needs.version.outputs.source_sha }}" \
+            --predicate-type "https://northcutted.github.io/picstrip/attestations/release-build/v1"
 
       - name: Install slsa-verifier
         uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6 # v2.7.1
