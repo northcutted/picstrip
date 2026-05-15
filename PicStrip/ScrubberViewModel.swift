@@ -321,7 +321,7 @@ final class ScrubberViewModel {
     private var isClearing: Bool = false
     private var piiScanTask: Task<Void, Never>?
     private var piiScanToken = UUID()
-    private var piiFocusTask: Task<Void, Never>?
+    private(set) var piiFocusTask: Task<Void, Never>?
 
     /// The unprocessed image bytes retained so preset / config changes can re-process
     /// without requiring the user to re-pick the image.

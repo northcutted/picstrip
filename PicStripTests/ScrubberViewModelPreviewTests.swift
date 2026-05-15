@@ -122,15 +122,9 @@ final class ScrubberViewModelPreviewTests: XCTestCase {
 
         XCTAssertEqual(viewModel.selectedPIIResult, email)
 
-        // Poll until selectedPIIResult clears (production delay is 1.5 s).
-        // A fixed sleep is too fragile under CI scheduler load; use a generous
-        // timeout with a tight poll interval instead.
-        let deadline = Date().addingTimeInterval(5)
-        while viewModel.selectedPIIResult != nil, Date() < deadline {
-            try? await Task.sleep(for: .milliseconds(100))
-        }
+        await viewModel.piiFocusTask?.value
 
-        XCTAssertNil(viewModel.selectedPIIResult, "selectedPIIResult should clear within 5 s after focusPIIResult")
+        XCTAssertNil(viewModel.selectedPIIResult, "selectedPIIResult should clear after focusPIIResult task completes")
     }
 
     /// `loadData` should populate metadata catalogues from the source bytes but
