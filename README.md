@@ -3,8 +3,8 @@
 
 # PicStrip
 
-[![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue.svg)](https://www.apple.com/ios/)
-[![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
+[![iOS 26+](https://img.shields.io/badge/iOS-26%2B-blue.svg)](https://www.apple.com/ios/)
+[![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![CI](https://github.com/northcutted/picstrip/actions/workflows/main.yml/badge.svg)](https://github.com/northcutted/picstrip/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -277,7 +277,7 @@ open PicStrip.xcodeproj
 
 1. Select the **PicStrip** target → **Signing & Capabilities** → change **Team** to your Apple Developer account.
 2. Repeat for **PicStripShareExtension**.
-3. Select an iPhone 17 simulator (or a physical device running iOS 17+).
+3. Select an iPhone 17 simulator (or a physical device running iOS 26+).
 4. Press **Cmd + R**.
 
 ### Contributor / release tooling
@@ -407,9 +407,9 @@ PicStrip is available on the App Store.
 
 | | |
 |-|-|
-| **iOS** | 17.0+ |
-| **Xcode** | 16.0+ (Xcode 26 on CI) |
-| **Swift** | 5.9+ |
+| **iOS** | 26.0+ |
+| **Xcode** | 26.0+ (Xcode 27 to compile the iOS 27-only features) |
+| **Swift** | 6.2+ toolchain |
 | **macOS** | 14.0+ (for development) |
 | **Apple Developer Account** | Required for signing and share extension entitlements |
 

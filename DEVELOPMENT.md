@@ -82,7 +82,7 @@ PicStrip/
 │   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
 │   └── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
 │
-├── PicStrip/                   # Main app target (iOS 17+, Swift 5.9)
+├── PicStrip/                   # Main app target (iOS 26+)
 │   ├── PicStripApp.swift       # @main entry point
 │   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
