@@ -269,7 +269,7 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(icon: "photo.badge.plus", text: "Select a Photo")
+                    PillLabel(icon: "photo.badge.plus", text: "Select a Photo")
                 }
                 .buttonStyle(.glassProminent)
                 .accessibilityIdentifier("selectPhotoButton")
@@ -282,7 +282,7 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(icon: "photo.stack", text: "Select Multiple Photos")
+                    PillLabel(icon: "photo.stack", text: "Select Multiple Photos")
                 }
                 .buttonStyle(.glass)
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
@@ -291,7 +291,7 @@ struct ContentView: View {
                     haptic(.light)
                     isShowingFilePicker = true
                 } label: {
-                    pillLabel(icon: "folder", text: "Browse Files")
+                    PillLabel(icon: "folder", text: "Browse Files")
                 }
                 .buttonStyle(.glass)
                 .accessibilityIdentifier("browseFilesButton")
@@ -350,23 +350,6 @@ struct ContentView: View {
                 bottomBlobPhase = true
             }
         }
-    }
-
-    // MARK: - Pill button label
-
-    /// Full-width icon + title content for the large capsule buttons.  The
-    /// surface itself comes from the button style (`.glass` / `.glassProminent`),
-    /// so the system supplies Liquid Glass, press states, and the Reduce
-    /// Transparency / Increase Contrast fallbacks.
-    private func pillLabel(icon: String, text: LocalizedStringKey) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .accessibilityHidden(true)
-            Text(text)
-        }
-        .font(.callout.weight(.semibold))
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
     }
 
     // MARK: - Haptics
@@ -677,7 +660,7 @@ struct ContentView: View {
                     haptic(.medium)
                     viewModel.requestSave()
                 } label: {
-                    pillLabel(
+                    PillLabel(
                         icon: viewModel.isScanningPII ? "hourglass" : "square.and.arrow.down",
                         text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos"
                     )
@@ -816,6 +799,31 @@ struct ContentView: View {
         }
     }
 
+}
+
+// MARK: - Pill button label
+
+/// Full-width icon + title content for the large capsule buttons.  The surface
+/// itself comes from the button style (`.glass` / `.glassProminent`), so the
+/// system supplies Liquid Glass, press states, and the Reduce Transparency /
+/// Increase Contrast fallbacks.
+///
+/// A `nonisolated` type rather than a `ContentView` method because
+/// `PhotosPicker` builds its label in a nonisolated closure.
+nonisolated private struct PillLabel: View {
+    let icon: String
+    let text: LocalizedStringKey
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .accessibilityHidden(true)
+            Text(text)
+        }
+        .font(.callout.weight(.semibold))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+    }
 }
 
 // MARK: - Redaction Editor Drawer

@@ -29,14 +29,14 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata |
 | **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
 | **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
-| **Files & Drag-and-Drop** | Import from Photos library, Files app, or drag and drop directly into the app |
+| **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
 | **Save or Replace** | Save a new cleaned asset, or replace the original in your Photos library |
 | **Flexible Export** | PNG (privacy default), JPEG, HEIC, or match original format |
 | **Per-Field Control** | Fine-grained toggles for individual metadata fields and PII types |
 | **Audit Reports** | Export a JSON audit of every stripped field and redacted region |
 | **Share Extension** | Clean photos directly from the iOS share sheet without opening the app |
-| **Siri Shortcuts** | "Clean Photos with PicStrip" intent integrates with Shortcuts and Spotlight |
+| **Siri Shortcuts** | "Clean Photos with PicStrip" opens the picker from Shortcuts and Spotlight; "Strip Metadata from Images" cleans files in the background for automations |
 
 ---
 
@@ -46,7 +46,7 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 A single-pass re-encode still triggers iOS to auto-synthesise a minimal EXIF block (ColorSpace, PixelDimensions). PicStrip defeats this with a deliberate two-pass strategy: pass 1 decodes pixels and force-zeros the EXIF/TIFF dictionaries; pass 2 uses `CGImageDestinationCopyImageSource` with `kCGImageDestinationMergeMetadata: false` to replace the entire metadata tree with only what the user explicitly chose to keep. The result is provably clean output, not "mostly clean."
 
 **Orientation-safe OCR.**
-PII bounding boxes must land on the right pixels regardless of how the photo was captured. PicStrip passes raw `Data` (not a pre-decoded `CGImage`) to `VNImageRequestHandler` so Vision reads the embedded EXIF orientation tag. Passing a decoded `CGImage` strips that tag, causing highlight boxes to land in the wrong position for any portrait-mode iPhone photo.
+PII bounding boxes must land on the right pixels regardless of how the photo was captured. PicStrip passes raw `Data` (not a pre-decoded `CGImage`) to Vision's `ImageRequestHandler` so Vision reads the embedded EXIF orientation tag. Passing a decoded `CGImage` strips that tag, causing highlight boxes to land in the wrong position for any portrait-mode iPhone photo.
 
 **Sequential memory-safe batch processing.**
 Each image in a batch is processed, saved, and explicitly deallocated before the next one begins. This keeps peak memory at ~one image at a time rather than accumulating a full batch in RAM, which matters on constrained devices and inside the share extension's 120 MB process ceiling.
@@ -91,7 +91,7 @@ graph TD
 |-------|------|-------|
 | `ScrubberViewModel` | `@Observable @MainActor final class` | Owns all mutable state; drives the full data-flow pipeline |
 | `ImageProcessor` | `enum` (stateless, static methods) | Two-pass metadata stripping; re-encodes via `ImageIO` |
-| `PIIScanner` | `struct` (stateless) | Async; offloads Vision OCR to `Task.detached` |
+| `PIIScanner` | `struct` (stateless) | Async and `@concurrent`; runs Vision OCR off the caller's actor |
 | `ImageRedactor` | `struct` (stateless) | Burns redaction boxes via `UIGraphicsImageRenderer` |
 | `DetectionRegistry` | `enum` (static `let`) | All regex rules compiled once at app startup |
 

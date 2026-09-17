@@ -46,18 +46,22 @@ private enum Fixture {
         return output as Data
     }
 
-    static let gps: [CFString: Any] = [
-        kCGImagePropertyGPSLatitude: 37.3317,
-        kCGImagePropertyGPSLatitudeRef: "N",
-        kCGImagePropertyGPSLongitude: 122.0307,
-        kCGImagePropertyGPSLongitudeRef: "W"
-    ]
+    static var gps: [CFString: Any] {
+        [
+            kCGImagePropertyGPSLatitude: 37.3317,
+            kCGImagePropertyGPSLatitudeRef: "N",
+            kCGImagePropertyGPSLongitude: 122.0307,
+            kCGImagePropertyGPSLongitudeRef: "W"
+        ]
+    }
 
-    static let exif: [CFString: Any] = [
-        kCGImagePropertyExifDateTimeOriginal: "2024:01:01 12:00:00",
-        kCGImagePropertyExifISOSpeedRatings: [400],
-        kCGImagePropertyExifFNumber: 1.8
-    ]
+    static var exif: [CFString: Any] {
+        [
+            kCGImagePropertyExifDateTimeOriginal: "2024:01:01 12:00:00",
+            kCGImagePropertyExifISOSpeedRatings: [400],
+            kCGImagePropertyExifFNumber: 1.8
+        ]
+    }
 
     static func properties(of data: Data) -> [CFString: Any] {
         guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return [:] }

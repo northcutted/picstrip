@@ -86,12 +86,15 @@ PicStrip/
 │   ├── PicStripApp.swift       # @main entry point
 │   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
+│   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
 │   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
 │   ├── AboutView.swift         # PII catalogue + metadata category entries
 │   ├── PreSaveReviewView.swift # Final review screen; permanent-removal warning
-│   ├── StripImageIntent.swift  # AppIntent for Siri / Shortcuts
+│   ├── StripImageIntent.swift  # Foreground AppIntent: opens the multi-photo picker
+│   ├── StripMetadataIntent.swift  # Background AppIntent: files in → metadata-free files out
+│   ├── IntentRouter.swift      # In-process hand-off from App Intents to the UI
 │   └── PrivacyInfo.xcprivacy  # Zero-data-collection privacy manifest
 │
 ├── PicStripShareExtension/     # Share Extension target (separate binary)
@@ -101,6 +104,10 @@ PicStrip/
 ├── PicStripTests/              # Unit tests
 │   ├── PIIScannerTests.swift
 │   ├── ImageProcessorTests.swift
+│   ├── ExportAndBatchRegressionTests.swift  # keep-path round trips, format/preset, batch fail-closed
+│   ├── AppIntentTests.swift
+│   ├── RedactionFeatureTests.swift
+│   ├── ScrubberViewModelPreviewTests.swift
 │   └── DetectionRegistryTests.swift
 │
 └── PicStripUITests/            # UI / screenshot tests
@@ -113,7 +120,9 @@ PicStrip/
 - `PicStripCore/` files are compiled directly into both the main app and the share extension. This keeps one source of truth without adding a binary framework target.
 - `ExportFormat+AppEnum.swift` is compiled **only in the main app target** because it imports `AppIntents`, which is not needed in extensions.
 - Both targets have independent `PrivacyInfo.xcprivacy` declarations.
-- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target.
+- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target. The share extension does **not** set it, so everything in `PicStripCore/` is declared `nonisolated` explicitly and behaves the same in both targets.
+- All targets build in the **Swift 6 language mode**. Work that must leave the main actor is a `@concurrent` function returning a `Sendable` value — not a `Task.detached` wrapper.
+- iOS 27-only API is wrapped in `#if compiler(>=6.4)` **and** `if #available(iOS 27, *)`, so the project still compiles with the iOS 26 SDK.
 
 ---
 
@@ -163,14 +172,15 @@ PicStrip/
 |----------|-----------|
 | Stateless services (no instances) | Photo processing is a pure function of inputs; no mutable service state needed |
 | Two-pass ImageIO | Single-pass re-encode still triggers iOS auto-synthesis of EXIF; two-pass defeats it |
-| `VNImageRequestHandler(data:)` instead of `(cgImage:)` | Preserves EXIF orientation so bounding boxes land on the correct pixels |
+| `ImageRequestHandler(data)` instead of a decoded `CGImage` | Preserves EXIF orientation so bounding boxes land on the correct pixels (covered by `testBoundingBoxesFollowEXIFOrientation`) |
 | Downsampled UI previews | The app keeps full-resolution bytes for export, but decodes display/review previews to bounded images to reduce RAM |
-| Off-main image processing | Metadata encode/decode and review preview generation run off the MainActor; the view model only publishes final state |
+| Off-main image processing | Metadata encode/decode, review preview generation, OCR, redaction rendering and every batch item run in `@concurrent` functions; the view model only publishes final state |
+| Fail closed | Batch, the share extension and `StripMetadataIntent` never save or return an image when a requested strip or redaction step failed — an untouched original must not be presented as clean |
 | Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
 | Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
-| No Core Data / SwiftData | Metadata is ephemeral; only lifetime stats need persistence (UserDefaults) |
-| App Group for Shortcuts IPC | Single boolean flag from the AppIntent to trigger batch picker |
+| No persistence | Metadata is ephemeral; the app writes nothing to `UserDefaults`, Core Data or SwiftData |
+| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file |
 
 ---
 
@@ -186,7 +196,7 @@ ContentView.selectedItem.didSet → ScrubberViewModel.handleItemChange()
 ScrubberViewModel.processSinglePhoto()
     ├─ Load: PhotosPickerItem → Data
     ├─ Downsample display preview via ImageIO → sourceUIImage
-    ├─ Scan (async, Task.detached):
+    ├─ Scan (async, @concurrent):
     │     PIIScanner.scanImage(data:) → [DetectionResult]
     │     └─ Vision OCR + DetectionRegistry regex + NSDataDetector
     ├─ Off-main process/catalogue:
@@ -210,7 +220,6 @@ User taps "Save to Photos" or "Share"
     ↓
 User taps "Save as New" / "Replace Original" / "Share"
     ├─ PHPhotoLibrary.shared().performChanges { PHAssetCreationRequest }
-    ├─ Update lifetime stats in UserDefaults
     ├─ Generate AuditReport JSON → FileManager.tmp
     └─ Dismiss sheet → home screen
 ```
@@ -222,21 +231,23 @@ User taps "Pick Multiple" (or Shortcut fires StripImageIntent)
     ↓
 ContentView presents BatchConfigView (stripMetadata, redactPII, outputFormat, saveMode)
     ↓
-ScrubberViewModel.processBatch(items, config)
-    ├─ for each PhotosPickerItem (sequential — never concurrent):
+ScrubberViewModel.processBatch(config)  →  runBatch(sources:config:save:)
+    ├─ for each BatchSource (sequential — never concurrent):
     │     ├─ Load: PhotosPickerItem → Data
-    │     ├─ Decode: UIImage(data:)
-    │     ├─ Scan: PIIScanner.scanImage(data:)
-    │     ├─ Optional: ImageRedactor.redact()
-    │     ├─ Strip: ImageProcessor.process(image:sourceData:preset:config:)
+    │     ├─ processBatchItem(...)  ← @concurrent, off the main actor
+    │     │     ├─ Scan: PIIScanner.scanImage(data:)
+    │     │     ├─ Optional: ImageRedactor.redact()
+    │     │     └─ Strip: ImageProcessor.process(...)
+    │     │     (returns nil if any requested step fails → photo counted as failed, nothing saved)
     │     ├─ Save: PHPhotoLibrary.performChanges
     │     ├─ Append to batchReports only after Photos accepts the write
-    │     ├─ Explicit nil of Data + UIImage (ARC pressure relief)
     │     └─ @MainActor progress update
-    └─ Generate BatchAuditReport JSON
+    └─ Generate BatchAuditReport JSON (photoCount = saved, failedCount = not saved)
     ↓
-BatchSummaryView shows total processed, errors, and downloadable audit JSON
+BatchSummaryView shows saved and failed counts and the downloadable audit JSON
 ```
+
+`runBatch` takes its photo sources and its saver as parameters, so unit tests drive the whole loop with in-memory data and never touch the picker or the photo library.
 
 ### Data Ownership
 
@@ -248,8 +259,7 @@ BatchSummaryView shows total processed, errors, and downloadable audit JSON
 | `detectionResults: [DetectionResult]` | ScrubberViewModel | Single-photo session |
 | `pendingStrippedMetadata: StrippedMetadata?` | ScrubberViewModel | Single-photo session |
 | `stripConfig: StripConfig` | ScrubberViewModel | Per-session; persists across format changes |
-| `outputFileFields: [MetadataField]` | ScrubberViewModel | Set after each encode pass |
-| Lifetime stats | `UserDefaults.standard` | App lifetime |
+| `outputFileFields: [MetadataField]` | ScrubberViewModel | Set after each encode pass; after an encode it — not the config — decides what the review and audit call "removed" (`isRemoved(_:)`) |
 | Audit JSON | `FileManager.default.temporaryDirectory` | Session; user can share/download; deleted after |
 
 ---
@@ -327,7 +337,7 @@ struct PIIScanner {
 }
 ```
 
-The method offloads all CPU work to `Task.detached(priority: .userInitiated)`. See [PII Detection Engine](#pii-detection-engine) for the full pipeline.
+The method is `@concurrent`, so it always runs off the caller's actor. It throws `invalidImageData` for undecodable bytes and `textRecognitionFailed` when neither OCR model could run — "could not look" is never reported as "found nothing". See [PII Detection Engine](#pii-detection-engine) for the full pipeline.
 
 ---
 
@@ -339,7 +349,8 @@ Burns opaque black rectangles over detected PII instances using `UIGraphicsImage
 
 ```swift
 struct ImageRedactor {
-    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage
+    func redact(image: UIImage, specs: [RedactionSpec]) async -> UIImage?          // @concurrent
+    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage?  // solid black convenience
 }
 ```
 
@@ -421,6 +432,12 @@ When a user disables a metadata category (or sets a per-field "keep" override), 
 
 EXIF Auxiliary and Apple Maker Note cannot be re-injected through the XMP path API. If a user "keeps" one of these categories, the app reports the fields as stripped regardless.
 
+Kept fields are written with `CGImageMetadataSetValueMatchingImageProperty`, which lets ImageIO pick the correct XMP type per property. Three things are worth knowing before touching this code:
+
+- **Fractional numbers must be handed over as rational strings.** ImageIO reads EXIF rationals back as `Double` but *truncates* a fractional `NSNumber` on write (f/1.8 → 1, 1/125 s → 0, 12.5 m altitude → 12). `ImageProcessor.rationalString(for:)` converts them with a continued-fraction expansion ("9/5", "1/125"). GPS latitude/longitude (and the Dest variants) are the exception: ImageIO converts those from a plain `Double` itself and a rational string corrupts them.
+- **Structural keys are never re-injected.** Pixels are rotated upright during pass 1, so writing the source's `TIFF.Orientation` back would rotate the saved photo a second time.
+- **Some fields cannot be written back at all** (`TIFF.DateTime`, `TIFF.Software`, `TIFF.Artist`, the structured `EXIF.Flash`). After an encode the app therefore trusts the *output file*: `ScrubberViewModel.isRemoved(_:)` reports a field as removed when it is absent from `outputFileFields`, whatever the config asked for. The same rule makes PNG exports honest — PNG carries none of this metadata.
+
 ---
 
 ## PII Detection Engine
@@ -433,15 +450,19 @@ scanImage(data:)
     ├─ [Stage 1] Validate — CGImageSourceCreateWithData + CreateImageAtIndex
     │               ensures a meaningful error before Vision receives bad data
     │
-    ├─ [Stage 2] Vision OCR
-    │   VNImageRequestHandler(data:)  ← raw Data, not CGImage, to preserve EXIF orientation
-    │   VNRecognizeTextRequest
-    │     .recognitionLevel = .accurate
-    │     .usesLanguageCorrection = false  ← preserve raw credential characters
-    │     .automaticallyDetectsLanguage = true
-    │   → [VNRecognizedTextObservation]
+    ├─ [Stage 2] Vision (Swift API) — one handler, one decode
+    │   ImageRequestHandler(data)  ← raw Data, not CGImage, to preserve EXIF orientation
+    │   performAll([RecognizeTextRequest, DetectFaceRectanglesRequest,
+    │               DetectBarcodesRequest, DetectRectanglesRequest])
+    │     RecognizeTextRequest
+    │       .recognitionLevel = .accurate
+    │       .usesLanguageCorrection = false  ← preserve raw credential characters
+    │       .automaticallyDetectsLanguage = true
+    │   → each request reports its own result or `.error`; one failure never
+    │     discards the others (the variadic `perform` would throw for all of them)
     │
-    │   If results.isEmpty → retry with fresh handler at .fast level
+    │   If no text → retry with a fresh handler at .fast level
+    │   If neither OCR pass produced a result → throw textRecognitionFailed
     │
     └─ [Stage 3] Per-observation analysis
         for each observation:
@@ -512,7 +533,9 @@ result-level score: upgraded when a later match for the same type is stronger
 
 **Why `usesLanguageCorrection = false`:** Vision's language correction normalises "AIzaSy..." into dictionary words. Disabled to preserve raw credential characters.
 
-**Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. A fresh `VNImageRequestHandler` is required for the retry because handlers are single-use.
+**Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. The retry uses a fresh `ImageRequestHandler`.
+
+**Face detector revision:** a default-initialised `DetectFaceRectanglesRequest` still resolves to revision 3 on iOS 27, so revision 4 is requested by name — on devices only (it is unimplemented in the simulator) and behind `#if compiler(>=6.4)` + `#available(iOS 27, *)`. If it errors, `scanImage` retries face detection with the default revision so a face is never silently missed.
 
 ### Duplicate Detection
 
@@ -584,29 +607,43 @@ iOS kills extension processes that exceed ~120 MB without warning. Mitigations:
 
 ## App Intent & Siri
 
+### `StripImageIntent` — foreground, opens the picker
+
 **File:** `PicStrip/StripImageIntent.swift`
 
 ```swift
 struct StripImageIntent: AppIntent {
     static let title: LocalizedStringResource = "Clean Photos with PicStrip"
-    static let openAppWhenRun: Bool = true
+    static let supportedModes: IntentModes = .foreground(.immediate)   // replaces openAppWhenRun (deprecated iOS 26)
+
+    @AppDependency private var router: IntentRouter
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        UserDefaults(suiteName: "group.com.northcutt.PicStrip")?
-            .set(true, forKey: "picstrip.openBatchPicker")
+        router.requestBatchPicker()
         return .result()
     }
 }
 ```
 
-When the intent fires:
+The intent runs in the foreground app process, so it talks to the UI through `IntentRouter` (`@Observable @MainActor`, registered with `AppDependencyManager` in `PicStripApp.init()`):
 
-1. A boolean flag is written to the shared App Group suite (`group.com.northcutt.PicStrip`).
-2. The main app's `ContentView` observes `@AppStorage("picstrip.openBatchPicker", store: ...)`.
-3. On `true`, `ContentView` immediately presents `BatchConfigView` instead of the home screen.
+1. `perform()` sets `isBatchPickerRequested`.
+2. `ContentView` observes it with `.onChange(..., initial: true)` — `initial` covers a cold launch, where the intent has already run before the view exists — presents the multi-photo picker and clears the request.
 
-Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in Shortcuts app and Spotlight.
+This replaced an App Group `UserDefaults` flag that was only read on a `scenePhase → .active` transition. Running the shortcut while PicStrip was already frontmost never produced that transition, so the flag went stale and opened the picker at some later, unrelated launch.
+
+Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in the Shortcuts app and Spotlight.
+
+### `StripMetadataIntent` — background, files in → files out
+
+**File:** `PicStrip/StripMetadataIntent.swift`
+
+Takes `[IntentFile]` (`supportedContentTypes: [.image]`) plus an `ExportFormat`, strips metadata with `ImageProcessor`, and returns clean `[IntentFile]`s for the next Shortcuts step. `supportedModes = .background`; on iOS 27 it conforms to `LongRunningIntent` and runs inside `performBackgroundTask` so a large selection can outlast the normal intent time limit.
+
+It is deliberately **metadata only** — no OCR (what previously exceeded the background memory ceiling) and no photo-library writes (a background intent cannot present the authorization prompt). It fails closed: one unreadable or undecodable file fails the whole run.
+
+> **Verify before release:** `IntentFile.data` was previously observed to come back empty for Photos-backed input ("Select Photos"). The intent falls back to reading the security-scoped `fileURL` and throws a clear error if both are empty, but the Shortcuts → Photos hand-off has not been exercised end to end on a device.
 
 ---
 
@@ -614,13 +651,11 @@ Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in Shortcut
 
 | Data | Storage | Key | Scope |
 |------|---------|-----|-------|
-| Lifetime photos cleaned | `UserDefaults.standard` | `picstrip.lifetimePhotos` | App |
-| Lifetime metadata fields stripped | `UserDefaults.standard` | `picstrip.lifetimeFields` | App |
-| Batch picker flag | `UserDefaults(suiteName: "group.com.northcutt.PicStrip")` | `picstrip.openBatchPicker` | App Group |
+| "Edit in PicStrip" hand-off | App Group container (`group.com.northcutt.PicStrip`) | `pending-edit.data` | Until the app next becomes active; written with complete file protection, deleted before loading |
 | Audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_Audit_<UUID>.json` | Session |
 | Batch audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_BatchAudit_<UUID>.json` | Session |
 
-No photo metadata, no detection results, no user preferences beyond stats are ever persisted. This is intentional — nothing about which photos were processed or what PII was found survives a session.
+No photo metadata, no detection results and no user preferences are ever persisted; the app does not use `UserDefaults` at all (and its privacy manifest no longer declares it). This is intentional — nothing about which photos were processed or what PII was found survives a session.
 
 ---
 
@@ -660,7 +695,7 @@ The app defaults to `.addOnly` authorization. Users must explicitly grant read+w
 ```
 UIImage(data:)          native iOS — no network
 CGImageSourceCreateWithData  ImageIO — native iOS
-VNRecognizeTextRequest  Vision — on-device model, no network
+RecognizeTextRequest    Vision — on-device model, no network
 NSRegularExpression     Foundation — native iOS
 UIGraphicsImageRenderer CoreGraphics — native iOS
 CGImageDestinationCopyImageSource  ImageIO — native iOS
@@ -1071,11 +1106,11 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 
 ### OCR Language Correction Must Stay Disabled
 
-`VNRecognizeTextRequest.usesLanguageCorrection = true` normalises OCR output toward dictionary words. For credentials (`AIzaSyD...`, `sk-live-...`, `AKIAIOSFODNN7EXAMPLE`) this destroys the pattern structure the regex rules depend on. It must remain `false`.
+`RecognizeTextRequest.usesLanguageCorrection = true` normalises OCR output toward dictionary words. For credentials (`AIzaSyD...`, `sk-live-...`, `AKIAIOSFODNN7EXAMPLE`) this destroys the pattern structure the regex rules depend on. It must remain `false`.
 
-### `.fast` Fallback Requires a Fresh Handler
+### Use `performAll`, Not the Variadic `perform`
 
-`VNImageRequestHandler` is single-use. The `.accurate` + `.fast` retry pattern in `PIIScanner.recognizeText(in:)` correctly creates a new handler for the retry. Do not attempt to reuse the first handler — the `perform()` call will throw.
+`ImageRequestHandler.perform(a, b, c)` throws if *any* request fails, discarding the results of the ones that succeeded — rectangle detection failing on the simulator would take OCR down with it. `performAll` reports each request separately. The `.fast` OCR retry and the default-revision face retry each create a fresh handler.
 
 ### Batch Processing Must Remain Sequential
 

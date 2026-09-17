@@ -68,15 +68,44 @@ nonisolated private struct BatchItemOutput: Sendable {
     let metadataStripped: [MetadataCategoryReport]
 }
 
-private struct ProcessingSnapshot {
+/// An image's ImageIO property dictionary, frozen so it can be handed between
+/// the background decoders and the main actor.
+///
+/// `@unchecked Sendable`: the dictionary comes straight from
+/// `CGImageSourceCopyPropertiesAtIndex` and is never mutated afterwards; its
+/// values are immutable property-list objects (strings, numbers, arrays,
+/// dictionaries), which are safe to read from any thread.
+nonisolated struct SourceProperties: @unchecked Sendable {
+    let dictionary: [CFString: Any]
+
+    init?(_ dictionary: [CFString: Any]?) {
+        guard let dictionary else { return nil }
+        self.dictionary = dictionary
+    }
+
+    init?(imageData: Data) {
+        guard let source = CGImageSourceCreateWithData(imageData as CFData, nil) else { return nil }
+        self.init(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
+    }
+}
+
+/// What a freshly loaded image's metadata looks like, computed off the main actor.
+nonisolated private struct SourceCatalog: Sendable {
+    let props: SourceProperties?
+    let stripped: StrippedMetadata
+    let all: StrippedMetadata
+    let utType: UTType?
+}
+
+nonisolated private struct ProcessingSnapshot: Sendable {
     let processed: ProcessedImage
     let outputFileFields: [MetadataField]
     let processedPreviewUIImage: UIImage?
-    let rawSourceProps: [CFString: Any]?
+    let rawSourceProps: SourceProperties?
     let allSourceMetadata: StrippedMetadata?
 }
 
-private struct ProcessingRequest {
+nonisolated private struct ProcessingRequest: Sendable {
     let raw: Data
     let sourceData: Data
     let imageOverride: UIImage?
@@ -384,7 +413,7 @@ final class ScrubberViewModel {
 
     /// The raw source properties from ImageIO — used to rebuild pendingStrippedMetadata
     /// cheaply when only the config changes (without re-running the full encode pipeline).
-    private var rawSourceProps: [CFString: Any]?
+    private var rawSourceProps: SourceProperties?
 
     /// Rejects stale processing completions when the user changes photo, preset,
     /// or redaction settings while an off-main encode is still running.
@@ -524,48 +553,10 @@ final class ScrubberViewModel {
     /// encode itself is deferred to `prepareAndReview`, which runs only when the
     /// user opens the review sheet to save or share.
     private func catalogSourceMetadata(from data: Data) async {
-        struct Catalog {
-            let props: [CFString: Any]?
-            let stripped: StrippedMetadata
-            let all: StrippedMetadata
-            let utType: UTType?
-        }
-
         let token = UUID()
         processingToken = token
 
-        let currentConfig = stripConfig
-        let allCategoriesConfig = StripConfig(
-            categoryEnabled: Dictionary(
-                uniqueKeysWithValues: ImageProcessor.categoryMap.map { ($0.category, true) }
-            ),
-            fieldOverrides: [:]
-        )
-
-        let catalog = await Task.detached(priority: .userInitiated) { () -> Catalog in
-            guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
-                return Catalog(
-                    props: nil,
-                    stripped: StrippedMetadata(fields: []),
-                    all: StrippedMetadata(fields: []),
-                    utType: nil
-                )
-            }
-            let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-            let utType: UTType?
-            if let cfType = CGImageSourceGetType(source),
-               let detected = UTType(cfType as String) {
-                utType = detected
-            } else {
-                utType = nil
-            }
-            return Catalog(
-                props: props,
-                stripped: ImageProcessor.catalogueStrippedMetadata(from: props, config: currentConfig),
-                all: ImageProcessor.catalogueStrippedMetadata(from: props, config: allCategoriesConfig),
-                utType: utType
-            )
-        }.value
+        let catalog = await Self.makeSourceCatalog(from: data, config: stripConfig)
 
         guard processingToken == token else { return }
         rawSourceProps          = catalog.props
@@ -840,7 +831,7 @@ final class ScrubberViewModel {
     /// Called when only `stripConfig` changes and a full re-process would be redundant.
     func refreshPendingMetadata() {
         pendingStrippedMetadata = ImageProcessor.catalogueStrippedMetadata(
-            from: rawSourceProps,
+            from: rawSourceProps?.dictionary,
             config: stripConfig
         )
     }
@@ -955,60 +946,74 @@ final class ScrubberViewModel {
         }
     }
 
-    private static func makeProcessingSnapshot(_ request: ProcessingRequest) async throws -> ProcessingSnapshot {
-        try await Task.detached(priority: .userInitiated) {
-            let result: ProcessedImage
-            if let imageOverride = request.imageOverride {
-                result = try ImageProcessor.process(
-                    image: imageOverride,
-                    sourceData: request.sourceData,
-                    preset: request.preset,
-                    config: request.config
-                )
-            } else {
-                result = try ImageProcessor.process(
-                    data: request.raw,
-                    preset: request.preset,
-                    config: request.config
-                )
-            }
-
-            let outputFileFields = ImageProcessor.readAllFields(from: result.data)
-            let processedPreview = ImageProcessor.downsampledUIImage(
-                from: result.data,
-                maxPixelDimension: 1_600
+    /// Reads the source's properties and catalogues them off the main actor.
+    @concurrent
+    nonisolated private static func makeSourceCatalog(from data: Data, config: StripConfig) async -> SourceCatalog {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return SourceCatalog(
+                props: nil,
+                stripped: StrippedMetadata(fields: []),
+                all: StrippedMetadata(fields: []),
+                utType: nil
             )
+        }
+        let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let utType = CGImageSourceGetType(source).flatMap { UTType($0 as String) }
+        return SourceCatalog(
+            props: SourceProperties(props),
+            stripped: ImageProcessor.catalogueStrippedMetadata(from: props, config: config),
+            all: ImageProcessor.catalogueStrippedMetadata(from: props, config: .allEnabled),
+            utType: utType
+        )
+    }
 
-            let rawSourceProps: [CFString: Any]?
-            let allSourceMetadata: StrippedMetadata?
-            if request.updateSourceMetadata {
-                if let source = CGImageSourceCreateWithData(request.sourceData as CFData, nil) {
-                    rawSourceProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-                } else {
-                    rawSourceProps = nil
-                }
-                allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
-                    from: rawSourceProps,
-                    config: StripConfig(
-                        categoryEnabled: Dictionary(
-                            uniqueKeysWithValues: ImageProcessor.categoryMap.map { ($0.category, true) }
-                        ),
-                        fieldOverrides: [:]
-                    )
-                )
-            } else {
-                rawSourceProps = nil
-                allSourceMetadata = nil
-            }
-
-            return ProcessingSnapshot(
-                processed: result,
-                outputFileFields: outputFileFields,
-                processedPreviewUIImage: processedPreview,
-                rawSourceProps: rawSourceProps,
-                allSourceMetadata: allSourceMetadata
+    /// Runs the full encode plus the output read-back off the main actor.
+    @concurrent
+    nonisolated private static func makeProcessingSnapshot(
+        _ request: ProcessingRequest
+    ) async throws -> ProcessingSnapshot {
+        let result: ProcessedImage
+        if let imageOverride = request.imageOverride {
+            result = try ImageProcessor.process(
+                image: imageOverride,
+                sourceData: request.sourceData,
+                preset: request.preset,
+                config: request.config
             )
-        }.value
+        } else {
+            result = try ImageProcessor.process(
+                data: request.raw,
+                preset: request.preset,
+                config: request.config
+            )
+        }
+
+        let outputFileFields = ImageProcessor.readAllFields(from: result.data)
+        let processedPreview = ImageProcessor.downsampledUIImage(
+            from: result.data,
+            maxPixelDimension: 1_600
+        )
+
+        let rawSourceProps: SourceProperties?
+        let allSourceMetadata: StrippedMetadata?
+        if request.updateSourceMetadata {
+            rawSourceProps = SourceProperties(imageData: request.sourceData)
+            allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
+                from: rawSourceProps?.dictionary,
+                config: .allEnabled
+            )
+        } else {
+            rawSourceProps = nil
+            allSourceMetadata = nil
+        }
+
+        return ProcessingSnapshot(
+            processed: result,
+            outputFileFields: outputFileFields,
+            processedPreviewUIImage: processedPreview,
+            rawSourceProps: rawSourceProps,
+            allSourceMetadata: allSourceMetadata
+        )
     }
 
     /// Saves the processed image to the photo library.
