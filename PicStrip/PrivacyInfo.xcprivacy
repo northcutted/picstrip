@@ -34,9 +34,8 @@
         date is written as part of standard image encoding; not used to derive
         a fingerprint or identify the user).
 
-        UserDefaults — used for app-local lifetime counters and the App Group
-        handoff that lets App Shortcuts open the batch picker in PicStrip.
-        Reasons: CA92.1 (app-only defaults) and 1C8F.1 (same App Group).
+        PicStrip does not read or write UserDefaults: nothing about processed
+        photos is persisted, and App Shortcuts reach the UI in-process.
     -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
@@ -46,15 +45,6 @@
             <key>NSPrivacyAccessedAPITypeReasons</key>
             <array>
                 <string>C617.1</string>
-            </array>
-        </dict>
-        <dict>
-            <key>NSPrivacyAccessedAPIType</key>
-            <string>NSPrivacyAccessedAPICategoryUserDefaults</string>
-            <key>NSPrivacyAccessedAPITypeReasons</key>
-            <array>
-                <string>CA92.1</string>
-                <string>1C8F.1</string>
             </array>
         </dict>
     </array>

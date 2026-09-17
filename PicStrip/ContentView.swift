@@ -11,7 +11,7 @@ struct ContentView: View {
     @State private var isAddingRedaction = false
     @State private var zoomResetRequest = 0
 
-    /// Set to true by the scenePhase observer when StripImageIntent fires.
+    /// Set to true when `StripImageIntent` asks for the multi-photo picker.
     @State private var isShowingIntentBatchPicker = false
 
     /// Drives the Files app picker sheet.
@@ -37,7 +37,7 @@ struct ContentView: View {
     /// Drives the bottom-right indigo blob (slower cycle, offset feel).
     @State private var bottomBlobPhase = false
 
-    @Environment(\.scenePhase) private var scenePhase
+    @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
@@ -121,11 +121,11 @@ struct ContentView: View {
             if newSheet != nil { closePanel() }
         }
         // ── Intent trigger ────────────────────────────────────────────────
-        .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .active else { return }
-            let defaults = UserDefaults(suiteName: "group.com.northcutt.PicStrip")
-            guard defaults?.bool(forKey: "picstrip.openBatchPicker") == true else { return }
-            defaults?.set(false, forKey: "picstrip.openBatchPicker")
+        // `initial: true` covers a cold launch, where the intent has already run
+        // by the time this view first appears.
+        .onChange(of: intentRouter.isBatchPickerRequested, initial: true) { _, requested in
+            guard requested else { return }
+            intentRouter.batchPickerPresented()
             isShowingIntentBatchPicker = true
         }
         // ── Programmatic PhotosPicker for intent ──────────────────────────
@@ -1513,4 +1513,5 @@ private struct RedactionEditorDrawer: View {
 
 #Preview {
     ContentView(viewModel: ScrubberViewModel())
+        .environment(IntentRouter())
 }

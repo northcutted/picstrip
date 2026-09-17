@@ -12451,6 +12451,100 @@
         }
       }
     },
+    "Images" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الصور"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bilder"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imágenes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Images"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Immagini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afbeeldingen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obrazy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagens"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagens"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bilder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntüler"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "图像"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影像"
+          }
+        }
+      }
+    },
     "Indian PAN" : {
 
     },
@@ -17805,6 +17899,194 @@
         }
       }
     },
+    "PicStrip could not read “%@”. No images were returned." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر على PicStrip قراءة ”%@“. لم يتم إرجاع أي صور."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip konnte „%@“ nicht lesen. Es wurden keine Bilder zurückgegeben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo leer «%@». No se devolvió ninguna imagen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip n’a pas pu lire « %@ ». Aucune image n’a été renvoyée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non è riuscito a leggere “%@”. Non è stata restituita alcuna immagine."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは「%@」を読み込めませんでした。画像は返されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip이 ‘%@’을(를) 읽을 수 없습니다. 반환된 이미지가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kon ‘%@’ niet lezen. Er zijn geen afbeeldingen teruggegeven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie mógł odczytać „%@”. Nie zwrócono żadnych obrazów."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu ler “%@”. Nenhuma imagem foi retornada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu ler “%@”. Não foi devolvida nenhuma imagem."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kunde inte läsa ”%@”. Inga bilder returnerades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip “%@” dosyasını okuyamadı. Hiçbir görüntü döndürülmedi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 无法读取“%@”。未返回任何图像。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 無法讀取「%@」。未傳回任何影像。"
+          }
+        }
+      }
+    },
+    "PicStrip could not remove the metadata from “%@”. No images were returned." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر على PicStrip إزالة البيانات الوصفية من ”%@“. لم يتم إرجاع أي صور."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip konnte die Metadaten aus „%@“ nicht entfernen. Es wurden keine Bilder zurückgegeben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo eliminar los metadatos de «%@». No se devolvió ninguna imagen."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip n’a pas pu supprimer les métadonnées de « %@ ». Aucune image n’a été renvoyée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non è riuscito a rimuovere i metadati da “%@”. Non è stata restituita alcuna immagine."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは「%@」からメタデータを削除できませんでした。画像は返されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip이 ‘%@’에서 메타데이터를 제거할 수 없습니다. 반환된 이미지가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kon de metadata niet uit ‘%@’ verwijderen. Er zijn geen afbeeldingen teruggegeven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie mógł usunąć metadanych z „%@”. Nie zwrócono żadnych obrazów."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu remover os metadados de “%@”. Nenhuma imagem foi retornada."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu remover os metadados de “%@”. Não foi devolvida nenhuma imagem."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kunde inte ta bort metadata från ”%@”. Inga bilder returnerades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip “%@” dosyasındaki meta verileri kaldıramadı. Hiçbir görüntü döndürülmedi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 无法移除“%@”中的元数据。未返回任何图像。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 無法移除「%@」中的元資料。未傳回任何影像。"
+          }
+        }
+      }
+    },
     "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session." : {
 
     },
@@ -21086,6 +21368,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已刪除資料"
+          }
+        }
+      }
+    },
+    "Removes location, camera, and other private metadata from images and returns clean copies. Runs on this device without opening PicStrip. Visible text and faces are not redacted." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يزيل بيانات الموقع والكاميرا وغيرها من البيانات الوصفية الخاصة من الصور ويُرجع نسخًا نظيفة. يعمل على هذا الجهاز من دون فتح PicStrip. لا يتم تنقيح النصوص والوجوه الظاهرة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt Standort-, Kamera- und andere private Metadaten aus Bildern und gibt bereinigte Kopien zurück. Läuft auf diesem Gerät, ohne PicStrip zu öffnen. Sichtbarer Text und Gesichter werden nicht geschwärzt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la ubicación, la cámara y otros metadatos privados de las imágenes y devuelve copias limpias. Se ejecuta en este dispositivo sin abrir PicStrip. El texto y las caras visibles no se censuran."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprime la localisation, l’appareil photo et les autres métadonnées privées des images, puis renvoie des copies nettoyées. S’exécute sur cet appareil sans ouvrir PicStrip. Le texte et les visages visibles ne sont pas masqués."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove posizione, fotocamera e altri metadati privati dalle immagini e restituisce copie pulite. Viene eseguito su questo dispositivo senza aprire PicStrip. Testo e volti visibili non vengono oscurati."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像から位置情報、カメラ情報、その他の個人的なメタデータを削除し、クリーンなコピーを返します。PicStripを開かずにこのデバイス上で実行されます。表示されているテキストや顔は隠されません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지에서 위치, 카메라 및 기타 개인 메타데이터를 제거하고 정리된 사본을 반환합니다. PicStrip을 열지 않고 이 기기에서 실행됩니다. 보이는 텍스트와 얼굴은 가려지지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert locatie-, camera- en andere persoonlijke metadata uit afbeeldingen en geeft opgeschoonde kopieën terug. Wordt op dit apparaat uitgevoerd zonder PicStrip te openen. Zichtbare tekst en gezichten worden niet geredigeerd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwa z obrazów lokalizację, dane aparatu i inne prywatne metadane, a następnie zwraca wyczyszczone kopie. Działa na tym urządzeniu bez otwierania PicStrip. Widoczny tekst i twarze nie są zakrywane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove localização, câmera e outros metadados privados das imagens e retorna cópias limpas. É executado neste dispositivo sem abrir o PicStrip. Texto e rostos visíveis não são ocultados."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove localização, câmara e outros metadados privados das imagens e devolve cópias limpas. É executado neste dispositivo sem abrir o PicStrip. O texto e os rostos visíveis não são ocultados."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tar bort plats, kamera och andra privata metadata från bilder och returnerar rensade kopior. Körs på den här enheten utan att öppna PicStrip. Synlig text och ansikten censureras inte."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntülerden konum, kamera ve diğer özel meta verileri kaldırır ve temiz kopyalar döndürür. PicStrip açılmadan bu aygıtta çalışır. Görünür metinler ve yüzler gizlenmez."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除图像中的位置、相机及其他私密元数据,并返回干净的副本。无需打开 PicStrip,直接在此设备上运行。不会遮蔽可见的文字和人脸。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除影像中的位置、相機及其他私密元資料,並傳回乾淨的副本。無需打開 PicStrip,直接在此裝置上執行。不會遮蔽可見的文字和人臉。"
           }
         }
       }
@@ -24639,6 +25015,194 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "長條 %@"
+          }
+        }
+      }
+    },
+    "Strip metadata from ${images}" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة البيانات الوصفية من ${images}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten aus ${images} entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de ${images}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les métadonnées de ${images}"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i metadati da ${images}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${images}からメタデータを削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${images}에서 메타데이터 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder metadata uit ${images}"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane z ${images}"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados de ${images}"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados de ${images}"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort metadata från ${images}"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${images} içinden meta verileri kaldır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除${images}中的元数据"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除${images}中的元資料"
+          }
+        }
+      }
+    },
+    "Strip Metadata from Images" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة البيانات الوصفية من الصور"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten aus Bildern entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de las imágenes"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les métadonnées des images"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i metadati dalle immagini"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像からメタデータを削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지에서 메타데이터 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadata uit afbeeldingen verwijderen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane z obrazów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados das imagens"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados das imagens"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort metadata från bilder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntülerden meta verileri kaldır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除图像中的元数据"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除影像中的元資料"
           }
         }
       }
