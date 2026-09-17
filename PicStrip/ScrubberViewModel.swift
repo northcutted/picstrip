@@ -583,14 +583,19 @@ final class ScrubberViewModel {
 
         piiScanTask = Task { [piiScanner] in
             let result: [DetectionResult]
+            var scanError: String?
             do {
                 result = try await piiScanner.scanImage(data: data)
             } catch {
+                // Never let a failed scan look like a clean one: tell the user so
+                // they know to check the photo themselves.
                 result = []
+                scanError = error.localizedDescription
             }
 
             await MainActor.run {
                 guard self.piiScanToken == token, !Task.isCancelled else { return }
+                if let scanError { self.errorMessage = scanError }
                 self.detectedPII = result
                 // Privacy by default: pre-select every detected type for redaction.
                 // `detectedPII.didSet` already called replaceDetectedRedactionRegions;

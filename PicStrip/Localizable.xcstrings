@@ -25710,6 +25710,100 @@
         }
       }
     },
+    "The sensitive-data scan could not run on this image. Review it manually before sharing." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر تشغيل فحص البيانات الحساسة على هذه الصورة. راجعها يدويًا قبل مشاركتها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Prüfung auf sensible Daten konnte für dieses Bild nicht ausgeführt werden. Prüfe es vor dem Teilen selbst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo ejecutar el análisis de datos sensibles en esta imagen. Revísala manualmente antes de compartirla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’analyse des données sensibles n’a pas pu s’exécuter sur cette image. Vérifiez-la vous-même avant de la partager."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile eseguire la scansione dei dati sensibili su questa immagine. Controllala manualmente prima di condividerla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この画像では機密データのスキャンを実行できませんでした。共有する前にご自身で確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 이미지에서는 민감한 데이터 스캔을 실행할 수 없습니다. 공유하기 전에 직접 확인하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De scan op gevoelige gegevens kon niet worden uitgevoerd op deze afbeelding. Controleer deze zelf voordat je deelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się przeskanować tego obrazu pod kątem danych wrażliwych. Sprawdź go ręcznie przed udostępnieniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível executar a análise de dados sensíveis nesta imagem. Revise-a manualmente antes de compartilhar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível executar a análise de dados sensíveis nesta imagem. Reveja-a manualmente antes de partilhar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det gick inte att söka efter känsliga data i den här bilden. Granska den själv innan du delar den."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu görüntüde hassas veri taraması çalıştırılamadı. Paylaşmadan önce kendiniz gözden geçirin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法对此图像运行敏感数据扫描。请在分享前手动检查。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法對此影像執行敏感資料掃描。請在分享前手動檢查。"
+          }
+        }
+      }
+    },
     "The source image format is not supported for re-encoding." : {
       "localizations" : {
         "ar" : {

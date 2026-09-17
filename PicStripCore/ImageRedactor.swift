@@ -132,47 +132,49 @@ nonisolated struct ImageRedactor {
 
     /// Burns styled redaction blocks over the supplied specs and returns a new,
     /// flattened `UIImage`.  Specs whose `isEnabled` flag is false are skipped.
+    ///
+    /// `@concurrent`: always renders off the caller's actor, so a full-resolution
+    /// redraw never blocks the UI.
+    @concurrent
     func redact(image: UIImage, specs: [RedactionSpec]) async -> UIImage? {
-        await Task.detached(priority: .userInitiated) {
-            let enabled = specs.filter(\.isEnabled)
-            guard !enabled.isEmpty else { return image }
+        let enabled = specs.filter(\.isEnabled)
+        guard !enabled.isEmpty else { return image }
 
-            // ── Step 1: Pixelate pre-pass ──────────────────────────────────
-            let pixelateSpecs = enabled.filter { $0.style == .pixelate }
-            var workingImage = image
-            if !pixelateSpecs.isEmpty,
-               let pixellated = Self.applyPixellate(to: image, specs: pixelateSpecs) {
-                workingImage = pixellated
-            }
+        // ── Step 1: Pixelate pre-pass ──────────────────────────────────────
+        let pixelateSpecs = enabled.filter { $0.style == .pixelate }
+        var workingImage = image
+        if !pixelateSpecs.isEmpty,
+           let pixellated = Self.applyPixellate(to: image, specs: pixelateSpecs) {
+            workingImage = pixellated
+        }
 
-            // ── Step 2: Raster pass for remaining styles ───────────────────
-            let size     = image.size
-            let format   = image.imageRendererFormat
-            let renderer = UIGraphicsImageRenderer(size: size, format: format)
+        // ── Step 2: Raster pass for remaining styles ───────────────────────
+        let size     = image.size
+        let format   = image.imageRendererFormat
+        let renderer = UIGraphicsImageRenderer(size: size, format: format)
 
-            return renderer.image { ctx in
-                workingImage.draw(at: .zero)
+        return renderer.image { ctx in
+            workingImage.draw(at: .zero)
 
-                for spec in enabled where spec.style != .pixelate {
-                    let rect = CGRect(
-                        x: spec.rect.minX * size.width,
-                        y: spec.rect.minY * size.height,
-                        width: spec.rect.width * size.width,
-                        height: spec.rect.height * size.height
-                    )
-                    guard rect.width > 0, rect.height > 0 else { continue }
+            for spec in enabled where spec.style != .pixelate {
+                let rect = CGRect(
+                    x: spec.rect.minX * size.width,
+                    y: spec.rect.minY * size.height,
+                    width: spec.rect.width * size.width,
+                    height: spec.rect.height * size.height
+                )
+                guard rect.width > 0, rect.height > 0 else { continue }
 
-                    switch spec.style {
-                    case .solid:
-                        Self.renderSolid(color: spec.color.uiColor, rect: rect)
-                    case .crosshatch:
-                        Self.renderCrosshatch(color: spec.color.uiColor, rect: rect, in: ctx)
-                    case .pixelate:
-                        break  // handled in step 1
-                    }
+                switch spec.style {
+                case .solid:
+                    Self.renderSolid(color: spec.color.uiColor, rect: rect)
+                case .crosshatch:
+                    Self.renderCrosshatch(color: spec.color.uiColor, rect: rect, in: ctx)
+                case .pixelate:
+                    break  // handled in step 1
                 }
             }
-        }.value
+        }
     }
 
     // MARK: - Backward-compatible overloads

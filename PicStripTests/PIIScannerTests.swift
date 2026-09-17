@@ -1,5 +1,6 @@
-import XCTest
+import ImageIO
 import UIKit
+import XCTest
 @testable import PicStrip
 
 @MainActor
@@ -26,6 +27,32 @@ final class PIIScannerTests: XCTestCase {
             ctx.fill(CGRect(origin: .zero, size: size))
         }
         return image.pngData()!
+    }
+
+    /// Re-encodes `data` with its pixels physically rotated 90° counter-clockwise
+    /// and tagged EXIF orientation 6, i.e. a file that *displays* identically to
+    /// the input — exactly what an iPhone writes for a portrait photo.
+    private func sidewaysStoredCopy(of data: Data) throws -> Data {
+        let upright = try XCTUnwrap(UIImage(data: data)?.cgImage)
+        let (width, height) = (upright.width, upright.height)
+        let ctx = try XCTUnwrap(CGContext(
+            data: nil, width: height, height: width, bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ))
+        ctx.translateBy(x: CGFloat(height), y: 0)
+        ctx.rotate(by: .pi / 2)
+        ctx.draw(upright, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+        let output = NSMutableData()
+        let dest = try XCTUnwrap(CGImageDestinationCreateWithData(output, "public.jpeg" as CFString, 1, nil))
+        let properties: [CFString: Any] = [
+            kCGImagePropertyOrientation: 6 as UInt32,
+            kCGImageDestinationLossyCompressionQuality: 1.0
+        ]
+        CGImageDestinationAddImage(dest, try XCTUnwrap(ctx.makeImage()), properties as CFDictionary)
+        XCTAssertTrue(CGImageDestinationFinalize(dest))
+        return output as Data
     }
 
     // MARK: - Error handling
@@ -139,6 +166,30 @@ final class PIIScannerTests: XCTestCase {
     func testSnippetFromOutOfBoundsRange() {
         let result = PIIScanner.snippet(from: "short", nsRange: NSRange(location: 100, length: 5))
         XCTAssertEqual(result, "", "An out-of-bounds NSRange must produce an empty snippet, not a crash.")
+    }
+
+    // MARK: - EXIF orientation
+
+    /// Redaction boxes are burned onto the *displayed* image, so the scanner must
+    /// report boxes in display space even when the file stores its pixels sideways
+    /// behind an EXIF orientation tag (every portrait iPhone photo does).
+    func testBoundingBoxesFollowEXIFOrientation() async throws {
+        let uprightData = try loadTestImageData(named: "test_pii", extension: "png")
+        let sidewaysData = try sidewaysStoredCopy(of: uprightData)
+        XCTAssertEqual(UIImage(data: sidewaysData)?.imageOrientation, .right)
+
+        func emailBox(in data: Data) async throws -> CGRect {
+            let results = try await PIIScanner().scanImage(data: data)
+            let email = try XCTUnwrap(results.first { $0.type == .email }, "Email must be detected.")
+            return try XCTUnwrap(email.instances.first).boundingBox
+        }
+
+        let expected = try await emailBox(in: uprightData)
+        let actual = try await emailBox(in: sidewaysData)
+        XCTAssertEqual(actual.minX, expected.minX, accuracy: 0.03)
+        XCTAssertEqual(actual.minY, expected.minY, accuracy: 0.03)
+        XCTAssertEqual(actual.width, expected.width, accuracy: 0.03)
+        XCTAssertEqual(actual.height, expected.height, accuracy: 0.03)
     }
 
     // MARK: - Whiteboard credential detection

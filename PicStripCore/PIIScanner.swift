@@ -6,11 +6,16 @@ import Vision
 
 nonisolated enum PIIScannerError: Error, LocalizedError {
     case invalidImageData
+    /// Vision could not run text recognition at all (both the accurate and the
+    /// fast model reported an error).  Distinct from "ran and found nothing".
+    case textRecognitionFailed
 
     var errorDescription: String? {
         switch self {
         case .invalidImageData:
             return String(localized: "Could not decode the provided data into a valid image.")
+        case .textRecognitionFailed:
+            return String(localized: "The sensitive-data scan could not run on this image. Review it manually before sharing.")
         }
     }
 }
@@ -30,91 +35,120 @@ nonisolated struct PIIScanner {
         let spatialEvidence: Bool
     }
 
+    /// Runs OCR, face, barcode, and document-rectangle detection on `data` and
+    /// returns every PII finding.
+    ///
+    /// `@concurrent`: always runs off the caller's actor, so invoking it from the
+    /// main actor never blocks the UI on Vision or regex work.
+    @concurrent
     func scanImage(data: Data) async throws -> [DetectionResult] {
-        // Offload CPU-bound work off the calling thread.
-        return try await Task.detached(priority: .userInitiated) {
-            // Stage 1: Validate — ensures a meaningful error if the caller passes
-            // non-image bytes before we hand anything to Vision.
-            // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
-            // (it creates a source with zero images), so we additionally verify that
-            // at least one image frame is decodable. The decoded CGImage is discarded
-            // immediately; the actual OCR uses VNImageRequestHandler(data:) below.
-            guard
-                let source = CGImageSourceCreateWithData(data as CFData, nil),
-                CGImageSourceCreateImageAtIndex(source, 0, nil) != nil
-            else {
-                throw PIIScannerError.invalidImageData
+        // Stage 1: Validate — ensures a meaningful error if the caller passes
+        // non-image bytes before we hand anything to Vision.
+        // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
+        // (it creates a source with zero images), so we additionally verify that
+        // at least one image frame is decodable. The decoded CGImage is discarded
+        // immediately; the actual OCR uses ImageRequestHandler(data) below.
+        guard
+            let source = CGImageSourceCreateWithData(data as CFData, nil),
+            CGImageSourceCreateImageAtIndex(source, 0, nil) != nil
+        else {
+            throw PIIScannerError.invalidImageData
+        }
+
+        // Stage 2: Single-pass Vision — submit OCR, face, barcode, and
+        // document-rectangle requests against ONE ImageRequestHandler so the
+        // source bytes are decoded and pre-processed exactly once.
+        // Raw Data (not a pre-decoded CGImage) is passed so that the handler can
+        // read the EXIF orientation tag and return bounding boxes in the visual
+        // coordinate space — the same space that UIKit's display pipeline uses.
+        let requests: [any VisionRequest] = [
+            Self.makeTextRequest(level: .accurate),
+            Self.makeFaceRequest(),
+            DetectBarcodesRequest(),
+            Self.makeDocumentRectangleRequest()
+        ]
+
+        var observations: [RecognizedTextObservation] = []
+        var faces: [FaceObservation] = []
+        var barcodes: [BarcodeObservation] = []
+        var rectangles: [RectangleObservation] = []
+        var textRecognitionRan = false
+        var faceDetectionFailed = false
+
+        // `performAll` reports each request's outcome independently, so a single
+        // sub-request failing (e.g. rectangle detection on the simulator with no
+        // Neural Engine) arrives as its own `.error` and never discards the
+        // others' results.  The variadic `perform` would throw for all of them.
+        for await result in ImageRequestHandler(data).performAll(requests) {
+            switch result {
+            case .recognizeText(_, let found):
+                observations = found
+                textRecognitionRan = true
+            case .detectFaceRectangles(_, let found): faces = found
+            case .detectBarcodes(_, let found):       barcodes = found
+            case .detectRectangles(_, let found):     rectangles = found
+            case .error(let request, _):
+                // An error for one request must not discard the others' results.
+                if request is DetectFaceRectanglesRequest { faceDetectionFailed = true }
+            default:
+                break
             }
+        }
 
-            // Stage 2: Single-pass Vision — submit OCR, face, barcode, and
-            // document-rectangle requests against ONE VNImageRequestHandler so
-            // the source bytes are decoded and pre-processed exactly once.
-            // Raw Data (not a pre-decoded CGImage) is passed so that
-            // VNImageRequestHandler can read the EXIF orientation tag and return
-            // bounding boxes in the visual coordinate space — the same space that
-            // UIKit's display pipeline uses.
-            let accurateTextRequest = Self.makeTextRequest(level: .accurate)
-            let faceRequest         = VNDetectFaceRectanglesRequest()
-            let barcodeRequest      = VNDetectBarcodesRequest()
-            let rectangleRequest    = Self.makeDocumentRectangleRequest()
-
-            let handler = VNImageRequestHandler(data: data, options: [:])
-            // `try?` because a single sub-request (e.g. rectangle detection on
-            // the simulator with no Neural Engine) failing shouldn't kill OCR.
-            // Vision still populates each successful request's .results despite
-            // a thrown perform, so partial outcomes are preserved.  The OCR
-            // fast-fallback below covers the case where the accurate text
-            // recogniser was the one that failed.
-            try? handler.perform([accurateTextRequest, faceRequest, barcodeRequest, rectangleRequest])
-
-            // Fast-text fallback — if accurate returned nothing (simulator CPU
-            // path, heavily compressed image) retry text-only with the fast
-            // model.  Face / barcode / rectangle results from the primary pass
-            // are preserved, so this only re-pays the text inference cost.
-            var observations = accurateTextRequest.results ?? []
-            if observations.isEmpty {
-                let fastRequest = Self.makeTextRequest(level: .fast)
-                let fallbackHandler = VNImageRequestHandler(data: data, options: [:])
-                try? fallbackHandler.perform([fastRequest])
-                observations = fastRequest.results ?? []
+        // Fast-text fallback — if accurate returned nothing (simulator CPU
+        // path, heavily compressed image) retry text-only with the fast
+        // model.  Face / barcode / rectangle results from the primary pass
+        // are preserved, so this only re-pays the text inference cost.
+        if observations.isEmpty {
+            let fastRequest = Self.makeTextRequest(level: .fast)
+            if let found = try? await ImageRequestHandler(data).perform(fastRequest) {
+                observations = found
+                textRecognitionRan = true
             }
+        }
 
-            let primaryLineContexts = Self.recognizedLineContexts(from: observations)
-            let faceRects = (faceRequest.results ?? []).map { obs in
-                Self.swiftUIBox(from: obs.boundingBox)
-            }
-            let barcodeContexts = Self.barcodeContexts(from: barcodeRequest.results ?? [])
-            let documentRects: [CGRect] = (rectangleRequest.results ?? []).map { obs in
-                Self.swiftUIBox(from: obs.boundingBox)
-            }
+        // The pinned iOS 27 face revision may be unavailable on some hardware.  A
+        // missed face is a privacy miss, so retry with the OS default revision.
+        if faceDetectionFailed {
+            faces = (try? await ImageRequestHandler(data).perform(DetectFaceRectanglesRequest())) ?? []
+        }
 
-            // Stage 3: Per-observation two-stage PII analysis with state tracking.
-            var results = try Self.detectPII(in: observations)
+        // "Found no text" is a valid answer; "could not look" is not.  When neither
+        // model produced a result — Vision rejected the image outright, or both
+        // requests errored — say so instead of reporting a clean image.
+        guard textRecognitionRan else { throw PIIScannerError.textRecognitionFailed }
 
-            // Stage 4: Append visual detections (faces, barcodes).
-            results.append(contentsOf: Self.faceResults(from: faceRects))
-            results.append(contentsOf: Self.barcodeResults(from: barcodeContexts))
+        let primaryLineContexts = Self.recognizedLineContexts(from: observations)
+        let faceRects = faces.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
+        let barcodeContexts = Self.barcodeContexts(from: barcodes)
+        let documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
 
-            // Stage 5: Document-region prioritisation — first apply the broad
-            // rectangle prior, then classify likely cards/IDs/passports from the
-            // combined OCR + face + barcode evidence Vision already produced.
-            results = Self.applyDocumentBoost(results: results, documentRects: documentRects)
-            results = Self.applyDocumentContext(
-                results: results,
-                documentRects: documentRects,
-                faceRects: faceRects,
-                barcodeContexts: barcodeContexts,
-                textLines: primaryLineContexts
-            )
-            results = Self.resolveCreditCardPhoneConflicts(results)
+        // Stage 3: Per-observation two-stage PII analysis with state tracking.
+        var results = try Self.detectPII(in: observations)
 
-            // Re-sort combined results: highest score first, alphabetical tiebreak.
-            return results.sorted {
-                $0.score != $1.score
-                    ? $0.score > $1.score
-                    : $0.type.description < $1.type.description
-            }
-        }.value
+        // Stage 4: Append visual detections (faces, barcodes).
+        results.append(contentsOf: Self.faceResults(from: faceRects))
+        results.append(contentsOf: Self.barcodeResults(from: barcodeContexts))
+
+        // Stage 5: Document-region prioritisation — first apply the broad
+        // rectangle prior, then classify likely cards/IDs/passports from the
+        // combined OCR + face + barcode evidence Vision already produced.
+        results = Self.applyDocumentBoost(results: results, documentRects: documentRects)
+        results = Self.applyDocumentContext(
+            results: results,
+            documentRects: documentRects,
+            faceRects: faceRects,
+            barcodeContexts: barcodeContexts,
+            textLines: primaryLineContexts
+        )
+        results = Self.resolveCreditCardPhoneConflicts(results)
+
+        // Re-sort combined results: highest score first, alphabetical tiebreak.
+        return results.sorted {
+            $0.score != $1.score
+                ? $0.score > $1.score
+                : $0.type.description < $1.type.description
+        }
     }
 
     // MARK: - Private
@@ -133,9 +167,11 @@ nonisolated struct PIIScanner {
         let distance: CGFloat
     }
 
-    /// Builds a `VNRecognizeTextRequest` configured for credential-safe OCR.
-    nonisolated private static func makeTextRequest(level: VNRequestTextRecognitionLevel) -> VNRecognizeTextRequest {
-        let req = VNRecognizeTextRequest()
+    /// Builds a `RecognizeTextRequest` configured for credential-safe OCR.
+    nonisolated private static func makeTextRequest(
+        level: RecognizeTextRequest.RecognitionLevel
+    ) -> RecognizeTextRequest {
+        var req = RecognizeTextRequest()
         req.recognitionLevel = level
         // Disable language correction so Vision preserves raw credential
         // characters rather than autocorrecting them into dictionary words.
@@ -155,12 +191,28 @@ nonisolated struct PIIScanner {
         return req
     }
 
-    /// Builds a `VNDetectRectanglesRequest` tuned for document/ID-card detection.
+    /// Face detection, using the newest detector the OS ships.
+    ///
+    /// A default-initialised request still resolves to revision 3 on iOS 27, so
+    /// revision 4 has to be asked for by name.  The `compiler` check keeps the
+    /// file building with the iOS 26 SDK, where the case does not exist, and the
+    /// simulator is excluded because revision 4 is unimplemented there.  If it
+    /// fails on a device, `scanImage` retries with the default revision.
+    nonisolated private static func makeFaceRequest() -> DetectFaceRectanglesRequest {
+        #if compiler(>=6.4) && !targetEnvironment(simulator)
+        if #available(iOS 27, *) {
+            return DetectFaceRectanglesRequest(.revision4)
+        }
+        #endif
+        return DetectFaceRectanglesRequest()
+    }
+
+    /// Builds a `DetectRectanglesRequest` tuned for document/ID-card detection.
     /// Aspect ratio band covers everything from portrait phone screenshots through
     /// landscape credit cards / passports.  Minimum size of 15 % filters out small
     /// incidental rectangles (icons, buttons).
-    nonisolated private static func makeDocumentRectangleRequest() -> VNDetectRectanglesRequest {
-        let req = VNDetectRectanglesRequest()
+    nonisolated private static func makeDocumentRectangleRequest() -> DetectRectanglesRequest {
+        var req = DetectRectanglesRequest()
         req.minimumAspectRatio  = 0.5
         req.maximumAspectRatio  = 2.0
         req.minimumSize         = 0.15
@@ -178,8 +230,8 @@ nonisolated struct PIIScanner {
     )
 
     nonisolated private struct OCRLine {
-        let observation: VNRecognizedTextObservation
-        let candidate: VNRecognizedText
+        let observation: RecognizedTextObservation
+        let candidate: RecognizedText
         let rank: Int
         let text: String
         let confidence: Float
@@ -325,12 +377,12 @@ nonisolated struct PIIScanner {
     ]
 
     nonisolated private static func detectPII(
-        in observations: [VNRecognizedTextObservation]
+        in observations: [RecognizedTextObservation]
     ) throws -> [DetectionResult] {
 
         let primaryLines = observations.compactMap { observation -> OCRLine? in
             guard let candidate = observation.topCandidates(1).first else { return nil }
-            let visionBox = observation.boundingBox
+            let visionBox = observation.boundingBox.cgRect
             return OCRLine(
                 observation: observation,
                 candidate: candidate,
@@ -343,7 +395,7 @@ nonisolated struct PIIScanner {
         }.sorted(by: readingOrder)
 
         let candidateLines = observations.flatMap { observation -> [OCRLine] in
-            let visionBox = observation.boundingBox
+            let visionBox = observation.boundingBox.cgRect
             return observation.topCandidates(5).enumerated().map { rank, candidate in
                 OCRLine(
                     observation: observation,
@@ -755,7 +807,7 @@ nonisolated struct PIIScanner {
         var best: NearestValueCandidate?
 
         for line in lines {
-            guard line.observation !== labelLine.observation else { continue }
+            guard line.observation.uuid != labelLine.observation.uuid else { continue }
 
             let verticalDelta = line.lineBounds.midY - labelLine.lineBounds.midY
             let sameRow = abs(verticalDelta) <= max(0.035, labelLine.lineBounds.height * 1.4)
@@ -956,18 +1008,18 @@ nonisolated struct PIIScanner {
 
     // MARK: - Visual detection helpers
 
-    /// Maps `VNFaceObservation`s from the single-pass handler into one
+    /// Maps `FaceObservation`s from the single-pass handler into one
     /// `DetectionResult`.  Face results carry a fixed score of 0.99 — the
     /// dedicated ML model is highly reliable and the result needs no
     /// OCR-confidence weighting.
     nonisolated static func recognizedLineContexts(
-        from observations: [VNRecognizedTextObservation]
+        from observations: [RecognizedTextObservation]
     ) -> [RecognizedLineContext] {
         observations.compactMap { observation in
             guard let candidate = observation.topCandidates(1).first else { return nil }
             return RecognizedLineContext(
                 text: candidate.string,
-                boundingBox: swiftUIBox(from: observation.boundingBox),
+                boundingBox: swiftUIBox(from: observation.boundingBox.cgRect),
                 confidence: candidate.confidence
             )
         }.sorted {
@@ -978,12 +1030,12 @@ nonisolated struct PIIScanner {
         }
     }
 
-    nonisolated static func barcodeContexts(from observations: [VNBarcodeObservation]) -> [BarcodeContext] {
+    nonisolated static func barcodeContexts(from observations: [BarcodeObservation]) -> [BarcodeContext] {
         observations.map { obs in
             BarcodeContext(
-                boundingBox: swiftUIBox(from: obs.boundingBox),
+                boundingBox: swiftUIBox(from: obs.boundingBox.cgRect),
                 symbology: String(describing: obs.symbology),
-                payload: obs.payloadStringValue
+                payload: obs.payloadString
             )
         }
     }
@@ -1000,7 +1052,7 @@ nonisolated struct PIIScanner {
         return [DetectionResult(type: .face, score: 0.99, instances: instances)]
     }
 
-    /// Maps `VNBarcodeObservation`s from the single-pass handler into one
+    /// Maps `BarcodeObservation`s from the single-pass handler into one
     /// `DetectionResult`.  The decoded payload is placed in the snippet.
     nonisolated static func barcodeResults(from contexts: [BarcodeContext]) -> [DetectionResult] {
         guard !contexts.isEmpty else { return [] }
@@ -1416,17 +1468,17 @@ nonisolated struct PIIScanner {
     }
 
     /// Returns a tight normalised bounding box for a matched substring within a
-    /// `VNRecognizedText` candidate, falling back to the full observation box when
+    /// `RecognizedText` candidate, falling back to the full observation box when
     /// the Vision API cannot supply character-level geometry.
     ///
     /// - Parameters:
-    ///   - candidate: The `VNRecognizedText` whose `boundingBox(for:)` API is called.
+    ///   - candidate: The `RecognizedText` whose `boundingBox(for:)` API is called.
     ///   - nsRange:   The `NSRange` of the matched substring within `text`.
     ///   - text:      The full string of the candidate.
     ///   - fallback:  The Vision-coordinate observation bounding box used when the
     ///                substring API fails.
     nonisolated private static func substringBox(
-        candidate: VNRecognizedText,
+        candidate: RecognizedText,
         nsRange: NSRange,
         in text: String,
         fallback: CGRect
@@ -1434,13 +1486,13 @@ nonisolated struct PIIScanner {
         guard
             nsRange.location != NSNotFound,
             let swiftRange = Range(nsRange, in: text),
-            let visionSubBox = try? candidate.boundingBox(for: swiftRange)
+            let visionSubBox = candidate.boundingBox(for: swiftRange)
         else {
             return swiftUIBox(from: fallback)
         }
-        // VNRectangleObservation returns a quadrilateral in Vision coordinates;
+        // RectangleObservation is a quadrilateral in Vision coordinates;
         // convert its bounding rect to SwiftUI coordinates.
-        return swiftUIBox(from: visionSubBox.boundingBox)
+        return swiftUIBox(from: visionSubBox.boundingBox.cgRect)
     }
 
     // MARK: - Snippet helpers
