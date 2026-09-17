@@ -14,6 +14,10 @@ struct ContentView: View {
     /// Set to true when `StripImageIntent` asks for the multi-photo picker.
     @State private var isShowingIntentBatchPicker = false
 
+    /// Bumped by `haptic(_:)`; each change plays one impact.
+    @State private var lightImpacts = 0
+    @State private var mediumImpacts = 0
+
     /// Drives the Files app picker sheet.
     @State private var isShowingFilePicker = false
 
@@ -90,7 +94,7 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.hidden, for: .navigationBar)
                         .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
+                            ToolbarItem(placement: .topBarTrailing) {
                                 Button {
                                     showingAbout = true
                                 } label: {
@@ -203,6 +207,8 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isDropTargeted)
+        .sensoryFeedback(.impact(weight: .light), trigger: lightImpacts)
+        .sensoryFeedback(.impact(weight: .medium), trigger: mediumImpacts)
     }
 
     // MARK: - Home screen
@@ -263,12 +269,9 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(
-                        icon: "photo.badge.plus",
-                        text: "Select a Photo",
-                        prominent: true
-                    )
+                    pillLabel(icon: "photo.badge.plus", text: "Select a Photo")
                 }
+                .buttonStyle(.glassProminent)
                 .accessibilityIdentifier("selectPhotoButton")
                 .accessibilityLabel("Select a photo from your library")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.medium) })
@@ -279,24 +282,18 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(
-                        icon: "photo.stack",
-                        text: "Select Multiple Photos",
-                        prominent: false
-                    )
+                    pillLabel(icon: "photo.stack", text: "Select Multiple Photos")
                 }
+                .buttonStyle(.glass)
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
 
                 Button {
                     haptic(.light)
                     isShowingFilePicker = true
                 } label: {
-                    pillLabel(
-                        icon: "folder",
-                        text: "Browse Files",
-                        prominent: false
-                    )
+                    pillLabel(icon: "folder", text: "Browse Files")
                 }
+                .buttonStyle(.glass)
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
 
@@ -311,6 +308,7 @@ struct ContentView: View {
                 .tint(.secondary)
                 .accessibilityIdentifier("pasteImageButton")
             }
+            .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)
             .padding(.bottom, 48)
         }
@@ -356,33 +354,32 @@ struct ContentView: View {
 
     // MARK: - Pill button label
 
-    private func pillLabel(icon: String, text: LocalizedStringKey, prominent: Bool) -> some View {
+    /// Full-width icon + title content for the large capsule buttons.  The
+    /// surface itself comes from the button style (`.glass` / `.glassProminent`),
+    /// so the system supplies Liquid Glass, press states, and the Reduce
+    /// Transparency / Increase Contrast fallbacks.
+    private func pillLabel(icon: String, text: LocalizedStringKey) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.callout.weight(.semibold))
                 .accessibilityHidden(true)
             Text(text)
-                .font(.callout.weight(.semibold))
         }
-        .foregroundStyle(prominent ? .white : .primary)
+        .font(.callout.weight(.semibold))
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            prominent ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.regularMaterial),
-            in: Capsule()
-        )
-        .overlay(
-            prominent ? nil : AnyView(
-                Capsule().strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-            )
-        )
+        .padding(.vertical, 10)
     }
 
     // MARK: - Haptics
 
-    private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    /// Requests an impact; played by the `.sensoryFeedback` modifiers on `body`.
+    private func haptic(_ weight: HapticWeight) {
+        switch weight {
+        case .light:  lightImpacts += 1
+        case .medium: mediumImpacts += 1
+        }
     }
+
+    private enum HapticWeight { case light, medium }
 
     // MARK: - Drag-and-drop / paste
 
@@ -538,13 +535,12 @@ struct ContentView: View {
                             viewModel.clearState()
                         }
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28, weight: .medium))
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(Color.white, Color.black.opacity(0.45))
-                            .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(width: 20, height: 20)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
                     .accessibilityLabel("Dismiss photo")
                     .accessibilityIdentifier("dismissPhotoButton")
                     .padding(14)
@@ -600,7 +596,7 @@ struct ContentView: View {
             Color(.systemBackground).opacity(0.7)
             ProgressView("Processing…")
                 .padding()
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .glassEffect(in: .rect(cornerRadius: 12))
         }
     }
 
@@ -683,10 +679,11 @@ struct ContentView: View {
                 } label: {
                     pillLabel(
                         icon: viewModel.isScanningPII ? "hourglass" : "square.and.arrow.down",
-                        text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos",
-                        prominent: true
+                        text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos"
                     )
                 }
+                .buttonStyle(.glassProminent)
+                .buttonBorderShape(.capsule)
                 .padding(.horizontal, 4)
                 .disabled(viewModel.isScanningPII)
                 .opacity(viewModel.isScanningPII ? 0.75 : 1)

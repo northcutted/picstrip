@@ -116,8 +116,9 @@ struct CategoryDetailPanel: View {
             .frame(maxHeight: 340)
         }
         .frame(maxWidth: .infinity)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 16, x: 0, y: -4)
+        // Floats over the photo, which is exactly the layer Liquid Glass is for.
+        // The system draws its own shadow and handles Reduce Transparency.
+        .glassEffect(.regular, in: .rect(cornerRadius: 20))
     }
 
     // MARK: - Field row
