@@ -203,7 +203,7 @@ struct ZoomableImagePreview: View {
 
     // MARK: - Zoom hint
 
-    private var zoomHintText: String {
+    private var zoomHintText: LocalizedStringKey {
         if isAddingRedaction {
             return "Drag to redact"
         }

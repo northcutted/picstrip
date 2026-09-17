@@ -9,7 +9,7 @@ import UIKit
 // (main-app only) uses these types via normal module-level access.
 
 /// Visual style applied when burning a redaction block onto an image.
-enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
+nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
     /// Flat opaque fill — the classic government-document redaction bar.
     case solid
     /// Dense diagonal crosshatch lines over a semi-transparent base fill.
@@ -40,7 +40,7 @@ enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
 // MARK: - RedactionColor
 
 /// Fill colour applied to a redaction block during both editing-overlay and export rendering.
-enum RedactionColor: String, CaseIterable, Equatable, Hashable, Codable {
+nonisolated enum RedactionColor: String, CaseIterable, Equatable, Hashable, Codable {
     // Neutrals
     case black
     case charcoal
@@ -103,7 +103,7 @@ enum RedactionColor: String, CaseIterable, Equatable, Hashable, Codable {
 /// before calling `ImageRedactor.redact(image:specs:)`.  The Share Extension
 /// uses the backward-compatible `redact(image:instances:)` wrapper which
 /// synthesises solid-black specs internally.
-struct RedactionSpec {
+nonisolated struct RedactionSpec {
     let rect: CGRect
     let style: RedactionStyle
     let color: RedactionColor
@@ -124,7 +124,7 @@ struct RedactionSpec {
 ///    the source image first (reads pixels, colour-agnostic).
 /// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-pixellated)
 ///    base image, then stamps each remaining style on top.
-struct ImageRedactor {
+nonisolated struct ImageRedactor {
 
     nonisolated private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 

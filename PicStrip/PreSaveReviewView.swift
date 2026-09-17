@@ -20,14 +20,7 @@ struct PreSaveReviewView: View {
         guard let source = viewModel.allSourceMetadata, !source.isEmpty else { return [] }
         return ImageProcessor.categoryMap.compactMap { entry in
             let fields = source.fields.filter {
-                $0.category == entry.category &&
-                !$0.isStructural &&
-                ImageProcessor.shouldReportStripped(
-                    category: $0.category,
-                    key: $0.key,
-                    isStructural: $0.isStructural,
-                    config: viewModel.stripConfig
-                )
+                $0.category == entry.category && viewModel.isRemoved($0)
             }
             return fields.isEmpty ? nil : (entry.category, fields)
         }
@@ -252,19 +245,23 @@ struct PreSaveReviewView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
 
-                    Button(role: .destructive) {
-                        Task { await viewModel.saveToPhotos(replacing: true) }
-                    } label: {
-                        Label("Replace Original", systemImage: "arrow.triangle.2.circlepath")
-                            .symbolRenderingMode(.monochrome)
-                            .foregroundStyle(.red)
-                            .font(.body.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
+                    // Only library photos have an original to replace; images from
+                    // Files, drag and drop, paste, or the Share Extension do not.
+                    if viewModel.canReplaceOriginal {
+                        Button(role: .destructive) {
+                            Task { await viewModel.saveToPhotos(replacing: true) }
+                        } label: {
+                            Label("Replace Original", systemImage: "arrow.triangle.2.circlepath")
+                                .symbolRenderingMode(.monochrome)
+                                .foregroundStyle(.red)
+                                .font(.body.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .tint(.red)
                     }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .tint(.red)
 
                     if let processed = viewModel.processedData {
                         ShareLink(
@@ -409,8 +406,13 @@ struct PreSaveReviewView: View {
             }
             .buttonStyle(.plain)
             .textCase(nil)
-            .accessibilityLabel("\(category), \(fields.count) field\(fields.count == 1 ? "" : "s"), \(isExpanded ? "expanded" : "collapsed")")
-            .accessibilityHint("Double tap to \(isExpanded ? "collapse" : "expand")")
+            .accessibilityLabel(Text(verbatim: category))
+            .accessibilityValue(
+                isExpanded
+                    ? "^[\(fields.count) field](inflect: true), expanded"
+                    : "^[\(fields.count) field](inflect: true), collapsed"
+            )
+            .accessibilityHint(isExpanded ? "Double tap to collapse" : "Double tap to expand")
         }
     }
 

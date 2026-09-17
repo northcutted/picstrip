@@ -168,21 +168,30 @@ class ShareViewController: UIViewController {
             }
 
             var savedCount = 0
+            var failedCount = 0
 
             for provider in targetProviders {
 
-                // ── Resolve best concrete type ────────────────────────────
-                let typeID = Self.bestTypeIdentifier(for: provider)
-
-                // ── Load raw Data ─────────────────────────────────────────
-                guard let rawData = await self.loadData(from: provider, typeIdentifier: typeID) else {
+                // ── Resolve best concrete type + load raw Data ────────────
+                guard let typeID = Self.bestTypeIdentifier(for: provider),
+                      let rawData = await self.loadData(from: provider, typeIdentifier: typeID)
+                else {
+                    failedCount += 1
                     continue
                 }
 
                 // ── Optional PII scan + redaction ─────────────────────────
+                // Fail closed: if a step the user asked for cannot run, skip the
+                // image instead of saving the untouched original as "cleaned".
                 var redactedImage: UIImage?
                 if redactPII {
-                    redactedImage = await self.redact(data: rawData)
+                    switch await self.redact(data: rawData) {
+                    case .nothingToRedact:      break
+                    case .redacted(let image):  redactedImage = image
+                    case .failed:
+                        failedCount += 1
+                        continue
+                    }
                 }
 
                 // ── Re-encode only when stripping or redaction requires it ─
@@ -192,20 +201,26 @@ class ShareViewController: UIViewController {
                 let finalData: Data
                 if let redactedImage {
                     let preset: ExportPreset = stripMetadata ? .losslessPNG : .matchSource
-                    let result = try? ImageProcessor.process(
+                    guard let result = try? ImageProcessor.process(
                         image: redactedImage,
                         sourceData: rawData,
                         preset: preset,
                         config: stripConfig
-                    )
-                    finalData = result?.data ?? rawData
+                    ) else {
+                        failedCount += 1
+                        continue
+                    }
+                    finalData = result.data
                 } else if stripMetadata {
-                    let result = try? ImageProcessor.process(
+                    guard let result = try? ImageProcessor.process(
                         data: rawData,
                         preset: .losslessPNG,
                         config: stripConfig
-                    )
-                    finalData = result?.data ?? rawData
+                    ) else {
+                        failedCount += 1
+                        continue
+                    }
+                    finalData = result.data
                 } else {
                     finalData = rawData
                 }
@@ -213,7 +228,10 @@ class ShareViewController: UIViewController {
                 switch destination {
                 case .photos:
                     // ── Save cleaned image to Photos library ───────────────
-                    guard UIImage(data: finalData) != nil else { continue }
+                    guard UIImage(data: finalData) != nil else {
+                        failedCount += 1
+                        continue
+                    }
                     do {
                         try await PHPhotoLibrary.shared().performChanges {
                             let request = PHAssetCreationRequest.forAsset()
@@ -221,25 +239,36 @@ class ShareViewController: UIViewController {
                         }
                         savedCount += 1
                     } catch {
-                        // Non-fatal: log and continue with remaining images.
+                        // Non-fatal: continue with the remaining images.
+                        failedCount += 1
                     }
 
                 case .mainApp:
                     // ── Write to app group container ───────────────────────
-                    guard let destURL = AppGroup.pendingEditURL else { continue }
+                    guard let destURL = AppGroup.pendingEditURL else {
+                        failedCount += 1
+                        continue
+                    }
                     do {
-                        try finalData.write(to: destURL, options: .atomic)
+                        try finalData.write(to: destURL, options: [.atomic, .completeFileProtection])
                         savedCount += 1
                     } catch {
-                        // Non-fatal.
+                        failedCount += 1
                     }
                 }
             }
 
             let completedCount = savedCount
+            let skippedCount = failedCount
             await MainActor.run {
                 if completedCount == 0 {
                     self.showErrorThenCancel(String(localized: "No images could be processed."))
+                } else if skippedCount > 0, destination == .photos {
+                    // Partial success: tell the user before dismissing so skipped
+                    // photos are never mistaken for cleaned ones.
+                    self.showNoticeThenComplete(
+                        String(localized: "Some photos could not be cleaned and were not saved.")
+                    )
                 } else if destination == .mainApp {
                     // Transition to the "ready" state so the user sees confirmation
                     // that their image has been prepared before they dismiss and open
@@ -265,17 +294,16 @@ class ShareViewController: UIViewController {
     /// when handed an abstract UTI like `"public.image"` if the provider only
     /// registers concrete types (which Photos always does).  Resolving to the
     /// concrete type first guarantees the callback fires.
-    nonisolated private static func bestTypeIdentifier(for provider: NSItemProvider) -> String {
-        let preferredTypes: [String] = [
-            UTType.jpeg.identifier,       // "public.jpeg"
-            UTType.png.identifier,        // "public.png"
-            UTType.heic.identifier,       // "public.heic"
-            "com.apple.heic",             // legacy HEIC registration
-            UTType.rawImage.identifier,   // "public.camera-raw-image"
-            UTType.image.identifier      // "public.image" — abstract fallback
-        ]
-        return preferredTypes.first { provider.hasItemConformingToTypeIdentifier($0) }
-            ?? UTType.image.identifier
+    ///
+    /// `registeredTypeIdentifiers` is ordered by fidelity, so the first image
+    /// type is the provider's best representation.  Asking the provider what it
+    /// actually registered (rather than probing a fixed JPEG/PNG/HEIC list) also
+    /// covers WebP, HEIF, TIFF, GIF, AVIF, and RAW.  Returns `nil` when the
+    /// provider has no image representation at all.
+    nonisolated private static func bestTypeIdentifier(for provider: NSItemProvider) -> String? {
+        provider.registeredTypeIdentifiers.first { identifier in
+            UTType(identifier)?.conforms(to: .image) == true
+        }
     }
 
     // MARK: - Load helper (continuation bridge)
@@ -290,19 +318,41 @@ class ShareViewController: UIViewController {
 
     // MARK: - Redaction helper
 
-    private func redact(data: Data) async -> UIImage? {
-        let results: [DetectionResult]
-        do {
-            results = try await PIIScanner().scanImage(data: data)
-        } catch {
-            return nil
+    private enum RedactionOutcome {
+        /// The scan ran and found nothing to cover.
+        case nothingToRedact
+        case redacted(UIImage)
+        /// The scan or the renderer failed — the image must not be treated as clean.
+        case failed
+    }
+
+    private func redact(data: Data) async -> RedactionOutcome {
+        guard let results = try? await PIIScanner().scanImage(data: data) else {
+            return .failed
         }
 
         let instances = results.flatMap(\.instances)
-        guard !instances.isEmpty else { return nil }
-        guard let uiImage = UIImage(data: data) else { return nil }
+        guard !instances.isEmpty else { return .nothingToRedact }
 
-        return await ImageRedactor().redact(image: uiImage, instances: instances)
+        guard let uiImage = UIImage(data: data),
+              let redacted = await ImageRedactor().redact(image: uiImage, instances: instances)
+        else { return .failed }
+        return .redacted(redacted)
+    }
+
+    // MARK: - Partial-success path
+
+    /// Shows `message` for 2 s, then completes the request normally.  Used when
+    /// some — but not all — images were saved.
+    @MainActor
+    private func showNoticeThenComplete(_ message: String) {
+        viewModel.phase = .configuring
+        viewModel.errorMessage = message
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(2))
+            self?.viewModel.errorMessage = nil
+            self?.extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
+        }
     }
 
     // MARK: - Error path
@@ -313,7 +363,8 @@ class ShareViewController: UIViewController {
     private func showErrorThenCancel(_ message: String) {
         viewModel.phase = .configuring
         viewModel.errorMessage = message
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+        Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(2))
             self?.viewModel.errorMessage = nil
             self?.extensionContext?.cancelRequest(withError: NSError(
                 domain: "northcutt.PicStrip.ShareExtension",

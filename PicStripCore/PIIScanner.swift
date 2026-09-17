@@ -4,7 +4,7 @@ import Vision
 
 // MARK: - Errors
 
-enum PIIScannerError: Error, LocalizedError {
+nonisolated enum PIIScannerError: Error, LocalizedError {
     case invalidImageData
 
     var errorDescription: String? {
@@ -17,7 +17,7 @@ enum PIIScannerError: Error, LocalizedError {
 
 // MARK: - Scanner
 
-struct PIIScanner {
+nonisolated struct PIIScanner {
     struct ConfidenceInput {
         let type: PIIType
         let subtype: PIISubtype?

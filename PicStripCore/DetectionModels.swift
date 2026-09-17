@@ -14,7 +14,7 @@ import Foundation
 ///   • high   — score ≥ 0.80   (structurally unambiguous patterns, strong OCR)
 ///   • medium — score ≥ 0.55   (NLP-based detectors, OCR-fragile patterns)
 ///   • low    — score  < 0.55  (heuristic / context-dependent matches)
-enum ConfidenceLevel: Int, Comparable, CaseIterable {
+nonisolated enum ConfidenceLevel: Int, Comparable, CaseIterable {
     case low    = 0
     case medium = 1
     case high   = 2
@@ -57,7 +57,7 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
 ///   • high     — significant personal or financial harm (IBANs, faces, physical credentials)
 ///   • medium   — useful to attackers but not immediately dangerous alone (emails, phone numbers, IPs)
 ///   • low      — contextual; risk depends heavily on the recipient and setting (URLs, dates, barcodes)
-enum RiskLevel: Int, Comparable, CaseIterable {
+nonisolated enum RiskLevel: Int, Comparable, CaseIterable {
     case low      = 0
     case medium   = 1
     case high     = 2
@@ -95,7 +95,7 @@ enum RiskLevel: Int, Comparable, CaseIterable {
 /// This intentionally stays below `PIIType`: the app can still group and toggle
 /// all government IDs together, while individual rows can explain which format
 /// triggered the detection.
-enum PIISubtype: String, Hashable, CaseIterable {
+nonisolated enum PIISubtype: String, Hashable, CaseIterable {
     case creditCardDocument
     case identityDocument
     case driversLicenseDocument
@@ -225,7 +225,7 @@ nonisolated struct DetectedInstance: Identifiable, Hashable {
 ///
 /// `Identifiable` — safe for `ForEach` in SwiftUI.
 /// `Hashable`     — can be stored in Sets and used as dictionary keys.
-struct DetectionResult: Identifiable, Hashable {
+nonisolated struct DetectionResult: Identifiable, Hashable {
     /// Stable identifier derived from the underlying PIIType.
     var id: String { type.id }
 

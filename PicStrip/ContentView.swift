@@ -21,7 +21,7 @@ struct ContentView: View {
     @State private var isDropTargeted = false
 
     /// Rotating taglines shown beneath the app title on the home screen.
-    private let mottos = [
+    private let mottos: [LocalizedStringKey] = [
         "Share the photo. Not the story behind it.",
         "Clean photos. Clear conscience.",
         "Your moment, minus the metadata.",

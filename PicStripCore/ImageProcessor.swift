@@ -426,21 +426,36 @@ nonisolated enum ImageProcessor {
                 for (dictKey, category) in categoryMap {
                     guard let subDict = props[dictKey] as? [CFString: Any] else { continue }
 
-                    // Map each ImageIO property dict key to its XMP path components.
-                    // CGImageMetadata uses XMP namespaces; we only need to handle the
-                    // dicts users are likely to preserve (GPS is the main one).
+                    // Only dictionaries with an XMP representation can be written
+                    // back (GPS, EXIF, TIFF, IPTC); see `canPreserveMetadata`.
                     guard let (namespace, prefix) = xmpNamespace(for: dictKey) else { continue }
 
                     for (fieldKey, fieldValue) in subDict {
                         let keyStr = fieldKey as String
-                        guard config.shouldPreserve(category: category, key: keyStr) else { continue }
+                        guard !structuralKeys.contains(keyStr),
+                              config.shouldPreserve(category: category, key: keyStr)
+                        else { continue }
 
+                        // Let ImageIO map the property to its XMP tag.  It knows each
+                        // field's real type, so arrays (ISOSpeedRatings, SubjectArea) and
+                        // GPS coordinates + hemisphere refs keep their structure instead
+                        // of being flattened into a description string.
+                        let writable = xmpWritableValue(fieldValue, dictKey: dictKey, fieldKey: fieldKey)
+                        if CGImageMetadataSetValueMatchingImageProperty(
+                            outputMetadata, dictKey, fieldKey, writable as CFTypeRef
+                        ) {
+                            continue
+                        }
+
+                        // Fallback for keys ImageIO has no property→XMP mapping for:
+                        // keep the value as a plain string tag rather than dropping a
+                        // field the user explicitly asked to keep.
                         guard let tag = CGImageMetadataTagCreate(
                             namespace as CFString,
                             prefix as CFString,
                             fieldKey,
                             .string,
-                            "\(fieldValue)" as CFTypeRef
+                            stringify(fieldValue) as CFTypeRef
                         ) else { continue }
 
                         let path = "\(prefix):\(keyStr)" as CFString
@@ -478,6 +493,9 @@ nonisolated enum ImageProcessor {
             copyOptions as CFDictionary,
             &copyError
         ) else {
+            // The CFError comes back +1 retained; balance it so a failed encode
+            // does not leak.
+            copyError?.release()
             throw ProcessingError.finalizationFailed
         }
 
@@ -655,6 +673,71 @@ nonisolated enum ImageProcessor {
         }
     }
 
+    /// GPS coordinate keys ImageIO converts from a plain `Double` itself (into XMP's
+    /// "DDD,MM.mmmmH" form).  Handing these a rational string corrupts the value.
+    nonisolated private static let coordinateKeys: Set<String> = [
+        kCGImagePropertyGPSLatitude as String,
+        kCGImagePropertyGPSLongitude as String,
+        kCGImagePropertyGPSDestLatitude as String,
+        kCGImagePropertyGPSDestLongitude as String
+    ]
+
+    /// Converts a source property value into a form that survives
+    /// `CGImageMetadataSetValueMatchingImageProperty`.
+    ///
+    /// EXIF stores apertures, exposure times, altitudes, focal lengths, etc. as
+    /// rationals.  ImageIO reads them back as `Double`, but when *writing* it
+    /// truncates a fractional number to an integer (f/1.8 → 1, 1/125 s → 0,
+    /// 12.5 m → 12).  A rational string ("9/5") round-trips exactly, so fractional
+    /// numbers — including those nested in arrays such as LensSpecification — are
+    /// converted; everything else passes through untouched.
+    nonisolated private static func xmpWritableValue(_ value: Any, dictKey: CFString, fieldKey: CFString) -> Any {
+        if dictKey == kCGImagePropertyGPSDictionary, coordinateKeys.contains(fieldKey as String) {
+            return value
+        }
+        if let array = value as? [Any] {
+            return array.map { xmpWritableValue($0, dictKey: dictKey, fieldKey: fieldKey) }
+        }
+        guard let number = value as? NSNumber,
+              CFGetTypeID(number) == CFNumberGetTypeID(),      // not a CFBoolean
+              CFNumberIsFloatType(number)
+        else { return value }
+
+        let double = number.doubleValue
+        guard double != double.rounded() else { return value }  // integral: safe as-is
+        return rationalString(for: double) ?? value
+    }
+
+    /// Best rational approximation of `value` with a bounded denominator, found by
+    /// continued-fraction expansion so 0.008 becomes "1/125" rather than "8/1000"
+    /// and 0.016666… becomes "1/60".  Returns `nil` for non-finite or huge values.
+    nonisolated static func rationalString(for value: Double, maxDenominator: Int = 1_000_000) -> String? {
+        guard value.isFinite, abs(value) < 1e9 else { return nil }
+
+        let target = abs(value)
+        var remainder = target
+        var (previousNumerator, numerator) = (0, 1)
+        var (previousDenominator, denominator) = (1, 0)
+
+        for _ in 0..<32 {
+            guard remainder < 1e12 else { break }
+            let whole = Int(remainder.rounded(.down))
+            let nextNumerator = whole * numerator + previousNumerator
+            let nextDenominator = whole * denominator + previousDenominator
+            guard nextDenominator <= maxDenominator else { break }
+            (previousNumerator, numerator) = (numerator, nextNumerator)
+            (previousDenominator, denominator) = (denominator, nextDenominator)
+
+            let fraction = remainder - Double(whole)
+            let error = abs(Double(numerator) / Double(denominator) - target)
+            if fraction < 1e-10 || error <= 1e-10 * max(1, target) { break }
+            remainder = 1 / fraction
+        }
+
+        guard denominator > 0 else { return nil }
+        return "\(value < 0 ? -numerator : numerator)/\(denominator)"
+    }
+
     /// Renders an arbitrary property list value as a human-readable string.
     nonisolated private static func stringify(_ value: Any) -> String {
         switch value {
@@ -687,11 +770,22 @@ private extension UIImage {
     /// and relies on the EXIF tag to rotate on display).
     nonisolated func normalized() -> UIImage {
         guard imageOrientation != .up else { return self }
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = 1
-        format.opaque = true
+        // `imageRendererFormat` matches the image's own scale and colour range.  The
+        // device-default format would promote an sRGB source to extended range on
+        // wide-colour hardware (bloating PNG output), and a forced-opaque context
+        // would flatten a rotated transparent image onto black.
+        let format = imageRendererFormat
+        format.opaque = !hasAlphaChannel
         return UIGraphicsImageRenderer(size: size, format: format).image { _ in
             draw(in: CGRect(origin: .zero, size: size))
+        }
+    }
+
+    nonisolated private var hasAlphaChannel: Bool {
+        guard let alphaInfo = cgImage?.alphaInfo else { return false }
+        switch alphaInfo {
+        case .none, .noneSkipFirst, .noneSkipLast: return false
+        default: return true
         }
     }
 }

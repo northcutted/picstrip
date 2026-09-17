@@ -26,6 +26,19 @@ struct BatchSummaryView: View {
             .reduce(0) { $0 + $1.instanceCount }
     }
 
+    private var succeeded: Int { viewModel.batchSucceededCount }
+    private var failed: Int { viewModel.batchFailedCount }
+
+    private var outcomeSymbol: String {
+        if succeeded == 0 { return "xmark.octagon.fill" }
+        return failed > 0 ? "exclamationmark.triangle.fill" : "checkmark.circle.fill"
+    }
+
+    private var outcomeColor: Color {
+        if succeeded == 0 { return .red }
+        return failed > 0 ? .orange : .green
+    }
+
     // MARK: - Body
 
     var body: some View {
@@ -33,19 +46,29 @@ struct BatchSummaryView: View {
             VStack(spacing: 28) {
                 Spacer(minLength: 24)
 
-                // ── Success icon ────────────────────────────────────────────
-                Image(systemName: "checkmark.circle.fill")
+                // ── Outcome icon ────────────────────────────────────────────
+                Image(systemName: outcomeSymbol)
                     .font(.system(size: 72))
-                    .foregroundStyle(.green)
+                    .foregroundStyle(outcomeColor)
+                    .accessibilityHidden(true)
 
                 // ── Headline ────────────────────────────────────────────────
                 VStack(spacing: 6) {
                     Text("Batch Complete")
                         .font(.title2.weight(.bold))
-                    Text("Successfully cleaned and saved ^[\(viewModel.batchItems.count) photo](inflect: true).")
-                        .font(.body)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
+                    if succeeded > 0 {
+                        Text("Successfully cleaned and saved ^[\(succeeded) photo](inflect: true).")
+                            .font(.body)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    if failed > 0 {
+                        Text("^[\(failed) photo](inflect: true) could not be cleaned. Nothing was saved for those photos.")
+                            .font(.body)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .accessibilityIdentifier("batchFailureLabel")
+                    }
                 }
 
                 // ── Stats card ──────────────────────────────────────────────
@@ -96,7 +119,7 @@ struct BatchSummaryView: View {
     private var statsCard: some View {
         let fields     = totalFieldsStripped
         let redactions = totalVisualRedactions
-        let photos     = viewModel.batchItems.count
+        let photos     = succeeded
 
         return VStack(spacing: 12) {
             Label(
