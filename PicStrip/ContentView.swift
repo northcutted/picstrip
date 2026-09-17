@@ -163,15 +163,34 @@ struct ContentView: View {
         ) { result in
             guard case .success(let urls) = result, let url = urls.first else { return }
             Task {
-                guard url.startAccessingSecurityScopedResource() else { return }
-                defer { url.stopAccessingSecurityScopedResource() }
-                guard let data = try? Data(contentsOf: url) else { return }
+                guard let data = await IncomingImage.read(securityScoped: url) else {
+                    viewModel.errorMessage = String(localized: "The selected item could not be loaded as image data.")
+                    return
+                }
                 await viewModel.loadData(data)
             }
         }
-        // ── Drag-and-drop (image or file URL from Photos / Files / Safari) ──
-        .onDrop(of: [.image, .fileURL], isTargeted: $isDropTargeted) { providers in
-            handleDrop(providers: providers)
+        // ── Drag-and-drop + paste (Photos / Files / Safari / pasteboard) ───
+        // Both arrive as `IncomingImage`, i.e. the original bytes — metadata intact.
+        .dropDestination(for: IncomingImage.self) { images, _ in
+            load(images)
+        } isTargeted: { isDropTargeted = $0 }
+        .imagePasteDestination { images in
+            load(images)
+        }
+        .photosPickerKeepsMetadata()
+        // Load failures happen while no photo is on screen, where the control
+        // panel's error banner does not exist — surface them as an alert.
+        .alert(
+            "Couldn’t Open Image",
+            isPresented: Binding(
+                get: { !hasPhoto && !viewModel.isProcessing && viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
         .overlay {
             // Subtle border pulse while a drag hovers over the window
@@ -280,6 +299,17 @@ struct ContentView: View {
                 }
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
+
+                // System paste control: reads the pasteboard without the "Allow
+                // Paste" prompt, and disables itself when no image is available.
+                PasteButton(payloadType: IncomingImage.self) { images in
+                    haptic(.light)
+                    load(images)
+                }
+                .labelStyle(.titleAndIcon)
+                .buttonBorderShape(.capsule)
+                .tint(.secondary)
+                .accessibilityIdentifier("pasteImageButton")
             }
             .padding(.horizontal, 32)
             .padding(.bottom, 48)
@@ -354,51 +384,15 @@ struct ContentView: View {
         UIImpactFeedbackGenerator(style: style).impactOccurred()
     }
 
-    // MARK: - Drag-and-drop handler
+    // MARK: - Drag-and-drop / paste
 
-    /// Handles a drop of one or more `NSItemProvider` items onto the app.
-    ///
-    /// Priority order:
-    /// 1. A raw image type (JPEG / PNG / HEIC / GIF / …) from Photos or Safari.
-    /// 2. A file URL referencing an image on disk (Files app, document providers).
-    ///
-    /// - Returns: `true` when a provider was accepted and loading is in flight.
+    /// Loads the first image of a drop or paste.  PicStrip's editor is
+    /// single-image, so any further items are ignored.
     @discardableResult
-    private func handleDrop(providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first else { return false }
-
-        // ── Image data (Photos, Safari image, copy-paste) ──────────────────
-        if provider.canLoadObject(ofClass: UIImage.self) {
-            _ = provider.loadObject(ofClass: UIImage.self) { reading, _ in
-                guard let image = reading as? UIImage,
-                      let data  = image.jpegData(compressionQuality: 0.95)
-                else { return }
-                Task { @MainActor in await viewModel.loadData(data) }
-            }
-            return true
-        }
-
-        // ── File URL (Files app, document providers) ───────────────────────
-        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                let url: URL?
-                if let data = item as? Data {
-                    url = URL(dataRepresentation: data, relativeTo: nil)
-                } else {
-                    url = item as? URL
-                }
-                guard let url else { return }
-                Task { @MainActor in
-                    guard url.startAccessingSecurityScopedResource() else { return }
-                    defer { url.stopAccessingSecurityScopedResource() }
-                    guard let data = try? Data(contentsOf: url) else { return }
-                    await viewModel.loadData(data)
-                }
-            }
-            return true
-        }
-
-        return false
+    private func load(_ images: [IncomingImage]) -> Bool {
+        guard let image = images.first else { return false }
+        Task { await viewModel.loadData(image.data) }
+        return true
     }
 
     // MARK: - Photo layout (existing layout when a photo is loaded)

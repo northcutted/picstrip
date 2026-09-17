@@ -477,15 +477,21 @@ final class ScrubberViewModel {
         let preview = await Self.makePreviewImage(from: data)
         guard loadToken == token else { return }
 
-        rawImageData = data
-        if let preview {
-            inputImage    = Image(uiImage: preview)
-            sourceUIImage = preview
-            // Store point dimensions (not pixel dimensions).
-            // ContentView's .scaledToFit() math operates in SwiftUI points,
-            // so we match that coordinate space here.
-            imageSize = preview.size
+        // Pasted, dropped, and shared bytes are not guaranteed to be an image
+        // ImageIO can decode.  Without a preview there is nothing to show or edit.
+        guard let preview else {
+            errorMessage = String(localized: "The selected item could not be loaded as image data.")
+            isProcessing = false
+            return
         }
+
+        rawImageData  = data
+        inputImage    = Image(uiImage: preview)
+        sourceUIImage = preview
+        // Store point dimensions (not pixel dimensions).
+        // ContentView's .scaledToFit() math operates in SwiftUI points,
+        // so we match that coordinate space here.
+        imageSize = preview.size
 
         startPIIScan(data: data)
         await catalogSourceMetadata(from: data)

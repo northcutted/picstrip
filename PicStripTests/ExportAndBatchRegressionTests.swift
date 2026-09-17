@@ -298,6 +298,18 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         XCTAssertTrue(viewModel.isRemoved(latitude), "PNG output has no GPS, whatever the config says.")
     }
 
+    /// Pasted, dropped, and shared bytes are not guaranteed to be an image.  The
+    /// failure must be reported, not left as a silent return to the home screen.
+    func testLoadData_reportsUndecodableBytes() async {
+        let viewModel = ScrubberViewModel()
+        await viewModel.loadData(Data("definitely not an image".utf8))
+
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.inputImage)
+        XCTAssertFalse(viewModel.isProcessing)
+        XCTAssertFalse(viewModel.isScanningPII, "No scan should start for bytes that cannot be shown.")
+    }
+
     /// Bytes that did not come from the picker have no library original to replace.
     func testLoadData_disablesReplaceOriginal() async throws {
         let viewModel = ScrubberViewModel()
