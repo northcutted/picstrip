@@ -187,6 +187,7 @@
     }
   },
   "trusted_producer_revisions": [
-    "152fce760a7e5a9261b182ab116e2c0111c2af87"
+    "152fce760a7e5a9261b182ab116e2c0111c2af87",
+    "a198fb0f2c5acb18f815f52e700e89dfdf1cc18a"
   ]
 }

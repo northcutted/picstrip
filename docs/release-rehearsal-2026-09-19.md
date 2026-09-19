@@ -33,7 +33,11 @@ After all 20 Dependabot PRs were covered by merged integrations, [preparation 35
 
 [Canary 35470588488](https://github.com/northcutted/picstrip/actions/runs/35470588488) passed exact candidate authentication and live repository-control verification. Its macOS upload job stopped before transfer because the upstream SLSA installer is Linux-only. The platform now installs checksum-pinned official macOS verifier assets, verifies their upstream provenance, and exercises actual installation in Linux/macOS platform CI. Independent verification of both macOS assets and local arm64 execution passed. IPA provenance checks remain mandatory inside upload.
 
-Publication remains disabled pending the selected candidate's successful canary. Publication must consume its signed processed handoff, and staging must read back that exact Apple build. Production approval remains a separate human action.
+[Canary 35471442447](https://github.com/northcutted/picstrip/actions/runs/35471442447) passed candidate/provenance verification, live control readback, the macOS Transporter transfer, Linux processing observation and isolated final handoff signing. Apple confirmed version 1.7.0/build 77.1 as `VALID`, with build/upload ID `043d3495-15f2-4955-9a20-5dbf97f072d1`. The signed final artifact is `10593360031`, SHA256 `27f96c2044403db85de06ec588bbbcd8db3c9a1586d9e6442c6cfbd3528f9b0b`. Independent local verification also passed every asset digest, native signature and SLSA claim. It preserves IPA SHA256 `2bcfa818a384cb129e346eab7cfb9948be0e8533db62006cd0ea64e16f57cef6`.
+
+The publication repair creates and peels the protected Git tag explicitly, discovers drafts through authenticated release listing, and resumes the recorded release ID only when its signed handoff and existing asset digests match. Promotion reuses this canary's original signed files without another transfer or signature. Protected policy approves its exact preparation and promotion producers independently.
+
+Publication and staging remain pending this pin's protected CI. Staging must read back the recorded Apple build. Production approval remains a separate human action.
 
 ## Dependency advisories
 
@@ -62,7 +66,7 @@ The measured test steps include the clean Xcode build and test execution, exclud
 
 Queue time is separate: median iOS 27 runner waits were 21m19s for the one-worker cohort and 40m49s for the two-worker cohort. The cohorts entered the same account's queue in that order while other CI was running. These waits reflect scheduling and are not attributed to the worker setting.
 
-The [machine-readable evidence](evidence/release-benchmark-2026-09-19.json) retains run IDs, QA artifact digests and test counts, individual step durations, and per-job queue/execution timings. Durations use GitHub's `started_at` and `completed_at` timestamps. This is a controlled source/toolchain comparison for the worker decision, not a five-release end-to-end benchmark. Apple processing and human approval remain unmeasured because the canary is blocked before upload.
+The [machine-readable evidence](evidence/release-benchmark-2026-09-19.json) retains run IDs, QA artifact digests and test counts, individual step durations, and per-job queue/execution timings. Durations use GitHub's `started_at` and `completed_at` timestamps. This is a controlled source/toolchain comparison for the worker decision, not a five-release end-to-end benchmark. The successful canary took 12m17s including queues; its Linux Apple-processing step took 7m08s. This is one release observation, not five comparable end-to-end samples. Human approval remains unmeasured.
 
 ## Independent ownership
 
