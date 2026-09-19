@@ -25,7 +25,11 @@ After all 20 Dependabot PRs were covered by merged integrations, [preparation 35
 
 [Canary 35464407964](https://github.com/northcutted/picstrip/actions/runs/35464407964) authenticated that candidate and successfully created the App token, then stopped before upload because GitHub omitted `bypass_actors` from the administration-read REST response. A separate read-only inspection of a historical Apple upload found that upload state is nested under `attributes.state.state`. The platform now handles that contract and verifies hidden bypasses against an owner-recorded baseline plus live GraphQL identities and unchanged server timestamps. Its regression tests reject drift, incomplete responses and substituted builds.
 
-A new candidate must bind the updated platform and control configuration. Do not retry the obsolete permission-blocked canary. Publication remains disabled until the new TestFlight canary succeeds. Publication must consume its signed processed handoff and staging must read back that exact Apple build. Production approval remains a separate human action.
+[Preparation 35466614779](https://github.com/northcutted/picstrip/actions/runs/35466614779) produced the selected version 1.7.0/build 77.1 from `c042d27c17cb359c815dc0744f312c6edc00d2df`, with producer `152fce760a7e5a9261b182ab116e2c0111c2af87`. Candidate artifact `10592175080` has SHA256 `2e2ad3b2a50dfb47d394f76d4d404ed6310fa797378176b0ae119e0c4f36778f`. Its QA, archive, native attestations and isolated SLSA provenance passed, including independent local verification.
+
+[Canary 35467369438](https://github.com/northcutted/picstrip/actions/runs/35467369438) stopped before upload because the unchanged GitHub ruleset timestamp was returned in UTC rather than the owner's Chicago offset. The corrected verifier compares timezone-aware instants with full fractional precision. Protected configuration explicitly approves the candidate's historical producer so this tool repair reuses the same IPA. The update also handles corrected deployment callers through protected deployment tags; no release tag is moved.
+
+Publication remains disabled pending the selected candidate's successful canary. Publication must consume its signed processed handoff, and staging must read back that exact Apple build. Production approval remains a separate human action.
 
 ## Dependency advisories
 

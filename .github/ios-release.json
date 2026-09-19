@@ -185,5 +185,8 @@
         ]
       }
     }
-  }
+  },
+  "trusted_producer_revisions": [
+    "152fce760a7e5a9261b182ab116e2c0111c2af87"
+  ]
 }

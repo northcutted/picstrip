@@ -112,3 +112,10 @@ Screenshot scenarios and branding stay in PicStrip. `Capture Screenshots` valida
 ## Repository-control baseline
 
 The publisher keeps Administration: read. GitHub hides REST bypass actors from that token, so `.github/ios-release.json` records `github_controls`: the owner-verified publisher App, ruleset IDs, server timestamps and GraphQL bypass-node identities. Promotion still checks live protections and requires unchanged, complete bypass evidence. Ruleset changes require owner inspection and a reviewed baseline refresh using the platform's `scripts/ci/capture_controls.py`; release jobs never refresh it automatically.
+
+
+## Reuse after a deployment-tool repair
+
+The protected `trusted_producer_revisions` configuration explicitly approves the producer of an existing candidate when newer platform tools are needed. It currently retains build 77.1's producer. Bootstrap freezes this policy before loading candidate configuration; every consumed build and promotion signature must still match an approved full commit and the expected workflow. Never take producer approvals from a downloaded artifact.
+
+For promotion from newer main tooling, publication creates a separate protected `vVERSION-deploy-FULL_COMMIT` tag after publishing the immutable evidence. Its create event starts the corrected deployment caller. The platform checks the exact commit suffix and protected-main ancestry, then authenticates the original release and processed Apple build. The original app tag, IPA and assets stay immutable. An original release-event run can reject a newer signer; use the deployment-tag run for this recovery. Manual retries select this exact deployment tag and the original release tag input. Production still requires its existing human approval.

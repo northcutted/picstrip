@@ -36,10 +36,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   promote:
-    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@152fce760a7e5a9261b182ab116e2c0111c2af87
+    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@3d02154e6f070560d08fdb993643ca5b5762153c
     with:
       config: .github/ios-release.json
-      platform_revision: 152fce760a7e5a9261b182ab116e2c0111c2af87
+      platform_revision: 3d02154e6f070560d08fdb993643ca5b5762153c
       artifact_id: ${{ inputs.artifact_id }}
       sha256: ${{ inputs.sha256 }}
       processed_artifact_id: ${{ inputs.processed_artifact_id }}
