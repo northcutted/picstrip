@@ -6,7 +6,12 @@ import json
 import statistics
 import subprocess
 
-from evidence import CONFIG, require
+from pathlib import Path
+
+CONFIG = json.loads((Path(__file__).resolve().parents[2] / ".github/ios-release.json").read_text())
+
+def require(condition, message):
+    if not condition: raise ValueError(message)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("runs", nargs="+", type=int)
