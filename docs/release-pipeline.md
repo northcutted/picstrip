@@ -2,6 +2,8 @@
 
 PicStrip consumes the public MIT-licensed [iOS release platform](https://github.com/northcutted/ios-release-workflows). `.github/ios-release.json` declares PicStrip's targets, toolchains, profiles, app groups, privacy/encryption policy, locales, screenshots, and App Store policy. `.github/ios-release-platform.json` records the full platform commit; every workflow and composite action uses that same commit.
 
+The [2026-09-19 rehearsal record](release-rehearsal-2026-09-19.md) records the verified candidate, rollout status, dependency remediation, and performance samples.
+
 ## Lifecycle
 
 **Main → verified candidate → manual promotion → TestFlight processing → immutable release → staging → production approval → submission.**

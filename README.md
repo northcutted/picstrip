@@ -290,7 +290,7 @@ CI pins Ruby 3.4.10 for Fastlane and uses Node 24 for read-only Conventional Com
 ```bash
 # Ruby toolchain (Fastlane)
 gem install bundler
-bundle install          # installs fastlane ~> 2.233
+bundle install          # installs fastlane ~> 2.240
 
 # Node toolchain (semantic-release)
 npm ci --ignore-scripts
