@@ -1,0 +1,21 @@
+name: App Store Status
+on:
+  schedule:
+    - cron: 17 * * * *
+  workflow_dispatch: {}
+permissions:
+  contents: read
+concurrency:
+  group: app-store-observe
+  cancel-in-progress: false
+jobs:
+  observe:
+    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@71d5b6bb095d70500213a75d6c7f2365468bcffe
+    with:
+      config: .github/ios-release.json
+      platform_revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+    if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true'

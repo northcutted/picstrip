@@ -5,7 +5,10 @@ import json
 from pathlib import Path
 import subprocess
 
-from evidence import CONFIG, require
+CONFIG = json.loads((Path(__file__).resolve().parents[2] / ".github/ios-release.json").read_text())
+
+def require(condition, message):
+    if not condition: raise ValueError(message)
 
 
 def api(path, method="GET", payload=None):
@@ -49,7 +52,8 @@ def main():
                  "rules": [{"type": "creation"}, {"type": "update"}, {"type": "deletion"}]}
     environments = {"signing": ("branch", "main"), "testflight": ("branch", "main"),
                     "release-publishing": ("branch", "main"), "screenshot-publishing": ("branch", "main"),
-                    "app-store-staging": ("tag", "v*"), "production": ("tag", "v*")}
+                    "app-store-staging": ("tag", "v*"), "production": ("tag", "v*"),
+                    "app-store-observe": ("branch", "main")}
     print(json.dumps({"verified_sha": sha, "rulesets": [main_rules, tag_rules], "environment_refs": environments,
                       "immutable_releases": True, "dependabot_security_updates": True,
                       "RELEASE_DISTRIBUTION_ENABLED": "false"}, indent=2))
@@ -71,7 +75,8 @@ def main():
         protections = old.get("protection_rules", [])
         reviewers = next((r for r in protections if r["type"] == "required_reviewers"), {})
         if name == "production": require(reviewers.get("reviewers"), "Production must retain required approval")
-        payload = {"deployment_branch_policy": {"protected_branches": False, "custom_branch_policies": True}}
+        payload = {"deployment_branch_policy": {"protected_branches": False, "custom_branch_policies": True},
+                   "can_admins_bypass": False}
         if reviewers:
             payload.update(prevent_self_review=reviewers.get("prevent_self_review", False),
                            reviewers=[{"type": r["type"], "id": r["reviewer"]["id"]} for r in reviewers["reviewers"]])
@@ -87,7 +92,19 @@ def main():
     api(f"{prefix}/immutable-releases", "PUT")
     api(f"{prefix}/automated-security-fixes", "PUT")
     require(api(f"{prefix}/immutable-releases")["enabled"], "Immutable releases did not enable")
-    print("Repository controls applied; distribution remains disabled pending a verified candidate.")
+    actual_rules = {r["name"]: api(f"{prefix}/rulesets/{r['id']}") for r in api(f"{prefix}/rulesets")}
+    for wanted in [main_rules, tag_rules]:
+        actual = actual_rules[wanted["name"]]
+        for field in ("target", "enforcement", "conditions", "bypass_actors", "rules"):
+            require(actual[field] == wanted[field], f"Ruleset readback differs: {wanted['name']} {field}")
+    for name, (kind, ref) in environments.items():
+        actual = api(f"{prefix}/environments/{name}")
+        require(actual.get("can_admins_bypass") is False, f"Environment bypass remains enabled: {name}")
+        policies = api(f"{prefix}/environments/{name}/deployment-branch-policies")["branch_policies"]
+        require([(p["name"], p["type"]) for p in policies] == [(ref, kind)], f"Environment refs differ: {name}")
+        if name == "production":
+            require(any(p["type"] == "required_reviewers" and p.get("reviewers") for p in actual["protection_rules"]), "Production approval missing after apply")
+    print("Repository controls applied and read back; distribution remains disabled pending a verified candidate.")
 
 
 if __name__ == "__main__": main()

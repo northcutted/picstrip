@@ -1,25 +1,23 @@
-# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
----
 name: PR Checks
-'on':
+on:
   pull_request:
     branches:
-    - main
+      - main
     types:
-    - opened
-    - synchronize
-    - reopened
-    - ready_for_review
-    - labeled
-    - unlabeled
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+      - labeled
+      - unlabeled
   workflow_dispatch:
     inputs:
       test_workers:
         type: choice
         options:
-        - '1'
-        - '2'
-        default: '1'
+          - "1"
+          - "2"
+        default: "1"
         description: Benchmark only; production remains serial until five-run acceptance
 concurrency:
   group: pr-${{ github.event.pull_request.number || github.ref }}
@@ -32,115 +30,117 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-    - name: Set up Node
-      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
-      with:
-        node-version: '24'
-        cache: npm
-    - name: Install locked tools
-      run: npm ci --ignore-scripts --no-audit --no-fund
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Install pinned workflow validator
-      run: bash scripts/ci/install_actionlint.sh
-    - name: Validate workflows and release guardrails
-      run: |-
-        npm run check:workflows
-        npm run test:ci
-        ruby -c fastlane/Fastfile
-        for script in scripts/ci/*.sh; do bash -n "$script"; done
-        actionlint
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Load pinned platform validation tools
+        uses: northcutted/ios-release-workflows/actions/bootstrap@71d5b6bb095d70500213a75d6c7f2365468bcffe
+        with:
+          config: .github/ios-release.json
+          revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Install locked tools
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install pinned workflow validator
+        run: bash "$IOS_RELEASE_ROOT/scripts/ci/install_actionlint.sh"
+      - name: Validate workflows and release guardrails
+        run: |-
+          npm run check:workflows
+          npm run test:ci
+          actionlint
   qa:
-    name: QA
-    uses: "./.github/workflows/qa.yml"
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@71d5b6bb095d70500213a75d6c7f2365468bcffe
     with:
-      source: "${{ github.sha }}"
-      prefix: "${{ github.run_id }}-${{ github.run_attempt }}"
-      test_workers: "${{ inputs.test_workers || '1' }}"
+      config: .github/ios-release.json
+      platform_revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      source: ${{ github.sha }}
+      prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
+      test_workers: ${{ inputs.test_workers || '1' }}
+    permissions:
+      contents: read
   gems-macos:
     name: Locked gems on macOS
     runs-on: xcode-27
     timeout-minutes: 30
     steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Load Fastlane and submission guard
-      run: bundle exec ruby -e 'require "fastlane"; require_relative "fastlane/lib/release_guard"'
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
+        with:
+          bundler-cache: false
+      - name: Install locked gems
+        run: |-
+          bundle config set --local path vendor/bundle
+          bundle config set --local frozen true
+          bundle install --jobs 4 --retry 3
+      - name: Load locked developer Fastlane
+        run: bundle exec ruby -e 'require "fastlane"'
   screenshots:
     name: Optional screenshot smoke test
     runs-on: xcode-27
     timeout-minutes: 60
     steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-    - name: Resolve screenshot simulators
-      run: python3 scripts/ci/toolchain.py --screenshots
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Capture en-US screenshots
-      run: bundle exec fastlane screenshots languages:en-US
-    - name: Upload pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
-        path: fastlane/screenshots/
-        retention-days: 14
-        compression-level: 0
-        if-no-files-found: error
-      if: always()
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Load pinned screenshot toolchain validator
+        uses: northcutted/ios-release-workflows/actions/bootstrap@71d5b6bb095d70500213a75d6c7f2365468bcffe
+        with:
+          config: .github/ios-release.json
+          revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      - name: Resolve screenshot simulators
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
+        with:
+          bundler-cache: false
+      - name: Install locked gems
+        run: |-
+          bundle config set --local path vendor/bundle
+          bundle config set --local frozen true
+          bundle install --jobs 4 --retry 3
+      - name: Capture en-US screenshots
+        run: bundle exec fastlane screenshots languages:en-US
+      - name: Upload pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          path: fastlane/screenshots/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error
+        if: always()
     if: contains(github.event.pull_request.labels.*.name, 'screenshots')
   gate:
     name: CI Gate
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     needs:
-    - policy
-    - qa
-    - gems-macos
-    - screenshots
+      - policy
+      - qa
+      - gems-macos
+      - screenshots
     steps:
-    - name: Require every mandatory job to pass
-      run: |-
-        python3 - <<'PYCODE'
-        import json, os
-        jobs=json.loads(os.environ['JOBS'])
-        assert all(jobs[name]['result']=='success' for name in ['policy','qa','gems-macos']), jobs
-        assert jobs['screenshots']['result'] in ('success','skipped'), jobs
-        PYCODE
-      env:
-        JOBS: "${{ toJSON(needs) }}"
+      - name: Require every mandatory job to pass
+        run: |-
+          python3 - <<'PYCODE'
+          import json, os
+          jobs=json.loads(os.environ['JOBS'])
+          assert all(jobs[name]['result']=='success' for name in ['policy','qa','gems-macos']), jobs
+          assert jobs['screenshots']['result'] in ('success','skipped'), jobs
+          PYCODE
+        env:
+          JOBS: ${{ toJSON(needs) }}
     if: always()

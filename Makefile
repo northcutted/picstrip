@@ -1,14 +1,14 @@
 FASTLANE ?= bundle exec fastlane
 DEVICE ?=
 DEVICES ?=
-ALLOW_PARTIAL ?= false
 LANGUAGES ?=
 MARKETING_VERSION ?=
 BUILD_NUMBER ?=
 SUBMIT_FOR_REVIEW ?= false
 RELEASE_TAG ?=
+METADATA_COMMIT ?=
 
-.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
+.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -18,7 +18,7 @@ help:
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
-	@echo "  make metadata-only RELEASE_TAG=v1.7.0  Run the verified metadata workflow"
+	@echo "  make metadata-only RELEASE_TAG=vX.Y.Z METADATA_COMMIT=<sha>  Run the verified metadata workflow"
 	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
 	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
@@ -31,9 +31,6 @@ help:
 	@echo "  make screenshots DEVICES=\"iPhone 18 Pro Max,iPad Pro 13-inch (M5)\""
 	@echo "                                    Generate a comma-separated device subset"
 	@echo "  make process-screenshots          Frame + compose marketing PNGs from existing captures"
-	@echo "  make upload-screenshots           Upload full screenshot set to App Store Connect"
-	@echo "  make upload-screenshots ALLOW_PARTIAL=true"
-	@echo "                                    Force upload of an incomplete screenshot set"
 	@echo "  make clean-screenshots            Remove generated screenshots and logs"
 
 lint:
@@ -60,8 +57,9 @@ build:
 
 metadata-only:
 	@test -n "$(RELEASE_TAG)" || (echo "Set RELEASE_TAG to an immutable release"; exit 1)
+	@test -n "$(METADATA_COMMIT)" || (echo "Set METADATA_COMMIT to the reviewed full commit SHA"; exit 1)
 	gh workflow run metadata-only.yml --ref "$(RELEASE_TAG)" \
-		-f release_tag="$(RELEASE_TAG)" -f submit_for_review="$(SUBMIT_FOR_REVIEW)"
+		-f release_tag="$(RELEASE_TAG)" -f metadata_commit="$(METADATA_COMMIT)" -f submit_for_review="$(SUBMIT_FOR_REVIEW)"
 
 audit-localization:
 	scripts/audit_localization_strings.sh
@@ -115,17 +113,6 @@ screenshots-devices:
 
 process-screenshots:
 	$(FASTLANE) process_screenshots
-
-# Chains process-screenshots first so a local one-shot regenerates the
-# marketing PNGs from raw captures before uploading. CI uploads what's
-# already in fastlane/screenshots/processed/ (committed via Git LFS) and
-# calls upload_screenshots directly without going through this target.
-upload-screenshots: process-screenshots
-	@if [ "$(ALLOW_PARTIAL)" = "true" ]; then \
-		$(FASTLANE) upload_screenshots allow_partial:true; \
-	else \
-		$(FASTLANE) upload_screenshots; \
-	fi
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs

@@ -1,178 +1,34 @@
-# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
----
 name: App Store Deploy
-'on':
+on:
   release:
     types:
-    - published
+      - published
   workflow_dispatch:
     inputs:
       release_tag:
         type: string
         required: true
-        description: Immutable release tag; select this same tag in the Run workflow
-          ref selector
-      submit_for_review:
+        description: Immutable release tag; run this workflow on the same tag
+      submit:
         type: boolean
-        default: false
-        description: Request review through production approval
+        default: true
+        description: Request production approval after staging
 permissions:
   contents: read
 concurrency:
   group: app-store-deploy-${{ github.ref }}
   cancel-in-progress: false
 jobs:
-  verify:
-    name: Authenticate immutable release
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-        ref: "${{ github.event.release.tag_name || inputs.release_tag }}"
-    - name: Install SLSA verifier
-      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
-    - name: Download and authenticate handoff
-      run: |-
-        bash scripts/ci/download_release.sh
-        echo "prefix=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
-      id: manifest
-      env:
-        GH_TOKEN: "${{ github.token }}"
-        RELEASE_TAG: "${{ github.event.release.tag_name || inputs.release_tag }}"
+  deploy:
+    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@71d5b6bb095d70500213a75d6c7f2365468bcffe
+    with:
+      config: .github/ios-release.json
+      platform_revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      release_tag: ${{ github.event.release.tag_name || inputs.release_tag }}
+      submit: ${{ github.event_name == 'release' || inputs.submit }}
     permissions:
       contents: read
-      attestations: read
-    outputs:
-      version: "${{ steps.manifest.outputs.version }}"
-      build_number: "${{ steps.manifest.outputs.build_number }}"
-      source_sha: "${{ steps.manifest.outputs.source_sha }}"
-      prefix: "${{ steps.manifest.outputs.prefix }}"
-      tag: "${{ github.event.release.tag_name || inputs.release_tag }}"
-    if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v')
-      && (github.event_name == 'release' || github.ref_name == inputs.release_tag)
-  stage:
-    name: Stage App Store draft
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    needs: verify
-    steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-        ref: "${{ needs.verify.outputs.source_sha }}"
-    - name: Install SLSA verifier
-      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
-    - name: Reauthenticate release before using credentials
-      run: bash scripts/ci/download_release.sh
-      env:
-        GH_TOKEN: "${{ github.token }}"
-        RELEASE_TAG: "${{ needs.verify.outputs.tag }}"
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Extract only authenticated metadata and screenshots
-      run: bash scripts/ci/expand_release.sh release-assets
-    - name: Stage exact release build
-      run: bundle exec fastlane app_store_stage
-      env:
-        APP_STORE_CONNECT_API_KEY_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
-        APP_STORE_CONNECT_API_KEY_ISSUER_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID
-          }}"
-        APP_STORE_CONNECT_API_KEY_CONTENT: "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT
-          }}"
-        RELEASE_MANIFEST: release-assets/release-manifest.json
-        STAGED_SNAPSHOT: build/staged-snapshot.json
-        DELIVER_NUMBER_OF_THREADS: '1'
-        FL_NUMBER_OF_THREADS: '1'
-        FL_MAX_NUMBER_OF_THREADS: '1'
-    - name: Upload staged-${{ needs.verify.outputs.prefix }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: staged-${{ needs.verify.outputs.prefix }}
-        path: build/staged-snapshot.json
-        retention-days: 90
-        compression-level: 0
-        if-no-files-found: error
-    environment: app-store-staging
-    permissions:
-      contents: read
-      attestations: read
-    concurrency:
-      group: picstrip-app-store-mutations
-      cancel-in-progress: false
-  review:
-    name: Request App Review
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    needs:
-    - verify
-    - stage
-    steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-        ref: "${{ needs.verify.outputs.source_sha }}"
-    - name: Install SLSA verifier
-      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
-    - name: Reauthenticate release before using credentials
-      run: bash scripts/ci/download_release.sh
-      env:
-        GH_TOKEN: "${{ github.token }}"
-        RELEASE_TAG: "${{ needs.verify.outputs.tag }}"
-    - name: Download staged-${{ needs.verify.outputs.prefix }}
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with:
-        name: staged-${{ needs.verify.outputs.prefix }}
-        path: build
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Verify selected build, record edits, and submit
-      run: bundle exec fastlane request_review
-      env:
-        APP_STORE_CONNECT_API_KEY_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
-        APP_STORE_CONNECT_API_KEY_ISSUER_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID
-          }}"
-        APP_STORE_CONNECT_API_KEY_CONTENT: "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT
-          }}"
-        RELEASE_ENVIRONMENT: production
-        RELEASE_MANIFEST: release-assets/release-manifest.json
-        STAGED_SNAPSHOT: build/staged-snapshot.json
-        SUBMISSION_RECEIPT: build/submission-receipt.json
-    - name: Upload submission-${{ needs.verify.outputs.prefix }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: submission-${{ needs.verify.outputs.prefix }}
-        path: build/submission-receipt.json
-        retention-days: 90
-        compression-level: 0
-        if-no-files-found: error
-      if: always()
-    environment: production
-    permissions:
-      contents: read
-      attestations: read
-    concurrency:
-      group: picstrip-app-store-mutations
-      cancel-in-progress: false
-    if: github.event_name == 'release' || inputs.submit_for_review
+      actions: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write

@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 import subprocess
 
-CONFIG = json.loads(Path(__file__).with_name("config.json").read_text())
+CONFIG = json.loads((Path(__file__).resolve().parents[2] / ".github/ios-release.json").read_text())
 
 
 def run(*args):

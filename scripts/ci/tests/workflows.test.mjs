@@ -1,20 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {loadWorkflows, validate} from '../workflow_policy.mjs';
-
-test('checked-in workflows satisfy security and dependency gates', () => assert.deepEqual(validate(loadWorkflows()), []));
-test('alternate submission, PR secrets and unpinned actions fail policy', () => {
-  const workflows = loadWorkflows();
-  workflows['metadata-only.yml'].jobs.review.environment = 'app-store-staging';
-  workflows['pr.yml'].jobs.policy.steps.push({run: 'echo secret', env: {KEY: '${{ secrets.KEY }}'}});
-  workflows['main.yml'].jobs.build.steps[0].uses = 'actions/checkout@main';
-  const errors = validate(workflows).join('\n');
-  assert.match(errors, /review requires production approval/);
-  assert.match(errors, /PR path must not receive secrets/);
-  assert.match(errors, /action must be pinned by SHA/);
-});
-test('compilation cannot acquire attestation permission', () => {
-  const workflows = loadWorkflows();
-  workflows['main.yml'].jobs.build.permissions = {'id-token': 'write'};
-  assert.match(validate(workflows).join('\n'), /compilation must not sign provenance/);
-});
+import test from 'node:test';import assert from 'node:assert/strict';import {loadWorkflows,validate} from '../workflow_policy.mjs';
+test('consumer workflows satisfy platform pin and approval boundaries',()=>assert.deepEqual(validate(loadWorkflows()),[]));
+test('mutable platform calls and broad secret inheritance are rejected',()=>{const w=loadWorkflows();w['main.yml'].jobs.prepare.uses=w['main.yml'].jobs.prepare.uses.replace(/@[a-f0-9]{40}$/,'@main');w['main.yml'].jobs.prepare.secrets='inherit';const errors=validate(w).join('\n');assert.match(errors,/trusted platform pin/);assert.match(errors,/environment secrets/);});
+test('PR secrets, unsafe interpolation and automatic promotion are rejected',()=>{const w=loadWorkflows();w['pr.yml'].jobs.policy.steps.push({run:'echo ${{ inputs.untrusted }}',env:{KEY:'${{ secrets.KEY }}'}});w['promote.yml'].on.push={};const errors=validate(w).join('\n');assert.match(errors,/PR path/);assert.match(errors,/unsafe input/);assert.match(errors,/explicit/);});

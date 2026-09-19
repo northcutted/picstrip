@@ -11,7 +11,7 @@
     "yaml": "2.8.2"
   },
   "scripts": {
-    "test:ci": "node --test scripts/ci/tests/*.test.mjs && python3 -m unittest discover -s scripts/ci/tests -p \"test_*.py\" && bundle exec ruby scripts/ci/tests/release_guard_test.rb",
+    "test:ci": "node --test scripts/ci/tests/*.test.mjs",
     "check:workflows": "node scripts/ci/workflow_policy.mjs"
   }
 }

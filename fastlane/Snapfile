@@ -3,7 +3,7 @@
 
 # Device, runtime, and locale choices are shared with CI validation.
 require "json"
-ci_config = JSON.parse(File.read(File.expand_path("../scripts/ci/config.json", __dir__)))
+ci_config = JSON.parse(File.read(File.expand_path("../.github/ios-release.json", __dir__)))
 devices(ci_config.fetch("screenshot_devices"))
 ios_version(ENV.fetch("SIMULATOR_RUNTIME", ci_config.fetch("xcode").fetch("runtime")))
 languages(ci_config.fetch("locales"))

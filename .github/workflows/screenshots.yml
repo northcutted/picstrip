@@ -1,12 +1,10 @@
-# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
----
 name: Capture Screenshots
-'on':
+on:
   workflow_dispatch:
     inputs:
       languages:
         type: string
-        default: ''
+        default: ""
         description: Comma-separated capture locales; blank means all locales
 permissions:
   contents: read
@@ -21,58 +19,65 @@ jobs:
     outputs:
       source: ${{ steps.source.outputs.sha }}
     steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-        ref: main
-        lfs: true
-    - name: Record capture source
-      id: source
-      run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-    - name: Resolve exact screenshot toolchain
-      run: python3 scripts/ci/toolchain.py --screenshots
-    - name: Set up Ruby
-      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-      with:
-        bundler-cache: false
-    - name: Install locked gems
-      run: |-
-        bundle config set --local path vendor/bundle
-        bundle config set --local frozen true
-        bundle install --jobs 4 --retry 3
-    - name: Install locked compositor dependencies
-      run: |-
-        python3 -m venv "$RUNNER_TEMP/compositor"
-        "$RUNNER_TEMP/compositor/bin/pip" install --require-hashes -r scripts/requirements.txt
-        echo "$RUNNER_TEMP/compositor/bin" >> "$GITHUB_PATH"
-    - name: Capture selected locales
-      run: if [ -n "$LANGUAGES" ]; then bundle exec fastlane screenshots "languages:$LANGUAGES";
-        else bundle exec fastlane screenshots; fi
-      env:
-        LANGUAGES: "${{ inputs.languages }}"
-    - name: Compose and validate complete release coverage
-      run: |-
-        bundle exec fastlane process_screenshots
-        python3 scripts/ci/evidence.py screenshots fastlane/screenshots/processed --output build/screenshots-manifest.json
-    - name: Upload screenshots-${{ github.run_id }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: screenshots-${{ github.run_id }}
-        path: fastlane/screenshots/processed/
-        retention-days: 14
-        compression-level: 0
-        if-no-files-found: error
-    - name: Upload screenshot-logs-${{ github.run_id }}
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
-      with:
-        name: screenshot-logs-${{ github.run_id }}
-        path: fastlane/screenshot_logs/
-        retention-days: 7
-        compression-level: 0
-        if-no-files-found: error
-      if: failure()
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          ref: main
+          lfs: true
+      - name: Load pinned screenshot validation and publishing tools
+        uses: northcutted/ios-release-workflows/actions/bootstrap@71d5b6bb095d70500213a75d6c7f2365468bcffe
+        with:
+          config: .github/ios-release.json
+          revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      - name: Record capture source
+        id: source
+        run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Resolve exact screenshot toolchain
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
+        with:
+          bundler-cache: false
+      - name: Install locked gems
+        run: |-
+          bundle config set --local path vendor/bundle
+          bundle config set --local frozen true
+          bundle install --jobs 4 --retry 3
+      - name: Install locked compositor dependencies
+        run: |-
+          python3 -m venv "$RUNNER_TEMP/compositor"
+          "$RUNNER_TEMP/compositor/bin/pip" install --require-hashes -r scripts/requirements.txt
+          echo "$RUNNER_TEMP/compositor/bin" >> "$GITHUB_PATH"
+      - name: Capture selected locales
+        run: if [ -n "$LANGUAGES" ]; then bundle exec fastlane screenshots "languages:$LANGUAGES"; else bundle exec fastlane
+          screenshots; fi
+        env:
+          LANGUAGES: ${{ inputs.languages }}
+      - name: Compose and validate complete release coverage
+        run: >-
+          bundle exec fastlane process_screenshots
+
+          python3 "$IOS_RELEASE_ROOT/scripts/ci/evidence.py" screenshots fastlane/screenshots/processed --output
+          build/screenshots-manifest.json
+      - name: Upload screenshots-${{ github.run_id }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: screenshots-${{ github.run_id }}
+          path: fastlane/screenshots/processed/
+          retention-days: 14
+          compression-level: 0
+          if-no-files-found: error
+      - name: Upload screenshot-logs-${{ github.run_id }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: screenshot-logs-${{ github.run_id }}
+          path: fastlane/screenshot_logs/
+          retention-days: 7
+          compression-level: 0
+          if-no-files-found: error
+        if: failure()
     if: github.ref == 'refs/heads/main'
   pull-request:
     name: Open screenshot pull request
@@ -80,31 +85,36 @@ jobs:
     timeout-minutes: 30
     needs: capture
     steps:
-    - name: Checkout exact source
-      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
-      with:
-        persist-credentials: false
-        fetch-depth: 1
-        ref: ${{ needs.capture.outputs.source }}
-        lfs: true
-    - name: Download screenshots-${{ github.run_id }}
-      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
-      with:
-        name: screenshots-${{ github.run_id }}
-        path: incoming
-    - name: Validate candidate images
-      run: python3 scripts/ci/evidence.py screenshots incoming --output build/screenshots-manifest.json
-    - name: Mint screenshot PR token
-      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
-      with:
-        client-id: "${{ secrets.RELEASE_APP_ID }}"
-        private-key: "${{ secrets.RELEASE_APP_PRIVATE_KEY }}"
-        permission-contents: write
-        permission-pull-requests: write
-        repositories: picstrip
-      id: token
-    - name: Open a PR without changing main
-      run: bash scripts/ci/screenshot_pr.sh
-      env:
-        GH_TOKEN: "${{ steps.token.outputs.token }}"
+      - name: Checkout exact source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+          ref: ${{ needs.capture.outputs.source }}
+          lfs: true
+      - name: Load pinned screenshot validation and publishing tools
+        uses: northcutted/ios-release-workflows/actions/bootstrap@71d5b6bb095d70500213a75d6c7f2365468bcffe
+        with:
+          config: .github/ios-release.json
+          revision: 71d5b6bb095d70500213a75d6c7f2365468bcffe
+      - name: Download screenshots-${{ github.run_id }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: screenshots-${{ github.run_id }}
+          path: incoming
+      - name: Validate candidate images
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/evidence.py" screenshots incoming --output build/screenshots-manifest.json
+      - name: Mint screenshot PR token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        with:
+          client-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          repositories: picstrip
+        id: token
+      - name: Open a PR without changing main
+        run: bash "$IOS_RELEASE_ROOT/scripts/ci/screenshot_pr.sh"
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
     environment: screenshot-publishing
