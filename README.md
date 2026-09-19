@@ -226,7 +226,8 @@ PicStrip/
 │   ├── semantic_dry_run.mjs    # Read-only version and release-note analysis
 │   ├── render_app_store_metadata.sh  # Applies generated notes to App Store metadata artifacts
 │   ├── translate_xcstrings.js  # Localization automation (pseudo + OpenAI providers)
-│   └── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
+│   ├── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
+│   └── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms
 │
 ├── docs/
 │   ├── icons/               # Generated app icon variants (Default, Dark, Tinted)
@@ -302,7 +303,7 @@ npm ci --ignore-scripts
 | `make help` | Lists local helper commands |
 | `make test` | Runs `bundle exec fastlane test` |
 | `make build` | Runs `bundle exec fastlane build` |
-| `make audit-localization` | Checks shared core/extension string-returning code for literals that should use localization helpers |
+| `make audit-localization` | Checks for unlocalized string literals and audits the string catalogs (every key translated in all 15 locales, placeholders intact, plural forms complete) |
 | `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
 | `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
