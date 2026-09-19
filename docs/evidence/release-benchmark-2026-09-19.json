@@ -1,0 +1,1288 @@
+{
+  "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+  "runs": [
+    {
+      "run_id": 35458121764,
+      "workers": 1,
+      "sample": 1,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458121764",
+      "elapsed_seconds": 1508.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 497.0,
+          "execution_seconds": 43.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 1022.0,
+          "execution_seconds": 401.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 1104.0,
+          "execution_seconds": 373.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1077.0,
+          "execution_seconds": 19.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 1175.0,
+          "execution_seconds": 98.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 13.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 4.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 346.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 313.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458121764",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458121764",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458121764",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458121764",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458121764",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589287328,
+        "name": "qa-evidence-35458121764-1",
+        "digest": "sha256:4b261b285b5c6c970d525c9b03a65230aaa3f75ef11430649136a3f61767c40d"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458123857,
+      "workers": 1,
+      "sample": 2,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458123857",
+      "elapsed_seconds": 1681.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 21.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 1176.0,
+          "execution_seconds": 83.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 1276.0,
+          "execution_seconds": 377.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1261.0,
+          "execution_seconds": 14.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 1277.0,
+          "execution_seconds": 317.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 478.0,
+          "execution_seconds": 38.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 10.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 332.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 267.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458123857",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458123857",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458123857",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458123857",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458123857",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589217649,
+        "name": "qa-evidence-35458123857-1",
+        "digest": "sha256:86857e17f6d1af9231dc40aea16b256da1e7d697e0308debb3a41738f089a0ac"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458125858,
+      "workers": 1,
+      "sample": 3,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458125858",
+      "elapsed_seconds": 1917.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 18.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 1279.0,
+          "execution_seconds": 417.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 99.0,
+          "execution_seconds": 40.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 1424.0,
+          "execution_seconds": 459.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 1479.0,
+          "execution_seconds": 96.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1582.0,
+          "execution_seconds": 16.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 4.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 2.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 4.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 366.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 376.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458125858",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458125858",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458125858",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458125858",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458125858",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589002384,
+        "name": "qa-evidence-35458125858-1",
+        "digest": "sha256:0f679f292fa3ee6b7696ef74218f06561f7a96ccdafdd27eca033c3c4b3ea647"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458128169,
+      "workers": 1,
+      "sample": 4,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458128169",
+      "elapsed_seconds": 2264.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 4.0,
+          "execution_seconds": 18.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 1596.0,
+          "execution_seconds": 86.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 199.0,
+          "execution_seconds": 40.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1603.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 1628.0,
+          "execution_seconds": 601.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 1692.0,
+          "execution_seconds": 440.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 4.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 4.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 531.0
+        },
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 377.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458128169",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458128169",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458128169",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458128169",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458128169",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10588698150,
+        "name": "qa-evidence-35458128169-1",
+        "digest": "sha256:293b5bbc208d9f1aa4ba53976d0b7e8ce7eb4aae27903bc4b94935ccca07c806"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458130477,
+      "workers": 1,
+      "sample": 5,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458130477",
+      "elapsed_seconds": 2294.0,
+      "jobs": [
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 143.0,
+          "execution_seconds": 70.0
+        },
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 4.0,
+          "execution_seconds": 18.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1654.0,
+          "execution_seconds": 21.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 1701.0,
+          "execution_seconds": 562.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 1682.0,
+          "execution_seconds": 339.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 1886.0,
+          "execution_seconds": 90.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 15.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 2.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 477.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 284.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458130477",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458130477",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458130477",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458130477",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458130477",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589218379,
+        "name": "qa-evidence-35458130477-1",
+        "digest": "sha256:9d0d5d4afbd84ed782715ec6b4d88d774a393903a7d999933170c22b18917e1a"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458132893,
+      "workers": 2,
+      "sample": 1,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458132893",
+      "elapsed_seconds": 3030.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 15.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 241.0,
+          "execution_seconds": 44.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 2028.0,
+          "execution_seconds": 973.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 1979.0,
+          "execution_seconds": 16.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 2134.0,
+          "execution_seconds": 94.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 2003.0,
+          "execution_seconds": 496.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 12.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 3.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 4.0,
+          "execution_seconds": 4.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 893.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 438.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458132893",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458132893",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458132893",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458132893",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458132893",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589448948,
+        "name": "qa-evidence-35458132893-1",
+        "digest": "sha256:7d74b4746d7b540eed6a1de9ae26d0b9f6d40005635c8d003aa245de8f53391e"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458135005,
+      "workers": 2,
+      "sample": 2,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458135005",
+      "elapsed_seconds": 2876.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 18.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 259.0,
+          "execution_seconds": 40.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 2226.0,
+          "execution_seconds": 533.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 2234.0,
+          "execution_seconds": 19.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 2261.0,
+          "execution_seconds": 94.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 2268.0,
+          "execution_seconds": 582.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 9.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 2.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 4.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 483.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 500.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458135005",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458135005",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458135005",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458135005",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458135005",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589860503,
+        "name": "qa-evidence-35458135005-1",
+        "digest": "sha256:75d97e4f8c917426ac745c03d0c64b7c5874ef19adbe8399b41a3b322fd91260"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458137218,
+      "workers": 2,
+      "sample": 3,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458137218",
+      "elapsed_seconds": 3195.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 18.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 294.0,
+          "execution_seconds": 58.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 2358.0,
+          "execution_seconds": 84.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 2449.0,
+          "execution_seconds": 546.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 2501.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 2527.0,
+          "execution_seconds": 636.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 16.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 3.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 3.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 500.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 534.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458137218",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458137218",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458137218",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458137218",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458137218",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10589603984,
+        "name": "qa-evidence-35458137218-1",
+        "digest": "sha256:d21a3f007e029744ea2506a803eb3f5bfc4cdbd92c540f5388c2095083929182"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458139292,
+      "workers": 2,
+      "sample": 4,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458139292",
+      "elapsed_seconds": 3836.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 17.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 208.0,
+          "execution_seconds": 43.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 2759.0,
+          "execution_seconds": 19.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 2785.0,
+          "execution_seconds": 939.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 2998.0,
+          "execution_seconds": 85.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 2850.0,
+          "execution_seconds": 954.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 11.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 4.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 5.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 873.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 903.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458139292",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458139292",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458139292",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458139292",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458139292",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10588869332,
+        "name": "qa-evidence-35458139292-1",
+        "digest": "sha256:f3e9b4d41d67225156e3cc9f0bf682a830877d88668b9f028463f329e12d744d"
+      },
+      "run_attempt": 1
+    },
+    {
+      "run_id": 35458141507,
+      "workers": 2,
+      "sample": 5,
+      "source": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/northcutted/picstrip/actions/runs/35458141507",
+      "elapsed_seconds": 3971.0,
+      "jobs": [
+        {
+          "name": "Workflow policy and release regression tests",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 19.0
+        },
+        {
+          "name": "Locked gems on macOS",
+          "conclusion": "success",
+          "queue_seconds": 524.0,
+          "execution_seconds": 44.0
+        },
+        {
+          "name": "qa / test",
+          "conclusion": "success",
+          "queue_seconds": 2996.0,
+          "execution_seconds": 643.0
+        },
+        {
+          "name": "qa / test-compatibility",
+          "conclusion": "success",
+          "queue_seconds": 3187.0,
+          "execution_seconds": 754.0
+        },
+        {
+          "name": "qa / lint",
+          "conclusion": "success",
+          "queue_seconds": 3164.0,
+          "execution_seconds": 14.0
+        },
+        {
+          "name": "qa / analyze",
+          "conclusion": "success",
+          "queue_seconds": 3089.0,
+          "execution_seconds": 94.0
+        },
+        {
+          "name": "qa / evidence",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 16.0
+        },
+        {
+          "name": "qa / CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 3.0,
+          "execution_seconds": 2.0
+        },
+        {
+          "name": "CI Gate",
+          "conclusion": "success",
+          "queue_seconds": 2.0,
+          "execution_seconds": 3.0
+        }
+      ],
+      "test_steps": [
+        {
+          "name": "Run test",
+          "conclusion": "success",
+          "seconds": 595.0
+        },
+        {
+          "name": "Run test-compatibility",
+          "conclusion": "success",
+          "seconds": 676.0
+        }
+      ],
+      "qa": {
+        "checks": {
+          "analyze": {
+            "check": "analyze",
+            "run_id": "35458141507",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "lint": {
+            "check": "lint",
+            "run_id": "35458141507",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "localization": {
+            "check": "localization",
+            "run_id": "35458141507",
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test": {
+            "check": "test",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458141507",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          },
+          "test-compatibility": {
+            "check": "test-compatibility",
+            "executed": 147,
+            "failures": 0,
+            "run_id": "35458141507",
+            "skipped": 0,
+            "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784",
+            "status": 0
+          }
+        },
+        "source_sha": "a7c4aa915375ea3c85db7aace5c761c842ba3784"
+      },
+      "qa_artifact": {
+        "id": 10588914372,
+        "name": "qa-evidence-35458141507-1",
+        "digest": "sha256:3ee87a76c574dae683b22fc64d19059c7112118d5d051df89a4b99006adfe46c"
+      },
+      "run_attempt": 1
+    }
+  ],
+  "complete": true,
+  "all_passed": true,
+  "median_test_step_seconds": {
+    "1": {
+      "Run test": 366.0,
+      "Run test-compatibility": 313.0
+    },
+    "2": {
+      "Run test": 595.0,
+      "Run test-compatibility": 534.0
+    }
+  },
+  "improvement_fraction": -0.6256830601092895,
+  "eligible_for_two_workers": false,
+  "collected_at": "2026-09-19T18:34:24.265606+00:00",
+  "platform_revision": "492e03f1e80b46f0acdf80c8a2d4aa3a22e921cc",
+  "runner_image": [
+    "Version: 20260828.587",
+    "Image: xcode-27-arm64",
+    "Version: 20260912.0186.1"
+  ],
+  "measurement": "GitHub job step started_at to completed_at; excludes runner queue and dependency installation outside the test step",
+  "median_test_queue_seconds": {
+    "1": {
+      "qa / test": 1279.0,
+      "qa / test-compatibility": 1424.0
+    },
+    "2": {
+      "qa / test": 2449.0,
+      "qa / test-compatibility": 2527.0
+    }
+  },
+  "decision": "keep_one_worker"
+}

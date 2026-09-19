@@ -39,17 +39,28 @@ The affected release-tool dependencies were upgraded and the changes merged in b
 
 ## Performance comparison
 
-Five one-worker and five two-worker runs were dispatched against the exact source above using secret-free CI. The benchmark compares the `Run test` step, reports queue time separately, and retains failures rather than selecting only successful runs. Two workers require all five candidate runs to pass and at least a 15% median test-duration improvement. Production remains at one worker until that criterion is demonstrated.
+All ten secret-free CI runs passed on the exact source and platform revisions above: five with one XCTest worker and five with two. Every run executed 147 tests on each runtime, with no failures or skips: **2,940 test executions** in total. No samples were rerun or discarded. Worker inputs were checked in the job logs; all iOS 27 samples used the same `xcode-27-arm64` runner image, version `20260912.0186.1`.
 
-| Sample | One worker | Two workers |
+**Keep one worker.** Two workers did not meet the required 15% median improvement and were slower on both runtimes in this sample.
+
+| Measurement | One worker median | Two workers median | Change |
+| --- | --- | --- | --- |
+| iOS 27 test step | 6m06s | 9m55s | 62.6% slower |
+| iOS 26 test step | 5m13s | 8m54s | 70.6% slower |
+
+The measured test steps include the clean Xcode build and test execution, excluding prior Ruby/toolchain setup and runner queue time. Individual results:
+
+| Sample | One worker: iOS 27 / iOS 26 | Two workers: iOS 27 / iOS 26 |
 | --- | --- | --- |
-| 1 | [35458121764](https://github.com/northcutted/picstrip/actions/runs/35458121764) | [35458132893](https://github.com/northcutted/picstrip/actions/runs/35458132893) |
-| 2 | [35458123857](https://github.com/northcutted/picstrip/actions/runs/35458123857) | [35458135005](https://github.com/northcutted/picstrip/actions/runs/35458135005) |
-| 3 | [35458125858](https://github.com/northcutted/picstrip/actions/runs/35458125858) | [35458137218](https://github.com/northcutted/picstrip/actions/runs/35458137218) |
-| 4 | [35458128169](https://github.com/northcutted/picstrip/actions/runs/35458128169) | [35458139292](https://github.com/northcutted/picstrip/actions/runs/35458139292) |
-| 5 | [35458130477](https://github.com/northcutted/picstrip/actions/runs/35458130477) | [35458141507](https://github.com/northcutted/picstrip/actions/runs/35458141507) |
+| 1 | [5m46s / 5m13s](https://github.com/northcutted/picstrip/actions/runs/35458121764) | [14m53s / 7m18s](https://github.com/northcutted/picstrip/actions/runs/35458132893) |
+| 2 | [5m32s / 4m27s](https://github.com/northcutted/picstrip/actions/runs/35458123857) | [8m03s / 8m20s](https://github.com/northcutted/picstrip/actions/runs/35458135005) |
+| 3 | [6m06s / 6m16s](https://github.com/northcutted/picstrip/actions/runs/35458125858) | [8m20s / 8m54s](https://github.com/northcutted/picstrip/actions/runs/35458137218) |
+| 4 | [6m17s / 8m51s](https://github.com/northcutted/picstrip/actions/runs/35458128169) | [14m33s / 15m03s](https://github.com/northcutted/picstrip/actions/runs/35458139292) |
+| 5 | [7m57s / 4m44s](https://github.com/northcutted/picstrip/actions/runs/35458130477) | [9m55s / 11m16s](https://github.com/northcutted/picstrip/actions/runs/35458141507) |
 
-Results remain pending while GitHub assigns native iOS runners. Apple processing and human approval are outside this CI benchmark and must be measured during promotion and submission.
+Queue time is separate: median iOS 27 runner waits were 21m19s for the one-worker cohort and 40m49s for the two-worker cohort. The cohorts entered the same account's queue in that order while other CI was running. These waits reflect scheduling and are not attributed to the worker setting.
+
+The [machine-readable evidence](evidence/release-benchmark-2026-09-19.json) retains run IDs, QA artifact digests and test counts, individual step durations, and per-job queue/execution timings. Durations use GitHub's `started_at` and `completed_at` timestamps. This is a controlled source/toolchain comparison for the worker decision, not a five-release end-to-end benchmark. Apple processing and human approval remain unmeasured because the canary is blocked before upload.
 
 ## Independent ownership
 
