@@ -28,3 +28,11 @@ The remediation updates Fastlane to 2.240.1, Excon to 1.7.1, Faraday to 2.14.4, 
 An additional npm audit finding in `yaml` (GHSA-48c2-rrv3-qjmp) was fixed by the 2.9.1 update. Platform signatures/provenance use the separately pinned GitHub/SLSA tools; npm Sigstore packages arrive through semantic-release dependencies rather than the platform verifier. Ruby HTTP/JSON/JWT dependencies also execute in Apple credential-bearing jobs, so their updates are verified with the locked release lane tests.
 
 After [PicStrip PR 18](https://github.com/northcutted/picstrip/pull/18) and [platform PR 20](https://github.com/northcutted/ios-release-workflows/pull/20) merged, GitHub's open-alert API returned **zero open alerts in both repositories**, read back on 2026-09-19. This is a point-in-time result, not a claim that future advisories cannot appear. Dependency-update PRs remain subject to the normal required checks; enabling Dependabot does not enable automatic merges.
+
+## Dependabot integration
+
+The remaining version updates are integrated together with the reusable platform. Commit analyzer 13.0.1 and Conventional Commits 10.4.0 preserve breaking-change detection when updated together. Release notes generator 14.1.1 needs a scoped override to changelog writer 9.2.1 for this preset; tests assert rendered notes and commit links. Minitest 6.0.6 uses the extracted `minitest-mock` test dependency. Future release-analysis updates are grouped.
+
+The older security PRs are covered by the current lock: `semantic-release` 25.0.9 (transitive peer only), `@sigstore/core` 3.2.1, `sigstore` 4.1.1, `tar` 7.5.22, npm 11.19.1, and `js-yaml` 4.3.2. The removed write-enabled release command is not reintroduced.
+
+Arabic reshaper 3.0.1 was installed with verified PyPI hashes; all ten Arabic screenshots rendered successfully in an isolated output directory. Actions checkout 7.0.1 and setup-node 7.0.0 retain full commit pins.

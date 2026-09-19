@@ -19,9 +19,18 @@ function repository(t) {
 test('read-only analysis preserves release rules and does not tag or dirty source', async t => {
   const {cwd, git, commit} = repository(t);
   commit('docs: explain usage'); assert.equal((await analyze(cwd)).will_release, false);
-  commit('fix: reject corrupt images'); assert.equal((await analyze(cwd)).version, '1.6.6');
+  commit('fix: reject corrupt images');
+  const patch = await analyze(cwd);
+  assert.equal(patch.version, '1.6.6');
+  assert.match(patch.notes, /Bug Fixes/);
+  assert.match(patch.notes, /reject corrupt images/);
+  assert.match(patch.notes, /\/commit\/[a-f0-9]{40}/);
   commit('feat: add iOS 27 support'); assert.equal((await analyze(cwd)).version, '1.7.0');
-  commit('feat!: change export contract'); assert.equal((await analyze(cwd)).version, '2.0.0');
+  commit('feat!: change export contract');
+  const major = await analyze(cwd);
+  assert.equal(major.version, '2.0.0');
+  assert.match(major.notes, /BREAKING CHANGE/);
+  assert.match(major.notes, /change export contract/);
   assert.equal(git('tag'), 'v1.6.5'); assert.equal(git('status', '--porcelain'), '');
 });
 test('ignore unrelated tags and use highest reachable stable semantic version', async t => {
