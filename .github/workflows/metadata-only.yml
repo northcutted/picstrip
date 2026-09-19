@@ -21,10 +21,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
-    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@4b2d01dda309c59c5090f4165419c6924a8be1ec
+    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@bc9e2d56b062c3292981f5df83270503b9522b65
     with:
       config: .github/ios-release.json
-      platform_revision: 4b2d01dda309c59c5090f4165419c6924a8be1ec
+      platform_revision: bc9e2d56b062c3292981f5df83270503b9522b65
       release_tag: ${{ inputs.release_tag }}
       metadata_commit: ${{ inputs.metadata_commit }}
       submit: ${{ inputs.submit_for_review }}
