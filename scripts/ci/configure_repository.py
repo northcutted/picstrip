@@ -90,13 +90,20 @@ def main():
         if not any(p["name"] == ref and p["type"] == kind for p in policies):
             api(f"{prefix}/environments/{name}/deployment-branch-policies", "POST", {"name": ref, "type": kind})
     api(f"{prefix}/immutable-releases", "PUT")
+    api(f"{prefix}/vulnerability-alerts", "PUT")
     api(f"{prefix}/automated-security-fixes", "PUT")
     require(api(f"{prefix}/immutable-releases")["enabled"], "Immutable releases did not enable")
     actual_rules = {r["name"]: api(f"{prefix}/rulesets/{r['id']}") for r in api(f"{prefix}/rulesets")}
     for wanted in [main_rules, tag_rules]:
         actual = actual_rules[wanted["name"]]
-        for field in ("target", "enforcement", "conditions", "bypass_actors", "rules"):
+        for field in ("target", "enforcement", "conditions", "bypass_actors"):
             require(actual[field] == wanted[field], f"Ruleset readback differs: {wanted['name']} {field}")
+        actual_types = {rule["type"]: rule for rule in actual["rules"]}
+        require(set(actual_types) == {rule["type"] for rule in wanted["rules"]}, "Ruleset control types differ")
+        for rule in wanted["rules"]:
+            parameters = actual_types[rule["type"]].get("parameters", {})
+            for key, value in rule.get("parameters", {}).items():
+                require(parameters.get(key) == value, f"Rule parameter differs: {rule['type']} {key}")
     for name, (kind, ref) in environments.items():
         actual = api(f"{prefix}/environments/{name}")
         require(actual.get("can_admins_bypass") is False, f"Environment bypass remains enabled: {name}")

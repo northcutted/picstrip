@@ -89,7 +89,7 @@ actionlint
 ruby -c fastlane/Fastfile
 ```
 
-The platform repository owns release/evidence/recovery tests, including the locked Fastlane lane contracts and independent consumer fixtures. Its Linux/macOS tests do not substitute for a signed consumer rehearsal or a real third-party app run. Public repositories and Enterprise Cloud private repositories are supported; required native attestations and approval features must be available.
+The platform repository owns release/evidence/recovery tests, including the locked Fastlane lane contracts and independent consumer fixtures. Its Linux/macOS tests do not substitute for a signed consumer rehearsal or a real third-party app run. The separate [native consumer fixture](https://github.com/northcutted/ios-release-consumer-fixture) passed both iOS test targets and the evidence gate without PicStrip files or release credentials. This is a separate-repository rehearsal, not yet an independently owned customer run. Public repositories and Enterprise Cloud private repositories are supported; required native attestations and approval features must be available.
 
 To verify a downloaded release, use an independently trusted checkout at the pinned platform commit:
 
