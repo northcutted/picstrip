@@ -137,7 +137,7 @@ jobs:
     - name: Validate exact toolchain
       run: python3 scripts/ci/toolchain.py
     - name: Set up Ruby
-      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
       with:
         bundler-cache: false
     - name: Install locked gems
@@ -431,7 +431,7 @@ jobs:
         RELEASE_RUN_ID: "${{ needs.version.outputs.run_id }}"
         RELEASE_RUN_ATTEMPT: "${{ needs.version.outputs.run_attempt }}"
     - name: Set up Ruby
-      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
       with:
         bundler-cache: false
     - name: Install locked gems
@@ -477,7 +477,7 @@ jobs:
         name: verified-${{ needs.version.outputs.prefix }}
         path: release-assets
     - name: Set up Ruby
-      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
       with:
         bundler-cache: false
     - name: Install locked gems
