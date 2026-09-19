@@ -16,7 +16,7 @@ import UniformTypeIdentifiers
 ///     prompt, which a background intent cannot present.
 ///
 /// Shortcuts usage: "Select Photos" / "Get File" → "Strip Metadata from Images" →
-/// "Save to Photo Album" / "Save File" / "Share".
+/// "Save to Photos" / "Save File" / "Share".
 struct StripMetadataIntent: AppIntent, ProgressReportingIntent {
 
     static let title: LocalizedStringResource = "Strip Metadata from Images"
@@ -28,9 +28,14 @@ struct StripMetadataIntent: AppIntent, ProgressReportingIntent {
 
     static let supportedModes: IntentModes = .background
 
+    // `connectToPreviousIntentResult` marks this as the action's input, so
+    // Shortcuts wires the previous action's output ("Select Photos", "Get File",
+    // …) into it.  Without it the parameter is never connected and the intent
+    // runs with no images at all.
     @Parameter(
         title: LocalizedStringResource("Images"),
-        supportedContentTypes: [.image]
+        supportedContentTypes: [.image],
+        inputConnectionBehavior: .connectToPreviousIntentResult
     )
     var images: [IntentFile]
 
@@ -38,9 +43,7 @@ struct StripMetadataIntent: AppIntent, ProgressReportingIntent {
     var format: ExportFormat
 
     static var parameterSummary: some ParameterSummary {
-        Summary("Strip metadata from \(\.$images)") {
-            \.$format
-        }
+        Summary("Strip metadata from \(\.$images) as \(\.$format)")
     }
 
     func perform() async throws -> some IntentResult & ReturnsValue<[IntentFile]> {

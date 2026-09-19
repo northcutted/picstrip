@@ -93,6 +93,29 @@ final class StripMetadataIntentTests: XCTestCase {
         XCTAssertEqual(StripMetadataIntent.outputFilename(for: "scan.final.tiff", type: .jpeg), "scan.final.jpeg")
         XCTAssertEqual(StripMetadataIntent.outputFilename(for: "", type: .heic), "Image.heic")
     }
+
+    // MARK: - Shortcuts wiring
+
+    /// Shortcuts only feeds the previous action's output ("Select Photos", "Get
+    /// File", …) into a parameter the extracted metadata marks as the action's
+    /// input.  Every test above passed while that flag was missing and the
+    /// shortcut ran with no images, so this reads what the build actually ships.
+    func testImagesParameterIsTheShortcutsInput() throws {
+        let url = try XCTUnwrap(
+            Bundle.main.url(forResource: "extract", withExtension: "actionsdata", subdirectory: "Metadata.appintents"),
+            "The test host app should carry extracted App Intents metadata."
+        )
+        let root = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+        let actions = try XCTUnwrap(root["actions"] as? [String: Any])
+        let action = try XCTUnwrap(actions["StripMetadataIntent"] as? [String: Any])
+        let parameters = try XCTUnwrap(action["parameters"] as? [[String: Any]])
+
+        let images = try XCTUnwrap(parameters.first { $0["name"] as? String == "images" })
+        XCTAssertEqual(images["isInput"] as? Bool, true, "`images` must connect to the previous action's result.")
+
+        let format = try XCTUnwrap(parameters.first { $0["name"] as? String == "format" })
+        XCTAssertEqual(format["isInput"] as? Bool, false)
+    }
 }
 
 @MainActor

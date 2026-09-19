@@ -25207,96 +25207,96 @@
         }
       }
     },
-    "Strip metadata from ${images}" : {
+    "Strip metadata from ${images} as ${format}" : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إزالة البيانات الوصفية من ${images}"
+            "value" : "إزالة البيانات الوصفية من ${images} بتنسيق ${format}"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Metadaten aus ${images} entfernen"
+            "value" : "Metadaten aus ${images} entfernen und als ${format} ausgeben"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar metadatos de ${images}"
+            "value" : "Eliminar metadatos de ${images} como ${format}"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer les métadonnées de ${images}"
+            "value" : "Supprimer les métadonnées de ${images} au format ${format}"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimuovi i metadati da ${images}"
+            "value" : "Rimuovi i metadati da ${images} come ${format}"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${images}からメタデータを削除"
+            "value" : "${images}からメタデータを削除して${format}で出力"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${images}에서 메타데이터 제거"
+            "value" : "${images}에서 메타데이터를 제거하고 ${format}(으)로 내보내기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verwijder metadata uit ${images}"
+            "value" : "Verwijder metadata uit ${images} als ${format}"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usuń metadane z ${images}"
+            "value" : "Usuń metadane z ${images} jako ${format}"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover metadados de ${images}"
+            "value" : "Remover metadados de ${images} como ${format}"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover metadados de ${images}"
+            "value" : "Remover metadados de ${images} como ${format}"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ta bort metadata från ${images}"
+            "value" : "Ta bort metadata från ${images} som ${format}"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "${images} içinden meta verileri kaldır"
+            "value" : "${images} içinden meta verileri kaldır ve ${format} olarak dışa aktar"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "移除${images}中的元数据"
+            "value" : "移除${images}中的元数据并输出为${format}"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "移除${images}中的元資料"
+            "value" : "移除${images}中的元資料並輸出為${format}"
           }
         }
       }

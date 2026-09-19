@@ -643,7 +643,23 @@ Takes `[IntentFile]` (`supportedContentTypes: [.image]`) plus an `ExportFormat`,
 
 It is deliberately **metadata only** — no OCR (what previously exceeded the background memory ceiling) and no photo-library writes (a background intent cannot present the authorization prompt). It fails closed: one unreadable or undecodable file fails the whole run.
 
-> **Verify before release:** `IntentFile.data` was previously observed to come back empty for Photos-backed input ("Select Photos"). The intent falls back to reading the security-scoped `fileURL` and throws a clear error if both are empty, but the Shortcuts → Photos hand-off has not been exercised end to end on a device.
+The `images` parameter declares `inputConnectionBehavior: .connectToPreviousIntentResult`. That is what makes it the action's *input*: without it Shortcuts never wires the previous action's output into the parameter and the intent runs with no images.
+
+**Verified end to end in the iOS 27 simulator** (Shortcuts app, not just unit tests):
+
+| Shortcut | Input | Result |
+|----------|-------|--------|
+| Select Photos → Strip Metadata from Images → Save to Photos | 2.8 MB HEIC with GPS, 32 EXIF keys, MakerApple | Saved HEIC holds only structural keys |
+| Same | JPEGs with GPS/EXIF/IPTC | Saved JPEGs clean |
+| Get Latest Photos → Strip Metadata from Images *as PNG* → Save to Photos | JPEG (Nikon, GPS, IPTC) | Saved PNG, no metadata |
+
+Photos-backed `IntentFile`s arrived with non-empty `data` and a `fileURL` inside the Shortcuts runner's temp directory; the `fileURL` fallback in `readData(of:)` stays as a guard because earlier OS versions were seen returning empty `data`.
+
+Known quirks, none of them in PicStrip's code:
+
+- **iOS 27 beta runtime (24A5355p) drops the Export Format choice.** The runner logs the chosen case but App Intents resolves the enum to `nil` (`AppEnum case "to-0.0" was not found`), so the intent runs with the default, *Match Original*. Metadata is still stripped — only the conversion is skipped. The release runtime (24A434) delivers the value correctly.
+- In the simulator `performBackgroundTask` logs `BGTaskScheduler is not available on this platform` and then runs the work anyway.
+- Still worth one pass on a physical device before release: `LongRunningIntent` scheduling and a large (50+) selection can only be exercised there.
 
 ---
 
