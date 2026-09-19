@@ -68,7 +68,7 @@ struct BatchConfigView: View {
                         .foregroundStyle(.tint)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(viewModel.batchItems.count) Photos Selected")
+                        Text("^[\(viewModel.batchItems.count) Photo](inflect: true) Selected")
                             .font(.headline)
                         Text("Apply a single privacy policy to all of them.")
                             .font(.caption)

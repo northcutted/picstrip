@@ -1474,7 +1474,10 @@ private struct RedactionEditorDrawer: View {
         .buttonStyle(.plain)
         .opacity(region.isEnabled ? 1 : 0.45)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(region.displayName + (isSingleSelected ? ", selected" : ""))
+        .accessibilityLabel(Text(verbatim: region.displayName))
+        // The trait, not a hand-appended ", selected": VoiceOver announces it in
+        // the user's language.
+        .accessibilityAddTraits(isSingleSelected ? .isSelected : [])
         .accessibilityHint(
             isMultiSelectMode
                 ? (isMultiChecked ? "Double tap to deselect" : "Double tap to add to selection")

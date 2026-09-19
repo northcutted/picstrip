@@ -25,6 +25,7 @@
 		C0DEF0010000000000000006 /* PIIScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5429861B58D7DC967E80ED5 /* PIIScanner.swift */; };
 		C0DEF0010000000000000007 /* ImageRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA6420661FE58D8EF1A57C8 /* ImageRedactor.swift */; };
 		C0DEF2010000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C0DEF2000000000000000001 /* Localizable.xcstrings */; };
+		C0DEF3010000000000000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C0DEF3000000000000000001 /* InfoPlist.xcstrings */; };
 		C46ED0583BAA9E5C0457C69A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */; };
 		CE96047AF07FA48A7E20EB5C /* ImageRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA6420661FE58D8EF1A57C8 /* ImageRedactor.swift */; };
 		DC72DAD41244DA41A8058E94 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DFB22CCF819AC347B4E633F /* Photos.framework */; };
@@ -86,6 +87,7 @@
 		9034A5BE1516B0E23325C25A /* PhotosUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PhotosUI.framework; path = "$(SDKROOT)/System/Library/Frameworks/PhotosUI.framework"; sourceTree = "<group>"; };
 		A0DDB6F255FBB703400C69C3 /* PicStripShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = PicStripShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C0DEF2000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = PicStrip/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
+		C0DEF3000000000000000001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		C110F60F96DA85FC4F60BA89 /* DetectionModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DetectionModels.swift; path = PicStripCore/DetectionModels.swift; sourceTree = SOURCE_ROOT; };
 		D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E0B898439C4F2D32F734067A /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -195,6 +197,7 @@
 				2C0D20162FA6E97A0032DDDA /* PicStripShareExtension.entitlements */,
 				236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */,
 				E0B898439C4F2D32F734067A /* Info.plist */,
+				C0DEF3000000000000000001 /* InfoPlist.xcstrings */,
 				D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */,
 			);
 			path = PicStripShareExtension;
@@ -386,6 +389,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C0DEF2010000000000000001 /* Localizable.xcstrings in Resources */,
+				C0DEF3010000000000000001 /* InfoPlist.xcstrings in Resources */,
 				E7BA6DC40737014742CBA7DD /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -20,7 +20,7 @@ help:
 	@echo "  make metadata-only                Infer current App Store version/build and upload metadata only"
 	@echo "  make metadata-only MARKETING_VERSION=1.6.2 BUILD_NUMBER=62"
 	@echo "                                    Override the inferred metadata target"
-	@echo "  make audit-localization           Check core/extension string-returning literals"
+	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
 	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
 	@echo "                                    Pseudo-localize a catalog for layout smoke testing"
@@ -67,6 +67,7 @@ metadata-only:
 
 audit-localization:
 	scripts/audit_localization_strings.sh
+	scripts/audit_xcstrings.py
 
 localization-export:
 	rm -rf build/localization-export
@@ -82,8 +83,10 @@ localization-pseudo:
 	scripts/translate_xcstrings.js --languages $(LANGUAGES)
 
 localization-validate:
-	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings
+	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings \
+		PicStrip/InfoPlist.xcstrings PicStripShareExtension/InfoPlist.xcstrings
 	scripts/audit_localization_strings.sh
+	scripts/audit_xcstrings.py
 	swiftlint lint
 
 screenshots:

@@ -2,18 +2,21 @@ import SwiftUI
 
 // MARK: - Detection catalogue data
 
+// `detail` is a `LocalizedStringKey`, not a `String`: a plain string literal is
+// never extracted into the string catalog, so it would stay English everywhere.
 private struct PIIEntry {
     let type: PIIType
     let icon: String
     let color: Color
-    let detail: String
+    let detail: LocalizedStringKey
 }
 
 private struct MetadataEntry {
+    /// The category identifier `ImageProcessor` reports ("GPS", "Apple Maker Note", …).
     let name: String
     let icon: String
     let color: Color
-    let detail: String
+    let detail: LocalizedStringKey
 }
 
 private let visualEntries: [PIIEntry] = [
@@ -101,7 +104,7 @@ struct AboutView: View {
     private var appVersion: String {
         let v = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
         let b = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-        return "Version \(v) (\(b))"
+        return String(localized: "Version \(v) (\(b))")
     }
 
     var body: some View {
@@ -285,7 +288,7 @@ struct AboutView: View {
                                     icon: entry.icon,
                                     color: entry.color,
                                     type: entry.type,
-                                    detail: LocalizedStringKey(entry.detail)
+                                    detail: entry.detail
                                 )
                             }
                         }
@@ -306,8 +309,8 @@ struct AboutView: View {
                                 detectionRow(
                                     icon: entry.icon,
                                     color: entry.color,
-                                    title: LocalizedStringKey(entry.name),
-                                    detail: LocalizedStringKey(entry.detail)
+                                    title: metadataCategoryDisplayName(for: entry.name),
+                                    detail: entry.detail
                                 )
                             }
                         }
@@ -495,7 +498,7 @@ struct AboutView: View {
         .padding(.vertical, 4)
     }
 
-    private func disclosureLabel(icon: String, color: Color, title: LocalizedStringKey, count: String) -> some View {
+    private func disclosureLabel(icon: String, color: Color, title: LocalizedStringKey, count: LocalizedStringKey) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
@@ -537,7 +540,7 @@ struct AboutView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 HStack(spacing: 6) {
-                    Text(LocalizedStringKey(type.description))
+                    Text(type.description)
                         .font(.subheadline.weight(.medium))
 
                     // Inline risk badge
@@ -564,7 +567,7 @@ struct AboutView: View {
     private func detectionRow(
         icon: String,
         color: Color,
-        title: LocalizedStringKey,
+        title: String,
         detail: LocalizedStringKey
     ) -> some View {
         HStack(alignment: .top, spacing: 12) {
@@ -612,7 +615,7 @@ struct AboutView: View {
         }
     }
 
-    private func riskDescription(_ level: RiskLevel) -> String {
+    private func riskDescription(_ level: RiskLevel) -> LocalizedStringKey {
         switch level {
         case .critical:
             return "Immediate account takeover or major financial fraud risk. SSNs, credit card numbers, API keys, private keys, database credentials."

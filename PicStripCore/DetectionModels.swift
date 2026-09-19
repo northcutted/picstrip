@@ -33,11 +33,19 @@ nonisolated enum ConfidenceLevel: Int, Comparable, CaseIterable {
     }
 
     /// Human-readable label used in UI.
+    ///
+    /// These have their own keys instead of sharing "Low"/"Medium"/"High" with
+    /// `RiskLevel.shortLabel`: "confidence" and "risk" differ in grammatical gender
+    /// in many languages (French "élevée" vs "élevé"), so one translation cannot
+    /// serve both.
     var label: String {
         switch self {
-        case .low:    return String(localized: "Low")
-        case .medium: return String(localized: "Medium")
-        case .high:   return String(localized: "High")
+        case .low:
+            return String(localized: "ConfidenceLevel.low", defaultValue: "Low", comment: "Match confidence band")
+        case .medium:
+            return String(localized: "ConfidenceLevel.medium", defaultValue: "Medium", comment: "Match confidence band")
+        case .high:
+            return String(localized: "ConfidenceLevel.high", defaultValue: "High", comment: "Match confidence band")
         }
     }
 }

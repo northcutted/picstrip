@@ -39,7 +39,7 @@ struct CategoryDetailPanel: View {
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 1) {
-                    Text(category)
+                    Text(metadataCategoryDisplayName(for: category))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(.primary)
                     let strippableCount = fields.filter { !$0.isStructural }.count
@@ -59,7 +59,7 @@ struct CategoryDetailPanel: View {
                 .buttonStyle(.plain)
                 .frame(minWidth: 44, minHeight: 44)
                 .contentShape(Rectangle())
-                .accessibilityLabel("Close \(category) details")
+                .accessibilityLabel("Close \(metadataCategoryDisplayName(for: category)) details")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -227,15 +227,24 @@ struct CategoryDetailPanel: View {
 
     private var bulkSegmentedControl: some View {
         HStack(spacing: 0) {
-            segment(title: "Strip All", icon: "nosign", side: .left, active: allStripping) {
+            segment(
+                title: "Strip All",
+                accessibilityLabel: "Strip all \(metadataCategoryDisplayName(for: category)) fields",
+                icon: "nosign", side: .left, active: allStripping
+            ) {
                 stripAll()
             }
             Divider()
                 .frame(height: 28)
                 .overlay(color.opacity(0.15))
-            segment(title: "Keep All", icon: "checkmark", side: .right, active: noneStripping) {
+            segment(
+                title: "Keep All",
+                accessibilityLabel: "Keep all \(metadataCategoryDisplayName(for: category)) fields",
+                icon: "checkmark", side: .right, active: noneStripping
+            ) {
                 keepAll()
-            }        }
+            }
+        }
         .background(
             RoundedRectangle(cornerRadius: 10)
                 .fill(Color(.tertiarySystemFill))
@@ -250,8 +259,11 @@ struct CategoryDetailPanel: View {
 
     private enum SegmentSide { case left, right }
 
+    // The label is passed whole rather than assembled from `title` + category:
+    // word order differs between languages, so fragments cannot be translated.
     private func segment(
-        title: String,
+        title: LocalizedStringKey,
+        accessibilityLabel: LocalizedStringKey,
         icon: String,
         side: SegmentSide,
         active: Bool,
@@ -279,7 +291,7 @@ struct CategoryDetailPanel: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title) \(category) fields")
+        .accessibilityLabel(accessibilityLabel)
     }
 
     // MARK: - Bulk helpers

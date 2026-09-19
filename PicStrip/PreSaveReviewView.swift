@@ -381,7 +381,7 @@ struct PreSaveReviewView: View {
                         .frame(width: 20)
                         .accessibilityHidden(true)
 
-                    Text(category)
+                    Text(metadataCategoryDisplayName(for: category))
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(color)
 
@@ -406,7 +406,7 @@ struct PreSaveReviewView: View {
             }
             .buttonStyle(.plain)
             .textCase(nil)
-            .accessibilityLabel(Text(verbatim: category))
+            .accessibilityLabel(Text(verbatim: metadataCategoryDisplayName(for: category)))
             .accessibilityValue(
                 isExpanded
                     ? "^[\(fields.count) field](inflect: true), expanded"

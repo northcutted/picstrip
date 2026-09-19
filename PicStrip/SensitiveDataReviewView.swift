@@ -111,8 +111,8 @@ private struct SensitiveDataRowView: View {
         .buttonStyle(.plain)
         .accessibilityLabel(
             isEnabled
-                ? "\(result.type.description): redacting \(result.matchCount) instances"
-                : "\(result.type.description): not redacting \(result.matchCount) instances"
+                ? "\(result.type.description): redacting ^[\(result.matchCount) instance](inflect: true)"
+                : "\(result.type.description): not redacting ^[\(result.matchCount) instance](inflect: true)"
         )
     }
 
