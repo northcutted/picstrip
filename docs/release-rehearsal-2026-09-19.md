@@ -19,19 +19,13 @@ The export regression tests now inject a deterministic scanner for unrelated for
 
 ## TestFlight and staging
 
-[Canary 35457971924](https://github.com/northcutted/picstrip/actions/runs/35457971924) authenticated the exact candidate, then stopped before upload because GitHub rejected the publisher installation token: `The permissions requested are not granted to this installation.` This job requests Contents: read and Administration: read. There has been no Apple upload or staging operation from this canary.
+The initial [canary 35457971924](https://github.com/northcutted/picstrip/actions/runs/35457971924) stopped at App token creation. The owner has since accepted the updated installation grant.
 
-The owner must accept the updated grant for `picstrip-release-bot`, installation `132467567`. Its registration needs Contents: write, Administration: read, and Pull requests: write. [GitHub's permission-update instructions](https://docs.github.com/en/apps/using-github-apps/approving-updated-permissions-for-a-github-app) distinguish changing the registration from accepting the installation update.
+After all 20 Dependabot PRs were covered by merged integrations, [preparation 35463811140](https://github.com/northcutted/picstrip/actions/runs/35463811140) passed in 9m20s. It produced version 1.7.0/build 75.1 from source `89a2768d29cbf0bf38264a4e367a37d55327ba87`, using platform `a68defff01581aa5accf40ab97dceecd874f75fe`. Independent artifact, native attestation, IPA and SLSA provenance verification passed. Both iOS runtimes executed 147 tests with zero failures or skips.
 
-A separate read-only control check using the operator's GitHub session passed: required PR/CI rules, publisher-only protected tags, immutable releases, environment ref restrictions, and production approval without administrator bypass. This verifies repository settings; it does not establish that the App installation has accepted its requested grant.
+[Canary 35464407964](https://github.com/northcutted/picstrip/actions/runs/35464407964) authenticated that candidate and successfully created the App token, then stopped before upload because GitHub omitted `bypass_actors` from the administration-read REST response. A separate read-only inspection of a historical Apple upload found that upload state is nested under `attributes.state.state`. The platform now handles that contract and verifies hidden bypasses against an owner-recorded baseline plus live GraphQL identities and unchanged server timestamps. Its regression tests reject drift, incomplete responses and substituted builds.
 
-After the grant is accepted, resume the same candidate:
-
-```sh
-gh run rerun 35457971924 --repo northcutted/picstrip --failed
-```
-
-`TESTFLIGHT_CANARY_ENABLED` is true; `RELEASE_DISTRIBUTION_ENABLED` remains false. Distribution may be enabled only after the canary succeeds and repository controls pass readback. Publication must consume the canary's signed processed handoff to reuse the exact Apple build. Staging must read back that build. Production approval remains a separate human action.
+A new candidate must bind the updated platform and control configuration. Do not retry the obsolete permission-blocked canary. Publication remains disabled until the new TestFlight canary succeeds. Publication must consume its signed processed handoff and staging must read back that exact Apple build. Production approval remains a separate human action.
 
 ## Dependency advisories
 
