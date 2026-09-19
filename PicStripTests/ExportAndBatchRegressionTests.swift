@@ -262,9 +262,33 @@ final class ImageProcessorKeepPathTests: XCTestCase {
 @MainActor
 final class ScrubberViewModelRegressionTests: XCTestCase {
 
+    /// Export contracts do not depend on Vision startup or OCR of tiny fixtures.
+    /// PIIScannerTests exercise the real scanner; this suite controls completion.
+    private func makeViewModel() -> ScrubberViewModel {
+        ScrubberViewModel(scanImage: { _ in [] })
+    }
+
+    func testSave_waitsForScanBeforeEncoding() async throws {
+        let scan = ControlledScan()
+        defer { scan.finish() }
+        let viewModel = ScrubberViewModel(scanImage: { _ in await scan.run() })
+        await viewModel.loadData(try Fixture.image(width: 8, height: 8))
+        try await waitUntil { scan.isWaiting }
+
+        viewModel.requestSave()
+        try await waitUntil { viewModel.isProcessing }
+        XCTAssertNil(viewModel.activeSheet)
+        XCTAssertNil(viewModel.processedData)
+
+        scan.finish()
+        try await waitUntil { viewModel.activeSheet == .preSave && !viewModel.isProcessing }
+        XCTAssertEqual(Fixture.type(of: try XCTUnwrap(viewModel.processedData)), .png)
+        XCTAssertFalse(viewModel.isScanningPII)
+    }
+
     /// The UI showed "PNG" while the first save silently encoded "match source".
     func testFreshViewModel_encodesTheFormatItDisplays() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         XCTAssertEqual(viewModel.selectedPreset, viewModel.selectedExportFormat.exportPreset)
 
         await viewModel.loadData(try Fixture.image(width: 8, height: 8))
@@ -277,7 +301,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     }
 
     func testChangingFormat_changesPreset() {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         for format in ExportFormat.allCases {
             viewModel.selectedExportFormat = format
             XCTAssertEqual(viewModel.selectedPreset, format.exportPreset)
@@ -286,7 +310,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
 
     /// A slow load for photo A must not overwrite state after B was chosen.
     func testSupersededLoad_doesNotOverwriteNewerImage() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         let first = try Fixture.image(width: 4, height: 4, type: .png)
         let second = try Fixture.image(width: 8, height: 2, type: .jpeg)
 
@@ -304,7 +328,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     /// what counts as removed.  PNG output carries no metadata at all, so a field
     /// the user asked to keep must still be reported as removed.
     func testIsRemoved_reflectsActualOutputAfterEncode() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         await viewModel.loadData(try Fixture.image(
             width: 8, height: 8,
             properties: [kCGImagePropertyGPSDictionary: Fixture.gps]
@@ -331,7 +355,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     /// Pasted, dropped, and shared bytes are not guaranteed to be an image.  The
     /// failure must be reported, not left as a silent return to the home screen.
     func testLoadData_reportsUndecodableBytes() async {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         await viewModel.loadData(Data("definitely not an image".utf8))
 
         XCTAssertNotNil(viewModel.errorMessage)
@@ -342,7 +366,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
 
     /// Bytes that did not come from the picker have no library original to replace.
     func testLoadData_disablesReplaceOriginal() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         await viewModel.loadData(try Fixture.image())
         XCTAssertNil(viewModel.selectedItem)
         XCTAssertFalse(viewModel.canReplaceOriginal)
@@ -351,7 +375,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     // MARK: Batch
 
     func testBatch_countsOnlyPhotosThatWereCleanedAndSaved() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         let good = try Fixture.image(properties: [kCGImagePropertyGPSDictionary: Fixture.gps])
         let sources = [
             BatchSource(assetIdentifier: nil) { good },
@@ -390,7 +414,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     }
 
     func testBatch_saveFailureIsReportedAsFailure() async throws {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         let good = try Fixture.image()
         var config = BatchConfig()
         config.redactVisualPII = false
@@ -406,7 +430,7 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     }
 
     func testBatch_redactionRequestedOnUnreadablePhoto_failsClosed() async {
-        let viewModel = ScrubberViewModel()
+        let viewModel = makeViewModel()
         var config = BatchConfig()
         config.stripMetadata = false      // redaction only — the scan itself must gate the save
         let saved = SavedPhotos()
@@ -443,10 +467,29 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         while !condition() {
             guard Date() < deadline else {
                 XCTFail("Timed out waiting for condition.")
-                return
+                throw WaitTimeout.expired
             }
             try await Task.sleep(for: .milliseconds(20))
         }
+    }
+}
+
+private enum WaitTimeout: Error {
+    case expired
+}
+
+@MainActor
+private final class ControlledScan {
+    private var continuation: CheckedContinuation<[DetectionResult], Never>?
+    var isWaiting: Bool { continuation != nil }
+
+    func run() async -> [DetectionResult] {
+        await withCheckedContinuation { continuation = $0 }
+    }
+
+    func finish() {
+        continuation?.resume(returning: [])
+        continuation = nil
     }
 }
 
