@@ -2,7 +2,7 @@
 
 Reviewed 2026-09-19. The initial inventories contained 18 alerts in PicStrip and 18 in the workflow platform, covering the same locked release-tool dependency graph. These packages run in CI/developer tooling and are not embedded iOS libraries. Affected locked versions were confirmed; exploitability of each advisory against a supported release path was not established. No alerts were dismissed as false positives.
 
-The remediation updates Fastlane to 2.240.1, Excon to 1.7.1, Faraday to 2.14.4, JWT to 3.3.0, JSON to 2.21.2, YAML to 2.9.1, and compatible npm transitive dependencies. `npm audit` reports zero vulnerabilities after resolution. Linux/macOS release contract tests and hosted preparation remain required before distribution.
+The remediation updates Fastlane to 2.240.1, Excon to 1.7.1, Faraday to 2.14.4, JWT to 3.3.0, JSON to 2.21.2, YAML to 2.9.1, and compatible npm transitive dependencies. `npm audit` reports zero vulnerabilities after resolution. The platform's Linux/macOS release contract tests and PicStrip's [signed preparation](https://github.com/northcutted/picstrip/actions/runs/35457372446) passed with these locks. The updated Ruby client also authenticated a read-only App Store Connect request.
 
 | Advisory | Package | PicStrip / platform alert | Assessment |
 | --- | --- | --- | --- |
@@ -27,4 +27,4 @@ The remediation updates Fastlane to 2.240.1, Excon to 1.7.1, Faraday to 2.14.4, 
 
 An additional npm audit finding in `yaml` (GHSA-48c2-rrv3-qjmp) was fixed by the 2.9.1 update. Platform signatures/provenance use the separately pinned GitHub/SLSA tools; npm Sigstore packages arrive through semantic-release dependencies rather than the platform verifier. Ruby HTTP/JSON/JWT dependencies also execute in Apple credential-bearing jobs, so their updates are verified with the locked release lane tests.
 
-GitHub alert state is read back after the updated lockfiles reach each default branch. Dependency-update PRs remain subject to the normal required checks; enabling Dependabot does not enable automatic merges.
+After [PicStrip PR 18](https://github.com/northcutted/picstrip/pull/18) and [platform PR 20](https://github.com/northcutted/ios-release-workflows/pull/20) merged, GitHub's open-alert API returned **zero open alerts in both repositories**, read back on 2026-09-19. This is a point-in-time result, not a claim that future advisories cannot appear. Dependency-update PRs remain subject to the normal required checks; enabling Dependabot does not enable automatic merges.

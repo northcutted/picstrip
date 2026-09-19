@@ -2,6 +2,8 @@
 
 PicStrip consumes the public MIT-licensed [iOS release platform](https://github.com/northcutted/ios-release-workflows). `.github/ios-release.json` declares PicStrip's targets, toolchains, profiles, app groups, privacy/encryption policy, locales, screenshots, and App Store policy. `.github/ios-release-platform.json` records the full platform commit; every workflow and composite action uses that same commit.
 
+The [2026-09-19 rehearsal record](release-rehearsal-2026-09-19.md) records the verified candidate, rollout status, dependency remediation, and performance samples.
+
 ## Lifecycle
 
 **Main → verified candidate → manual promotion → TestFlight processing → immutable release → staging → production approval → submission.**
@@ -103,6 +105,6 @@ python3 /path/to/trusted-platform/scripts/ci/verify_release.py release-assets \
 
 Install `gh` with attestation support and `slsa-verifier` first. Update the platform pin with `python3 scripts/update_release_platform.py FULL_REVIEWED_PLATFORM_SHA`, then review and run CI.
 
-Production testing remains serial. Compare five equivalent successful runs and account for flakes before enabling two workers; require at least 15% lower median test duration. Separate queue time, execution, Apple processing, and approval delay. `scripts/ci/benchmark.py` accepts five run IDs and an optional `--baseline-test-seconds` value. No runtime saving is claimed without those measurements.
+Production testing remains serial. The [five-by-five worker comparison](release-rehearsal-2026-09-19.md#performance-comparison) passed all tests but found two workers slower on both runtimes. Future changes still require five equivalent successful runs, no reliability regression, and at least 15% lower median test duration. Separate queue time, execution, Apple processing, and approval delay. `scripts/ci/benchmark.py` reports complete test-job durations, including setup; the rehearsal evidence separately records the test steps used for the worker comparison. Compare the same measurement when supplying its optional `--baseline-test-seconds` value.
 
 Screenshot scenarios and branding stay in PicStrip. `Capture Screenshots` validates inputs, captures, composes and validates the complete inventory, then opens a PR. Review images before merging. App Store uploads use the verified deployment path.
