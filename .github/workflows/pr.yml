@@ -1,179 +1,146 @@
+# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
+---
 name: PR Checks
-
-on:
+'on':
   pull_request:
-    branches: [main]
-
+    branches:
+    - main
+    types:
+    - opened
+    - synchronize
+    - reopened
+    - ready_for_review
+    - labeled
+    - unlabeled
+  workflow_dispatch:
+    inputs:
+      test_workers:
+        type: choice
+        options:
+        - '1'
+        - '2'
+        default: '1'
+        description: Benchmark only; production remains serial until five-run acceptance
 concurrency:
-  group: pr-${{ github.event.pull_request.number }}
+  group: pr-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
-
 permissions:
   contents: read
-
 jobs:
-  lint:
-    name: SwiftLint
-    runs-on: macos-26
+  policy:
+    name: Workflow policy and release regression tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install SwiftLint
-        run: |
-          SWIFTLINT_VERSION="0.63.2"
-          SWIFTLINT_SHA256="c59a405c85f95b92ced677a500804e081596a4cae4a6a485af76065557d6ed29"
-          curl -sSL \
-            "https://github.com/realm/SwiftLint/releases/download/${SWIFTLINT_VERSION}/portable_swiftlint.zip" \
-            -o /tmp/portable_swiftlint.zip
-          echo "${SWIFTLINT_SHA256}  /tmp/portable_swiftlint.zip" | shasum -a 256 -c
-          unzip -o /tmp/portable_swiftlint.zip -d /tmp/swiftlint_bin
-          sudo mv /tmp/swiftlint_bin/swiftlint /usr/local/bin/swiftlint
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Run SwiftLint
-        run: bundle exec fastlane lint
-
-  analyze:
-    name: Static Analysis
-    runs-on: macos-26
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Set up Node
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
+      with:
+        node-version: '24'
+        cache: npm
+    - name: Install locked tools
+      run: npm ci --ignore-scripts --no-audit --no-fund
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Install pinned workflow validator
+      run: bash scripts/ci/install_actionlint.sh
+    - name: Validate workflows and release guardrails
+      run: |-
+        npm run check:workflows
+        npm run test:ci
+        ruby -c fastlane/Fastfile
+        for script in scripts/ci/*.sh; do bash -n "$script"; done
+        actionlint
+  qa:
+    name: QA
+    uses: "./.github/workflows/qa.yml"
+    with:
+      source: "${{ github.sha }}"
+      prefix: "${{ github.run_id }}-${{ github.run_attempt }}"
+      test_workers: "${{ inputs.test_workers || '1' }}"
+  gems-macos:
+    name: Locked gems on macOS
+    runs-on: xcode-27
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Cache DerivedData
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
-
-      - name: Run xcodebuild analyze
-        run: bundle exec fastlane analyze
-
-  test:
-    name: Unit Tests
-    runs-on: macos-26
-    steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Cache DerivedData
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-deriveddata-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-deriveddata-
-
-      - name: Run Tests
-        run: bundle exec fastlane test
-
-      - name: Upload test results
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        if: always()
-        with:
-          name: test-results
-          path: build/test_output/
-          retention-days: 7
-
-  # ── Screenshots (label-gated) ─────────────────────────────────────────────
-  # Add the "screenshots" label to a PR to trigger a full 2-device App Store
-  # screenshot capture. Results are uploaded as an artifact for visual review.
-  # No upload to App Store Connect is performed from PRs.
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Load Fastlane and submission guard
+      run: bundle exec ruby -e 'require "fastlane"; require_relative "fastlane/lib/release_guard"'
   screenshots:
-    name: PR Screenshots (2 devices)
-    runs-on: macos-26
+    name: Optional screenshot smoke test
+    runs-on: xcode-27
     timeout-minutes: 60
-    if: contains(github.event.pull_request.labels.*.name, 'screenshots')
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode.app
-
-      - name: Cache DerivedData
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
-        with:
-          path: ~/Library/Developer/Xcode/DerivedData
-          key: ${{ runner.os }}-screenshots-${{ hashFiles('PicStrip.xcodeproj/project.pbxproj') }}
-          restore-keys: |
-            ${{ runner.os }}-screenshots-
-            ${{ runner.os }}-deriveddata-
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Boot simulators
-        run: |
-          xcrun simctl boot "iPhone 17 Pro Max"     || true
-          xcrun simctl boot "iPad Pro 13-inch (M5)" || true
-          xcrun simctl bootstatus "iPhone 17 Pro Max"     -b
-          xcrun simctl bootstatus "iPad Pro 13-inch (M5)" -b
-
-      - name: Override status bars
-        run: |
-          for device in "iPhone 17 Pro Max" "iPad Pro 13-inch (M5)"; do
-            xcrun simctl status_bar "$device" override \
-              --time "9:41" \
-              --dataNetwork wifi \
-              --wifiMode active \
-              --wifiBars 3 \
-              --cellularMode active \
-              --cellularBars 4 \
-              --batteryState charged \
-              --batteryLevel 100
-          done
-
-      - name: Capture screenshots
-        # PR runs are a sanity check, not a release. Cap to en-US so the job
-        # finishes inside the 60-min timeout — full 16-locale capture lives
-        # in the dedicated screenshots.yml workflow (manual dispatch).
-        run: |
-          sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
-          bundle exec fastlane screenshots languages:en-US
-
-      - name: Upload screenshots artifact
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: pr-screenshots-${{ github.event.pull_request.number }}
-          path: fastlane/screenshots/
-          retention-days: 14
-
-      - name: Upload snapshot logs on failure
-        if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: pr-snapshot-logs-${{ github.event.pull_request.number }}
-          path: fastlane/screenshot_logs/
-          retention-days: 7
-          if-no-files-found: ignore
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+    - name: Resolve screenshot simulators
+      run: python3 scripts/ci/toolchain.py --screenshots
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Capture en-US screenshots
+      run: bundle exec fastlane screenshots languages:en-US
+    - name: Upload pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+        path: fastlane/screenshots/
+        retention-days: 14
+        compression-level: 0
+        if-no-files-found: error
+      if: always()
+    if: contains(github.event.pull_request.labels.*.name, 'screenshots')
+  gate:
+    name: CI Gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs:
+    - policy
+    - qa
+    - gems-macos
+    - screenshots
+    steps:
+    - name: Require every mandatory job to pass
+      run: |-
+        python3 - <<'PYCODE'
+        import json, os
+        jobs=json.loads(os.environ['JOBS'])
+        assert all(jobs[name]['result']=='success' for name in ['policy','qa','gems-macos']), jobs
+        assert jobs['screenshots']['result'] in ('success','skipped'), jobs
+        PYCODE
+      env:
+        JOBS: "${{ toJSON(needs) }}"
+    if: always()

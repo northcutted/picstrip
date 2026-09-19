@@ -1,0 +1,16 @@
+{
+  "repository": "northcutted/picstrip",
+  "xcode": {"version": "27.0", "build": "27A266a", "path": "/Applications/Xcode_27.0.app/Contents/Developer", "runtime": "27.0", "sdk": "27.0"},
+  "compatibility": {"version": "26.6", "build": "17F113", "path": "/Applications/Xcode_26.6.app/Contents/Developer", "runtime": "26.5", "sdk": "26.5"},
+  "test_device": "iPhone 17",
+  "screenshot_devices": ["iPhone 18 Pro Max", "iPad Pro 13-inch (M5)"],
+  "screenshot_classes": {
+    "iphone": {"names": ["iPhone 18 Pro Max", "iPhone 17 Pro Max"], "sizes": [[1320, 2868], [1260, 2736]]},
+    "ipad": {"names": ["iPad Pro 13-inch (M5)"], "sizes": [[2064, 2752]]}
+  },
+  "screens": ["01_Home", "02_About", "03_PhotoLoaded", "04_RedactionEditor", "05_ReviewAndSave"],
+  "locales": ["en-US", "ar-SA", "de-DE", "es-ES", "fr-FR", "it", "ja", "ko", "nl-NL", "pl", "pt-BR", "pt-PT", "sv", "tr", "zh-Hans", "zh-Hant"],
+  "bundle_ids": ["com.northcutt.PicStrip", "com.northcutt.PicStrip.ShareExtension"],
+  "team_id": "BDQ47H73HH",
+  "app_group": "group.com.northcutt.PicStrip"
+}

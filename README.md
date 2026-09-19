@@ -210,7 +210,7 @@ PicStrip/
 │
 ├── fastlane/
 │   ├── Fastfile             # Lane definitions
-│   ├── Snapfile             # Devices (iPhone 17 Pro Max + iPad Pro 13") + 16 capture locales
+│   ├── Snapfile             # Devices (iPhone 18 Pro Max + iPad Pro 13") + 16 capture locales
 │   ├── MarketingHeadlines.xcstrings  # Localized headline copy for marketing screenshots
 │   ├── accessibility_declarations.json  # App Store Accessibility Nutrition Label config
 │   ├── screenshots/
@@ -223,7 +223,7 @@ PicStrip/
 ├── scripts/
 │   ├── process_screenshots.py  # Marketing compositor: custom frame + headline + brand gradient
 │   ├── requirements.txt        # Python deps for the compositor (Pillow, arabic-reshaper, python-bidi)
-│   ├── semantic_dry_run.mjs    # Semantic-release dry-run JSON writer for release prep
+│   ├── semantic_dry_run.mjs    # Read-only version and release-note analysis
 │   ├── render_app_store_metadata.sh  # Applies generated notes to App Store metadata artifacts
 │   ├── translate_xcstrings.js  # Localization automation (pseudo + OpenAI providers)
 │   └── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
@@ -282,7 +282,7 @@ open PicStrip.xcodeproj
 
 ### Contributor / release tooling
 
-The CI pipeline requires Ruby (Fastlane) and Node (semantic-release).
+CI pins Ruby 3.4.10 for Fastlane and uses Node 24 for read-only Conventional Commit analysis.
 
 ```bash
 # Ruby toolchain (Fastlane)
@@ -290,7 +290,7 @@ gem install bundler
 bundle install          # installs fastlane ~> 2.233
 
 # Node toolchain (semantic-release)
-npm install
+npm ci --ignore-scripts
 ```
 
 ---
@@ -307,7 +307,7 @@ npm install
 | `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
 | `make test-fixture` | Regenerates the OCR test fixture (`PicStripUITests/test_list.png`) via `scripts/make_fixture.py` |
-| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
+| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 18 Pro Max"` or `DEVICES="iPhone 18 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
 | `make process-screenshots` | Composes marketing PNGs from existing raw captures into `fastlane/screenshots/processed/<locale>/` (custom frame + brand gradient + localized headline) |
 | `make upload-screenshots` | Composes (via `process-screenshots`) and uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
@@ -316,7 +316,7 @@ npm install
 | `bundle exec fastlane build` | Signs + exports IPA (requires App Store certificates) |
 | `bundle exec fastlane beta` | `certificates` → `build` → TestFlight upload |
 | `bundle exec fastlane upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
-| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 17 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
+| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 18 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
 | `bundle exec fastlane process_screenshots` | Runs the Python compositor over every locale present under `fastlane/screenshots/<locale>/` |
 | `bundle exec fastlane upload_screenshots` | Uploads the marketing PNGs in `fastlane/screenshots/processed/` to App Store Connect; refuses partial sets unless `allow_partial:true` is passed |
 | `bundle exec fastlane app_store_stage` | Stages metadata, screenshots, declarations, and the selected TestFlight build without submitting |
@@ -353,11 +353,12 @@ make localization-export
 
 ## CI/CD Pipeline
 
-- **PRs** — `pr.yml` runs SwiftLint (strict), `xcodebuild analyze`, and unit tests in parallel. An optional `screenshots`-labelled job captures the full 2-device set as a PR artifact.
-- **Releases** — `main.yml` performs release prep from `main`: semantic dry-run, QA evidence, signed IPA, SBOMs, attestations, SLSA Level 3 provenance, TestFlight upload, and final `vX.Y.Z` tag/release creation. The tag triggers `app-store-deploy.yml`, which stages repo metadata/screenshots/build in App Store Connect, then waits for manual approval before submitting the current draft as-is.
-- **Screenshots** — `screenshots.yml` is manually dispatched. The fast path uploads the committed marketing PNGs from Git LFS; `generate_new=true` regenerates them by capturing fresh simulator screenshots and running the Python compositor (custom frame, brand gradient, localized headline per locale).
+- **PRs** — always-reporting `CI Gate` covers workflow policy, locked tools, SwiftLint, analysis, and iOS 27/iOS 26 tests. Add the `screenshots` label for an en-US capture smoke test.
+- **Releases** — read-only version analysis starts QA, the signed archive, and packaging concurrently. Upload requires complete verified evidence. Apple processing runs on Linux; the exact processed build is bound into a signed manifest before immutable release publication.
+- **App Store** — publication triggers verified staging. Production approval preserves metadata edits and requires the recorded App Store build immediately before submission. Metadata-only requests use the same gate.
+- **Screenshots** — manual capture validates all locale/device sets and opens a reviewed PR against main.
 
-See [DEVELOPMENT.md → CI/CD Pipeline](DEVELOPMENT.md#cicd-pipeline) for the full job graph, fastlane lanes, and screenshot compositor details.
+See the [release operations guide](docs/release-pipeline.md) for setup, verification-only rollout, retries, and performance measurement.
 
 ---
 
@@ -387,11 +388,9 @@ Both the main app and the share extension declare zero data collection and zero 
 
 ## Supply Chain Security (SLSA Level 3)
 
-Every release ships with SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was produced by GitHub Actions (not a developer's machine) with no post-build tampering. TestFlight upload is gated on attestation verification against the exact workflow source commit.
+The pipeline targets defensible SLSA Build Level 3 for the GitHub-built `PicStrip.ipa`, using an isolated provenance generator, signed release manifests, and exact-source/digest verification before distribution. The initial rollout runs in verification-only mode until repository controls and a signed candidate are validated.
 
-This claim applies to the GitHub-built IPA attached to the release. It does not claim that the same digest identifies the App Store-installed app, because Apple may re-sign, encrypt, or thin the distributed binary.
-
-See [DEVELOPMENT.md → SLSA Build Provenance Level 3](DEVELOPMENT.md#slsa-build-provenance-level-3) for the `gh attestation verify` and `slsa-verifier` commands and the threat-model details.
+This scope excludes Apple's redistributed binary, which may be re-signed, encrypted, or thinned. See the [SLSA control coverage and trust limits](docs/release-pipeline.md#slsa-build-l3-scope) and [verification commands](docs/release-pipeline.md#local-verification-and-benchmarks).
 
 ---
 

@@ -1,80 +1,185 @@
+# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
+---
 name: App Store Metadata Only
-
-on:
+'on':
   workflow_dispatch:
     inputs:
-      marketing_version:
-        description: "Existing App Store version to update. Leave blank to infer the current editable version."
-        required: false
-        default: ""
-      build_number:
-        description: "Existing TestFlight/App Review build number. Leave blank to infer the selected build."
-        required: false
-        default: ""
-      submit_for_review:
-        description: "Submit the amended version for review after updating metadata"
+      release_tag:
+        type: string
         required: true
+        description: Immutable release tag; select this same tag in the Run workflow
+          ref selector
+      submit_for_review:
         type: boolean
         default: false
-
-concurrency:
-  group: app-store-metadata-${{ inputs.marketing_version || 'inferred' }}
-  cancel-in-progress: false
-
+        description: Request review through production approval
 permissions:
   contents: read
-
+concurrency:
+  group: metadata-only-${{ github.ref }}
+  cancel-in-progress: false
 jobs:
-  metadata-only:
-    name: Update App Store Metadata Only
-    runs-on: ubuntu-latest
+  verify:
+    name: Authenticate immutable release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          fetch-depth: 1
-          persist-credentials: false
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Validate metadata files
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          const path = require('path');
-          let ok = true;
-          for (const locale of fs.readdirSync('fastlane/metadata')) {
-            const dir = path.join('fastlane/metadata', locale);
-            if (!fs.statSync(dir).isDirectory()) continue;
-            for (const [file, limit] of [
-              ['description.txt', 4000],
-              ['promotional_text.txt', 170],
-              ['subtitle.txt', 30],
-              ['keywords.txt', 100],
-            ]) {
-              const filePath = path.join(dir, file);
-              if (!fs.existsSync(filePath)) continue;
-              const text = fs.readFileSync(filePath, 'utf8').trimEnd();
-              const chars = [...text].length;
-              if (chars > limit) {
-                console.error(`${filePath}: ${chars}/${limit}`);
-                ok = false;
-              }
-            }
-          }
-          if (!ok) process.exit(1);
-          NODE
-
-      - name: Push metadata only
-        env:
-          APP_STORE_CONNECT_API_KEY_ID:         ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
-          APP_STORE_CONNECT_API_KEY_ISSUER_ID:  ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
-          APP_STORE_CONNECT_API_KEY_CONTENT:    ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
-          MARKETING_VERSION:                    ${{ inputs.marketing_version }}
-          BUILD_NUMBER:                         ${{ inputs.build_number }}
-          SUBMIT_FOR_REVIEW:                    ${{ inputs.submit_for_review }}
-        run: bundle exec fastlane metadata_only
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        ref: "${{ inputs.release_tag }}"
+    - name: Install SLSA verifier
+      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
+    - name: Download and authenticate handoff
+      run: |-
+        bash scripts/ci/download_release.sh
+        echo "prefix=$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT" >> "$GITHUB_OUTPUT"
+      id: manifest
+      env:
+        GH_TOKEN: "${{ github.token }}"
+        RELEASE_TAG: "${{ inputs.release_tag }}"
+    permissions:
+      contents: read
+      attestations: read
+    outputs:
+      version: "${{ steps.manifest.outputs.version }}"
+      build_number: "${{ steps.manifest.outputs.build_number }}"
+      source_sha: "${{ steps.manifest.outputs.source_sha }}"
+      prefix: "${{ steps.manifest.outputs.prefix }}"
+      tag: "${{ inputs.release_tag }}"
+    if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && startsWith(github.ref, 'refs/tags/v')
+      && (github.event_name == 'release' || github.ref_name == inputs.release_tag)
+  stage:
+    name: Stage App Store draft
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: verify
+    steps:
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        ref: "${{ needs.verify.outputs.source_sha }}"
+    - name: Install SLSA verifier
+      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
+    - name: Reauthenticate release before using credentials
+      run: bash scripts/ci/download_release.sh
+      env:
+        GH_TOKEN: "${{ github.token }}"
+        RELEASE_TAG: "${{ needs.verify.outputs.tag }}"
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Read proposed metadata from main
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        ref: main
+        path: metadata-edits
+        persist-credentials: false
+        sparse-checkout: fastlane/metadata
+        sparse-checkout-cone-mode: true
+    - name: Use only reviewed metadata files
+      run: |-
+        cp -R metadata-edits/fastlane/metadata/. fastlane/metadata/
+        python3 scripts/ci/evidence.py metadata fastlane/metadata
+    - name: Update metadata
+      run: bundle exec fastlane metadata_only
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
+        APP_STORE_CONNECT_API_KEY_ISSUER_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID
+          }}"
+        APP_STORE_CONNECT_API_KEY_CONTENT: "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT
+          }}"
+        RELEASE_MANIFEST: release-assets/release-manifest.json
+        STAGED_SNAPSHOT: build/staged-snapshot.json
+        DELIVER_NUMBER_OF_THREADS: '1'
+        FL_NUMBER_OF_THREADS: '1'
+        FL_MAX_NUMBER_OF_THREADS: '1'
+    - name: Upload staged-${{ needs.verify.outputs.prefix }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: staged-${{ needs.verify.outputs.prefix }}
+        path: build/staged-snapshot.json
+        retention-days: 90
+        compression-level: 0
+        if-no-files-found: error
+    environment: app-store-staging
+    permissions:
+      contents: read
+      attestations: read
+    concurrency:
+      group: picstrip-app-store-mutations
+      cancel-in-progress: false
+  review:
+    name: Request App Review
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs:
+    - verify
+    - stage
+    steps:
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        ref: "${{ needs.verify.outputs.source_sha }}"
+    - name: Install SLSA verifier
+      uses: slsa-framework/slsa-verifier/actions/installer@ea584f4502babc6f60d9bc799dbbb13c1caa9ee6
+    - name: Reauthenticate release before using credentials
+      run: bash scripts/ci/download_release.sh
+      env:
+        GH_TOKEN: "${{ github.token }}"
+        RELEASE_TAG: "${{ needs.verify.outputs.tag }}"
+    - name: Download staged-${{ needs.verify.outputs.prefix }}
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: staged-${{ needs.verify.outputs.prefix }}
+        path: build
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Verify selected build, record edits, and submit
+      run: bundle exec fastlane request_review
+      env:
+        APP_STORE_CONNECT_API_KEY_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}"
+        APP_STORE_CONNECT_API_KEY_ISSUER_ID: "${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID
+          }}"
+        APP_STORE_CONNECT_API_KEY_CONTENT: "${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT
+          }}"
+        RELEASE_ENVIRONMENT: production
+        RELEASE_MANIFEST: release-assets/release-manifest.json
+        STAGED_SNAPSHOT: build/staged-snapshot.json
+        SUBMISSION_RECEIPT: build/submission-receipt.json
+    - name: Upload submission-${{ needs.verify.outputs.prefix }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: submission-${{ needs.verify.outputs.prefix }}
+        path: build/submission-receipt.json
+        retention-days: 90
+        compression-level: 0
+        if-no-files-found: error
+      if: always()
+    environment: production
+    permissions:
+      contents: read
+      attestations: read
+    concurrency:
+      group: picstrip-app-store-mutations
+      cancel-in-progress: false
+    if: github.event_name == 'release' || inputs.submit_for_review

@@ -53,15 +53,7 @@ Sync App Store distribution certificates (readonly on CI)
 [bundle exec] fastlane ios build
 ```
 
-Build and export IPA
-
-### ios beta
-
-```sh
-[bundle exec] fastlane ios beta
-```
-
-Build and upload to TestFlight
+Build and export the exact release version without changing tracked files
 
 ### ios upload_testflight
 
@@ -95,13 +87,21 @@ Compose marketing screenshots from raw captures into ./fastlane/screenshots/proc
 
 Upload composed marketing screenshots from ./fastlane/screenshots/processed/ to App Store Connect (binary unchanged). LOCAL DEV ONLY — requires an existing 'Prepare for Submission' draft version in App Store Connect. The release deploy workflow stages screenshots before the production approval gate, then submits the current App Store Connect draft as-is.
 
+### ios wait_processing
+
+```sh
+[bundle exec] fastlane ios wait_processing
+```
+
+Wait on Linux for the exact uploaded build to finish processing
+
 ### ios app_store_stage
 
 ```sh
 [bundle exec] fastlane ios app_store_stage
 ```
 
-Stage repo metadata, screenshots, and the processed TestFlight build in App Store Connect without submitting
+Stage verified metadata, screenshots, and the exact processed build
 
 ### ios request_review
 
@@ -109,23 +109,7 @@ Stage repo metadata, screenshots, and the processed TestFlight build in App Stor
 [bundle exec] fastlane ios request_review
 ```
 
-Request App Review for the current App Store Connect draft. Does not upload metadata, screenshots, or choose a build unless BUILD_NUMBER is explicitly provided.
-
-### ios preflight
-
-```sh
-[bundle exec] fastlane ios preflight
-```
-
-Alias for app_store_stage
-
-### ios submit
-
-```sh
-[bundle exec] fastlane ios submit
-```
-
-Alias for request_review
+Submit the verified build after approval, recording permitted metadata edits
 
 ### ios metadata_only
 
@@ -133,7 +117,23 @@ Alias for request_review
 [bundle exec] fastlane ios metadata_only
 ```
 
-Push metadata/review information only to an existing App Store version/build. Does not rebuild, upload a binary, or replace screenshots. Defaults to the current editable App Store version and its selected build. Set SUBMIT_FOR_REVIEW=true only when intentionally resubmitting.
+Update metadata for a verified release; review always uses request_review
+
+### ios preflight
+
+```sh
+[bundle exec] fastlane ios preflight
+```
+
+
+
+### ios submit
+
+```sh
+[bundle exec] fastlane ios submit
+```
+
+
 
 ### ios accessibility
 

@@ -1,87 +1,110 @@
+# Actions are pinned; the SLSA generator version-tag exception is policy-checked.
+---
 name: Capture Screenshots
-
-# Captures fresh App Store screenshots on the macOS runner, composes the
-# marketing PNGs via the Python compositor, and commits the result back to
-# the repo via Git LFS (with [skip ci]).
-#
-# Upload to App Store Connect does NOT happen here. Screenshots are uploaded
-# by app-store-deploy.yml after the release-prep workflow creates the release
-# tag. The deploy workflow checks out LFS at that tag so the processed PNGs
-# are versioned alongside the exact code that produced the release.
-
-on:
+'on':
   workflow_dispatch:
     inputs:
       languages:
-        description: "Locale subset for the capture, comma-separated. Empty = all locales in Snapfile."
         type: string
-        required: false
-        default: ""
-
+        default: ''
+        description: Comma-separated capture locales; blank means all locales
 permissions:
-  contents: write   # needed to commit refreshed processed/ PNGs back to repo
-
+  contents: read
+concurrency:
+  group: capture-screenshots
+  cancel-in-progress: false
 jobs:
   capture:
-    name: Capture and Commit Screenshots
-    runs-on: macos-26
+    name: Capture reviewed screenshot candidate
+    runs-on: xcode-27
     timeout-minutes: 240
+    outputs:
+      source: ${{ steps.source.outputs.sha }}
     steps:
-      - name: Checkout (with LFS)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-        with:
-          lfs: true
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f # v1.306.0
-        with:
-          ruby-version: "3.2"
-          bundler-cache: true
-
-      - name: Boot simulators
-        run: |
-          xcrun simctl boot "iPhone 17 Pro Max"     || true
-          xcrun simctl boot "iPad Pro 13-inch (M5)" || true
-          xcrun simctl bootstatus "iPhone 17 Pro Max"     -b
-          xcrun simctl bootstatus "iPad Pro 13-inch (M5)" -b
-
-      - name: Override status bars
-        run: |
-          for device in "iPhone 17 Pro Max" "iPad Pro 13-inch (M5)"; do
-            xcrun simctl status_bar "$device" override \
-              --time "9:41" \
-              --dataNetwork wifi \
-              --wifiMode active \
-              --wifiBars 3 \
-              --cellularMode active \
-              --cellularBars 4 \
-              --batteryState charged \
-              --batteryLevel 100
-          done
-
-      - name: Install Python compositor deps
-        run: pip3 install --user -r scripts/requirements.txt
-
-      - name: Capture screenshots
-        run: |
-          sudo defaults write /Library/Preferences/com.apple.security.revocation OCSPStyle None
-          if [ -n "${{ inputs.languages }}" ]; then
-            bundle exec fastlane screenshots languages:"${{ inputs.languages }}"
-          else
-            bundle exec fastlane screenshots
-          fi
-
-      - name: Compose marketing screenshots
-        run: bundle exec fastlane process_screenshots
-
-      - name: Commit refreshed screenshots to LFS
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add fastlane/screenshots/processed/
-          if git diff --cached --quiet; then
-            echo "No screenshot changes to commit."
-          else
-            git commit -m "chore(screenshots): refresh App Store screenshots [skip ci]"
-            git push
-          fi
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        ref: main
+        lfs: true
+    - name: Record capture source
+      id: source
+      run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+    - name: Resolve exact screenshot toolchain
+      run: python3 scripts/ci/toolchain.py --screenshots
+    - name: Set up Ruby
+      uses: ruby/setup-ruby@c4e5b1316158f92e3d49443a9d58b31d25ac0f8f
+      with:
+        bundler-cache: false
+    - name: Install locked gems
+      run: |-
+        bundle config set --local path vendor/bundle
+        bundle config set --local frozen true
+        bundle install --jobs 4 --retry 3
+    - name: Install locked compositor dependencies
+      run: |-
+        python3 -m venv "$RUNNER_TEMP/compositor"
+        "$RUNNER_TEMP/compositor/bin/pip" install --require-hashes -r scripts/requirements.txt
+        echo "$RUNNER_TEMP/compositor/bin" >> "$GITHUB_PATH"
+    - name: Capture selected locales
+      run: if [ -n "$LANGUAGES" ]; then bundle exec fastlane screenshots "languages:$LANGUAGES";
+        else bundle exec fastlane screenshots; fi
+      env:
+        LANGUAGES: "${{ inputs.languages }}"
+    - name: Compose and validate complete release coverage
+      run: |-
+        bundle exec fastlane process_screenshots
+        python3 scripts/ci/evidence.py screenshots fastlane/screenshots/processed --output build/screenshots-manifest.json
+    - name: Upload screenshots-${{ github.run_id }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: screenshots-${{ github.run_id }}
+        path: fastlane/screenshots/processed/
+        retention-days: 14
+        compression-level: 0
+        if-no-files-found: error
+    - name: Upload screenshot-logs-${{ github.run_id }}
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+      with:
+        name: screenshot-logs-${{ github.run_id }}
+        path: fastlane/screenshot_logs/
+        retention-days: 7
+        compression-level: 0
+        if-no-files-found: error
+      if: failure()
+    if: github.ref == 'refs/heads/main'
+  pull-request:
+    name: Open screenshot pull request
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    needs: capture
+    steps:
+    - name: Checkout exact source
+      uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+      with:
+        persist-credentials: false
+        fetch-depth: 1
+        ref: ${{ needs.capture.outputs.source }}
+        lfs: true
+    - name: Download screenshots-${{ github.run_id }}
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+      with:
+        name: screenshots-${{ github.run_id }}
+        path: incoming
+    - name: Validate candidate images
+      run: python3 scripts/ci/evidence.py screenshots incoming --output build/screenshots-manifest.json
+    - name: Mint screenshot PR token
+      uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+      with:
+        client-id: "${{ secrets.RELEASE_APP_ID }}"
+        private-key: "${{ secrets.RELEASE_APP_PRIVATE_KEY }}"
+        permission-contents: write
+        permission-pull-requests: write
+        repositories: picstrip
+      id: token
+    - name: Open a PR without changing main
+      run: bash scripts/ci/screenshot_pr.sh
+      env:
+        GH_TOKEN: "${{ steps.token.outputs.token }}"
+    environment: screenshot-publishing

@@ -1,3 +1,6 @@
+require_relative "lib/release_guard"
+require "shellwords"
+
 default_platform(:ios)
 
 platform :ios do
@@ -13,10 +16,8 @@ platform :ios do
   # valid relationship IDs when Fastlane patches app info categories.
   APP_STORE_PRIMARY_CATEGORY = "PHOTO_AND_VIDEO"
   APP_STORE_SECONDARY_CATEGORY = "UTILITIES"
-  SCREENSHOT_DEVICES = [
-    "iPhone 17 Pro Max",
-    "iPad Pro 13-inch (M5)"
-  ]
+  CI_CONFIG = JSON.parse(File.read(File.join(ROOT, "scripts/ci/config.json"))).freeze
+  SCREENSHOT_DEVICES = CI_CONFIG.fetch("screenshot_devices").freeze
   EXPORT_COMPLIANCE_PLISTS = [
     "PicStrip-Info.plist",
     "PicStripShareExtension/Info.plist"
@@ -60,60 +61,6 @@ platform :ios do
     ) if missing.any?
   end
 
-  private_lane :infer_metadata_target do |options|
-    client = Spaceship::ConnectAPI
-    app = Spaceship::ConnectAPI::App.find(APP_ID, client: client)
-
-    UI.user_error!("Could not find App Store Connect app for bundle id #{APP_ID}") if app.nil?
-
-    version = app.get_edit_app_store_version(
-      client: client,
-      platform: Spaceship::ConnectAPI::Platform::IOS,
-      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
-    )
-
-    version ||= app.get_pending_release_app_store_version(
-      client: client,
-      platform: Spaceship::ConnectAPI::Platform::IOS,
-      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
-    )
-
-    version ||= app.get_in_review_app_store_version(
-      client: client,
-      platform: Spaceship::ConnectAPI::Platform::IOS,
-      includes: Spaceship::ConnectAPI::AppStoreVersion::ESSENTIAL_INCLUDES
-    )
-
-    UI.user_error!(
-      "Could not infer an editable App Store version. Pass MARKETING_VERSION and BUILD_NUMBER explicitly."
-    ) if version.nil?
-
-    build = begin
-      version.get_build(client: client)
-    rescue
-      nil
-    end
-    build ||= Spaceship::ConnectAPI::Build.all(
-      client: client,
-      app_id: app.id,
-      version: version.version_string,
-      platform: Spaceship::ConnectAPI::Platform::IOS,
-      processing_states: Spaceship::ConnectAPI::Build::ProcessingState::VALID,
-      limit: 1
-    ).first
-
-    UI.user_error!(
-      "Could not infer a selected or valid build for App Store version #{version.version_string}. " \
-      "Pass BUILD_NUMBER explicitly."
-    ) if build.nil?
-
-    {
-      marketing_version: version.version_string,
-      build_number: build.version,
-      app_version_state: version.app_version_state || version.app_store_state
-    }
-  end
-
   # ── PR lanes (no signing) ────────────────────────────────────────────────────
 
   desc "Run SwiftLint"
@@ -128,7 +75,8 @@ platform :ios do
       scheme:       SCHEME,
       configuration: "Debug",
       sdk:          "iphonesimulator",
-      destination:  "platform=iOS Simulator,name=iPhone 17,OS=latest",
+      destination:  ENV.fetch("TEST_DESTINATION", "platform=iOS Simulator,name=iPhone 17,OS=#{CI_CONFIG['xcode']['runtime']}"),
+      xcargs: "CODE_SIGNING_ALLOWED=NO",
       analyze:      true,
       buildlog_path: "build/logs"
     )
@@ -139,9 +87,13 @@ platform :ios do
     run_tests(
       project:     PROJECT,
       scheme:      SCHEME,
-      device:      "iPhone 17",     # available on macos-26 / Xcode 26 runners
+      destination: ENV.fetch("TEST_DESTINATION", "platform=iOS Simulator,name=iPhone 17,OS=#{CI_CONFIG['xcode']['runtime']}"),
+      xcargs: "CODE_SIGNING_ALLOWED=NO",
       clean:       true,
-      disable_concurrent_testing: true,
+      disable_concurrent_testing: ENV.fetch("TEST_WORKERS", "1") == "1",
+      parallel_testing: ENV.fetch("TEST_WORKERS", "1") != "1",
+      concurrent_workers: Integer(ENV.fetch("TEST_WORKERS", "1")),
+      result_bundle: true,
       output_directory:  "build/test_output",
       output_files: "report.junit",
       output_types: "junit",
@@ -154,82 +106,45 @@ platform :ios do
 
   desc "Sync App Store distribution certificates (readonly on CI)"
   lane :certificates do
-    api_key = app_store_connect_api_key(
-      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: false
-    )
-
-    # Create a temporary keychain to avoid UI prompts on CI
     if ENV["CI"]
-      create_keychain(
-        name:            "fastlane_tmp_keychain",
-        password:        "fastlane_tmp_keychain_password",
-        default_keychain: true,
-        unlock:          true,
-        timeout:         3600,
-        lock_when_sleeps: false
-      )
+      create_keychain(path: ENV.fetch("SIGNING_KEYCHAIN"),
+                      password: ENV.fetch("SIGNING_KEYCHAIN_PASSWORD"),
+                      default_keychain: false, unlock: true, timeout: 3600)
     end
-
     match(
-      type:             "appstore",
-      app_identifier:   [APP_ID, EXTENSION_ID],
-      readonly:         true,
-      api_key:          api_key,
-      keychain_name:    ENV["CI"] ? "fastlane_tmp_keychain" : nil,
-      keychain_password: ENV["CI"] ? "fastlane_tmp_keychain_password" : nil
+      type: "appstore", app_identifier: [APP_ID, EXTENSION_ID], readonly: true,
+      git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:northcutted/picstrip-certs.git"),
+      git_branch: ENV.fetch("MATCH_GIT_BRANCH", "master"),
+      keychain_name: ENV["SIGNING_KEYCHAIN"], keychain_password: ENV["SIGNING_KEYCHAIN_PASSWORD"]
     )
   end
 
-  desc "Build and export IPA"
+  desc "Build and export the exact release version without changing tracked files"
   lane :build do
-    # Increment build number to CI run number
-    build_number = ENV.fetch("BUILD_NUMBER", "1")
-
-    increment_build_number(
-      build_number: build_number,
-      xcodeproj:    PROJECT
-    )
-
-    # Inject MARKETING_VERSION from the semantic-release dry run so the IPA
-    # carries the release version without committing generated version bumps.
-    marketing_version = ENV.fetch("MARKETING_VERSION", nil)
-    version_xcargs = marketing_version ? "MARKETING_VERSION=#{marketing_version}" : ""
-
+    build_number = ENV.fetch("BUILD_NUMBER", "1.1")
+    marketing_version = ENV.fetch("MARKETING_VERSION")
+    UI.user_error!("Invalid build number") unless build_number.match?(/\A[1-9]\d{0,3}\.[1-9]\d?\z/)
+    UI.user_error!("Invalid marketing version") unless marketing_version.match?(/\A\d+\.\d+\.\d+\z/)
     gym(
-      project:           PROJECT,
-      scheme:            SCHEME,
-      configuration:     "Release",
-      clean:             true,
-      output_directory:  OUTPUT_DIR,
-      output_name:       IPA_NAME,
-      export_method:     "app-store",
-      xcargs:            version_xcargs,
+      project: PROJECT, scheme: SCHEME, configuration: "Release", clean: true,
+      output_directory: OUTPUT_DIR, output_name: IPA_NAME,
+      archive_path: "#{OUTPUT_DIR}/PicStrip.xcarchive", include_symbols: true,
+      export_method: "app-store",
+      xcargs: "MARKETING_VERSION=#{marketing_version} CURRENT_PROJECT_VERSION=#{build_number}",
       export_options: {
-        method:               "app-store",
-        signingStyle:         "manual",
-        provisioningProfiles: {
-          APP_ID       => "match AppStore #{APP_ID}",
-          EXTENSION_ID => "match AppStore #{EXTENSION_ID}"
-        }
+        method: "app-store-connect", signingStyle: "manual", manageAppVersionAndBuildNumber: false,
+        provisioningProfiles: {APP_ID => "match AppStore #{APP_ID}", EXTENSION_ID => "match AppStore #{EXTENSION_ID}"}
       }
     )
   end
 
-  desc "Build and upload to TestFlight"
-  lane :beta do
-    certificates
-    build
-
-    upload_testflight
-  end
-
   desc "Upload an already-built IPA to TestFlight"
   lane :upload_testflight do
-    ipa_path = ENV.fetch("IPA_PATH", "#{OUTPUT_DIR}/#{IPA_NAME}")
+    ipa_path = File.expand_path(ENV.fetch("IPA_PATH", "#{OUTPUT_DIR}/#{IPA_NAME}"), ROOT)
     validate_export_compliance
+    manifest = JSON.parse(File.read(File.expand_path(ENV.fetch("RELEASE_MANIFEST"), ROOT)))
+    UI.user_error!("IPA changed after verification") unless Digest::SHA256.file(ipa_path).hexdigest == manifest.fetch("ipa_sha256")
+    UI.user_error!("This version/build already exists; resume processing/deployment instead of uploading again") if ReleaseGuard.new(manifest).find_build
 
     api_key = app_store_connect_api_key(
       key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
@@ -242,7 +157,8 @@ platform :ios do
       ipa:              ipa_path,
       api_key:          api_key,
       uses_non_exempt_encryption: false,
-      skip_waiting_for_build_processing: false
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
     )
   end
 
@@ -273,47 +189,21 @@ platform :ios do
       screenshot_options[:languages] = options[:languages].split(",").map(&:strip)
     end
 
-    # Work around fastlane/snapshot emitting OS=26.4 when Xcode needs OS=26.4.1.
-    # `xcrun simctl list devices` labels the runtime header "-- iOS 26.4 --"
-    # (no patch version), so DeviceManager#simulators sets device.os_version to
-    # "26.4".  TestCommandGenerator then builds:
-    #   -destination 'platform=iOS Simulator,name=iPhone 17 Pro Max,OS=26.4'
-    # which Xcode rejects because it only registers destinations as OS=26.4.1.
-    # Switching to id=<UDID> bypasses the version string entirely and is always
-    # unambiguous.  Remove this block once fastlane ships a fix for the simctl
-    # text-parse regression (fastlane/fastlane#22xxx).
-    # Fix the HTML report so iPhone 17 Pro Max and iPad Pro 13-inch (M5) all
-    # appear correctly.  The upstream device-name map in reports_generator.rb has no
-    # entry for these models; the generic 'iPad Pro' key incidentally matches iPad but
-    # the iPhone row is invisible.  We prepend specific entries *before*
-    # the broad 'iPad Pro' substring so the lookup breaks on the right key.
-    require 'snapshot/reports_generator'
-    Snapshot::ReportsGenerator.prepend(Module.new do
-      def xcode_9_and_above_device_name_mappings
-        {
-          'iPhone 17 Pro Max'     => 'iPhone 17 Pro Max',
-          'iPad Pro 13-inch (M5)' => 'iPad Pro 13-inch (M5)'
-        }.merge(super)
-      end
-    end)
-
+    selected_languages = screenshot_options[:languages] || CI_CONFIG.fetch("locales")
+    UI.user_error!("Unknown screenshot locale") unless (selected_languages - CI_CONFIG.fetch("locales")).empty?
+    screenshot_options[:ios_version] = ENV.fetch("SIMULATOR_RUNTIME", CI_CONFIG.fetch("xcode").fetch("runtime"))
+    unless ENV["SIMULATOR_UDIDS"]
+      ENV["DEVELOPER_DIR"] = CI_CONFIG.fetch("xcode").fetch("path")
+      ENV["SIMULATOR_UDIDS"] = sh("python3", "#{ROOT}/scripts/ci/toolchain.py", "--screenshots", "--destinations-json", log: false).strip
+    end
     require 'snapshot/test_command_generator'
     Snapshot::TestCommandGenerator.singleton_class.prepend(Module.new do
       def destination(devices)
-        return ["-destination 'platform=macOS'"] if devices.first.to_s =~ /^Mac/
-
-        os = case devices.first.to_s
-             when /^Apple TV/ then 'tvOS'
-             when /^Apple Watch/ then 'watchOS'
-             else 'iOS'
-             end
-
-        os_version = Snapshot.config[:ios_version] || Snapshot::LatestOsVersion.version(os)
-
-        destinations = devices.map do |d|
-          device = find_device(d, os_version)
-          UI.user_error!("No simulator found named '#{d}' for #{os}") if device.nil?
-          "-destination 'platform=#{os} Simulator,id=#{device.udid}'"
+        resolved = JSON.parse(ENV.fetch("SIMULATOR_UDIDS"))
+        destinations = devices.map do |name|
+          id = resolved.fetch(name)
+          raise "Invalid simulator UUID" unless id.match?(/\A[0-9A-Fa-f-]{36}\z/)
+          "-destination 'platform=iOS Simulator,id=#{id}'"
         end
         [destinations.join(' ')]
       end
@@ -328,12 +218,8 @@ platform :ios do
     # locale. Keep old captured log folders from breaking screenshot uploads.
     sh("rm -rf #{ROOT}/fastlane/screenshots/Logs")
 
-    # Wipe the processed tree before regen. Without this, a change to
-    # SCREENSHOT_DISPLAY_ORDER in the Python compositor (or to the screen-key
-    # set itself) leaves orphaned PNGs from the previous order alongside the
-    # new ones — and ``upload_to_app_store`` would happily ship both, blowing
-    # past App Store Connect's 10-screenshot-per-device limit.
-    sh("rm -rf #{ROOT}/fastlane/screenshots/processed")
+    # Replace only captured locales, removing stale screen names before composing.
+    # Full locale/device coverage is required before staging.
 
     # The Python compositor handles device framing internally — it draws a
     # matte rounded-rect frame around each raw capture rather than consuming
@@ -346,8 +232,10 @@ platform :ios do
     locale_dirs = Dir.glob(File.join(ROOT, "fastlane/screenshots/*/"))
                      .map { |p| File.basename(p) }
                      .reject { |d| d == "processed" || d.start_with?(".") }
+    locale_dirs &= CI_CONFIG.fetch("locales")
     locale_dirs.each do |locale|
-      sh("cd #{ROOT} && python3 scripts/process_screenshots.py --locale #{locale}")
+      FileUtils.rm_rf(File.join(ROOT, "fastlane/screenshots/processed", locale))
+      sh("cd #{Shellwords.escape(ROOT)} && python3 scripts/process_screenshots.py --locale #{Shellwords.escape(locale)}")
     end
   end
 
@@ -412,143 +300,104 @@ platform :ios do
     )
   end
 
-  desc "Stage metadata, screenshots, and the processed TestFlight build in App Store Connect without submitting"
-  lane :app_store_stage do
-    api_key = app_store_connect_api_key(
-      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: false
-    )
+  private_lane :release_manifest do
+    manifest = JSON.parse(File.read(File.expand_path(ENV.fetch("RELEASE_MANIFEST"), ROOT)))
+    UI.user_error!("Expected a processed release manifest") unless manifest["schema_version"] == 2 && manifest["processing_state"] == "VALID"
+    manifest
+  end
 
-    accessibility
+  desc "Wait on Linux for the exact uploaded build to finish processing"
+  lane :wait_processing do
+    manifest = JSON.parse(File.read(File.expand_path(ENV.fetch("RELEASE_MANIFEST"), ROOT)))
+    status = ReleaseGuard.new(manifest).wait_for_processing
+    ReleaseGuard.save(File.expand_path(ENV.fetch("PROCESSING_RECEIPT", "testflight-status.json"), ROOT), status)
+  end
+
+  desc "Stage verified metadata, screenshots, and the exact processed build"
+  lane :app_store_stage do
+    manifest = release_manifest
+    guard = ReleaseGuard.new(manifest)
+    existing = guard.find_build
+    UI.user_error!("Processed App Store build does not match release") unless existing && existing["id"] == manifest.fetch("app_store_build_id") && existing.dig("attributes", "processingState") == "VALID"
+    api_key = app_store_connect_api_key(key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"], issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"], key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
     validate_export_compliance
     validate_release_notes
-
-    # The binary was already uploaded to TestFlight by the release pipeline.
-    # skip_binary_upload: true tells deliver to find the existing build
-    # (matched by app_version + build_number) and attach it to the version
-    # rather than re-uploading, which would fail with a duplicate-binary error.
-    #
-    # Screenshots are uploaded here so they are coupled to the exact release
-    # tag and commit. The tag-triggered deploy workflow checks out LFS so the
-    # processed PNGs from fastlane/screenshots/processed/ are present on disk.
-    processed_path = "#{ROOT}/fastlane/screenshots/processed"
+    sh("python3", "#{ROOT}/scripts/ci/evidence.py", "metadata", "#{ROOT}/fastlane/metadata")
+    sh("python3", "#{ROOT}/scripts/ci/evidence.py", "screenshots", "#{ROOT}/fastlane/screenshots/processed", "--output", "#{ROOT}/build/staged-screenshots.json")
+    # A retry after submission preserves the draft and its already-selected build.
+    versions = guard.list("/v1/apps/#{guard.app_id}/appStoreVersions", "filter[versionString]" => manifest.fetch("version"), "filter[platform]" => "IOS")
+    state = versions.first&.dig("attributes", "appVersionState") || versions.first&.dig("attributes", "appStoreState")
+    if ReleaseGuard::SUBMITTED_STATES.include?(state)
+      ReleaseGuard.save(File.expand_path(ENV.fetch("STAGED_SNAPSHOT", "build/staged-snapshot.json"), ROOT), guard.snapshot)
+      next
+    end
+    accessibility
     upload_to_app_store(
-      api_key:                           api_key,
-      app_version:                       ENV["MARKETING_VERSION"],
-      build_number:                      ENV["BUILD_NUMBER"],
-      skip_binary_upload:                true,
-      submit_for_review:                 false,
-      automatic_release:                 false,
-      phased_release:                    false,
-      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
-      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
-      metadata_path:                     "./fastlane/metadata",
-      screenshots_path:                  processed_path,
-      skip_screenshots:                  false,
-      overwrite_screenshots:             true,   # replace any existing shots for this version
-      run_precheck_before_submit:        false,
-      precheck_include_in_app_purchases: false,
-      force:                             true    # skip interactive HTML diff preview
+      api_key: api_key, app_version: manifest.fetch("version"), build_number: manifest.fetch("build_number"),
+      skip_binary_upload: true, submit_for_review: false, automatic_release: false, phased_release: false,
+      primary_category: APP_STORE_PRIMARY_CATEGORY, secondary_category: APP_STORE_SECONDARY_CATEGORY,
+      metadata_path: "./fastlane/metadata", screenshots_path: "#{ROOT}/fastlane/screenshots/processed",
+      skip_screenshots: false, overwrite_screenshots: true, run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false, force: true
     )
+    ReleaseGuard.save(File.expand_path(ENV.fetch("STAGED_SNAPSHOT", "build/staged-snapshot.json"), ROOT), guard.snapshot)
   end
 
-  desc "Request App Review for the current App Store Connect draft"
+  desc "Submit the verified build after approval, recording permitted metadata edits"
   lane :request_review do
-    api_key = app_store_connect_api_key(
-      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: false
-    )
-
-    validate_export_compliance
-
-    deliver_options = {
-      api_key:                           api_key,
-      app_version:                       ENV["MARKETING_VERSION"],
-      skip_binary_upload:                true,
-      skip_metadata:                     true,
-      skip_screenshots:                  true,
-      skip_app_version_update:           true,
-      submit_for_review:                 true,
-      automatic_release:                 true,   # release automatically on approval
-      phased_release:                    true,   # roll out over 7 days
-      run_precheck_before_submit:        false,
-      precheck_include_in_app_purchases: false,
-      submission_information:            EXPORT_COMPLIANCE_SUBMISSION,
-      force:                             true    # skip interactive HTML diff preview
-    }
-
-    # Default release deploy behavior is "submit what's already staged in App
-    # Store Connect." Set BUILD_NUMBER only for an intentional override.
-    build_number = ENV.fetch("BUILD_NUMBER", "").strip
-    deliver_options[:build_number] = build_number unless build_number.empty?
-
-    upload_to_app_store(deliver_options)
+    UI.user_error!("CI submission requires the production environment") if ENV["CI"] && ENV["RELEASE_ENVIRONMENT"] != "production"
+    manifest = release_manifest
+    guard = ReleaseGuard.new(manifest)
+    current = guard.snapshot
+    before = JSON.parse(File.read(File.expand_path(ENV.fetch("STAGED_SNAPSHOT"), ROOT)))
+    changes = ReleaseGuard.diff(before, current)
+    receipt_path = File.expand_path(ENV.fetch("SUBMISSION_RECEIPT", "build/submission-receipt.json"), ROOT)
+    receipt = {"manifest_sha256" => Digest::SHA256.file(File.expand_path(ENV.fetch("RELEASE_MANIFEST"), ROOT)).hexdigest,
+               "snapshot" => current, "changes_since_staging" => changes, "status" => "ready"}
+    ReleaseGuard.save(receipt_path, receipt)
+    state = current.fetch("version_attributes")["appVersionState"] || current.fetch("version_attributes")["appStoreState"]
+    unless ReleaseGuard::SUBMITTED_STATES.include?(state)
+      api_key = app_store_connect_api_key(key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"], issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"], key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
+      validate_export_compliance
+      # Read back immediately before submission; never silently replace another selected build.
+      guard.verify_selected_build!
+      upload_to_app_store(
+        api_key: api_key, app_version: manifest.fetch("version"), build_number: manifest.fetch("build_number"),
+        skip_binary_upload: true, skip_metadata: true, skip_screenshots: true, skip_app_version_update: true,
+        submit_for_review: true, automatic_release: true, phased_release: true,
+        run_precheck_before_submit: false, precheck_include_in_app_purchases: false,
+        submission_information: EXPORT_COMPLIANCE_SUBMISSION, force: true
+      )
+    end
+    receipt["status"] = "submitted"
+    receipt["readback"] = guard.snapshot
+    ReleaseGuard.save(receipt_path, receipt)
   end
 
-  desc "Alias for app_store_stage"
+  desc "Update metadata for a verified release; review always uses request_review"
+  lane :metadata_only do
+    UI.user_error!("Use the production-gated request_review lane") if ENV.fetch("SUBMIT_FOR_REVIEW", "false") == "true"
+    manifest = release_manifest
+    guard = ReleaseGuard.new(manifest)
+    guard.verify_selected_build!
+    validate_release_notes
+    api_key = app_store_connect_api_key(key_id: ENV["APP_STORE_CONNECT_API_KEY_ID"], issuer_id: ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"], key_content: ENV["APP_STORE_CONNECT_API_KEY_CONTENT"])
+    upload_to_app_store(
+      api_key: api_key, app_version: manifest.fetch("version"), build_number: manifest.fetch("build_number"),
+      skip_binary_upload: true, skip_screenshots: true, submit_for_review: false,
+      primary_category: APP_STORE_PRIMARY_CATEGORY, secondary_category: APP_STORE_SECONDARY_CATEGORY,
+      metadata_path: "./fastlane/metadata", run_precheck_before_submit: false,
+      precheck_include_in_app_purchases: false, force: true
+    )
+    ReleaseGuard.save(File.expand_path(ENV.fetch("STAGED_SNAPSHOT", "build/staged-snapshot.json"), ROOT), guard.snapshot)
+  end
+
   lane :preflight do
     app_store_stage
   end
 
-  desc "Alias for request_review"
   lane :submit do
     request_review
-  end
-
-  desc "Push metadata/review information only to an existing App Store version/build. " \
-       "Does not rebuild, upload a binary, or replace screenshots. Defaults to the current " \
-       "editable App Store version and its selected build. Set SUBMIT_FOR_REVIEW=true only " \
-       "when intentionally resubmitting."
-  lane :metadata_only do
-    marketing_version = ENV.fetch("MARKETING_VERSION", nil).to_s.strip
-    build_number = ENV.fetch("BUILD_NUMBER", nil).to_s.strip
-    submit_for_review = ENV.fetch("SUBMIT_FOR_REVIEW", "false").casecmp("true").zero?
-
-    api_key = app_store_connect_api_key(
-      key_id:       ENV["APP_STORE_CONNECT_API_KEY_ID"],
-      issuer_id:    ENV["APP_STORE_CONNECT_API_KEY_ISSUER_ID"],
-      key_content:  ENV["APP_STORE_CONNECT_API_KEY_CONTENT"],
-      is_key_content_base64: false
-    )
-
-    if marketing_version.empty? || build_number.empty?
-      inferred = infer_metadata_target(api_key: api_key)
-      marketing_version = inferred[:marketing_version] if marketing_version.empty?
-      build_number = inferred[:build_number] if build_number.empty?
-      UI.message(
-        "Inferred App Store metadata target: #{marketing_version} (#{build_number})" \
-        " from state #{inferred[:app_version_state]}"
-      )
-    end
-
-    UI.user_error!("MARKETING_VERSION is required, e.g. 1.6.2") if marketing_version.empty?
-    UI.user_error!("BUILD_NUMBER is required, e.g. 62") if build_number.empty?
-
-    validate_release_notes
-
-    deliver_options = {
-      api_key:                           api_key,
-      app_version:                       marketing_version,
-      build_number:                      build_number,
-      skip_binary_upload:                true,
-      skip_screenshots:                  true,
-      submit_for_review:                 submit_for_review,
-      automatic_release:                 false,
-      phased_release:                    false,
-      primary_category:                  APP_STORE_PRIMARY_CATEGORY,
-      secondary_category:                APP_STORE_SECONDARY_CATEGORY,
-      metadata_path:                     "./fastlane/metadata",
-      run_precheck_before_submit:        false,
-      precheck_include_in_app_purchases: false,
-      force:                             true
-    }
-    deliver_options[:submission_information] = EXPORT_COMPLIANCE_SUBMISSION if submit_for_review
-
-    upload_to_app_store(deliver_options)
   end
 
   desc "Sync App Store Accessibility Nutrition Label declarations"

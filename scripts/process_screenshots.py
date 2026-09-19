@@ -284,13 +284,17 @@ DEFAULT_HEADLINE = "Share the photo.\nNot the story behind it."
 # (ReviewAndSave — clean export). Slots 4–7 reinforce: the redaction power
 # feature, transparency, breadth of metadata stripped, and the brand close.
 SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {
-    "01_Home":            "01_Home",
-    "04_PhotoLoaded":     "02_PhotoLoaded",
-    "07_ReviewAndSave":   "03_ReviewAndSave",
-    "05_RedactionEditor": "04_RedactionEditor",
-    "06_SensitiveData":   "05_SensitiveData",
-    "02_PrivacyImpact":   "06_PrivacyImpact",
-    "03_About":           "07_About",
+    "01_Home": "01_Home",
+    "02_About": "02_About",
+    "03_PhotoLoaded": "03_PhotoLoaded",
+    "04_RedactionEditor": "04_RedactionEditor",
+    "05_ReviewAndSave": "05_ReviewAndSave",
+}
+
+# The localized catalog retains its established keys.
+CAPTURE_HEADLINE_KEYS = {
+    "02_About": "03_About", "03_PhotoLoaded": "04_PhotoLoaded",
+    "04_RedactionEditor": "05_RedactionEditor", "05_ReviewAndSave": "07_ReviewAndSave",
 }
 
 
@@ -446,6 +450,7 @@ def _resolve_headline(
     Lookup order: requested locale, base language (``de-DE`` → ``de``), ``en``,
     embedded ``HEADLINES`` map, then ``DEFAULT_HEADLINE``.
     """
+    screen_key = CAPTURE_HEADLINE_KEYS.get(screen_key, screen_key)
     base_locale = locale.split("-", 1)[0] if "-" in locale else locale
     candidates = (locale, base_locale, "en")
 

@@ -6,6 +6,7 @@ LANGUAGES ?=
 MARKETING_VERSION ?=
 BUILD_NUMBER ?=
 SUBMIT_FOR_REVIEW ?= false
+RELEASE_TAG ?=
 
 .PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots upload-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
 
@@ -17,9 +18,7 @@ help:
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
-	@echo "  make metadata-only                Infer current App Store version/build and upload metadata only"
-	@echo "  make metadata-only MARKETING_VERSION=1.6.2 BUILD_NUMBER=62"
-	@echo "                                    Override the inferred metadata target"
+	@echo "  make metadata-only RELEASE_TAG=v1.7.0  Run the verified metadata workflow"
 	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
 	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
@@ -27,9 +26,9 @@ help:
 	@echo "                                    (production translations are hand-written and committed directly)"
 	@echo "  make localization-validate        Validate catalogs, localization audit, and SwiftLint"
 	@echo "  make screenshots                  Generate screenshots from fastlane/Snapfile"
-	@echo "  make screenshots DEVICE=\"iPhone 17 Pro Max\""
+	@echo "  make screenshots DEVICE=\"iPhone 18 Pro Max\""
 	@echo "                                    Generate one-device screenshots"
-	@echo "  make screenshots DEVICES=\"iPhone 17 Pro Max,iPad Pro 13-inch (M5)\""
+	@echo "  make screenshots DEVICES=\"iPhone 18 Pro Max,iPad Pro 13-inch (M5)\""
 	@echo "                                    Generate a comma-separated device subset"
 	@echo "  make process-screenshots          Frame + compose marketing PNGs from existing captures"
 	@echo "  make upload-screenshots           Upload full screenshot set to App Store Connect"
@@ -57,13 +56,12 @@ test-fixture:
 		--out PicStripUITests/test_list.png
 
 build:
-	$(FASTLANE) build
+	MARKETING_VERSION="$(MARKETING_VERSION)" BUILD_NUMBER="$(BUILD_NUMBER)" $(FASTLANE) build
 
 metadata-only:
-	MARKETING_VERSION="$(MARKETING_VERSION)" \
-	BUILD_NUMBER="$(BUILD_NUMBER)" \
-	SUBMIT_FOR_REVIEW="$(SUBMIT_FOR_REVIEW)" \
-	$(FASTLANE) metadata_only
+	@test -n "$(RELEASE_TAG)" || (echo "Set RELEASE_TAG to an immutable release"; exit 1)
+	gh workflow run metadata-only.yml --ref "$(RELEASE_TAG)" \
+		-f release_tag="$(RELEASE_TAG)" -f submit_for_review="$(SUBMIT_FOR_REVIEW)"
 
 audit-localization:
 	scripts/audit_localization_strings.sh
@@ -103,14 +101,14 @@ screenshots-full:
 
 screenshots-device:
 	@if [ -z "$(DEVICE)" ]; then \
-		echo "Set DEVICE, for example: make screenshots-device DEVICE=\"iPhone 17 Pro Max\""; \
+		echo "Set DEVICE, for example: make screenshots-device DEVICE=\"iPhone 18 Pro Max\""; \
 		exit 1; \
 	fi
 	$(FASTLANE) screenshots device:"$(DEVICE)"
 
 screenshots-devices:
 	@if [ -z "$(DEVICES)" ]; then \
-		echo "Set DEVICES, for example: make screenshots-devices DEVICES=\"iPhone 17 Pro Max,iPad Pro 13-inch (M5)\""; \
+		echo "Set DEVICES, for example: make screenshots-devices DEVICES=\"iPhone 18 Pro Max,iPad Pro 13-inch (M5)\""; \
 		exit 1; \
 	fi
 	$(FASTLANE) screenshots devices:"$(DEVICES)"

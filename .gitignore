@@ -102,3 +102,7 @@ npm-debug.log*
 # Ruby
 vendor/bundle/
 .bundle/
+
+# Python tooling
+__pycache__/
+*.py[cod]
