@@ -10,10 +10,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@6379bbeefe56d05bc18c1e45458d9e008c6ea514
+    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@492e03f1e80b46f0acdf80c8a2d4aa3a22e921cc
     with:
       config: .github/ios-release.json
-      platform_revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
+      platform_revision: 492e03f1e80b46f0acdf80c8a2d4aa3a22e921cc
     permissions:
       contents: read
       actions: read

@@ -394,7 +394,17 @@ final class ScrubberViewModel {
 
     // MARK: - Private
 
-    private let piiScanner = PIIScanner()
+    @ObservationIgnored private let scanImage: @Sendable (Data) async throws -> [DetectionResult]
+
+    /// Keep format/export tests independent of Vision model startup while the
+    /// application continues to use the real on-device scanner by default.
+    init(
+        scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult] = {
+            try await PIIScanner().scanImage(data: $0)
+        }
+    ) {
+        self.scanImage = scanImage
+    }
 
     /// The in-flight picker load, cancelled when a newer selection supersedes it.
     private var loadTask: Task<Void, Never>?
@@ -578,11 +588,11 @@ final class ScrubberViewModel {
         piiScanToken = token
         isScanningPII = true
 
-        piiScanTask = Task { [piiScanner] in
+        piiScanTask = Task { [scanImage] in
             let result: [DetectionResult]
             var scanError: String?
             do {
-                result = try await piiScanner.scanImage(data: data)
+                result = try await scanImage(data)
             } catch {
                 // Never let a failed scan look like a clean one: tell the user so
                 // they know to check the photo themselves.
