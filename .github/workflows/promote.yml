@@ -36,10 +36,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   promote:
-    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@c692b58b00564a5eb7c38a97b226f2132f7e926a
+    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@6379bbeefe56d05bc18c1e45458d9e008c6ea514
     with:
       config: .github/ios-release.json
-      platform_revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+      platform_revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
       artifact_id: ${{ inputs.artifact_id }}
       sha256: ${{ inputs.sha256 }}
       processed_artifact_id: ${{ inputs.processed_artifact_id }}
@@ -52,3 +52,9 @@ jobs:
       id-token: write
       attestations: write
       artifact-metadata: write
+    secrets:
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      RELEASE_APP_ID: ${{ secrets.RELEASE_APP_ID }}
+      RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}

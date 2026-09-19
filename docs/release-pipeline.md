@@ -33,7 +33,7 @@ Main requires PRs and an up-to-date `CI Gate`, with zero mandatory peer approval
 | production | v* tags | App Store submission key and required approval |
 | app-store-observe | main | App Store read access |
 
-The publisher App requires Contents: write, Administration: read, and Pull requests: write for screenshot PRs. Each job requests only its needed token permissions. Environment secrets are not forwarded with `secrets: inherit`. Compilation has no App Store API key or attestation permission; evidence signing runs separately. Privileged platform jobs never execute PicStrip's Fastfile, Gemfile, or arbitrary hooks. Consumer build phases necessarily run inside the approved app's compilation job.
+The publisher App requires Contents: write, Administration: read, and Pull requests: write for screenshot PRs. Each job requests only its needed token permissions. Callers explicitly bind only each interface's named secrets (`NAME: ${{ secrets.NAME }}`). GitHub needs those bindings even when the protected environment supplies the actual value; repository-wide copies are unnecessary. CI receives none, and `secrets: inherit` is forbidden. Compilation has no App Store API key or attestation permission; evidence signing runs separately. Privileged platform jobs never execute PicStrip's Fastfile, Gemfile, or arbitrary hooks. Consumer build phases necessarily run inside the approved app's compilation job.
 
 Preview/apply controls only after CI passes for the currently checked-in revision:
 
