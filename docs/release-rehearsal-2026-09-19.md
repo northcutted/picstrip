@@ -41,7 +41,11 @@ The publication repair creates and peels the protected Git tag explicitly, disco
 
 [Staging 35473351852](https://github.com/northcutted/picstrip/actions/runs/35473351852) uploaded all 160 screenshots and attached the exact build. Apple then returned HTTP 409 for an identical encryption declaration PATCH; readback confirms the configured `false` value was already present. The platform now preserves matching declarations and still verifies every readback. One screenshot also remained in Apple processing for over ten minutes. Processing waits are now bounded to 120 seconds per attempt, allowing locked Fastlane's incomplete-image retries within the job timeout.
 
-Staging recovery and readiness verification remain pending the corrected pin's protected CI. Production approval remains a separate human action.
+[Recovery promotion 35474596715](https://github.com/northcutted/picstrip/actions/runs/35474596715) authenticated the existing immutable release and created a new protected deployment ref; upload, processing and re-signing were all skipped. [Staging retry 35474687950](https://github.com/northcutted/picstrip/actions/runs/35474687950) passed screenshot upload and encryption readback, then Apple rejected `deviceFamily` in an accessibility PATCH. That field is creation-only. The platform now preserves matching declarations, sends only mutable feature booleans on draft updates, and verifies the complete readback. Both existing iPhone/iPad draft declarations exactly match the signed configuration; a live probe with writes disabled passed.
+
+Independent read-only checks verified all 160 staged screenshot checksums across 16 locales, the exact build 77.1, and App Store precheck. [Observation 35474315881](https://github.com/northcutted/picstrip/actions/runs/35474315881) authenticated this actual release and reported its exact VALID build in PREPARE_FOR_SUBMISSION. The hourly observation path is operational.
+
+The next staging attempt uses the corrected accessibility contract after protected CI. Production approval remains a separate human action.
 
 ## Dependency advisories
 
