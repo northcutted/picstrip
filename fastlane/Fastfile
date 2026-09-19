@@ -128,6 +128,7 @@ platform :ios do
     gym(
       project: PROJECT, scheme: SCHEME, configuration: "Release", clean: true,
       output_directory: OUTPUT_DIR, output_name: IPA_NAME,
+      buildlog_path: "#{OUTPUT_DIR}/logs",
       archive_path: "#{OUTPUT_DIR}/PicStrip.xcarchive", include_symbols: true,
       export_method: "app-store",
       xcargs: "MARKETING_VERSION=#{marketing_version} CURRENT_PROJECT_VERSION=#{build_number}",

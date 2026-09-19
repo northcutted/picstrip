@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import evidence as e
 from verify_release import provenance_identity
 from verify_release import verify
+from publish_release import publish
 
 SHA = "a" * 40
 
@@ -147,6 +148,50 @@ class EvidenceTests(unittest.TestCase):
         with patch("verify_release.subprocess.run", side_effect=subprocess.CalledProcessError(1, "gh")), patch("verify_release.validate_manifest") as consume:
             with self.assertRaises(subprocess.CalledProcessError): verify(self.root, SHA, final=True)
             consume.assert_not_called()
+
+    def final_fixture(self):
+        manifest = self.build_fixture()
+        e.write(self.root / "testflight-status.json", {**manifest, "app_store_build_id": "verified", "processing_state": "VALID"})
+        (self.root / "provenance.intoto.jsonl").write_text("test fixture")
+        e.finalize(self.root)
+
+    def test_publication_resumes_matching_draft_and_is_idempotent(self):
+        self.final_fixture()
+        files = {p.name: p for p in self.root.iterdir()}
+        release = {"target_commitish": SHA, "draft": True, "immutable": False, "assets": [], "html_url": "https://example.invalid/release"}
+        first = next(iter(files.values()))
+        release["assets"].append({"name": first.name, "digest": "sha256:" + e.digest(first)})
+        uploaded = []
+        def fake_gh(*args):
+            if args[0] == "api":
+                return json.dumps({"enabled": True} if args[1].endswith("immutable-releases") else release)
+            if args[:2] == ("release", "upload"):
+                file = Path(args[3]); uploaded.append(file.name)
+                release["assets"].append({"name": file.name, "digest": "sha256:" + e.digest(file)})
+            elif args[:2] == ("release", "edit"):
+                self.assertEqual(set(files), {a["name"] for a in release["assets"]})
+                release.update(draft=False, immutable=True)
+            else: self.fail(f"Unexpected mutation: {args}")
+            return ""
+        def existing(*args, **kwargs):
+            return subprocess.CompletedProcess(args, 0, json.dumps(release), "")
+        with patch("publish_release.gh", side_effect=fake_gh), patch("publish_release.subprocess.run", side_effect=existing):
+            publish(self.root)
+            self.assertEqual(set(uploaded), set(files) - {first.name})
+            uploaded.clear()
+            publish(self.root)
+            self.assertEqual(uploaded, [])
+
+    def test_publication_rejects_conflicts_and_disabled_immutability(self):
+        self.final_fixture()
+        for release, enabled in [
+            ({"target_commitish": "b" * 40}, True),
+            ({"target_commitish": SHA, "assets": [{"name": "PicStrip.ipa", "digest": "sha256:wrong"}], "draft": True}, True),
+            ({"target_commitish": SHA}, False),
+        ]:
+            with patch("publish_release.subprocess.run", return_value=subprocess.CompletedProcess([], 0, json.dumps(release), "")), patch("publish_release.gh", return_value=json.dumps({"enabled": enabled})) as calls:
+                with self.assertRaises(ValueError): publish(self.root)
+                self.assertTrue(all(call.args[0] == "api" for call in calls.call_args_list))
 
 
 if __name__ == "__main__": unittest.main()

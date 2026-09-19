@@ -229,21 +229,21 @@ struct CategoryDetailPanel: View {
         HStack(spacing: 0) {
             segment(
                 title: "Strip All",
+                accessibilityLabel: "Strip all \(metadataCategoryDisplayName(for: category)) fields",
                 icon: "nosign", side: .left, active: allStripping
             ) {
                 stripAll()
             }
-            .accessibilityLabel("Strip all \(metadataCategoryDisplayName(for: category)) fields")
             Divider()
                 .frame(height: 28)
                 .overlay(color.opacity(0.15))
             segment(
                 title: "Keep All",
+                accessibilityLabel: "Keep all \(metadataCategoryDisplayName(for: category)) fields",
                 icon: "checkmark", side: .right, active: noneStripping
             ) {
                 keepAll()
             }
-            .accessibilityLabel("Keep all \(metadataCategoryDisplayName(for: category)) fields")
         }
         .background(
             RoundedRectangle(cornerRadius: 10)
@@ -259,9 +259,11 @@ struct CategoryDetailPanel: View {
 
     private enum SegmentSide { case left, right }
 
-    // Callers apply a complete localized accessibility label to each segment.
+    // The label is passed whole rather than assembled from `title` + category:
+    // word order differs between languages, so fragments cannot be translated.
     private func segment(
         title: LocalizedStringKey,
+        accessibilityLabel: LocalizedStringKey,
         icon: String,
         side: SegmentSide,
         active: Bool,
@@ -289,6 +291,7 @@ struct CategoryDetailPanel: View {
             )
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(accessibilityLabel)
     }
 
     // MARK: - Bulk helpers

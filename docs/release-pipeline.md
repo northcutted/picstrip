@@ -81,7 +81,7 @@ References: [SLSA Build requirements](https://slsa.dev/spec/v1.2/build-requireme
    | --- | --- | --- |
    | `signing` | main branch | `MATCH_SSH_PRIVATE_KEY`, `MATCH_PASSWORD`; certificate deploy key should be read-only |
    | `testflight` | main branch | `APP_STORE_CONNECT_API_KEY_ID`, `APP_STORE_CONNECT_API_KEY_ISSUER_ID`, `APP_STORE_CONNECT_API_KEY_CONTENT`; use an upload-capable key with the least required role |
-   | `release-publishing` | main branch | `RELEASE_APP_ID`, `RELEASE_APP_PRIVATE_KEY`; token requests only contents write on this repository |
+   | `release-publishing` | main branch | `RELEASE_APP_ID`, `RELEASE_APP_PRIVATE_KEY`; token requests contents write and administration read on this repository (the latter checks immutable-release settings) |
    | `screenshot-publishing` | main branch | Release App credentials; installation must allow contents and pull-request write |
    | `app-store-staging` | release tags `v*` | App Store API credentials for draft metadata |
    | `production` | release tags `v*` | App Store API credentials for submission; retain the existing required reviewer |
