@@ -27,10 +27,10 @@ jobs:
           ref: main
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@e64bac48521c3947ba43e8cfd3b07978a5048a61
+        uses: northcutted/ios-release-workflows/actions/bootstrap@a198fb0f2c5acb18f815f52e700e89dfdf1cc18a
         with:
           config: .github/ios-release.json
-          revision: e64bac48521c3947ba43e8cfd3b07978a5048a61
+          revision: a198fb0f2c5acb18f815f52e700e89dfdf1cc18a
       - name: Record capture source
         id: source
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
@@ -93,10 +93,10 @@ jobs:
           ref: ${{ needs.capture.outputs.source }}
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@e64bac48521c3947ba43e8cfd3b07978a5048a61
+        uses: northcutted/ios-release-workflows/actions/bootstrap@a198fb0f2c5acb18f815f52e700e89dfdf1cc18a
         with:
           config: .github/ios-release.json
-          revision: e64bac48521c3947ba43e8cfd3b07978a5048a61
+          revision: a198fb0f2c5acb18f815f52e700e89dfdf1cc18a
       - name: Download screenshots-${{ github.run_id }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
