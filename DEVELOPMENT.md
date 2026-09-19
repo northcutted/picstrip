@@ -732,7 +732,7 @@ Network Inspector in Xcode will show zero outbound connections from the app.
 
 The [release operations guide](docs/release-pipeline.md) describes the job graph, exact Xcode/Ruby pins, environment and repository controls, evidence format, deployment retries, screenshot PR workflow, and rollout commands.
 
-`pr.yml` reports the always-running **CI Gate**. `qa.yml` shares SwiftLint, analysis, and iOS 27/iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
+`pr.yml` reports the always-running **CI Gate**. `qa.yml` shares SwiftLint (plus the string catalog audit), analysis, and iOS 27/iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
 
 ## SLSA Build Provenance Level 3
 

@@ -30,7 +30,7 @@ Tests use iPhone 17. Screenshots capture iPhone 18 Pro Max and iPad Pro 13-inch 
 
 Ruby is exactly pinned by `.ruby-version` (3.4.10). Gem dependencies and checksums are frozen in `Gemfile.lock`, and PR checks load them on both Linux and macOS. Node release tools use `npm ci --ignore-scripts`; screenshot Python dependencies use `pip --require-hashes`. SwiftLint, Syft, and actionlint installers verify pinned archive digests. Dependabot proposes updates; a toolchain image change needs an explicit reviewed config update and passing QA.
 
-`PR Checks` always reports `CI Gate`, even when another job fails or is skipped. Required jobs cover workflow policy, release regression tests, locked gems, SwiftLint, analysis, and both simulator test suites. Add the `screenshots` label for an en-US capture smoke test. PR jobs receive no deployment environments, signing keys, App Store credentials, or attestation permissions.
+`PR Checks` always reports `CI Gate`, even when another job fails or is skipped. Required jobs cover workflow policy, release regression tests, locked gems, SwiftLint, the string catalog audit (`scripts/audit_xcstrings.py`, run in the SwiftLint job so an untranslated or malformed string fails the gate), analysis, and both simulator test suites. Add the `screenshots` label for an en-US capture smoke test. PR jobs receive no deployment environments, signing keys, App Store credentials, or attestation permissions.
 
 ## Evidence contract
 
