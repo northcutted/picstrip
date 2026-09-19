@@ -31,6 +31,8 @@ After all 20 Dependabot PRs were covered by merged integrations, [preparation 35
 
 [Canary 35468908809](https://github.com/northcutted/picstrip/actions/runs/35468908809) successfully authenticated that historical candidate with the updated verifier, then rejected a private-App GraphQL response. [Read-only diagnostic 35469808337](https://github.com/northcutted/picstrip/actions/runs/35469808337) confirmed unchanged ruleset IDs/timestamps and one redacted node (`[null]`, count one), with the publisher able to bypass release tags but unable to bypass main. The platform now authenticates that exact response using the owner baseline, complete count and effective permission; it does not grant administration write or bypass the gate. A replay against fresh repository settings and all negative regressions passed.
 
+[Canary 35470588488](https://github.com/northcutted/picstrip/actions/runs/35470588488) passed exact candidate authentication and live repository-control verification. Its macOS upload job stopped before transfer because the upstream SLSA installer is Linux-only. The platform now installs checksum-pinned official macOS verifier assets, verifies their upstream provenance, and exercises actual installation in Linux/macOS platform CI. Independent verification of both macOS assets and local arm64 execution passed. IPA provenance checks remain mandatory inside upload.
+
 Publication remains disabled pending the selected candidate's successful canary. Publication must consume its signed processed handoff, and staging must read back that exact Apple build. Production approval remains a separate human action.
 
 ## Dependency advisories
