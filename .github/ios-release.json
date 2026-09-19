@@ -155,5 +155,35 @@
     "tr",
     "zh-Hans",
     "zh-Hant"
-  ]
+  ],
+  "github_controls": {
+    "publisher_app_id": 3718913,
+    "rulesets": {
+      "Main": {
+        "id": 15946444,
+        "node_id": "RRS_lACqUmVwb3NpdG9yec5JLKfEzgDzUsw",
+        "updated_at": "2026-09-19T09:10:53.839-05:00",
+        "bypass_actors": [],
+        "bypass_nodes": []
+      },
+      "Release tags": {
+        "id": 23700335,
+        "node_id": "RRS_lACqUmVwb3NpdG9yec5JLKfEzgFpo28",
+        "updated_at": "2026-09-19T09:10:54.323-05:00",
+        "bypass_actors": [
+          {
+            "actor_id": 3718913,
+            "actor_type": "Integration",
+            "bypass_mode": "always"
+          }
+        ],
+        "bypass_nodes": [
+          {
+            "id": "MDIyOkludGVncmF0aW9uQnlwYXNzQWN0b3IyODI5NjgxNA==",
+            "bypassMode": "ALWAYS"
+          }
+        ]
+      }
+    }
+  }
 }

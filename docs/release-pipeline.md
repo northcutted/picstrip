@@ -108,3 +108,7 @@ Install `gh` with attestation support and `slsa-verifier` first. Update the plat
 Production testing remains serial. The [five-by-five worker comparison](release-rehearsal-2026-09-19.md#performance-comparison) passed all tests but found two workers slower on both runtimes. Future changes still require five equivalent successful runs, no reliability regression, and at least 15% lower median test duration. Separate queue time, execution, Apple processing, and approval delay. `scripts/ci/benchmark.py` reports complete test-job durations, including setup; the rehearsal evidence separately records the test steps used for the worker comparison. Compare the same measurement when supplying its optional `--baseline-test-seconds` value.
 
 Screenshot scenarios and branding stay in PicStrip. `Capture Screenshots` validates inputs, captures, composes and validates the complete inventory, then opens a PR. Review images before merging. App Store uploads use the verified deployment path.
+
+## Repository-control baseline
+
+The publisher keeps Administration: read. GitHub hides REST bypass actors from that token, so `.github/ios-release.json` records `github_controls`: the owner-verified publisher App, ruleset IDs, server timestamps and GraphQL bypass-node identities. Promotion still checks live protections and requires unchanged, complete bypass evidence. Ruleset changes require owner inspection and a reviewed baseline refresh using the platform's `scripts/ci/capture_controls.py`; release jobs never refresh it automatically.
