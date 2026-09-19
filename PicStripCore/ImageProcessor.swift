@@ -188,6 +188,11 @@ nonisolated enum ImageProcessor {
         kCGImagePropertyDPIWidth     as String,  // "DPIWidth"
         kCGImagePropertyDPIHeight    as String,  // "DPIHeight"
         kCGImagePropertyFileSize     as String,  // "FileSize"
+        // HEIF container facts ImageIO reports for every HEIC it reads or writes:
+        // which item is the primary image, and the HDR headroom it will render
+        // with (no public constant for the latter).
+        kCGImagePropertyPrimaryImage as String,  // "PrimaryImage"
+        "Headroom",
         // ── TIFF sub-dictionary — strictly rendering requirements only ──────────
         // kCGImagePropertyTIFFSoftware is intentionally excluded: it reveals
         // the user's editing workflow ("PicMonkey.com", etc.) and is strippable.
@@ -195,6 +200,10 @@ nonisolated enum ImageProcessor {
         kCGImagePropertyTIFFXResolution     as String,  // "XResolution"
         kCGImagePropertyTIFFYResolution     as String,  // "YResolution"
         kCGImagePropertyTIFFResolutionUnit  as String,  // "ResolutionUnit"
+        // The HEVC tile grid.  The HEIC encoder always writes it, so a HEIC → HEIC
+        // export could never honour a claim that these were "removed".
+        kCGImagePropertyTIFFTileWidth       as String,  // "TileWidth"
+        kCGImagePropertyTIFFTileLength      as String,  // "TileLength"
         // ── EXIF sub-dictionary ─────────────────────────────────────────────────
         kCGImagePropertyExifColorSpace           as String,  // "ColorSpace"
         kCGImagePropertyExifPixelXDimension      as String,  // "PixelXDimension"

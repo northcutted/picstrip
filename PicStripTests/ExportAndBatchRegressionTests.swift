@@ -143,6 +143,32 @@ final class ImageProcessorKeepPathTests: XCTestCase {
         )
     }
 
+    /// A HEIC always carries its tile grid and primary-image index, and ImageIO
+    /// reports an HDR headroom for it.  None of that is personal data and none of
+    /// it can be stripped, so a cleaned HEIC must not list them as leftovers — or
+    /// claim in the audit that a HEIC → HEIC export "removed" them.
+    func testHEICOutput_reportsOnlyStructuralFields() throws {
+        // Large enough for the encoder to tile; the simulator on some CI hosts
+        // has no HEVC encoder at all, in which case the fixture skips.
+        let input = try Fixture.image(width: 1024, height: 768, type: .heic, properties: [
+            kCGImagePropertyGPSDictionary: Fixture.gps,
+            kCGImagePropertyExifDictionary: Fixture.exif
+        ])
+        let result = try ImageProcessor.process(data: input, preset: .heicOriginal)
+        XCTAssertEqual(Fixture.type(of: result.data), UTType.heic)
+
+        XCTAssertNil(Fixture.properties(of: result.data)[kCGImagePropertyGPSDictionary])
+        let leftovers = ImageProcessor.readAllFields(from: result.data).filter { !$0.isStructural }
+        XCTAssertTrue(
+            leftovers.isEmpty,
+            "Only structural fields may remain; found \(leftovers.map { "\($0.category).\($0.key)" })"
+        )
+
+        let sourceTileFields = ImageProcessor.readAllFields(from: input)
+            .filter { $0.key == "TileWidth" || $0.key == "TileLength" }
+        XCTAssertTrue(sourceTileFields.allSatisfy(\.isStructural), "Tile geometry is container structure.")
+    }
+
     /// Pixels are rotated upright during processing.  Re-injecting the source's
     /// TIFF orientation on top of that would rotate the saved photo a second time.
     func testKeptTIFF_doesNotReapplySourceOrientation() throws {

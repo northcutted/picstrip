@@ -317,8 +317,8 @@ struct StripConfig {
 
 The iOS encoder unconditionally re-synthesises these fields into any JPEG or HEIC output:
 
-- Root level: `PixelWidth`, `PixelHeight`, `ColorModel`, `Depth`, `Orientation`, `ProfileName`, `DPIWidth`, `DPIHeight`, `FileSize`
-- TIFF dict: `Orientation`, `XResolution`, `YResolution`, `ResolutionUnit`
+- Root level: `PixelWidth`, `PixelHeight`, `ColorModel`, `Depth`, `HasAlpha`, `Orientation`, `ProfileName`, `DPIWidth`, `DPIHeight`, `FileSize`, plus `PrimaryImage` and `Headroom` (HEIC only)
+- TIFF dict: `Orientation`, `XResolution`, `YResolution`, `ResolutionUnit`, plus `TileWidth` and `TileLength` (the HEVC tile grid, HEIC only)
 - EXIF dict: `ColorSpace`, `PixelXDimension`, `PixelYDimension`, `ExifVersion`, `FlashPixVersion`, `ComponentsConfiguration`
 
 The UI marks these with a lock icon and explains they contain no personal data.
