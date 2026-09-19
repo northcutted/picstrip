@@ -103,7 +103,7 @@ python3 /path/to/trusted-platform/scripts/ci/verify_release.py release-assets \
   --source FULL_SOURCE_SHA --tag vX.Y.Z --final
 ```
 
-Install `gh` with attestation support and `slsa-verifier` first. Update the platform pin with `python3 scripts/update_release_platform.py FULL_REVIEWED_PLATFORM_SHA`, then review and run CI.
+Install `gh` with attestation support and `slsa-verifier` first. When signers differ from the verification-tool revision, explicitly set `IOS_RELEASE_TRUSTED_PRODUCER_REVISIONS` to a JSON list of the full reviewed preparation/promotion commits (including the current platform); read approvals from protected configuration, never from downloaded artifacts. Update the platform pin with `python3 scripts/update_release_platform.py FULL_REVIEWED_PLATFORM_SHA`, then review and run CI.
 
 Production testing remains serial. The [five-by-five worker comparison](release-rehearsal-2026-09-19.md#performance-comparison) passed all tests but found two workers slower on both runtimes. Future changes still require five equivalent successful runs, no reliability regression, and at least 15% lower median test duration. Separate queue time, execution, Apple processing, and approval delay. `scripts/ci/benchmark.py` reports complete test-job durations, including setup; the rehearsal evidence separately records the test steps used for the worker comparison. Compare the same measurement when supplying its optional `--baseline-test-seconds` value.
 
@@ -111,7 +111,7 @@ Screenshot scenarios and branding stay in PicStrip. `Capture Screenshots` valida
 
 ## Repository-control baseline
 
-The publisher keeps Administration: read. GitHub hides REST bypass actors from that token, so `.github/ios-release.json` records `github_controls`: the owner-verified publisher App, ruleset IDs, server timestamps and GraphQL bypass-node identities. Promotion still checks live protections and requires unchanged, complete bypass evidence. Ruleset changes require owner inspection and a reviewed baseline refresh using the platform's `scripts/ci/capture_controls.py`; release jobs never refresh it automatically.
+The publisher keeps Administration: read. GitHub hides REST bypass actors from that token, so `.github/ios-release.json` records `github_controls`: the owner-verified publisher App, ruleset IDs, server timestamps and GraphQL bypass-node identities. Promotion still checks live protections and requires unchanged, complete bypass evidence. GitHub redacts the private publisher node as `[null]` to the administration-read token. This exact case additionally requires count one, no further page, one owner-recorded Integration, unchanged server-controlled IDs/time, and the live token’s effective `always` bypass. Empty, changed or conflicting responses are rejected. Current control policy is captured from protected main before archived app configuration is loaded. Ruleset changes require owner inspection and a reviewed baseline refresh using the platform's `scripts/ci/capture_controls.py`; release jobs never refresh it automatically.
 
 
 ## Reuse after a deployment-tool repair
@@ -119,3 +119,5 @@ The publisher keeps Administration: read. GitHub hides REST bypass actors from t
 The protected `trusted_producer_revisions` configuration explicitly approves the producer of an existing candidate when newer platform tools are needed. It currently retains build 77.1's producer. Bootstrap freezes this policy before loading candidate configuration; every consumed build and promotion signature must still match an approved full commit and the expected workflow. Never take producer approvals from a downloaded artifact.
 
 For promotion from newer main tooling, publication creates a separate protected `vVERSION-deploy-FULL_COMMIT` tag after publishing the immutable evidence. Its create event starts the corrected deployment caller. The platform checks the exact commit suffix and protected-main ancestry, then authenticates the original release and processed Apple build. The original app tag, IPA and assets stay immutable. An original release-event run can reject a newer signer; use the deployment-tag run for this recovery. Manual retries select this exact deployment tag and the original release tag input. Production still requires its existing human approval.
+
+Use the main-only **Inspect release controls** workflow to inspect the publisher token’s read-only REST/GraphQL response. It uses the existing release-publishing environment, reports no credentials, and makes no repository or App Store changes.

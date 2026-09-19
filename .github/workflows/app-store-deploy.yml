@@ -33,10 +33,10 @@ jobs:
           ref: main
           persist-credentials: false
       - name: Load pinned deployment tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@5c25f8b0226446266397fac8e50737cb0ecb8384
+        uses: northcutted/ios-release-workflows/actions/bootstrap@e64bac48521c3947ba43e8cfd3b07978a5048a61
         with:
           config: .github/ios-release.json
-          revision: 5c25f8b0226446266397fac8e50737cb0ecb8384
+          revision: e64bac48521c3947ba43e8cfd3b07978a5048a61
       - name: Resolve immutable release from protected ref
         id: release
         run: python3 "$IOS_RELEASE_ROOT/scripts/ci/deployment_ref.py" verify
@@ -45,10 +45,10 @@ jobs:
           RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
   deploy:
     needs: resolve
-    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@5c25f8b0226446266397fac8e50737cb0ecb8384
+    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@e64bac48521c3947ba43e8cfd3b07978a5048a61
     with:
       config: .github/ios-release.json
-      platform_revision: 5c25f8b0226446266397fac8e50737cb0ecb8384
+      platform_revision: e64bac48521c3947ba43e8cfd3b07978a5048a61
       release_tag: ${{ needs.resolve.outputs.release_tag }}
       submit: ${{ github.event_name != 'workflow_dispatch' || inputs.submit }}
     permissions:
