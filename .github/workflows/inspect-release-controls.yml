@@ -33,7 +33,7 @@ jobs:
               if rule['name'] not in ('Main', 'Release tags'):
                   continue
               data = gh('api', prefix + '/' + str(rule['id']))
-              public = {key: data.get(key) for key in ('id', 'node_id', 'name', 'updated_at', 'bypass_actors')}
+              public = {key: data.get(key) for key in ('id', 'node_id', 'name', 'updated_at', 'bypass_actors', 'current_user_can_bypass')}
               query = 'query($id:ID!){node(id:$id){... on RepositoryRuleset{id bypassActors(first:100){totalCount pageInfo{hasNextPage} nodes{id bypassMode}}}}}'
               public['graphql'] = gh('api', 'graphql', '-f', 'query=' + query, '-f', 'id=' + data['node_id'])
               print(json.dumps(public, sort_keys=True))
