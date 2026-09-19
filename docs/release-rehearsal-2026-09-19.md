@@ -29,6 +29,8 @@ After all 20 Dependabot PRs were covered by merged integrations, [preparation 35
 
 [Canary 35467369438](https://github.com/northcutted/picstrip/actions/runs/35467369438) stopped before upload because the unchanged GitHub ruleset timestamp was returned in UTC rather than the owner's Chicago offset. The corrected verifier compares timezone-aware instants with full fractional precision. Protected configuration explicitly approves the candidate's historical producer so this tool repair reuses the same IPA. The update also handles corrected deployment callers through protected deployment tags; no release tag is moved.
 
+[Canary 35468908809](https://github.com/northcutted/picstrip/actions/runs/35468908809) successfully authenticated that historical candidate with the updated verifier, then rejected a private-App GraphQL response. [Read-only diagnostic 35469808337](https://github.com/northcutted/picstrip/actions/runs/35469808337) confirmed unchanged ruleset IDs/timestamps and one redacted node (`[null]`, count one), with the publisher able to bypass release tags but unable to bypass main. The platform now authenticates that exact response using the owner baseline, complete count and effective permission; it does not grant administration write or bypass the gate. A replay against fresh repository settings and all negative regressions passed.
+
 Publication remains disabled pending the selected candidate's successful canary. Publication must consume its signed processed handoff, and staging must read back that exact Apple build. Production approval remains a separate human action.
 
 ## Dependency advisories
