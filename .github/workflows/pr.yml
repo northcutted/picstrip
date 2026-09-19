@@ -36,10 +36,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@c692b58b00564a5eb7c38a97b226f2132f7e926a
+        uses: northcutted/ios-release-workflows/actions/bootstrap@6379bbeefe56d05bc18c1e45458d9e008c6ea514
         with:
           config: .github/ios-release.json
-          revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+          revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e
         with:
@@ -55,10 +55,10 @@ jobs:
           npm run test:ci
           actionlint
   qa:
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@c692b58b00564a5eb7c38a97b226f2132f7e926a
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@6379bbeefe56d05bc18c1e45458d9e008c6ea514
     with:
       config: .github/ios-release.json
-      platform_revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+      platform_revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
@@ -96,10 +96,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@c692b58b00564a5eb7c38a97b226f2132f7e926a
+        uses: northcutted/ios-release-workflows/actions/bootstrap@6379bbeefe56d05bc18c1e45458d9e008c6ea514
         with:
           config: .github/ios-release.json
-          revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+          revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
       - name: Resolve screenshot simulators
         run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
       - name: Set up Ruby

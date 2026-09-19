@@ -12,7 +12,10 @@ export function validate(workflows){
    if(j.uses){
     check(j.uses.startsWith(pin.repository+'/.github/workflows/')&&j.uses.endsWith('@'+pin.revision),label+': reusable workflow differs from trusted platform pin');
     check(j.with?.platform_revision===pin.revision,label+': signer revision differs from workflow revision');
-    check(!j.secrets,label+': environment secrets must not be inherited/passed broadly');
+    const apple=['APP_STORE_CONNECT_API_KEY_ID','APP_STORE_CONNECT_API_KEY_ISSUER_ID','APP_STORE_CONNECT_API_KEY_CONTENT'];
+    const required={ci:[],prepare:['MATCH_PASSWORD','MATCH_SSH_PRIVATE_KEY'],promote:[...apple,'RELEASE_APP_ID','RELEASE_APP_PRIVATE_KEY'],deploy:apple,observe:apple}[j.uses.split('/').at(-1).split('.yml@')[0]];
+    const bindings=j.secrets||{};
+    check(required&&typeof bindings==='object'&&!Array.isArray(bindings)&&JSON.stringify(Object.keys(bindings).sort())===JSON.stringify([...required].sort())&&required.every(key=>bindings[key]==='${{ secrets.'+key+' }}'),label+': explicit environment secret bindings required; environment secrets must not be inherited/passed broadly');
     if(file==='pr.yml')check(!j.permissions?.['id-token'],label+': privileged PR call');
     continue;
    }

@@ -10,12 +10,16 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@c692b58b00564a5eb7c38a97b226f2132f7e926a
+    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@6379bbeefe56d05bc18c1e45458d9e008c6ea514
     with:
       config: .github/ios-release.json
-      platform_revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+      platform_revision: 6379bbeefe56d05bc18c1e45458d9e008c6ea514
     permissions:
       contents: read
       actions: read
       attestations: read
     if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true'
+    secrets:
+      APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+      APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+      APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
