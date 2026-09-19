@@ -771,6 +771,8 @@ A missing translation is not a build error — the app silently shows English �
 
 *redact* = cover part of the picture (never the editorial "edit/write" family: *rédaction*, *redactar*, 編集…); *region* = an area of the image (never a territory); *strip* = remove metadata; *field* = one metadata entry. Platform terms follow Apple's localized iOS (German "Sichern", Dutch "Bewaar", Polish "Zachowaj", Simplified Chinese "存储").
 
+The term each locale uses for these concepts is recorded in [`docs/localization-glossary.md`](docs/localization-glossary.md). New and changed strings must reuse those terms.
+
 ### Commands
 
 ```bash
