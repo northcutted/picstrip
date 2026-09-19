@@ -11,10 +11,10 @@ concurrency:
   cancel-in-progress: false
 jobs:
   prepare:
-    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@3d02154e6f070560d08fdb993643ca5b5762153c
+    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@5c25f8b0226446266397fac8e50737cb0ecb8384
     with:
       config: .github/ios-release.json
-      platform_revision: 3d02154e6f070560d08fdb993643ca5b5762153c
+      platform_revision: 5c25f8b0226446266397fac8e50737cb0ecb8384
     permissions:
       contents: write
       actions: read
