@@ -228,9 +228,12 @@ struct CategoryDetailPanel: View {
     private var bulkSegmentedControl: some View {
         HStack(spacing: 0) {
             segment(
-                title: "Strip All",
-                accessibilityLabel: "Strip all \(metadataCategoryDisplayName(for: category)) fields",
-                icon: "nosign", side: .left, active: allStripping
+                SegmentLabel(
+                    title: "Strip All",
+                    accessibilityLabel: "Strip all \(metadataCategoryDisplayName(for: category)) fields",
+                    icon: "nosign"
+                ),
+                side: .left, active: allStripping
             ) {
                 stripAll()
             }
@@ -238,9 +241,12 @@ struct CategoryDetailPanel: View {
                 .frame(height: 28)
                 .overlay(color.opacity(0.15))
             segment(
-                title: "Keep All",
-                accessibilityLabel: "Keep all \(metadataCategoryDisplayName(for: category)) fields",
-                icon: "checkmark", side: .right, active: noneStripping
+                SegmentLabel(
+                    title: "Keep All",
+                    accessibilityLabel: "Keep all \(metadataCategoryDisplayName(for: category)) fields",
+                    icon: "checkmark"
+                ),
+                side: .right, active: noneStripping
             ) {
                 keepAll()
             }
@@ -259,22 +265,27 @@ struct CategoryDetailPanel: View {
 
     private enum SegmentSide { case left, right }
 
-    // The label is passed whole rather than assembled from `title` + category:
-    // word order differs between languages, so fragments cannot be translated.
+    // The VoiceOver label is passed whole rather than assembled from `title` +
+    // category: word order differs between languages, so fragments cannot be
+    // translated.  Both are `LocalizedStringKey` so the literals are extracted.
+    private struct SegmentLabel {
+        let title: LocalizedStringKey
+        let accessibilityLabel: LocalizedStringKey
+        let icon: String
+    }
+
     private func segment(
-        title: LocalizedStringKey,
-        accessibilityLabel: LocalizedStringKey,
-        icon: String,
+        _ label: SegmentLabel,
         side: SegmentSide,
         active: Bool,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
             HStack(spacing: 6) {
-                Image(systemName: icon)
+                Image(systemName: label.icon)
                     .font(.system(size: 12, weight: .semibold))
                     .accessibilityHidden(true)
-                Text(title)
+                Text(label.title)
                     .font(.footnote.weight(.semibold))
             }
             .foregroundStyle(active ? color : .secondary)
@@ -291,7 +302,7 @@ struct CategoryDetailPanel: View {
             )
         }
         .buttonStyle(.plain)
-        .accessibilityLabel(accessibilityLabel)
+        .accessibilityLabel(label.accessibilityLabel)
     }
 
     // MARK: - Bulk helpers
