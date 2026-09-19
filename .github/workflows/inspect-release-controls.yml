@@ -1,0 +1,40 @@
+name: Inspect release controls
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: release-publishing
+    steps:
+      - name: Mint read-only control inspection token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        id: token
+        with:
+          client-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-administration: read
+          repositories: ${{ github.event.repository.name }}
+      - name: Read REST and GraphQL control identities
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          def gh(*args):
+              return json.loads(subprocess.check_output(['gh', *args], text=True))
+          prefix = 'repos/' + os.environ['REPOSITORY'] + '/rulesets'
+          for rule in gh('api', prefix):
+              if rule['name'] not in ('Main', 'Release tags'):
+                  continue
+              data = gh('api', prefix + '/' + str(rule['id']))
+              public = {key: data.get(key) for key in ('id', 'node_id', 'name', 'updated_at', 'bypass_actors')}
+              query = 'query($id:ID!){node(id:$id){... on RepositoryRuleset{id bypassActors(first:100){totalCount pageInfo{hasNextPage} nodes{id bypassMode}}}}}'
+              public['graphql'] = gh('api', 'graphql', '-f', 'query=' + query, '-f', 'id=' + data['node_id'])
+              print(json.dumps(public, sort_keys=True))
+          PY
