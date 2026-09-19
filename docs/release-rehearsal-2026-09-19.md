@@ -37,7 +37,11 @@ After all 20 Dependabot PRs were covered by merged integrations, [preparation 35
 
 The publication repair creates and peels the protected Git tag explicitly, discovers drafts through authenticated release listing, and resumes the recorded release ID only when its signed handoff and existing asset digests match. Promotion reuses this canary's original signed files without another transfer or signature. Protected policy approves its exact preparation and promotion producers independently.
 
-Publication and staging remain pending this pin's protected CI. Staging must read back the recorded Apple build. Production approval remains a separate human action.
+[Publication 35473127761](https://github.com/northcutted/picstrip/actions/runs/35473127761) passed. [Release v1.7.0](https://github.com/northcutted/picstrip/releases/tag/v1.7.0) is immutable, all 27 published asset digests independently matched the signed canary handoff, and its peeled tag is the original candidate source. Upload and re-signing were both skipped. Corrected deployment tooling runs from a separate protected tag; the original source-tag caller rejected the newer signer before any Apple access.
+
+[Staging 35473351852](https://github.com/northcutted/picstrip/actions/runs/35473351852) uploaded all 160 screenshots and attached the exact build. Apple then returned HTTP 409 for an identical encryption declaration PATCH; readback confirms the configured `false` value was already present. The platform now preserves matching declarations and still verifies every readback. One screenshot also remained in Apple processing for over ten minutes. Processing waits are now bounded to 120 seconds per attempt, allowing locked Fastlane's incomplete-image retries within the job timeout.
+
+Staging recovery and readiness verification remain pending the corrected pin's protected CI. Production approval remains a separate human action.
 
 ## Dependency advisories
 
