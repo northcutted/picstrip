@@ -1,5 +1,6 @@
 name: App Store Deploy
 on:
+  create:
   release:
     types:
       - published
@@ -8,7 +9,7 @@ on:
       release_tag:
         type: string
         required: true
-        description: Immutable release tag; run this workflow on the same tag
+        description: Immutable release tag; run on its release or protected deployment tag
       submit:
         type: boolean
         default: true
@@ -19,13 +20,37 @@ concurrency:
   group: app-store-deploy-${{ github.ref }}
   cancel-in-progress: false
 jobs:
+  resolve:
+    if: github.event_name != 'create' || (github.event.ref_type == 'tag' && contains(github.ref_name, '-deploy-'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      release_tag: ${{ steps.release.outputs.release_tag }}
+    steps:
+      - name: Checkout protected configuration
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Load pinned deployment tools
+        uses: northcutted/ios-release-workflows/actions/bootstrap@5c25f8b0226446266397fac8e50737cb0ecb8384
+        with:
+          config: .github/ios-release.json
+          revision: 5c25f8b0226446266397fac8e50737cb0ecb8384
+      - name: Resolve immutable release from protected ref
+        id: release
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/deployment_ref.py" verify
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
   deploy:
-    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@152fce760a7e5a9261b182ab116e2c0111c2af87
+    needs: resolve
+    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@5c25f8b0226446266397fac8e50737cb0ecb8384
     with:
       config: .github/ios-release.json
-      platform_revision: 152fce760a7e5a9261b182ab116e2c0111c2af87
-      release_tag: ${{ github.event.release.tag_name || inputs.release_tag }}
-      submit: ${{ github.event_name == 'release' || inputs.submit }}
+      platform_revision: 5c25f8b0226446266397fac8e50737cb0ecb8384
+      release_tag: ${{ needs.resolve.outputs.release_tag }}
+      submit: ${{ github.event_name != 'workflow_dispatch' || inputs.submit }}
     permissions:
       contents: read
       actions: read
