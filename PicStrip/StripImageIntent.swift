@@ -13,33 +13,38 @@ import Foundation
 ///   - PHPhotoLibrary.requestAuthorization cannot present its dialog from a
 ///     background intent context ("could not be run with the current user interface").
 ///
-/// With openAppWhenRun = true the intent runs in the foreground app process.
-/// The app opens, immediately presents the native PhotosPicker (the same one
-/// behind "Select Multiple Photos"), and the existing batch pipeline handles
-/// everything — metadata stripping, optional PII redaction, save to Photos.
+/// With `supportedModes = .foreground(.immediate)` the intent runs in the
+/// foreground app process.  The app opens, immediately presents the native
+/// PhotosPicker (the same one behind "Select Multiple Photos"), and the existing
+/// batch pipeline handles everything — metadata stripping, optional PII
+/// redaction, save to Photos.
+///
+/// For unattended Shortcuts automations that only need metadata removed, see
+/// `StripMetadataIntent`, which runs in the background and returns files.
 ///
 /// Shortcuts usage:
 ///   Just add "Clean Photos with PicStrip" as a step. No variable wiring needed.
 struct StripImageIntent: AppIntent {
 
-    static var title: LocalizedStringResource = "Clean Photos with PicStrip"
+    static let title: LocalizedStringResource = "Clean Photos with PicStrip"
 
-    static var description = IntentDescription(
+    static let description = IntentDescription(
         LocalizedStringResource("Opens PicStrip so you can select photos to clean. Strips privacy metadata and optionally redacts sensitive content before saving cleaned copies to your Photos library."),
         categoryName: LocalizedStringResource("Privacy")
     )
 
-    /// Bring the app to the foreground. All photo selection and processing
-    /// happens in the full app context — no background process limitations.
-    static var openAppWhenRun: Bool = true
+    /// Bring the app to the foreground before `perform()` runs. All photo
+    /// selection and processing happens in the full app context — no background
+    /// process limitations.  (Replaces `openAppWhenRun`, deprecated in iOS 26.)
+    static let supportedModes: IntentModes = .foreground(.immediate)
 
+    @AppDependency private var router: IntentRouter
+
+    @MainActor
     func perform() async throws -> some IntentResult {
-        // Signal ContentView to open the batch photo picker as soon as the
-        // app becomes active.  UserDefaults with the shared App Group suite
-        // is the only reliable IPC path between the intent and the app when
-        // the app may not yet be fully launched.
-        UserDefaults(suiteName: "group.com.northcutt.PicStrip")?
-            .set(true, forKey: "picstrip.openBatchPicker")
+        // Same process as the UI, so ask it directly; ContentView presents the
+        // batch photo picker as soon as it sees the request.
+        router.requestBatchPicker()
         return .result()
     }
 }

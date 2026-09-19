@@ -60,7 +60,7 @@ struct RedactionRegion: Identifiable, Hashable {
     var color: RedactionColor = .black
 
     var displayName: String {
-        subtype?.displayName ?? type?.description ?? "Custom Redaction"
+        subtype?.displayName ?? type?.description ?? String(localized: "Custom Redaction")
     }
 
     var confidence: ConfidenceLevel? {

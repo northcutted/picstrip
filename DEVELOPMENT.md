@@ -63,10 +63,11 @@ PicStrip/
 │   ├── process_screenshots.py  # Marketing screenshot compositor (custom frame + brand bg + headline)
 │   ├── make_fixture.py         # Regenerates the OCR test fixture (PicStripUITests/test_list.png)
 │   ├── requirements.txt        # Pillow, arabic-reshaper, python-bidi
-│   ├── semantic_dry_run.mjs    # Semantic-release dry-run JSON writer for release prep
+│   ├── semantic_dry_run.mjs    # Read-only Conventional Commit version/notes analysis
 │   ├── render_app_store_metadata.sh  # Copies metadata and applies generated release notes
 │   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
 │   ├── audit_localization_strings.sh  # Flags string-returning literals that should be localized
+│   ├── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms
 │   └── write_release_notes.sh  # Utility for local/manual release-note generation
 │
 ├── docs/
@@ -82,25 +83,37 @@ PicStrip/
 │   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
 │   └── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
 │
-├── PicStrip/                   # Main app target (iOS 17+, Swift 5.9)
+├── PicStrip/                   # Main app target (iOS 26+)
 │   ├── PicStripApp.swift       # @main entry point
 │   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
+│   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
 │   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
 │   ├── AboutView.swift         # PII catalogue + metadata category entries
 │   ├── PreSaveReviewView.swift # Final review screen; permanent-removal warning
-│   ├── StripImageIntent.swift  # AppIntent for Siri / Shortcuts
+│   ├── StripImageIntent.swift  # Foreground AppIntent: opens the multi-photo picker
+│   ├── StripMetadataIntent.swift  # Background AppIntent: files in → metadata-free files out
+│   ├── IntentRouter.swift      # In-process hand-off from App Intents to the UI
+│   ├── Localizable.xcstrings   # All UI strings × 16 locales (shared with the share extension)
+│   ├── AppShortcuts.xcstrings  # Siri / Spotlight phrases
+│   ├── InfoPlist.xcstrings     # Localized photo-library permission prompts
 │   └── PrivacyInfo.xcprivacy  # Zero-data-collection privacy manifest
 │
 ├── PicStripShareExtension/     # Share Extension target (separate binary)
 │   ├── ShareViewController.swift    # UIKit host; embeds ExtensionConfigView via UIHostingController
+│   ├── InfoPlist.xcstrings         # Localized share-sheet action name + permission prompt
 │   └── PrivacyInfo.xcprivacy       # Independent privacy manifest
 │
 ├── PicStripTests/              # Unit tests
 │   ├── PIIScannerTests.swift
 │   ├── ImageProcessorTests.swift
+│   ├── ExportAndBatchRegressionTests.swift  # keep-path round trips, format/preset, batch fail-closed
+│   ├── AppIntentTests.swift
+│   ├── LocalizationTests.swift # Compiled string tables: coverage, plural forms, InfoPlist strings
+│   ├── RedactionFeatureTests.swift
+│   ├── ScrubberViewModelPreviewTests.swift
 │   └── DetectionRegistryTests.swift
 │
 └── PicStripUITests/            # UI / screenshot tests
@@ -113,7 +126,9 @@ PicStrip/
 - `PicStripCore/` files are compiled directly into both the main app and the share extension. This keeps one source of truth without adding a binary framework target.
 - `ExportFormat+AppEnum.swift` is compiled **only in the main app target** because it imports `AppIntents`, which is not needed in extensions.
 - Both targets have independent `PrivacyInfo.xcprivacy` declarations.
-- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target.
+- `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` is set in both Debug and Release build configurations of the `PicStrip` target. The share extension does **not** set it, so everything in `PicStripCore/` is declared `nonisolated` explicitly and behaves the same in both targets.
+- All targets build in the **Swift 6 language mode**. Work that must leave the main actor is a `@concurrent` function returning a `Sendable` value — not a `Task.detached` wrapper.
+- iOS 27-only API is wrapped in `#if compiler(>=6.4)` **and** `if #available(iOS 27, *)`, so the project still compiles with the iOS 26 SDK.
 
 ---
 
@@ -163,14 +178,15 @@ PicStrip/
 |----------|-----------|
 | Stateless services (no instances) | Photo processing is a pure function of inputs; no mutable service state needed |
 | Two-pass ImageIO | Single-pass re-encode still triggers iOS auto-synthesis of EXIF; two-pass defeats it |
-| `VNImageRequestHandler(data:)` instead of `(cgImage:)` | Preserves EXIF orientation so bounding boxes land on the correct pixels |
+| `ImageRequestHandler(data)` instead of a decoded `CGImage` | Preserves EXIF orientation so bounding boxes land on the correct pixels (covered by `testBoundingBoxesFollowEXIFOrientation`) |
 | Downsampled UI previews | The app keeps full-resolution bytes for export, but decodes display/review previews to bounded images to reduce RAM |
-| Off-main image processing | Metadata encode/decode and review preview generation run off the MainActor; the view model only publishes final state |
+| Off-main image processing | Metadata encode/decode, review preview generation, OCR, redaction rendering and every batch item run in `@concurrent` functions; the view model only publishes final state |
+| Fail closed | Batch, the share extension and `StripMetadataIntent` never save or return an image when a requested strip or redaction step failed — an untouched original must not be presented as clean |
 | Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
 | Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
-| No Core Data / SwiftData | Metadata is ephemeral; only lifetime stats need persistence (UserDefaults) |
-| App Group for Shortcuts IPC | Single boolean flag from the AppIntent to trigger batch picker |
+| No persistence | Metadata is ephemeral; the app writes nothing to `UserDefaults`, Core Data or SwiftData |
+| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file |
 
 ---
 
@@ -186,7 +202,7 @@ ContentView.selectedItem.didSet → ScrubberViewModel.handleItemChange()
 ScrubberViewModel.processSinglePhoto()
     ├─ Load: PhotosPickerItem → Data
     ├─ Downsample display preview via ImageIO → sourceUIImage
-    ├─ Scan (async, Task.detached):
+    ├─ Scan (async, @concurrent):
     │     PIIScanner.scanImage(data:) → [DetectionResult]
     │     └─ Vision OCR + DetectionRegistry regex + NSDataDetector
     ├─ Off-main process/catalogue:
@@ -210,7 +226,6 @@ User taps "Save to Photos" or "Share"
     ↓
 User taps "Save as New" / "Replace Original" / "Share"
     ├─ PHPhotoLibrary.shared().performChanges { PHAssetCreationRequest }
-    ├─ Update lifetime stats in UserDefaults
     ├─ Generate AuditReport JSON → FileManager.tmp
     └─ Dismiss sheet → home screen
 ```
@@ -222,21 +237,23 @@ User taps "Pick Multiple" (or Shortcut fires StripImageIntent)
     ↓
 ContentView presents BatchConfigView (stripMetadata, redactPII, outputFormat, saveMode)
     ↓
-ScrubberViewModel.processBatch(items, config)
-    ├─ for each PhotosPickerItem (sequential — never concurrent):
+ScrubberViewModel.processBatch(config)  →  runBatch(sources:config:save:)
+    ├─ for each BatchSource (sequential — never concurrent):
     │     ├─ Load: PhotosPickerItem → Data
-    │     ├─ Decode: UIImage(data:)
-    │     ├─ Scan: PIIScanner.scanImage(data:)
-    │     ├─ Optional: ImageRedactor.redact()
-    │     ├─ Strip: ImageProcessor.process(image:sourceData:preset:config:)
+    │     ├─ processBatchItem(...)  ← @concurrent, off the main actor
+    │     │     ├─ Scan: PIIScanner.scanImage(data:)
+    │     │     ├─ Optional: ImageRedactor.redact()
+    │     │     └─ Strip: ImageProcessor.process(...)
+    │     │     (returns nil if any requested step fails → photo counted as failed, nothing saved)
     │     ├─ Save: PHPhotoLibrary.performChanges
     │     ├─ Append to batchReports only after Photos accepts the write
-    │     ├─ Explicit nil of Data + UIImage (ARC pressure relief)
     │     └─ @MainActor progress update
-    └─ Generate BatchAuditReport JSON
+    └─ Generate BatchAuditReport JSON (photoCount = saved, failedCount = not saved)
     ↓
-BatchSummaryView shows total processed, errors, and downloadable audit JSON
+BatchSummaryView shows saved and failed counts and the downloadable audit JSON
 ```
+
+`runBatch` takes its photo sources and its saver as parameters, so unit tests drive the whole loop with in-memory data and never touch the picker or the photo library.
 
 ### Data Ownership
 
@@ -248,8 +265,7 @@ BatchSummaryView shows total processed, errors, and downloadable audit JSON
 | `detectionResults: [DetectionResult]` | ScrubberViewModel | Single-photo session |
 | `pendingStrippedMetadata: StrippedMetadata?` | ScrubberViewModel | Single-photo session |
 | `stripConfig: StripConfig` | ScrubberViewModel | Per-session; persists across format changes |
-| `outputFileFields: [MetadataField]` | ScrubberViewModel | Set after each encode pass |
-| Lifetime stats | `UserDefaults.standard` | App lifetime |
+| `outputFileFields: [MetadataField]` | ScrubberViewModel | Set after each encode pass; after an encode it — not the config — decides what the review and audit call "removed" (`isRemoved(_:)`) |
 | Audit JSON | `FileManager.default.temporaryDirectory` | Session; user can share/download; deleted after |
 
 ---
@@ -307,8 +323,8 @@ struct StripConfig {
 
 The iOS encoder unconditionally re-synthesises these fields into any JPEG or HEIC output:
 
-- Root level: `PixelWidth`, `PixelHeight`, `ColorModel`, `Depth`, `Orientation`, `ProfileName`, `DPIWidth`, `DPIHeight`, `FileSize`
-- TIFF dict: `Orientation`, `XResolution`, `YResolution`, `ResolutionUnit`
+- Root level: `PixelWidth`, `PixelHeight`, `ColorModel`, `Depth`, `HasAlpha`, `Orientation`, `ProfileName`, `DPIWidth`, `DPIHeight`, `FileSize`, plus `PrimaryImage` and `Headroom` (HEIC only)
+- TIFF dict: `Orientation`, `XResolution`, `YResolution`, `ResolutionUnit`, plus `TileWidth` and `TileLength` (the HEVC tile grid, HEIC only)
 - EXIF dict: `ColorSpace`, `PixelXDimension`, `PixelYDimension`, `ExifVersion`, `FlashPixVersion`, `ComponentsConfiguration`
 
 The UI marks these with a lock icon and explains they contain no personal data.
@@ -327,7 +343,7 @@ struct PIIScanner {
 }
 ```
 
-The method offloads all CPU work to `Task.detached(priority: .userInitiated)`. See [PII Detection Engine](#pii-detection-engine) for the full pipeline.
+The method is `@concurrent`, so it always runs off the caller's actor. It throws `invalidImageData` for undecodable bytes and `textRecognitionFailed` when neither OCR model could run — "could not look" is never reported as "found nothing". See [PII Detection Engine](#pii-detection-engine) for the full pipeline.
 
 ---
 
@@ -339,7 +355,8 @@ Burns opaque black rectangles over detected PII instances using `UIGraphicsImage
 
 ```swift
 struct ImageRedactor {
-    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage
+    func redact(image: UIImage, specs: [RedactionSpec]) async -> UIImage?          // @concurrent
+    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage?  // solid black convenience
 }
 ```
 
@@ -421,6 +438,12 @@ When a user disables a metadata category (or sets a per-field "keep" override), 
 
 EXIF Auxiliary and Apple Maker Note cannot be re-injected through the XMP path API. If a user "keeps" one of these categories, the app reports the fields as stripped regardless.
 
+Kept fields are written with `CGImageMetadataSetValueMatchingImageProperty`, which lets ImageIO pick the correct XMP type per property. Three things are worth knowing before touching this code:
+
+- **Fractional numbers must be handed over as rational strings.** ImageIO reads EXIF rationals back as `Double` but *truncates* a fractional `NSNumber` on write (f/1.8 → 1, 1/125 s → 0, 12.5 m altitude → 12). `ImageProcessor.rationalString(for:)` converts them with a continued-fraction expansion ("9/5", "1/125"). GPS latitude/longitude (and the Dest variants) are the exception: ImageIO converts those from a plain `Double` itself and a rational string corrupts them.
+- **Structural keys are never re-injected.** Pixels are rotated upright during pass 1, so writing the source's `TIFF.Orientation` back would rotate the saved photo a second time.
+- **Some fields cannot be written back at all** (`TIFF.DateTime`, `TIFF.Software`, `TIFF.Artist`, the structured `EXIF.Flash`). After an encode the app therefore trusts the *output file*: `ScrubberViewModel.isRemoved(_:)` reports a field as removed when it is absent from `outputFileFields`, whatever the config asked for. The same rule makes PNG exports honest — PNG carries none of this metadata.
+
 ---
 
 ## PII Detection Engine
@@ -433,15 +456,19 @@ scanImage(data:)
     ├─ [Stage 1] Validate — CGImageSourceCreateWithData + CreateImageAtIndex
     │               ensures a meaningful error before Vision receives bad data
     │
-    ├─ [Stage 2] Vision OCR
-    │   VNImageRequestHandler(data:)  ← raw Data, not CGImage, to preserve EXIF orientation
-    │   VNRecognizeTextRequest
-    │     .recognitionLevel = .accurate
-    │     .usesLanguageCorrection = false  ← preserve raw credential characters
-    │     .automaticallyDetectsLanguage = true
-    │   → [VNRecognizedTextObservation]
+    ├─ [Stage 2] Vision (Swift API) — one handler, one decode
+    │   ImageRequestHandler(data)  ← raw Data, not CGImage, to preserve EXIF orientation
+    │   performAll([RecognizeTextRequest, DetectFaceRectanglesRequest,
+    │               DetectBarcodesRequest, DetectRectanglesRequest])
+    │     RecognizeTextRequest
+    │       .recognitionLevel = .accurate
+    │       .usesLanguageCorrection = false  ← preserve raw credential characters
+    │       .automaticallyDetectsLanguage = true
+    │   → each request reports its own result or `.error`; one failure never
+    │     discards the others (the variadic `perform` would throw for all of them)
     │
-    │   If results.isEmpty → retry with fresh handler at .fast level
+    │   If no text → retry with a fresh handler at .fast level
+    │   If neither OCR pass produced a result → throw textRecognitionFailed
     │
     └─ [Stage 3] Per-observation analysis
         for each observation:
@@ -512,7 +539,9 @@ result-level score: upgraded when a later match for the same type is stronger
 
 **Why `usesLanguageCorrection = false`:** Vision's language correction normalises "AIzaSy..." into dictionary words. Disabled to preserve raw credential characters.
 
-**Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. A fresh `VNImageRequestHandler` is required for the retry because handlers are single-use.
+**Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. The retry uses a fresh `ImageRequestHandler`.
+
+**Face detector revision:** a default-initialised `DetectFaceRectanglesRequest` still resolves to revision 3 on iOS 27, so revision 4 is requested by name — on devices only (it is unimplemented in the simulator) and behind `#if compiler(>=6.4)` + `#available(iOS 27, *)`. If it errors, `scanImage` retries face detection with the default revision so a face is never silently missed.
 
 ### Duplicate Detection
 
@@ -584,29 +613,59 @@ iOS kills extension processes that exceed ~120 MB without warning. Mitigations:
 
 ## App Intent & Siri
 
+### `StripImageIntent` — foreground, opens the picker
+
 **File:** `PicStrip/StripImageIntent.swift`
 
 ```swift
 struct StripImageIntent: AppIntent {
     static let title: LocalizedStringResource = "Clean Photos with PicStrip"
-    static let openAppWhenRun: Bool = true
+    static let supportedModes: IntentModes = .foreground(.immediate)   // replaces openAppWhenRun (deprecated iOS 26)
+
+    @AppDependency private var router: IntentRouter
 
     @MainActor
     func perform() async throws -> some IntentResult {
-        UserDefaults(suiteName: "group.com.northcutt.PicStrip")?
-            .set(true, forKey: "picstrip.openBatchPicker")
+        router.requestBatchPicker()
         return .result()
     }
 }
 ```
 
-When the intent fires:
+The intent runs in the foreground app process, so it talks to the UI through `IntentRouter` (`@Observable @MainActor`, registered with `AppDependencyManager` in `PicStripApp.init()`):
 
-1. A boolean flag is written to the shared App Group suite (`group.com.northcutt.PicStrip`).
-2. The main app's `ContentView` observes `@AppStorage("picstrip.openBatchPicker", store: ...)`.
-3. On `true`, `ContentView` immediately presents `BatchConfigView` instead of the home screen.
+1. `perform()` sets `isBatchPickerRequested`.
+2. `ContentView` observes it with `.onChange(..., initial: true)` — `initial` covers a cold launch, where the intent has already run before the view exists — presents the multi-photo picker and clears the request.
 
-Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in Shortcuts app and Spotlight.
+This replaced an App Group `UserDefaults` flag that was only read on a `scenePhase → .active` transition. Running the shortcut while PicStrip was already frontmost never produced that transition, so the flag went stale and opened the picker at some later, unrelated launch.
+
+Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in the Shortcuts app and Spotlight.
+
+### `StripMetadataIntent` — background, files in → files out
+
+**File:** `PicStrip/StripMetadataIntent.swift`
+
+Takes `[IntentFile]` (`supportedContentTypes: [.image]`) plus an `ExportFormat`, strips metadata with `ImageProcessor`, and returns clean `[IntentFile]`s for the next Shortcuts step. `supportedModes = .background`; on iOS 27 it conforms to `LongRunningIntent` and runs inside `performBackgroundTask` so a large selection can outlast the normal intent time limit.
+
+It is deliberately **metadata only** — no OCR (what previously exceeded the background memory ceiling) and no photo-library writes (a background intent cannot present the authorization prompt). It fails closed: one unreadable or undecodable file fails the whole run.
+
+The `images` parameter declares `inputConnectionBehavior: .connectToPreviousIntentResult`. That is what makes it the action's *input*: without it Shortcuts never wires the previous action's output into the parameter and the intent runs with no images.
+
+**Verified end to end in the iOS 27 simulator** (Shortcuts app, not just unit tests):
+
+| Shortcut | Input | Result |
+|----------|-------|--------|
+| Select Photos → Strip Metadata from Images → Save to Photos | 2.8 MB HEIC with GPS, 32 EXIF keys, MakerApple | Saved HEIC holds only structural keys |
+| Same | JPEGs with GPS/EXIF/IPTC | Saved JPEGs clean |
+| Get Latest Photos → Strip Metadata from Images *as PNG* → Save to Photos | JPEG (Nikon, GPS, IPTC) | Saved PNG, no metadata |
+
+Photos-backed `IntentFile`s arrived with non-empty `data` and a `fileURL` inside the Shortcuts runner's temp directory; the `fileURL` fallback in `readData(of:)` stays as a guard because earlier OS versions were seen returning empty `data`.
+
+Known quirks, none of them in PicStrip's code:
+
+- **iOS 27 beta runtime (24A5355p) drops the Export Format choice.** The runner logs the chosen case but App Intents resolves the enum to `nil` (`AppEnum case "to-0.0" was not found`), so the intent runs with the default, *Match Original*. Metadata is still stripped — only the conversion is skipped. The release runtime (24A434) delivers the value correctly.
+- In the simulator `performBackgroundTask` logs `BGTaskScheduler is not available on this platform` and then runs the work anyway.
+- Still worth one pass on a physical device before release: `LongRunningIntent` scheduling and a large (50+) selection can only be exercised there.
 
 ---
 
@@ -614,13 +673,11 @@ Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in Shortcut
 
 | Data | Storage | Key | Scope |
 |------|---------|-----|-------|
-| Lifetime photos cleaned | `UserDefaults.standard` | `picstrip.lifetimePhotos` | App |
-| Lifetime metadata fields stripped | `UserDefaults.standard` | `picstrip.lifetimeFields` | App |
-| Batch picker flag | `UserDefaults(suiteName: "group.com.northcutt.PicStrip")` | `picstrip.openBatchPicker` | App Group |
+| "Edit in PicStrip" hand-off | App Group container (`group.com.northcutt.PicStrip`) | `pending-edit.data` | Until the app next becomes active; written with complete file protection, deleted before loading |
 | Audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_Audit_<UUID>.json` | Session |
 | Batch audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_BatchAudit_<UUID>.json` | Session |
 
-No photo metadata, no detection results, no user preferences beyond stats are ever persisted. This is intentional — nothing about which photos were processed or what PII was found survives a session.
+No photo metadata, no detection results and no user preferences are ever persisted; the app does not use `UserDefaults` at all (and its privacy manifest no longer declares it). This is intentional — nothing about which photos were processed or what PII was found survives a session.
 
 ---
 
@@ -660,7 +717,7 @@ The app defaults to `.addOnly` authorization. Users must explicitly grant read+w
 ```
 UIImage(data:)          native iOS — no network
 CGImageSourceCreateWithData  ImageIO — native iOS
-VNRecognizeTextRequest  Vision — on-device model, no network
+RecognizeTextRequest    Vision — on-device model, no network
 NSRegularExpression     Foundation — native iOS
 UIGraphicsImageRenderer CoreGraphics — native iOS
 CGImageDestinationCopyImageSource  ImageIO — native iOS
@@ -673,299 +730,69 @@ Network Inspector in Xcode will show zero outbound connections from the app.
 
 ## CI/CD Pipeline
 
-### Workflows at a Glance
+The [release operations guide](docs/release-pipeline.md) describes the job graph, exact Xcode/Ruby pins, environment and repository controls, evidence format, deployment retries, screenshot PR workflow, and rollout commands.
 
-| File | Trigger | Purpose |
-|------|---------|---------|
-| `pr.yml` | PR to `main` | Lint, static analysis, unit tests |
-| `main.yml` | Push to `main` | Release prep: semantic dry run, QA, attestations, signed IPA, SBOMs, SLSA verification, TestFlight, tag/release |
-| `app-store-deploy.yml` | Push tag `v*` | Stage repo metadata/screenshots/build, then manually submit the current App Store Connect draft |
-| `screenshots.yml` | Manual dispatch | App Store screenshot capture/refresh |
-
-### PR Workflow (`pr.yml`)
-
-Four jobs run on `macos-26`:
-
-- **lint** — `bundle exec fastlane lint` (SwiftLint strict mode); runs on every PR
-- **analyze** — `bundle exec fastlane analyze` (`xcodebuild analyze`); runs on every PR
-- **test** — `bundle exec fastlane test` (`PicStripTests` unit tests on `iPhone 17` simulator; JUnit XML uploaded as artifact); runs on every PR
-- **screenshots** — full 2-device App Store capture; runs **only when the `screenshots` label is applied** to the PR
-
-#### PR Screenshots (`screenshots` label)
-
-Adding the `screenshots` label to a PR triggers a full `capture_ios_screenshots` run across the same two devices used in `screenshots.yml` (iPhone 17 Pro Max, iPad Pro 13-inch M5). The App Store auto-scales the 6.9" iPhone set to 6.7"/6.5"/5.5", so the iPhone Air capture is intentionally omitted. Results are uploaded as a PR artifact (`pr-screenshots-<PR-number>`) for visual review. No upload to App Store Connect happens from PRs; release screenshots are uploaded by the tag-triggered App Store staging job before the manual approval gate.
-
-### Release Prep Workflow (`main.yml`)
-
-```
-version (ubuntu-latest)
-  └─ scripts/semantic_dry_run.mjs
-     ├─ version / git tag / generated notes
-     ├─ app-store-metadata.tar.zst
-     └─ release-source.tar.zst
-     If no releasable commits → all downstream jobs are skipped
-
-lint + analyze + test (macos-26, parallel)
-  └─ compact QA artifacts under qa-results/
-
-qa-attest (ubuntu-latest)
-  └─ qa-results.tar.zst + qa-manifest.json
-     Creates a GitHub artifact attestation with the PicStrip QA predicate
-
-build (macos-26)
-  └─ bundle exec fastlane certificates
-     bundle exec fastlane build
-       ├─ MARKETING_VERSION = semantic dry-run version
-       ├─ BUILD_NUMBER = release-prep github.run_number
-       ├─ build-env.txt / signing-env.txt
-       └─ PicStrip.ipa + PicStrip.ipa.sha256
-     Creates GitHub provenance attestations for the IPA and build/signing manifests
-
-sbom (ubuntu-latest)
-  └─ pinned Syft CLI
-     ├─ source.spdx.json for release-source.tar.zst
-     └─ ipa.spdx.json for unzipped IPA payload
-     Creates GitHub SBOM attestations
-
-release-evidence (ubuntu-latest)
-  └─ release-build-manifest.json + slsa-subjects.txt
-     Creates a custom release manifest attestation
-
-provenance (reusable — slsa-framework/slsa-github-generator)
-  └─ generator_generic_slsa3.yml@v2.1.0 with upload-assets: false
-     Produces PicStrip-<version>.intoto.jsonl for release evidence subjects
-
-verify-release-evidence (ubuntu-latest)
-  ├─ gh attestation verify PicStrip.ipa / qa-results.tar.zst / release-source.tar.zst
-  └─ slsa-verifier verify-artifact PicStrip.ipa and release-source.tar.zst
-
-upload-testflight (macos-26)
-  └─ bundle exec fastlane upload_testflight
-       Uploads the already-built and verified IPA artifact
-
-publish-release (ubuntu-latest)
-  └─ release-manifest.json with TestFlight status
-     gh release create v<version> --target <source_sha> <all evidence assets>
-```
-
-The `vX.Y.Z` tag points to the exact source commit that produced the QA evidence, signed IPA, SBOMs, and SLSA provenance. Generated release notes and expanded App Store metadata are release artifacts rather than post-build commits.
-
-### App Store Deploy Workflow (`app-store-deploy.yml`)
-
-```
-verify-release-handoff (ubuntu-latest, tag push v*)
-  ├─ polls release assets for release-manifest.json
-  ├─ verifies manifest source_sha matches the checked-out tag
-  └─ verifies TestFlight upload status is recorded as uploaded
-
-stage-app-store (ubuntu-latest)
-  ├─ checks out the release tag with LFS screenshots
-  ├─ extracts app-store-metadata.tar.zst
-  └─ bundle exec fastlane app_store_stage
-       ├─ metadata + release notes from the repo-generated artifact
-       ├─ processed LFS screenshots from the release tag
-       ├─ category/export/accessibility declarations
-       └─ attach the already-uploaded TestFlight build
-
-request-app-review (ubuntu-latest, production environment)
-  └─ waits for manual approval, then bundle exec fastlane request_review
-       ├─ skip_binary_upload: true
-       ├─ skip_metadata: true
-       ├─ skip_screenshots: true
-       ├─ skip_app_version_update: true
-       └─ submit_for_review: true
-```
-
-The deploy workflow stages repo metadata, release notes, screenshots, categories, accessibility declarations, export compliance, and build selection before the manual approval gate. After that staging job completes, App Store Connect is the source of truth: any manual edits made in App Store Connect before approving the `production` job are preserved because `request_review` skips binary upload, metadata, screenshots, and app-version updates.
-
-### Fastlane Lanes
-
-| Lane | Purpose |
-|------|---------|
-| `lint` | SwiftLint strict mode; fails on any warning |
-| `analyze` | `xcodebuild analyze`; flags potential bugs |
-| `test` | Unit tests on `iPhone 17` simulator; JUnit XML to `build/test_output/` |
-| `certificates` | `fastlane match appstore` readonly sync (creates temp keychain on CI) |
-| `build` | Increments build number; `gym` with App Store export; outputs `build/PicStrip.ipa` |
-| `beta` | `certificates` → `build` → `upload_to_testflight` |
-| `upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
-| `screenshots` | `capture_ios_screenshots` (reads `fastlane/Snapfile`); accepts `device:"..."`, `devices:"a,b"`, and `languages:"en-US,de-DE"` overrides for local runs |
-| `process_screenshots` | Iterates every locale folder under `fastlane/screenshots/` and runs `scripts/process_screenshots.py` to produce the marketing PNGs in `processed/<locale>/` |
-| `upload_screenshots` | Pushes the marketing PNGs in `fastlane/screenshots/processed/` to App Store Connect; validates the full required device set unless `allow_partial:true` is passed |
-| `app_store_stage` | Uploads repo metadata, release notes, processed screenshots, categories, accessibility declarations, export compliance, and attaches the TestFlight build without submitting |
-| `request_review` | Submits the current App Store Connect draft for review with binary upload, metadata, screenshots, and app-version updates skipped |
-| `preflight` / `submit` | Backward-compatible aliases for `app_store_stage` / `request_review` |
-| `accessibility` | Sync App Store Accessibility Nutrition Label declarations from `fastlane/accessibility_declarations.json` |
-
-### Screenshot Workflow (`screenshots.yml`)
-
-Manually dispatched for screenshot refreshes. The release deploy workflow uploads the committed processed screenshots from the tag before the approval gate, so this workflow exists to regenerate or manually refresh that repo-managed screenshot set. Two modes are selected by workflow inputs:
-
-- **`generate_new=false` (default — fast upload).** Runs on `ubuntu-latest`. Checkout uses `lfs: true` to pull the marketing PNGs from `fastlane/screenshots/processed/`, then `bundle exec fastlane upload_screenshots` ships them to App Store Connect. ~2 minutes, no simulator, no macOS-runner cost. This is useful for manual screenshot refreshes; the tag deploy workflow uploads the same processed screenshot tree before the production approval gate.
-- **`generate_new=true` (full regen).** Runs on `macos-26`. Boots both simulators, overrides status bars to `9:41` / full battery / Wi-Fi+cellular, runs the screenshot capture lane (optionally narrowed by the `languages` input), runs the Python compositor to produce the marketing PNGs, commits the result back to `main` via Git LFS with `[skip ci]`, and then uploads. Full 16-locale × 2-device matrix is ~2 hours; the `languages` input narrows the run when you only need a subset.
-
-#### Marketing screenshot compositor
-
-[`scripts/process_screenshots.py`](scripts/process_screenshots.py) wraps each raw capture in a custom matte-black device frame drawn in code, composites it on a brand-gradient canvas with a localized headline above, and writes the result to `fastlane/screenshots/processed/<locale>/`.
-
-- **Single source of truth for upload**: `upload_screenshots` reads from `processed/`, never raw captures. `process_screenshots` regenerates the whole tree from raw captures present under each `<locale>/`.
-- **Custom device frame** (not `frameit`): the upstream iPhone 14 Pro Max frame asset has a metallic side reflection that bleeds white edges over any non-white background, so we draw a matte-black rounded-rect frame in PIL with side/top buttons sized per device class. Faster, smaller, and works against the brand gradient.
-- **Headline copy from `fastlane/MarketingHeadlines.xcstrings`** — 16 locales × 5 screens. The script falls back to an embedded English `HEADLINES` dict if the xcstrings file is missing, so the script is standalone-runnable.
-- **Per-script font selection**: separate candidate lists for Latin, CJK (Hiragino Sans GB), Korean (Apple SD Gothic Neo Bold — Hiragino has no Hangul glyphs), and Arabic (Geeza Pro). A `_font_candidates_for_text()` helper picks the right list per line.
-- **Arabic shaping**: PIL renders Arabic letters in input order without joining isolated forms or reversing for RTL. The script preprocesses any line that contains Arabic with `arabic_reshaper.reshape()` + `bidi.algorithm.get_display()` before drawing. A `_line_has_arabic()` guard prevents bidi from reversing pure-Latin lines that happen to share a paragraph with Arabic.
-- **Multi-pass headline fit**: the layout tries the cleanest line count first (one line per `\n`-separated paragraph) and only escalates to wrap-and-shrink when no font in the candidate list fits, which avoids orphan-word lines on de-DE / pl / tr / it where translations grow.
-- **Locale-driven directory discovery**: the `process_screenshots` lane discovers locale folders under `fastlane/screenshots/` rather than hardcoding the list, so adding a locale to `Snapfile` does not require a Fastfile edit.
-
-#### Pipeline-level decisions
-
-- **Git LFS for `processed/**/*.png`**: tracked via `.gitattributes`. Lets the marketing PNGs round-trip through Git without bloating the pack files; the upload-only workflow path checks them out without ever touching macOS.
-- **Single `testAllScreenshots()` method**: all screenshots are captured in one XCTest method. Splitting across separate methods causes XCTest to terminate and relaunch the app between each method in headless CI, which fails with `Failed to terminate com.northcutt.PicStrip`.
-- **Dedicated `PicStripScreenshots` scheme**: excludes unit test bundles (`PicStripTests`, etc.) so the screenshot job doesn't re-run the full test suite.
-- **Accessibility identifiers, not localized strings, in `PicStripUITests.swift`**: querying by localized text fails in non-English locales (e.g. Arabic `navigationBars["Removed Data"]`). Identifiers are stable across all 16 capture locales.
-- **Local device / language overrides**: `bundle exec fastlane screenshots device:"iPhone 17 Pro Max" languages:"en-US"` smoke-tests one combo before committing to the full matrix.
-- **Upload guard**: `upload_screenshots` refuses incomplete local screenshot sets by default so one-device smoke captures do not wipe the App Store Connect screenshot matrix. Pass `allow_partial:true` to override.
-- **`number_of_retries(0)` in Snapfile**: screenshot failures are deterministic; retrying wastes a full macOS job cycle.
-- **`if: always()` on artifact uploads**: partial screenshots and logs are preserved even when capture fails.
-
-**PR label-gated screenshots (`pr.yml` — `screenshots` job)**: Adding the `screenshots` label to a PR triggers a single-locale capture (`languages:en-US`) on iPhone 17 Pro Max + iPad Pro 13-inch (M5). Results upload as a PR artifact (`pr-screenshots-<PR-number>`, retained 14 days). The App Store Connect upload step is skipped — it only runs when `screenshots.yml` is dispatched against `main`. The PR job is intentionally pinned to en-US: the full 16-locale capture exceeds the 60-minute PR timeout.
-
-### Semantic Release
-
-Commits follow [Conventional Commits](https://www.conventionalcommits.org/):
-
-| Commit prefix | Version bump |
-|---------------|-------------|
-| `feat:` | minor (1.0.0 → 1.1.0) |
-| `fix:` / `perf:` / `revert:` | patch (1.0.0 → 1.0.1) |
-| `BREAKING CHANGE:` anywhere | major (1.0.0 → 2.0.0) |
-
-The release prep workflow runs semantic-release in dry-run mode through `scripts/semantic_dry_run.mjs`. The resulting version, tag name, and notes are written to workflow artifacts and used to render `app-store-metadata.tar.zst`; semantic-release does not publish, tag, update `CHANGELOG.md`, or commit generated release notes back to `main`.
-
----
+`pr.yml` reports the always-running **CI Gate**. `qa.yml` shares SwiftLint (plus the string catalog audit), analysis, and iOS 27/iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
 
 ## SLSA Build Provenance Level 3
 
-Every release is accompanied by SLSA Build Level 3 provenance for the GitHub-built release evidence set, including `PicStrip.ipa`, the source archive, QA evidence, SBOMs, and build/signing manifests.
+The pipeline targets SLSA Build L3 for the GitHub-produced IPA using the isolated upstream generator, authenticated manifests, and verification before every distribution handoff. This claim excludes Apple's re-signed, encrypted, or thinned installed binary. Native attestations complement the isolated provenance; they do not independently establish Build L3.
 
-This claim is intentionally scoped to the IPA built and attested by GitHub Actions. It does not claim that the same digest identifies the App Store-installed application, because Apple may re-sign, encrypt, thin, or otherwise transform apps during distribution.
-
-The release pipeline creates complementary provenance and attestation records:
-
-- **GitHub artifact attestations**: the prep workflow uses `actions/attest` for build provenance, SBOM attestations, and custom PicStrip predicates for QA and release manifests.
-- **Release-attached SLSA provenance**: the `provenance` job runs the SLSA GitHub Generator reusable workflow with `upload-assets: false`; the final `publish-release` job uploads the `.intoto.jsonl` file to the GitHub Release with the rest of the evidence.
-
-### What SLSA Level 3 Guarantees
-
-| Requirement | How PicStrip satisfies it |
-|-------------|--------------------------|
-| Source version controlled | GitHub-hosted repository |
-| Hosted build platform | GitHub Actions (`macos-26` ephemeral runner) |
-| Build-as-code | `main.yml` checked into the repo |
-| Ephemeral environment | Fresh runner per job; no persistent state |
-| Isolated build | Hosted GitHub runner; provenance verification gates distribution |
-| Non-falsifiable provenance | Signed by Sigstore/Rekor (public, immutable transparency log) |
-| Distribution gate | TestFlight upload and tag creation wait for GitHub attestation and SLSA release provenance verification |
-
-### GitHub Artifact Attestations
-
-Attestation jobs grant only the extra permissions required for native artifact attestations:
-
-- `id-token: write` to mint the OIDC token used for Sigstore signing
-- `attestations: write` to persist the attestation in GitHub
-- `artifact-metadata: write` to create the linked artifact metadata record
-
-The attestation action is pinned by immutable commit SHA and runs after each evidence artifact is created, before distribution steps consume it.
-
-The release workflow verifies this attestation before TestFlight upload using:
-
-```bash
-gh attestation verify PicStrip.ipa \
-  --repo northcutted/picstrip \
-  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
-  --source-ref refs/heads/main \
-  --source-digest <release-workflow-source-commit>
-```
-
-The final `vX.Y.Z` tag is created only after these verification gates pass, and it targets the same source commit recorded in `release-manifest.json`.
-
-### SLSA Generator Ref
-
-The `provenance` job references the SLSA reusable workflow by upstream release tag (`v2.1.0`). The tag form is important for compatibility with `slsa-verifier`: provenance generated from a SHA-only reusable workflow ref can surface the generator identity as an untyped commit ref, which `slsa-verifier` rejects with `unexpected ref type`.
-
-PicStrip's app source identity remains commit-based. The release prep workflow verifies `refs/heads/main` plus the exact source SHA that built the IPA before creating the public tag.
-
-### Verify an IPA
-
-**Option 1 — GitHub artifact attestation**
-
-```bash
-gh attestation verify PicStrip.ipa \
-  --repo northcutted/picstrip \
-  --signer-workflow github.com/northcutted/picstrip/.github/workflows/main.yml \
-  --source-ref refs/heads/main \
-  --source-digest <release-workflow-source-commit>
-```
-
-Expected output includes a verified SLSA provenance predicate associated with `northcutted/picstrip`.
-
-**Option 2 — slsa-verifier**
-
-```bash
-brew install slsa-framework/slsa/slsa-verifier
-
-slsa-verifier verify-artifact PicStrip.ipa \
-  --provenance-path PicStrip.ipa.intoto.jsonl \
-  --source-uri github.com/northcutted/picstrip \
-  --source-branch main
-```
-
-The release workflow also checks that the verified provenance JSON contains the exact workflow source commit SHA.
-
-Expected output:
-```
-Verified SLSA provenance for PicStrip.ipa
-```
-
-**Option 3 — SHA-256 checksum**
-
-```bash
-# Both files are attached to every GitHub Release
-shasum -a 256 PicStrip.ipa > computed.sha256
-diff computed.sha256 PicStrip.ipa.sha256
-# No output = checksums match
-```
-
-**Option 4 — Rekor transparency log**
-
-```bash
-rekor-cli search \
-  --artifact PicStrip.ipa \
-  --pki-format=x509 \
-  --public-key=/path/to/github-public-key.pem
-```
-
-Or browse: `https://search.sigstore.dev/?logIndex=<index>`
-
-### References
-
-- SLSA Specification: https://slsa.dev/
-- SLSA GitHub Generator: https://github.com/slsa-framework/slsa-github-generator
-- slsa-verifier: https://github.com/slsa-framework/slsa-verifier
-- Rekor: https://transparency.sigstore.dev/
+See the [control coverage, trust limits, and verification commands](docs/release-pipeline.md#slsa-build-l3-scope). Live repository controls and the candidate rollout must be verified before describing this target as deployed.
 
 ---
 
 ## Localization
 
-PicStrip localizes user-facing app text through Apple string catalogs:
+PicStrip localizes user-facing text through Apple string catalogs (English + 15 locales):
 
 - `PicStrip/Localizable.xcstrings` — app, share extension, processing, errors, and accessibility copy
-- `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Shortcuts expose
+- `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Spotlight expose
+- `PicStrip/InfoPlist.xcstrings`, `PicStripShareExtension/InfoPlist.xcstrings` — photo-library permission prompts and the share-sheet action name ("Clean with PicStrip")
 - `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time.
 
 **Translations are LLM-generated.** English is the canonical source; catalogs and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
 
-**Pseudo-localization is available for layout smoke testing.** `scripts/translate_xcstrings.js --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries should be replaced with real translations before release.
+### Rules that keep strings translatable
+
+A missing translation is not a build error — the app silently shows English — so these are enforced by `scripts/audit_xcstrings.py` and `LocalizationTests`, not by the compiler.
+
+| Rule | Why |
+|------|-----|
+| A string literal only reaches the catalog when its type is `LocalizedStringKey`, `LocalizedStringResource` or `String(localized:)`. A `String` property or parameter (`let detail: String`, `title: String`) shown through `Text(variable)` is **never extracted** and stays English everywhere. | The About screen shipped ~45 English-only strings this way. |
+| Never wrap a variable in `LocalizedStringKey(variable)` to "localize" it. | It hides the literal from extraction and does a second lookup on already-localized text. |
+| Never assemble a sentence from fragments (`"\(title) \(category) fields"`, `name + ", selected"`). Pass the whole sentence; use accessibility traits for state. | Word order and agreement differ per language. |
+| `^[\(n) photo](inflect: true)` is for the **English source only**. Every other locale uses plural variations in the catalog (`one`/`other`, Polish `one/few/many/other`, Arabic all six). | The grammar engine ignores most languages: Polish showed "5 pole". |
+| A plural string with a second argument uses an explicit substitution (`%#@instances@` + `argNum`). | Xcode cannot infer which argument drives the plural. |
+| One key = one meaning. "High" as a *confidence* band and "High" as a *risk* level are different keys (`ConfidenceLevel.high` vs `High`). | They take different grammatical gender in French, Spanish, Polish, Arabic… |
+| Metadata category identifiers (`"GPS"`, `"Apple Maker Note"`) are never shown directly; views call `metadataCategoryDisplayName(for:)`. | The identifier doubles as a `StripConfig` key and must not change. |
+
+### Glossary senses translators must respect
+
+*redact* = cover part of the picture (never the editorial "edit/write" family: *rédaction*, *redactar*, 編集…); *region* = an area of the image (never a territory); *strip* = remove metadata; *field* = one metadata entry. Platform terms follow Apple's localized iOS (German "Sichern", Dutch "Bewaar", Polish "Zachowaj", Simplified Chinese "存储").
+
+The term each locale uses for these concepts is recorded in [`docs/localization-glossary.md`](docs/localization-glossary.md). New and changed strings must reuse those terms.
+
+### Commands
+
+```bash
+# Hard-coded-string audit + catalog audit (coverage, placeholders, plural categories, inflect misuse).
+make audit-localization
+
+# Also prove that every string in the code is in the catalog and nothing in the catalog is dead.
+xcodebuild build -project PicStrip.xcodeproj -scheme PicStrip \
+  -destination 'generic/platform=iOS Simulator' -derivedDataPath build/loc \
+  CODE_SIGNING_ALLOWED=NO SWIFT_EMIT_LOC_STRINGS=YES
+scripts/audit_xcstrings.py --stringsdata build/loc
+
+# Validate JSON shape, both audits, and SwiftLint after edits.
+make localization-validate
+
+# Export .xcloc bundles for handoff to a human translator.
+make localization-export
+```
+
+**Pseudo-localization is available for layout smoke testing.** `scripts/translate_xcstrings.js --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries must be replaced with real translations before release (`make audit-localization` does not tell them apart from real ones).
 
 ```bash
 # See what's missing in a catalog without writing.
@@ -973,15 +800,12 @@ scripts/translate_xcstrings.js --languages es fr --dry-run
 
 # Pseudo-localize a single catalog for layout smoke testing.
 make localization-pseudo LANGUAGES="es"
+```
 
-# Pseudo-localize the marketing headlines catalog specifically.
-scripts/translate_xcstrings.js --files fastlane/MarketingHeadlines.xcstrings --languages de
+To preview a locale without changing the simulator's language:
 
-# Validate JSON shape, hard-coded-string audit, and SwiftLint after edits.
-make localization-validate
-
-# Export .xcloc bundles for handoff to a human translator.
-make localization-export
+```bash
+xcrun simctl launch booted com.northcutt.PicStrip -AppleLanguages "(pl)" -AppleLocale pl_PL
 ```
 
 Do not skip review for App Shortcut phrases, permission prompts, privacy explanations, or redaction/security terms. Those strings carry product trust, and literal machine translations can sound harsher or less precise than intended.
@@ -1071,11 +895,11 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 
 ### OCR Language Correction Must Stay Disabled
 
-`VNRecognizeTextRequest.usesLanguageCorrection = true` normalises OCR output toward dictionary words. For credentials (`AIzaSyD...`, `sk-live-...`, `AKIAIOSFODNN7EXAMPLE`) this destroys the pattern structure the regex rules depend on. It must remain `false`.
+`RecognizeTextRequest.usesLanguageCorrection = true` normalises OCR output toward dictionary words. For credentials (`AIzaSyD...`, `sk-live-...`, `AKIAIOSFODNN7EXAMPLE`) this destroys the pattern structure the regex rules depend on. It must remain `false`.
 
-### `.fast` Fallback Requires a Fresh Handler
+### Use `performAll`, Not the Variadic `perform`
 
-`VNImageRequestHandler` is single-use. The `.accurate` + `.fast` retry pattern in `PIIScanner.recognizeText(in:)` correctly creates a new handler for the retry. Do not attempt to reuse the first handler — the `perform()` call will throw.
+`ImageRequestHandler.perform(a, b, c)` throws if *any* request fails, discarding the results of the ones that succeeded — rectangle detection failing on the simulator would take OCR down with it. `performAll` reports each request separately. The `.fast` OCR retry and the default-revision face retry each create a fresh handler.
 
 ### Batch Processing Must Remain Sequential
 

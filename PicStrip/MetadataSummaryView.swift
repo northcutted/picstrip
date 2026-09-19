@@ -26,6 +26,21 @@ func metadataIconColor(for category: String) -> Color {
     }
 }
 
+/// The name shown for a metadata category.
+///
+/// `category` is the identifier `ImageProcessor` files fields under, and it doubles
+/// as the key for `StripConfig`, icons, and accessibility identifiers — so it never
+/// changes.  GPS, EXIF, TIFF and IPTC are the same in every language; only the
+/// names made of ordinary words are translated.
+func metadataCategoryDisplayName(for category: String) -> String {
+    switch category {
+    case "EXIF Auxiliary":    return String(localized: "EXIF Auxiliary")
+    case "Apple Maker Note":  return String(localized: "Apple Maker Note")
+    case "General":           return String(localized: "General")
+    default:                  return category
+    }
+}
+
 /// Plain-English description of what a metadata category contains and why it's a privacy risk.
 func metadataCategoryDescription(for category: String) -> String {
     switch category {
@@ -102,7 +117,7 @@ struct MetadataBadgeRow: View {
                 Image(systemName: metadataIconName(for: category))
                     .font(.system(size: 10, weight: .semibold))
                     .accessibilityHidden(true)
-                Text(category)
+                Text(metadataCategoryDisplayName(for: category))
                     .font(.caption2.weight(.semibold))
                 // Count bubble
                 Text("\(count)")
@@ -143,7 +158,8 @@ struct MetadataBadgeRow: View {
         .disabled(onPhoto)
         .frame(minHeight: 44)
         .contentShape(Rectangle())
-        .accessibilityLabel("\(category): \(count) field\(count == 1 ? "" : "s")\(isSelected ? ", selected" : "")")
+        .accessibilityLabel(Text(verbatim: metadataCategoryDisplayName(for: category)))
+        .accessibilityValue("^[\(count) field](inflect: true)")
         .accessibilityIdentifier("badge_\(category)")
         .accessibilityHint(interactive ? (isSelected ? "Double tap to close" : "Double tap to review") : "")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
@@ -194,7 +210,7 @@ struct MetadataFieldListView: View {
             Image(systemName: metadataIconName(for: category))
                 .font(.caption)
                 .foregroundStyle(metadataIconColor(for: category))
-            Text(category)
+            Text(metadataCategoryDisplayName(for: category))
         }
     }
 
@@ -224,7 +240,7 @@ struct MetadataFieldListView: View {
     ])
     VStack(spacing: 24) {
         MetadataBadgeRow(metadata: metadata, onPhoto: false, selectedCategory: $selected)
-        Text("Selected: \(selected ?? "none")").font(.caption).foregroundStyle(.secondary)
+        Text(verbatim: "Selected: \(selected ?? "none")").font(.caption).foregroundStyle(.secondary)
     }
     .padding()
 }

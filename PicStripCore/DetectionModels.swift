@@ -14,7 +14,7 @@ import Foundation
 ///   • high   — score ≥ 0.80   (structurally unambiguous patterns, strong OCR)
 ///   • medium — score ≥ 0.55   (NLP-based detectors, OCR-fragile patterns)
 ///   • low    — score  < 0.55  (heuristic / context-dependent matches)
-enum ConfidenceLevel: Int, Comparable, CaseIterable {
+nonisolated enum ConfidenceLevel: Int, Comparable, CaseIterable {
     case low    = 0
     case medium = 1
     case high   = 2
@@ -33,11 +33,19 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
     }
 
     /// Human-readable label used in UI.
+    ///
+    /// These have their own keys instead of sharing "Low"/"Medium"/"High" with
+    /// `RiskLevel.shortLabel`: "confidence" and "risk" differ in grammatical gender
+    /// in many languages (French "élevée" vs "élevé"), so one translation cannot
+    /// serve both.
     var label: String {
         switch self {
-        case .low:    return String(localized: "Low")
-        case .medium: return String(localized: "Medium")
-        case .high:   return String(localized: "High")
+        case .low:
+            return String(localized: "ConfidenceLevel.low", defaultValue: "Low", comment: "Match confidence band")
+        case .medium:
+            return String(localized: "ConfidenceLevel.medium", defaultValue: "Medium", comment: "Match confidence band")
+        case .high:
+            return String(localized: "ConfidenceLevel.high", defaultValue: "High", comment: "Match confidence band")
         }
     }
 }
@@ -57,7 +65,7 @@ enum ConfidenceLevel: Int, Comparable, CaseIterable {
 ///   • high     — significant personal or financial harm (IBANs, faces, physical credentials)
 ///   • medium   — useful to attackers but not immediately dangerous alone (emails, phone numbers, IPs)
 ///   • low      — contextual; risk depends heavily on the recipient and setting (URLs, dates, barcodes)
-enum RiskLevel: Int, Comparable, CaseIterable {
+nonisolated enum RiskLevel: Int, Comparable, CaseIterable {
     case low      = 0
     case medium   = 1
     case high     = 2
@@ -95,7 +103,7 @@ enum RiskLevel: Int, Comparable, CaseIterable {
 /// This intentionally stays below `PIIType`: the app can still group and toggle
 /// all government IDs together, while individual rows can explain which format
 /// triggered the detection.
-enum PIISubtype: String, Hashable, CaseIterable {
+nonisolated enum PIISubtype: String, Hashable, CaseIterable {
     case creditCardDocument
     case identityDocument
     case driversLicenseDocument
@@ -225,7 +233,7 @@ nonisolated struct DetectedInstance: Identifiable, Hashable {
 ///
 /// `Identifiable` — safe for `ForEach` in SwiftUI.
 /// `Hashable`     — can be stored in Sets and used as dictionary keys.
-struct DetectionResult: Identifiable, Hashable {
+nonisolated struct DetectionResult: Identifiable, Hashable {
     /// Stable identifier derived from the underlying PIIType.
     var id: String { type.id }
 

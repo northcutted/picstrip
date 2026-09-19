@@ -5,6 +5,7 @@
 //  Created by Eddie Northcutt on 5/2/26.
 //
 
+import AppIntents
 import SwiftUI
 
 // MARK: - App Group constants (shared with PicStripShareExtension)
@@ -29,6 +30,17 @@ struct PicStripApp: App {
     /// Shared view model threaded into ContentView and used by the URL handler.
     @State private var viewModel = ScrubberViewModel()
 
+    /// Receives requests from App Intents; see `IntentRouter`.
+    @State private var intentRouter: IntentRouter
+
+    init() {
+        // Intents resolve `@AppDependency` values from this manager, and an intent
+        // can run as soon as the process is up — so register before any scene.
+        let router = IntentRouter()
+        AppDependencyManager.shared.add(dependency: router)
+        _intentRouter = State(initialValue: router)
+    }
+
     /// Aggregate scene phase — used to drain the app-group pending file when the
     /// app comes to the foreground regardless of how it was activated.
     @Environment(\.scenePhase) private var scenePhase
@@ -36,6 +48,7 @@ struct PicStripApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
+                .environment(intentRouter)
                 .onOpenURL { url in
                     handleIncomingURL(url)
                 }

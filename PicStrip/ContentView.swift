@@ -11,8 +11,12 @@ struct ContentView: View {
     @State private var isAddingRedaction = false
     @State private var zoomResetRequest = 0
 
-    /// Set to true by the scenePhase observer when StripImageIntent fires.
+    /// Set to true when `StripImageIntent` asks for the multi-photo picker.
     @State private var isShowingIntentBatchPicker = false
+
+    /// Bumped by `haptic(_:)`; each change plays one impact.
+    @State private var lightImpacts = 0
+    @State private var mediumImpacts = 0
 
     /// Drives the Files app picker sheet.
     @State private var isShowingFilePicker = false
@@ -21,7 +25,7 @@ struct ContentView: View {
     @State private var isDropTargeted = false
 
     /// Rotating taglines shown beneath the app title on the home screen.
-    private let mottos = [
+    private let mottos: [LocalizedStringKey] = [
         "Share the photo. Not the story behind it.",
         "Clean photos. Clear conscience.",
         "Your moment, minus the metadata.",
@@ -37,7 +41,7 @@ struct ContentView: View {
     /// Drives the bottom-right indigo blob (slower cycle, offset feel).
     @State private var bottomBlobPhase = false
 
-    @Environment(\.scenePhase) private var scenePhase
+    @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
@@ -90,7 +94,7 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.hidden, for: .navigationBar)
                         .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
+                            ToolbarItem(placement: .topBarTrailing) {
                                 Button {
                                     showingAbout = true
                                 } label: {
@@ -121,11 +125,11 @@ struct ContentView: View {
             if newSheet != nil { closePanel() }
         }
         // ── Intent trigger ────────────────────────────────────────────────
-        .onChange(of: scenePhase) { _, newPhase in
-            guard newPhase == .active else { return }
-            let defaults = UserDefaults(suiteName: "group.com.northcutt.PicStrip")
-            guard defaults?.bool(forKey: "picstrip.openBatchPicker") == true else { return }
-            defaults?.set(false, forKey: "picstrip.openBatchPicker")
+        // `initial: true` covers a cold launch, where the intent has already run
+        // by the time this view first appears.
+        .onChange(of: intentRouter.isBatchPickerRequested, initial: true) { _, requested in
+            guard requested else { return }
+            intentRouter.batchPickerPresented()
             isShowingIntentBatchPicker = true
         }
         // ── Programmatic PhotosPicker for intent ──────────────────────────
@@ -163,15 +167,34 @@ struct ContentView: View {
         ) { result in
             guard case .success(let urls) = result, let url = urls.first else { return }
             Task {
-                guard url.startAccessingSecurityScopedResource() else { return }
-                defer { url.stopAccessingSecurityScopedResource() }
-                guard let data = try? Data(contentsOf: url) else { return }
+                guard let data = await IncomingImage.read(securityScoped: url) else {
+                    viewModel.errorMessage = String(localized: "The selected item could not be loaded as image data.")
+                    return
+                }
                 await viewModel.loadData(data)
             }
         }
-        // ── Drag-and-drop (image or file URL from Photos / Files / Safari) ──
-        .onDrop(of: [.image, .fileURL], isTargeted: $isDropTargeted) { providers in
-            handleDrop(providers: providers)
+        // ── Drag-and-drop + paste (Photos / Files / Safari / pasteboard) ───
+        // Both arrive as `IncomingImage`, i.e. the original bytes — metadata intact.
+        .dropDestination(for: IncomingImage.self) { images, _ in
+            load(images)
+        } isTargeted: { isDropTargeted = $0 }
+        .imagePasteDestination { images in
+            load(images)
+        }
+        .photosPickerKeepsMetadata()
+        // Load failures happen while no photo is on screen, where the control
+        // panel's error banner does not exist — surface them as an alert.
+        .alert(
+            "Couldn’t Open Image",
+            isPresented: Binding(
+                get: { !hasPhoto && !viewModel.isProcessing && viewModel.errorMessage != nil },
+                set: { if !$0 { viewModel.errorMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.errorMessage ?? "")
         }
         .overlay {
             // Subtle border pulse while a drag hovers over the window
@@ -184,6 +207,8 @@ struct ContentView: View {
             }
         }
         .animation(.easeInOut(duration: 0.15), value: isDropTargeted)
+        .sensoryFeedback(.impact(weight: .light), trigger: lightImpacts)
+        .sensoryFeedback(.impact(weight: .medium), trigger: mediumImpacts)
     }
 
     // MARK: - Home screen
@@ -244,12 +269,9 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(
-                        icon: "photo.badge.plus",
-                        text: "Select a Photo",
-                        prominent: true
-                    )
+                    PillLabel(icon: "photo.badge.plus", text: "Select a Photo")
                 }
+                .buttonStyle(.glassProminent)
                 .accessibilityIdentifier("selectPhotoButton")
                 .accessibilityLabel("Select a photo from your library")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.medium) })
@@ -260,27 +282,33 @@ struct ContentView: View {
                     matching: .images,
                     photoLibrary: .shared()
                 ) {
-                    pillLabel(
-                        icon: "photo.stack",
-                        text: "Select Multiple Photos",
-                        prominent: false
-                    )
+                    PillLabel(icon: "photo.stack", text: "Select Multiple Photos")
                 }
+                .buttonStyle(.glass)
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
 
                 Button {
                     haptic(.light)
                     isShowingFilePicker = true
                 } label: {
-                    pillLabel(
-                        icon: "folder",
-                        text: "Browse Files",
-                        prominent: false
-                    )
+                    PillLabel(icon: "folder", text: "Browse Files")
                 }
+                .buttonStyle(.glass)
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
+
+                // System paste control: reads the pasteboard without the "Allow
+                // Paste" prompt, and disables itself when no image is available.
+                PasteButton(payloadType: IncomingImage.self) { images in
+                    haptic(.light)
+                    load(images)
+                }
+                .labelStyle(.titleAndIcon)
+                .buttonBorderShape(.capsule)
+                .tint(.secondary)
+                .accessibilityIdentifier("pasteImageButton")
             }
+            .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)
             .padding(.bottom, 48)
         }
@@ -324,81 +352,27 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Pill button label
-
-    private func pillLabel(icon: String, text: LocalizedStringKey, prominent: Bool) -> some View {
-        HStack(spacing: 10) {
-            Image(systemName: icon)
-                .font(.callout.weight(.semibold))
-                .accessibilityHidden(true)
-            Text(text)
-                .font(.callout.weight(.semibold))
-        }
-        .foregroundStyle(prominent ? .white : .primary)
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(
-            prominent ? AnyShapeStyle(Color.accentColor) : AnyShapeStyle(.regularMaterial),
-            in: Capsule()
-        )
-        .overlay(
-            prominent ? nil : AnyView(
-                Capsule().strokeBorder(Color.primary.opacity(0.12), lineWidth: 1)
-            )
-        )
-    }
-
     // MARK: - Haptics
 
-    private func haptic(_ style: UIImpactFeedbackGenerator.FeedbackStyle) {
-        UIImpactFeedbackGenerator(style: style).impactOccurred()
+    /// Requests an impact; played by the `.sensoryFeedback` modifiers on `body`.
+    private func haptic(_ weight: HapticWeight) {
+        switch weight {
+        case .light:  lightImpacts += 1
+        case .medium: mediumImpacts += 1
+        }
     }
 
-    // MARK: - Drag-and-drop handler
+    private enum HapticWeight { case light, medium }
 
-    /// Handles a drop of one or more `NSItemProvider` items onto the app.
-    ///
-    /// Priority order:
-    /// 1. A raw image type (JPEG / PNG / HEIC / GIF / …) from Photos or Safari.
-    /// 2. A file URL referencing an image on disk (Files app, document providers).
-    ///
-    /// - Returns: `true` when a provider was accepted and loading is in flight.
+    // MARK: - Drag-and-drop / paste
+
+    /// Loads the first image of a drop or paste.  PicStrip's editor is
+    /// single-image, so any further items are ignored.
     @discardableResult
-    private func handleDrop(providers: [NSItemProvider]) -> Bool {
-        guard let provider = providers.first else { return false }
-
-        // ── Image data (Photos, Safari image, copy-paste) ──────────────────
-        if provider.canLoadObject(ofClass: UIImage.self) {
-            _ = provider.loadObject(ofClass: UIImage.self) { reading, _ in
-                guard let image = reading as? UIImage,
-                      let data  = image.jpegData(compressionQuality: 0.95)
-                else { return }
-                Task { @MainActor in await viewModel.loadData(data) }
-            }
-            return true
-        }
-
-        // ── File URL (Files app, document providers) ───────────────────────
-        if provider.hasItemConformingToTypeIdentifier(UTType.fileURL.identifier) {
-            provider.loadItem(forTypeIdentifier: UTType.fileURL.identifier, options: nil) { item, _ in
-                let url: URL?
-                if let data = item as? Data {
-                    url = URL(dataRepresentation: data, relativeTo: nil)
-                } else {
-                    url = item as? URL
-                }
-                guard let url else { return }
-                Task { @MainActor in
-                    guard url.startAccessingSecurityScopedResource() else { return }
-                    defer { url.stopAccessingSecurityScopedResource() }
-                    guard let data = try? Data(contentsOf: url) else { return }
-                    await viewModel.loadData(data)
-                }
-            }
-            return true
-        }
-
-        return false
+    private func load(_ images: [IncomingImage]) -> Bool {
+        guard let image = images.first else { return false }
+        Task { await viewModel.loadData(image.data) }
+        return true
     }
 
     // MARK: - Photo layout (existing layout when a photo is loaded)
@@ -544,13 +518,12 @@ struct ContentView: View {
                             viewModel.clearState()
                         }
                     } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.system(size: 28, weight: .medium))
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(Color.white, Color.black.opacity(0.45))
-                            .shadow(color: .black.opacity(0.25), radius: 4, x: 0, y: 1)
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .semibold))
+                            .frame(width: 20, height: 20)
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.glass)
+                    .buttonBorderShape(.circle)
                     .accessibilityLabel("Dismiss photo")
                     .accessibilityIdentifier("dismissPhotoButton")
                     .padding(14)
@@ -606,7 +579,7 @@ struct ContentView: View {
             Color(.systemBackground).opacity(0.7)
             ProgressView("Processing…")
                 .padding()
-                .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                .glassEffect(in: .rect(cornerRadius: 12))
         }
     }
 
@@ -687,12 +660,13 @@ struct ContentView: View {
                     haptic(.medium)
                     viewModel.requestSave()
                 } label: {
-                    pillLabel(
+                    PillLabel(
                         icon: viewModel.isScanningPII ? "hourglass" : "square.and.arrow.down",
-                        text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos",
-                        prominent: true
+                        text: viewModel.isScanningPII ? "Scanning…" : "Save to Photos"
                     )
                 }
+                .buttonStyle(.glassProminent)
+                .buttonBorderShape(.capsule)
                 .padding(.horizontal, 4)
                 .disabled(viewModel.isScanningPII)
                 .opacity(viewModel.isScanningPII ? 0.75 : 1)
@@ -825,6 +799,31 @@ struct ContentView: View {
         }
     }
 
+}
+
+// MARK: - Pill button label
+
+/// Full-width icon + title content for the large capsule buttons.  The surface
+/// itself comes from the button style (`.glass` / `.glassProminent`), so the
+/// system supplies Liquid Glass, press states, and the Reduce Transparency /
+/// Increase Contrast fallbacks.
+///
+/// A `nonisolated` type rather than a `ContentView` method because
+/// `PhotosPicker` builds its label in a nonisolated closure.
+nonisolated private struct PillLabel: View {
+    let icon: String
+    let text: LocalizedStringKey
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: icon)
+                .accessibilityHidden(true)
+            Text(text)
+        }
+        .font(.callout.weight(.semibold))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 10)
+    }
 }
 
 // MARK: - Redaction Editor Drawer
@@ -1475,7 +1474,10 @@ private struct RedactionEditorDrawer: View {
         .buttonStyle(.plain)
         .opacity(region.isEnabled ? 1 : 0.45)
         .accessibilityElement(children: .contain)
-        .accessibilityLabel(region.displayName + (isSingleSelected ? ", selected" : ""))
+        .accessibilityLabel(Text(verbatim: region.displayName))
+        // The trait, not a hand-appended ", selected": VoiceOver announces it in
+        // the user's language.
+        .accessibilityAddTraits(isSingleSelected ? .isSelected : [])
         .accessibilityHint(
             isMultiSelectMode
                 ? (isMultiChecked ? "Double tap to deselect" : "Double tap to add to selection")
@@ -1513,4 +1515,5 @@ private struct RedactionEditorDrawer: View {
 
 #Preview {
     ContentView(viewModel: ScrubberViewModel())
+        .environment(IntentRouter())
 }

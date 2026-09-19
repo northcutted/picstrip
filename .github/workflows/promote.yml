@@ -1,0 +1,54 @@
+name: Promote Candidate
+on:
+  workflow_dispatch:
+    inputs:
+      artifact_id:
+        description: Exact verified candidate artifact ID
+        required: true
+        type: string
+      sha256:
+        description: Exact candidate artifact SHA256
+        required: true
+        type: string
+      processed_artifact_id:
+        description: Optional exact signed canary handoff artifact ID; skips transfer
+        type: string
+        default: ""
+      processed_sha256:
+        description: SHA256 of that signed canary handoff artifact
+        type: string
+        default: ""
+      upload_adapter:
+        description: Must match candidate configuration; no fallback
+        type: choice
+        options:
+          - transporter
+          - build-uploads
+        default: transporter
+      publish:
+        description: Publish after processing; false performs TestFlight canary only
+        type: boolean
+        default: false
+permissions:
+  contents: read
+concurrency:
+  group: promote-main
+  cancel-in-progress: false
+jobs:
+  promote:
+    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@c692b58b00564a5eb7c38a97b226f2132f7e926a
+    with:
+      config: .github/ios-release.json
+      platform_revision: c692b58b00564a5eb7c38a97b226f2132f7e926a
+      artifact_id: ${{ inputs.artifact_id }}
+      sha256: ${{ inputs.sha256 }}
+      processed_artifact_id: ${{ inputs.processed_artifact_id }}
+      processed_sha256: ${{ inputs.processed_sha256 }}
+      upload_adapter: ${{ inputs.upload_adapter }}
+      publish: ${{ inputs.publish }}
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+      artifact-metadata: write

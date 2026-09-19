@@ -20,7 +20,7 @@ PLAIN=$(sed -E 's/^### (.+)$/\1/' "$NOTES_SOURCE" \
   | sed -E 's/ \(\[?[a-f0-9]{7,}\]?\([^)]*\)\)//g' \
   | sed -E 's/ \(#[0-9]+\)//g' \
   | sed '/^[[:space:]]*$/d' \
-  | head -c 4000)
+  | python3 -c 'import sys; print(sys.stdin.read()[:4000].rstrip())')
 
 locale_count=0
 while IFS= read -r locale_dir; do

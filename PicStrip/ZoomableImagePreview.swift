@@ -139,7 +139,7 @@ struct ZoomableImagePreview: View {
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
-                        .background(.regularMaterial, in: Capsule())
+                        .glassEffect(in: .capsule)
                         .padding(10)
                         .accessibilityHidden(true)
                 }
@@ -203,7 +203,7 @@ struct ZoomableImagePreview: View {
 
     // MARK: - Zoom hint
 
-    private var zoomHintText: String {
+    private var zoomHintText: LocalizedStringKey {
         if isAddingRedaction {
             return "Drag to redact"
         }
@@ -216,9 +216,9 @@ struct ZoomableImagePreview: View {
     // MARK: - Gestures
 
     private func zoomGesture(container: CGSize, image: CGSize) -> some Gesture {
-        MagnificationGesture()
+        MagnifyGesture()
             .onChanged { value in
-                scale = clamp(lastScale * value, min: 1, max: 5)
+                scale = clamp(lastScale * value.magnification, min: 1, max: 5)
                 offset = clamped(offset, container: container, image: image, scale: scale)
             }
             .onEnded { _ in

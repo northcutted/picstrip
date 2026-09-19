@@ -13,7 +13,7 @@ import Foundation
 ///
 /// Regex objects are expensive to construct — all rules are compiled once at
 /// registry initialisation time and reused across every scan.
-struct DetectionRule {
+nonisolated struct DetectionRule {
     let type: PIIType
     /// Optional subtype used to distinguish formats that share one broad
     /// user-facing category, such as the many national IDs grouped under
@@ -27,7 +27,7 @@ struct DetectionRule {
 
 // MARK: - DetectionRegistry
 
-enum DetectionRegistry {
+nonisolated enum DetectionRegistry {
 
     /// All regex-based detection rules, compiled once at first access.
     /// NSDataDetector handles .address, .phoneNumber, and plain .link natively;

@@ -68,7 +68,7 @@ struct BatchConfigView: View {
                         .foregroundStyle(.tint)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("\(viewModel.batchItems.count) Photos Selected")
+                        Text("^[\(viewModel.batchItems.count) Photo](inflect: true) Selected")
                             .font(.headline)
                         Text("Apply a single privacy policy to all of them.")
                             .font(.caption)
@@ -151,6 +151,8 @@ struct BatchConfigView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
+                .disabled(!config.hasWork)
+                .accessibilityHint(config.hasWork ? "" : "Turn on at least one privacy option to start.")
                 .alert(
                     "Replace ^[\(viewModel.batchItems.count) Original Photo](inflect: true)?",
                     isPresented: $showReplaceConfirm
@@ -161,6 +163,14 @@ struct BatchConfigView: View {
                     Button("Cancel", role: .cancel) { }
                 } message: {
                     Text("The original photos will be permanently deleted after cleaning. This cannot be undone.")
+                }
+
+                if !config.hasWork {
+                    Text("Turn on at least one privacy option to start.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 4)
                 }
 
                 // Error banner (e.g. photo library access denied)

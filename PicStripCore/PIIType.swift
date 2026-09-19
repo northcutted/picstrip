@@ -1,6 +1,6 @@
 import Foundation
 
-enum PIIType: String, Hashable, Identifiable, CaseIterable {
+nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
 
     // MARK: - Contact
     case phoneNumber

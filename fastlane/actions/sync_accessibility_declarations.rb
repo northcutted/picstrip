@@ -68,7 +68,7 @@ module Fastlane
         return nil unless response
         app = response.fetch("data", []).first
         unless app
-          UI.error("Could not find App Store Connect app for bundle id #{bundle_id} — skipping accessibility sync")
+          UI.user_error!("Could not find App Store Connect app for bundle id #{bundle_id}")
           return nil
         end
         app.fetch("id")
@@ -171,7 +171,7 @@ module Fastlane
         request["Accept"] = "application/json"
         request.body = JSON.generate(body) if body
 
-        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        response = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true, open_timeout: 15, read_timeout: 60) do |http|
           http.request(request)
         end
 
@@ -179,7 +179,7 @@ module Fastlane
         return parsed if response.code.to_i.between?(200, 299)
 
         detail = parsed.fetch("errors", []).map { |error| error["detail"] || error["title"] }.compact.join(" ")
-        UI.error("App Store Connect accessibility API request failed (non-fatal): #{response.code} #{detail}")
+        UI.user_error!("App Store Connect accessibility API request failed: #{response.code} #{detail}")
         nil
       end
 

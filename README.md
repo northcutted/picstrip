@@ -3,8 +3,8 @@
 
 # PicStrip
 
-[![iOS 17+](https://img.shields.io/badge/iOS-17%2B-blue.svg)](https://www.apple.com/ios/)
-[![Swift 5.9](https://img.shields.io/badge/Swift-5.9-orange.svg)](https://swift.org)
+[![iOS 26+](https://img.shields.io/badge/iOS-26%2B-blue.svg)](https://www.apple.com/ios/)
+[![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![CI](https://github.com/northcutted/picstrip/actions/workflows/main.yml/badge.svg)](https://github.com/northcutted/picstrip/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -29,14 +29,14 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata |
 | **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
 | **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
-| **Files & Drag-and-Drop** | Import from Photos library, Files app, or drag and drop directly into the app |
+| **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
 | **Save or Replace** | Save a new cleaned asset, or replace the original in your Photos library |
 | **Flexible Export** | PNG (privacy default), JPEG, HEIC, or match original format |
 | **Per-Field Control** | Fine-grained toggles for individual metadata fields and PII types |
 | **Audit Reports** | Export a JSON audit of every stripped field and redacted region |
 | **Share Extension** | Clean photos directly from the iOS share sheet without opening the app |
-| **Siri Shortcuts** | "Clean Photos with PicStrip" intent integrates with Shortcuts and Spotlight |
+| **Siri Shortcuts** | "Clean Photos with PicStrip" opens the picker from Shortcuts and Spotlight; "Strip Metadata from Images" cleans files in the background for automations |
 
 ---
 
@@ -46,7 +46,7 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 A single-pass re-encode still triggers iOS to auto-synthesise a minimal EXIF block (ColorSpace, PixelDimensions). PicStrip defeats this with a deliberate two-pass strategy: pass 1 decodes pixels and force-zeros the EXIF/TIFF dictionaries; pass 2 uses `CGImageDestinationCopyImageSource` with `kCGImageDestinationMergeMetadata: false` to replace the entire metadata tree with only what the user explicitly chose to keep. The result is provably clean output, not "mostly clean."
 
 **Orientation-safe OCR.**
-PII bounding boxes must land on the right pixels regardless of how the photo was captured. PicStrip passes raw `Data` (not a pre-decoded `CGImage`) to `VNImageRequestHandler` so Vision reads the embedded EXIF orientation tag. Passing a decoded `CGImage` strips that tag, causing highlight boxes to land in the wrong position for any portrait-mode iPhone photo.
+PII bounding boxes must land on the right pixels regardless of how the photo was captured. PicStrip passes raw `Data` (not a pre-decoded `CGImage`) to Vision's `ImageRequestHandler` so Vision reads the embedded EXIF orientation tag. Passing a decoded `CGImage` strips that tag, causing highlight boxes to land in the wrong position for any portrait-mode iPhone photo.
 
 **Sequential memory-safe batch processing.**
 Each image in a batch is processed, saved, and explicitly deallocated before the next one begins. This keeps peak memory at ~one image at a time rather than accumulating a full batch in RAM, which matters on constrained devices and inside the share extension's 120 MB process ceiling.
@@ -91,7 +91,7 @@ graph TD
 |-------|------|-------|
 | `ScrubberViewModel` | `@Observable @MainActor final class` | Owns all mutable state; drives the full data-flow pipeline |
 | `ImageProcessor` | `enum` (stateless, static methods) | Two-pass metadata stripping; re-encodes via `ImageIO` |
-| `PIIScanner` | `struct` (stateless) | Async; offloads Vision OCR to `Task.detached` |
+| `PIIScanner` | `struct` (stateless) | Async and `@concurrent`; runs Vision OCR off the caller's actor |
 | `ImageRedactor` | `struct` (stateless) | Burns redaction boxes via `UIGraphicsImageRenderer` |
 | `DetectionRegistry` | `enum` (static `let`) | All regex rules compiled once at app startup |
 
@@ -205,12 +205,14 @@ PicStrip/
 │   ├── pr.yml               # PR checks: lint, analyze, test
 │   ├── main.yml             # Release prep: version → QA → build → provenance → TestFlight → tag
 │   ├── app-store-deploy.yml # Tag deploy: verify handoff, then request review
-│   ├── metadata-only.yml    # Manual App Store metadata amendments
+│   ├── promote.yml          # Manual promotion of an exact signed candidate
+│   ├── observe.yml          # Hourly App Store status
+│   ├── metadata-only.yml    # Pinned metadata amendments through production gate
 │   └── screenshots.yml      # Manual: capture App Store screenshots
 │
 ├── fastlane/
 │   ├── Fastfile             # Lane definitions
-│   ├── Snapfile             # Devices (iPhone 17 Pro Max + iPad Pro 13") + 16 capture locales
+│   ├── Snapfile             # Devices (iPhone 18 Pro Max + iPad Pro 13") + 16 capture locales
 │   ├── MarketingHeadlines.xcstrings  # Localized headline copy for marketing screenshots
 │   ├── accessibility_declarations.json  # App Store Accessibility Nutrition Label config
 │   ├── screenshots/
@@ -223,10 +225,11 @@ PicStrip/
 ├── scripts/
 │   ├── process_screenshots.py  # Marketing compositor: custom frame + headline + brand gradient
 │   ├── requirements.txt        # Python deps for the compositor (Pillow, arabic-reshaper, python-bidi)
-│   ├── semantic_dry_run.mjs    # Semantic-release dry-run JSON writer for release prep
-│   ├── render_app_store_metadata.sh  # Applies generated notes to App Store metadata artifacts
+│   ├── semantic_dry_run.mjs    # Read-only version and release-note analysis
+│   ├── update_release_platform.py  # Update all trusted platform pins together
 │   ├── translate_xcstrings.js  # Localization automation (pseudo + OpenAI providers)
-│   └── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
+│   ├── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
+│   └── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms
 │
 ├── docs/
 │   ├── icons/               # Generated app icon variants (Default, Dark, Tinted)
@@ -277,12 +280,12 @@ open PicStrip.xcodeproj
 
 1. Select the **PicStrip** target → **Signing & Capabilities** → change **Team** to your Apple Developer account.
 2. Repeat for **PicStripShareExtension**.
-3. Select an iPhone 17 simulator (or a physical device running iOS 17+).
+3. Select an iPhone 17 simulator (or a physical device running iOS 26+).
 4. Press **Cmd + R**.
 
 ### Contributor / release tooling
 
-The CI pipeline requires Ruby (Fastlane) and Node (semantic-release).
+CI pins Ruby 3.4.10 for Fastlane and uses Node 24 for read-only Conventional Commit analysis.
 
 ```bash
 # Ruby toolchain (Fastlane)
@@ -290,7 +293,7 @@ gem install bundler
 bundle install          # installs fastlane ~> 2.233
 
 # Node toolchain (semantic-release)
-npm install
+npm ci --ignore-scripts
 ```
 
 ---
@@ -302,25 +305,19 @@ npm install
 | `make help` | Lists local helper commands |
 | `make test` | Runs `bundle exec fastlane test` |
 | `make build` | Runs `bundle exec fastlane build` |
-| `make audit-localization` | Checks shared core/extension string-returning code for literals that should use localization helpers |
+| `make audit-localization` | Checks for unlocalized string literals and audits the string catalogs (every key translated in all 15 locales, placeholders intact, plural forms complete) |
 | `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
 | `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing |
 | `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
 | `make test-fixture` | Regenerates the OCR test fixture (`PicStripUITests/test_list.png`) via `scripts/make_fixture.py` |
-| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 17 Pro Max"` or `DEVICES="iPhone 17 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
+| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 18 Pro Max"` or `DEVICES="iPhone 18 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
 | `make process-screenshots` | Composes marketing PNGs from existing raw captures into `fastlane/screenshots/processed/<locale>/` (custom frame + brand gradient + localized headline) |
-| `make upload-screenshots` | Composes (via `process-screenshots`) and uploads the full local screenshot set; pass `ALLOW_PARTIAL=true` only when intentionally uploading an incomplete set |
 | `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
 | `bundle exec fastlane analyze` | `xcodebuild analyze` static analysis |
 | `bundle exec fastlane test` | `PicStripTests` unit tests on iPhone 17 simulator; outputs JUnit XML to `build/test_output/` |
 | `bundle exec fastlane build` | Signs + exports IPA (requires App Store certificates) |
-| `bundle exec fastlane beta` | `certificates` → `build` → TestFlight upload |
-| `bundle exec fastlane upload_testflight` | Uploads an existing IPA path (`IPA_PATH` or `build/PicStrip.ipa`) to TestFlight |
-| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 17 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
+| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 18 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
 | `bundle exec fastlane process_screenshots` | Runs the Python compositor over every locale present under `fastlane/screenshots/<locale>/` |
-| `bundle exec fastlane upload_screenshots` | Uploads the marketing PNGs in `fastlane/screenshots/processed/` to App Store Connect; refuses partial sets unless `allow_partial:true` is passed |
-| `bundle exec fastlane app_store_stage` | Stages metadata, screenshots, declarations, and the selected TestFlight build without submitting |
-| `bundle exec fastlane request_review` | Requests App Review for the already-staged version |
 
 ---
 
@@ -353,11 +350,12 @@ make localization-export
 
 ## CI/CD Pipeline
 
-- **PRs** — `pr.yml` runs SwiftLint (strict), `xcodebuild analyze`, and unit tests in parallel. An optional `screenshots`-labelled job captures the full 2-device set as a PR artifact.
-- **Releases** — `main.yml` performs release prep from `main`: semantic dry-run, QA evidence, signed IPA, SBOMs, attestations, SLSA Level 3 provenance, TestFlight upload, and final `vX.Y.Z` tag/release creation. The tag triggers `app-store-deploy.yml`, which stages repo metadata/screenshots/build in App Store Connect, then waits for manual approval before submitting the current draft as-is.
-- **Screenshots** — `screenshots.yml` is manually dispatched. The fast path uploads the committed marketing PNGs from Git LFS; `generate_new=true` regenerates them by capturing fresh simulator screenshots and running the Python compositor (custom frame, brand gradient, localized headline per locale).
+- **PRs** — always-reporting `CI Gate` covers workflow policy, locked tools, SwiftLint, analysis, and iOS 27/iOS 26 tests. Add the `screenshots` label for an en-US capture smoke test.
+- **Releases** — main prepares a verified candidate with parallel QA, archive creation, and packaging. Explicit manual promotion selects its artifact ID and digest; Linux waits for Apple processing. A signed processed handoff can be reused for immutable publication without another upload.
+- **App Store** — publication triggers verified staging. Production approval preserves metadata edits and requires the recorded App Store build immediately before submission. Metadata-only requests use the same gate.
+- **Screenshots** — manual capture validates all locale/device sets and opens a reviewed PR against main.
 
-See [DEVELOPMENT.md → CI/CD Pipeline](DEVELOPMENT.md#cicd-pipeline) for the full job graph, fastlane lanes, and screenshot compositor details.
+See the [release operations guide](docs/release-pipeline.md) for setup, verification-only rollout, retries, and performance measurement.
 
 ---
 
@@ -387,11 +385,9 @@ Both the main app and the share extension declare zero data collection and zero 
 
 ## Supply Chain Security (SLSA Level 3)
 
-Every release ships with SLSA Build Level 3 provenance for the GitHub-built `PicStrip.ipa`, cryptographically proving the IPA was produced by GitHub Actions (not a developer's machine) with no post-build tampering. TestFlight upload is gated on attestation verification against the exact workflow source commit.
+The pinned [public iOS release platform](https://github.com/northcutted/ios-release-workflows) targets defensible SLSA Build Level 3 for the GitHub-built `application.ipa`, using an isolated provenance generator, signed release manifests, and exact-source/digest verification before distribution. The initial rollout runs in verification-only mode until repository controls and a signed candidate are validated.
 
-This claim applies to the GitHub-built IPA attached to the release. It does not claim that the same digest identifies the App Store-installed app, because Apple may re-sign, encrypt, or thin the distributed binary.
-
-See [DEVELOPMENT.md → SLSA Build Provenance Level 3](DEVELOPMENT.md#slsa-build-provenance-level-3) for the `gh attestation verify` and `slsa-verifier` commands and the threat-model details.
+This scope excludes Apple's redistributed binary, which may be re-signed, encrypted, or thinned. See the [SLSA control coverage and trust limits](docs/release-pipeline.md#slsa-build-l3-scope) and [verification commands](docs/release-pipeline.md#local-verification-and-benchmarks).
 
 ---
 
@@ -407,9 +403,9 @@ PicStrip is available on the App Store.
 
 | | |
 |-|-|
-| **iOS** | 17.0+ |
-| **Xcode** | 16.0+ (Xcode 26 on CI) |
-| **Swift** | 5.9+ |
+| **iOS** | 26.0+ |
+| **Xcode** | 26.0+ (Xcode 27 to compile the iOS 27-only features) |
+| **Swift** | 6.2+ toolchain |
 | **macOS** | 14.0+ (for development) |
 | **Apple Developer Account** | Required for signing and share extension entitlements |
 

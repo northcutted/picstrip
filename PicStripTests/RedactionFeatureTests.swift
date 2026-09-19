@@ -680,9 +680,8 @@ final class RedactionFeatureTests: XCTestCase {
             isEnabled: true
         )
 
-        let result = try await XCTUnwrapAsync(
-            await ImageRedactor().redact(image: image, specs: [leftSpec, rightSpec])
-        )
+        let redacted = await ImageRedactor().redact(image: image, specs: [leftSpec, rightSpec])
+        let result = try XCTUnwrap(redacted)
         XCTAssertEqual(result.size, size, "Output image should match input dimensions")
 
         // The pixellated regions are derived from the surrounding red/blue blocks, so
@@ -693,11 +692,6 @@ final class RedactionFeatureTests: XCTestCase {
         let outsidePixel = try samplePixel(in: result, x: 1, y: 1)
         XCTAssertGreaterThan(outsidePixel[0], 200, "Corner outside regions should preserve red channel")
         XCTAssertLessThan(outsidePixel[2], 60, "Corner outside regions should not have leaked blue")
-    }
-
-    // Local helper because XCTUnwrap doesn't compose with async values directly.
-    private func XCTUnwrapAsync<T>(_ value: T?, file: StaticString = #file, line: UInt = #line) throws -> T {
-        try XCTUnwrap(value, file: file, line: line)
     }
 
     private func samplePixel(in image: UIImage, x: Int, y: Int) throws -> [UInt8] {

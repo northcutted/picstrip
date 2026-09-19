@@ -35,17 +35,77 @@ struct BatchConfig {
     var outputFormat: ExportFormat = .png
     /// Whether to save cleaned photos as new assets or overwrite the originals.
     var saveMode: BatchSaveMode = .saveAsNew
+
+    /// `false` when neither option is on — the batch would only duplicate photos.
+    var hasWork: Bool { stripMetadata || redactVisualPII }
 }
 
-private struct ProcessingSnapshot {
+// MARK: - Batch plumbing
+
+/// One photo queued for batch processing, abstracted from `PhotosPickerItem` so
+/// the batch loop can be unit-tested without the system picker.
+struct BatchSource {
+    /// Photo library identifier of the original, when the picker supplied one.
+    let assetIdentifier: String?
+    /// Loads the photo's raw bytes; `nil` when the item cannot be read.
+    let load: @Sendable () async -> Data?
+}
+
+enum BatchSaveResult {
+    case saved
+    /// Replace mode could not find the original, so a cleaned copy was saved instead.
+    case savedCopyOriginalMissing
+    case failed
+}
+
+/// Persists one cleaned photo. Injected so tests never touch the photo library.
+typealias BatchSaver = (_ data: Data, _ assetIdentifier: String?, _ mode: BatchSaveMode) async -> BatchSaveResult
+
+/// What `processBatchItem` hands back to the main actor for one photo.
+nonisolated private struct BatchItemOutput: Sendable {
+    let data: Data
+    let visualRedactions: [RedactionReport]
+    let metadataStripped: [MetadataCategoryReport]
+}
+
+/// An image's ImageIO property dictionary, frozen so it can be handed between
+/// the background decoders and the main actor.
+///
+/// `@unchecked Sendable`: the dictionary comes straight from
+/// `CGImageSourceCopyPropertiesAtIndex` and is never mutated afterwards; its
+/// values are immutable property-list objects (strings, numbers, arrays,
+/// dictionaries), which are safe to read from any thread.
+nonisolated struct SourceProperties: @unchecked Sendable {
+    let dictionary: [CFString: Any]
+
+    init?(_ dictionary: [CFString: Any]?) {
+        guard let dictionary else { return nil }
+        self.dictionary = dictionary
+    }
+
+    init?(imageData: Data) {
+        guard let source = CGImageSourceCreateWithData(imageData as CFData, nil) else { return nil }
+        self.init(CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any])
+    }
+}
+
+/// What a freshly loaded image's metadata looks like, computed off the main actor.
+nonisolated private struct SourceCatalog: Sendable {
+    let props: SourceProperties?
+    let stripped: StrippedMetadata
+    let all: StrippedMetadata
+    let utType: UTType?
+}
+
+nonisolated private struct ProcessingSnapshot: Sendable {
     let processed: ProcessedImage
     let outputFileFields: [MetadataField]
     let processedPreviewUIImage: UIImage?
-    let rawSourceProps: [CFString: Any]?
+    let rawSourceProps: SourceProperties?
     let allSourceMetadata: StrippedMetadata?
 }
 
-private struct ProcessingRequest {
+nonisolated private struct ProcessingRequest: Sendable {
     let raw: Data
     let sourceData: Data
     let imageOverride: UIImage?
@@ -91,27 +151,33 @@ final class ScrubberViewModel {
     /// Populated after each processing pass — including the redacted path — so the
     /// review screen can show exactly what the encoder wrote into the final bytes,
     /// including any fields that were re-injected by the iOS JPEG/HEIC encoder.
-    var outputFileFields: [MetadataField] = []
-
-    /// The active export format chosen by the user.
-    /// Changing this updates `selectedPreset` and re-triggers processing.
-    var selectedExportFormat: ExportFormat = .png {
-        didSet { selectedPreset = selectedExportFormat.exportPreset }
+    var outputFileFields: [MetadataField] = [] {
+        didSet { outputFieldKeys = Set(outputFileFields.map { "\($0.category).\($0.key)" }) }
     }
 
-    /// The active export preset. Changing it re-triggers processing only when the
-    /// review sheet is currently open; otherwise the change is recorded and a
-    /// fresh encode runs the next time the user opens review.  This avoids
-    /// re-encoding on every preset toggle when nothing on screen actually depends
-    /// on `processedData`.
-    var selectedPreset: ExportPreset = .matchSource {
+    /// `"<Category>.<Key>"` for every field in `outputFileFields`, for O(1) lookup.
+    @ObservationIgnored private var outputFieldKeys: Set<String> = []
+
+    /// The active export format chosen by the user.
+    ///
+    /// Changing it re-triggers processing only when the review sheet is currently
+    /// open; otherwise the change is recorded and a fresh encode runs the next
+    /// time the user opens review.  This avoids re-encoding on every format
+    /// toggle when nothing on screen actually depends on `processedData`.
+    var selectedExportFormat: ExportFormat = .png {
         didSet {
-            guard rawImageData != nil else { return }
+            guard selectedExportFormat != oldValue, rawImageData != nil else { return }
             if activeSheet == .preSave {
                 Task { await prepareAndReview(presentSheet: false) }
             }
         }
     }
+
+    /// The stripping-engine preset for `selectedExportFormat`.
+    ///
+    /// Derived rather than stored so the format shown in the UI and audit report
+    /// can never drift from the format the encoder actually uses.
+    var selectedPreset: ExportPreset { selectedExportFormat.exportPreset }
 
     /// The detected UTType of the source image (e.g. `.jpeg`, `.heic`).
     var sourceUTType: UTType?
@@ -154,6 +220,11 @@ final class ScrubberViewModel {
 
     /// Shown when the user chose "Replace Original" but no asset identifier is available.
     var showReplaceUnavailableAlert: Bool = false
+
+    /// `true` when the loaded image came from the Photos picker with a library
+    /// identifier — i.e. there is an original asset "Replace Original" can target.
+    /// Images from Files, drag and drop, paste, or the Share Extension have none.
+    var canReplaceOriginal: Bool { selectedItem?.itemIdentifier != nil }
 
     /// PII types detected in the currently loaded image via on-device OCR.
     /// Empty when no image is loaded or the scan found nothing.
@@ -235,8 +306,15 @@ final class ScrubberViewModel {
     /// Set to `true` when `processBatch()` finishes — drives the transition to `BatchSummaryView`.
     var batchComplete: Bool = false
 
-    /// Per-photo audit reports accumulated during the batch run.
+    /// Per-photo audit reports accumulated during the batch run — one per photo
+    /// that was cleaned **and** accepted by the photo library.
     var batchReports: [AuditReport] = []
+
+    /// Photos in the current batch that could not be loaded, cleaned, or saved.
+    var batchFailedCount: Int = 0
+
+    /// Photos in the current batch that were cleaned and saved.
+    var batchSucceededCount: Int { batchReports.count }
 
     /// Non-nil when the batch encounters a fatal error (e.g. photo library access denied).
     var batchErrorMessage: String?
@@ -318,7 +396,13 @@ final class ScrubberViewModel {
 
     private let piiScanner = PIIScanner()
 
-    private var isClearing: Bool = false
+    /// The in-flight picker load, cancelled when a newer selection supersedes it.
+    private var loadTask: Task<Void, Never>?
+
+    /// Rejects stale load completions: a slow `loadTransferable` for photo A must
+    /// not overwrite state after the user has already moved on to photo B.
+    private var loadToken = UUID()
+
     private var piiScanTask: Task<Void, Never>?
     private var piiScanToken = UUID()
     private(set) var piiFocusTask: Task<Void, Never>?
@@ -329,7 +413,7 @@ final class ScrubberViewModel {
 
     /// The raw source properties from ImageIO — used to rebuild pendingStrippedMetadata
     /// cheaply when only the config changes (without re-running the full encode pipeline).
-    private var rawSourceProps: [CFString: Any]?
+    private var rawSourceProps: SourceProperties?
 
     /// Rejects stale processing completions when the user changes photo, preset,
     /// or redaction settings while an off-main encode is still running.
@@ -338,26 +422,65 @@ final class ScrubberViewModel {
     // MARK: - Item change handler
 
     private func handleItemChange() {
-        guard !isClearing else { return }
         guard let item = selectedItem else { return }
-        Task { await loadAndProcess(item: item) }
+        loadTask?.cancel()
+        loadTask = Task { await loadAndProcess(item: item) }
     }
 
     // MARK: - Async load pipeline
 
     /// Loads image bytes directly — bypasses `PhotosPickerItem`.
     ///
-    /// Used by UITest fixture injection: the test writes a known PNG to `/tmp`,
-    /// sets `PICSTRIP_FIXTURE` in `launchEnvironment`, and the app calls this on
-    /// startup so the review screen is reachable without automating the Photos picker.
+    /// Used for every input that is not a Photos picker selection: Files, drag
+    /// and drop, paste, the Share Extension hand-off, and UITest fixture
+    /// injection (`PICSTRIP_FIXTURE` in `launchEnvironment`).
     func loadData(_ data: Data) async {
+        loadTask?.cancel()
+        loadTask = nil
+        // These bytes did not come from the picker, so any previous selection no
+        // longer describes the loaded image.  Leaving it set would let "Replace
+        // Original" delete an unrelated library asset.
+        selectedItem = nil
+
+        let token = resetForNewImage()
+        await ingest(data, token: token)
+    }
+
+    private func loadAndProcess(item: PhotosPickerItem) async {
+        let token = resetForNewImage()
+
+        do {
+            let data = try await item.loadTransferable(type: Data.self)
+            guard loadToken == token else { return }
+            guard let data else {
+                errorMessage = String(localized: "The selected item could not be loaded as image data.")
+                isProcessing = false
+                return
+            }
+            await ingest(data, token: token)
+        } catch {
+            guard loadToken == token, !(error is CancellationError) else { return }
+            errorMessage = error.localizedDescription
+            rawImageData = nil
+            isProcessing = false
+        }
+    }
+
+    /// Clears all per-photo state and returns the token identifying the new load.
+    private func resetForNewImage() -> UUID {
+        let token = UUID()
+        loadToken = token
+
         isProcessing = true
         errorMessage = nil
+        rawImageData = nil
         processedData = nil
         processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
+        allSourceMetadata = nil
         pendingStrippedMetadata = nil
+        outputFileFields = []
         sourceUTType = nil
         rawSourceProps = nil
         piiScanTask?.cancel()
@@ -376,70 +499,31 @@ final class ScrubberViewModel {
         typesToRedact = []
         clearUndoRedoStacks()
 
-        rawImageData = data
+        return token
+    }
 
-        if let uiImage = await Self.makePreviewImage(from: data) {
-            inputImage = Image(uiImage: uiImage)
-            sourceUIImage = uiImage
-            imageSize = uiImage.size
+    private func ingest(_ data: Data, token: UUID) async {
+        let preview = await Self.makePreviewImage(from: data)
+        guard loadToken == token else { return }
+
+        // Pasted, dropped, and shared bytes are not guaranteed to be an image
+        // ImageIO can decode.  Without a preview there is nothing to show or edit.
+        guard let preview else {
+            errorMessage = String(localized: "The selected item could not be loaded as image data.")
+            isProcessing = false
+            return
         }
+
+        rawImageData  = data
+        inputImage    = Image(uiImage: preview)
+        sourceUIImage = preview
+        // Store point dimensions (not pixel dimensions).
+        // ContentView's .scaledToFit() math operates in SwiftUI points,
+        // so we match that coordinate space here.
+        imageSize = preview.size
 
         startPIIScan(data: data)
         await catalogSourceMetadata(from: data)
-    }
-
-    private func loadAndProcess(item: PhotosPickerItem) async {
-        isProcessing = true
-        errorMessage = nil
-        processedData = nil
-        processedPreviewUIImage = nil
-        inputImage = nil
-        sourceUIImage = nil
-        pendingStrippedMetadata = nil
-        sourceUTType = nil
-        rawSourceProps = nil
-        piiScanTask?.cancel()
-        piiScanTask = nil
-        piiFocusTask?.cancel()
-        piiFocusTask = nil
-        piiScanToken = UUID()
-        isScanningPII     = false
-        detectedPII       = []
-        imageSize         = .zero
-        activeSheet       = nil
-        selectedPIIResult = nil
-        redactionRegions  = []
-        selectedRedactionRegionID = nil
-        redactedUIImage   = nil
-        typesToRedact     = []
-        clearUndoRedoStacks()
-
-        do {
-            guard let data = try await item.loadTransferable(type: Data.self) else {
-                errorMessage = String(localized: "The selected item could not be loaded as image data.")
-                isProcessing = false
-                return
-            }
-
-            rawImageData = data
-
-            if let uiImage = await Self.makePreviewImage(from: data) {
-                inputImage    = Image(uiImage: uiImage)
-                sourceUIImage = uiImage
-                // Store point dimensions (not pixel dimensions).
-                // ContentView's .scaledToFit() math operates in SwiftUI points,
-                // so we match that coordinate space here.
-                imageSize = uiImage.size
-            }
-
-            startPIIScan(data: data)
-
-            await catalogSourceMetadata(from: data)
-        } catch {
-            errorMessage = error.localizedDescription
-            rawImageData = nil
-            isProcessing = false
-        }
     }
 
     // MARK: - Processing
@@ -469,48 +553,10 @@ final class ScrubberViewModel {
     /// encode itself is deferred to `prepareAndReview`, which runs only when the
     /// user opens the review sheet to save or share.
     private func catalogSourceMetadata(from data: Data) async {
-        struct Catalog {
-            let props: [CFString: Any]?
-            let stripped: StrippedMetadata
-            let all: StrippedMetadata
-            let utType: UTType?
-        }
-
         let token = UUID()
         processingToken = token
 
-        let currentConfig = stripConfig
-        let allCategoriesConfig = StripConfig(
-            categoryEnabled: Dictionary(
-                uniqueKeysWithValues: ImageProcessor.categoryMap.map { ($0.category, true) }
-            ),
-            fieldOverrides: [:]
-        )
-
-        let catalog = await Task.detached(priority: .userInitiated) { () -> Catalog in
-            guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
-                return Catalog(
-                    props: nil,
-                    stripped: StrippedMetadata(fields: []),
-                    all: StrippedMetadata(fields: []),
-                    utType: nil
-                )
-            }
-            let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-            let utType: UTType?
-            if let cfType = CGImageSourceGetType(source),
-               let detected = UTType(cfType as String) {
-                utType = detected
-            } else {
-                utType = nil
-            }
-            return Catalog(
-                props: props,
-                stripped: ImageProcessor.catalogueStrippedMetadata(from: props, config: currentConfig),
-                all: ImageProcessor.catalogueStrippedMetadata(from: props, config: allCategoriesConfig),
-                utType: utType
-            )
-        }.value
+        let catalog = await Self.makeSourceCatalog(from: data, config: stripConfig)
 
         guard processingToken == token else { return }
         rawSourceProps          = catalog.props
@@ -534,14 +580,19 @@ final class ScrubberViewModel {
 
         piiScanTask = Task { [piiScanner] in
             let result: [DetectionResult]
+            var scanError: String?
             do {
                 result = try await piiScanner.scanImage(data: data)
             } catch {
+                // Never let a failed scan look like a clean one: tell the user so
+                // they know to check the photo themselves.
                 result = []
+                scanError = error.localizedDescription
             }
 
             await MainActor.run {
                 guard self.piiScanToken == token, !Task.isCancelled else { return }
+                if let scanError { self.errorMessage = scanError }
                 self.detectedPII = result
                 // Privacy by default: pre-select every detected type for redaction.
                 // `detectedPII.didSet` already called replaceDetectedRedactionRegions;
@@ -780,7 +831,7 @@ final class ScrubberViewModel {
     /// Called when only `stripConfig` changes and a full re-process would be redundant.
     func refreshPendingMetadata() {
         pendingStrippedMetadata = ImageProcessor.catalogueStrippedMetadata(
-            from: rawSourceProps,
+            from: rawSourceProps?.dictionary,
             config: stripConfig
         )
     }
@@ -895,60 +946,74 @@ final class ScrubberViewModel {
         }
     }
 
-    private static func makeProcessingSnapshot(_ request: ProcessingRequest) async throws -> ProcessingSnapshot {
-        try await Task.detached(priority: .userInitiated) {
-            let result: ProcessedImage
-            if let imageOverride = request.imageOverride {
-                result = try ImageProcessor.process(
-                    image: imageOverride,
-                    sourceData: request.sourceData,
-                    preset: request.preset,
-                    config: request.config
-                )
-            } else {
-                result = try ImageProcessor.process(
-                    data: request.raw,
-                    preset: request.preset,
-                    config: request.config
-                )
-            }
-
-            let outputFileFields = ImageProcessor.readAllFields(from: result.data)
-            let processedPreview = ImageProcessor.downsampledUIImage(
-                from: result.data,
-                maxPixelDimension: 1_600
+    /// Reads the source's properties and catalogues them off the main actor.
+    @concurrent
+    nonisolated private static func makeSourceCatalog(from data: Data, config: StripConfig) async -> SourceCatalog {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
+            return SourceCatalog(
+                props: nil,
+                stripped: StrippedMetadata(fields: []),
+                all: StrippedMetadata(fields: []),
+                utType: nil
             )
+        }
+        let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let utType = CGImageSourceGetType(source).flatMap { UTType($0 as String) }
+        return SourceCatalog(
+            props: SourceProperties(props),
+            stripped: ImageProcessor.catalogueStrippedMetadata(from: props, config: config),
+            all: ImageProcessor.catalogueStrippedMetadata(from: props, config: .allEnabled),
+            utType: utType
+        )
+    }
 
-            let rawSourceProps: [CFString: Any]?
-            let allSourceMetadata: StrippedMetadata?
-            if request.updateSourceMetadata {
-                if let source = CGImageSourceCreateWithData(request.sourceData as CFData, nil) {
-                    rawSourceProps = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
-                } else {
-                    rawSourceProps = nil
-                }
-                allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
-                    from: rawSourceProps,
-                    config: StripConfig(
-                        categoryEnabled: Dictionary(
-                            uniqueKeysWithValues: ImageProcessor.categoryMap.map { ($0.category, true) }
-                        ),
-                        fieldOverrides: [:]
-                    )
-                )
-            } else {
-                rawSourceProps = nil
-                allSourceMetadata = nil
-            }
-
-            return ProcessingSnapshot(
-                processed: result,
-                outputFileFields: outputFileFields,
-                processedPreviewUIImage: processedPreview,
-                rawSourceProps: rawSourceProps,
-                allSourceMetadata: allSourceMetadata
+    /// Runs the full encode plus the output read-back off the main actor.
+    @concurrent
+    nonisolated private static func makeProcessingSnapshot(
+        _ request: ProcessingRequest
+    ) async throws -> ProcessingSnapshot {
+        let result: ProcessedImage
+        if let imageOverride = request.imageOverride {
+            result = try ImageProcessor.process(
+                image: imageOverride,
+                sourceData: request.sourceData,
+                preset: request.preset,
+                config: request.config
             )
-        }.value
+        } else {
+            result = try ImageProcessor.process(
+                data: request.raw,
+                preset: request.preset,
+                config: request.config
+            )
+        }
+
+        let outputFileFields = ImageProcessor.readAllFields(from: result.data)
+        let processedPreview = ImageProcessor.downsampledUIImage(
+            from: result.data,
+            maxPixelDimension: 1_600
+        )
+
+        let rawSourceProps: SourceProperties?
+        let allSourceMetadata: StrippedMetadata?
+        if request.updateSourceMetadata {
+            rawSourceProps = SourceProperties(imageData: request.sourceData)
+            allSourceMetadata = ImageProcessor.catalogueStrippedMetadata(
+                from: rawSourceProps?.dictionary,
+                config: .allEnabled
+            )
+        } else {
+            rawSourceProps = nil
+            allSourceMetadata = nil
+        }
+
+        return ProcessingSnapshot(
+            processed: result,
+            outputFileFields: outputFileFields,
+            processedPreviewUIImage: processedPreview,
+            rawSourceProps: rawSourceProps,
+            allSourceMetadata: allSourceMetadata
+        )
     }
 
     /// Saves the processed image to the photo library.
@@ -1017,15 +1082,29 @@ final class ScrubberViewModel {
     }
 
     private var pendingMetadataFields: [MetadataField] {
-        guard let source = allSourceMetadata else { return [] }
-        return source.fields.filter {
-            ImageProcessor.shouldReportStripped(
-                category: $0.category,
-                key: $0.key,
-                isStructural: $0.isStructural,
-                config: stripConfig
-            )
+        allSourceMetadata?.fields.filter(isRemoved) ?? []
+    }
+
+    /// `true` when `field` will be — or, once an encode has run, actually was —
+    /// left out of the exported file.
+    ///
+    /// Before an encode this is a prediction from `stripConfig`.  Afterwards the
+    /// output bytes are the authority: ImageIO cannot write every field back
+    /// (TIFF DateTime, Software, and Artist have no writable mapping, for
+    /// example), so a field the user asked to keep that did not survive is
+    /// reported as removed instead of being silently claimed as kept.
+    func isRemoved(_ field: MetadataField) -> Bool {
+        guard !field.isStructural else { return false }
+        if ImageProcessor.shouldReportStripped(
+            category: field.category,
+            key: field.key,
+            isStructural: field.isStructural,
+            config: stripConfig
+        ) {
+            return true
         }
+        guard processedData != nil else { return false }
+        return !outputFieldKeys.contains("\(field.category).\(field.key)")
     }
 
     // MARK: - Helpers
@@ -1045,13 +1124,7 @@ final class ScrubberViewModel {
         let metadataStripped: [MetadataCategoryReport] = {
             guard let source = allSourceMetadata else { return [] }
             var grouped: [String: [String: String]] = [:]
-            for field in source.fields where !field.isStructural {
-                guard ImageProcessor.shouldReportStripped(
-                    category: field.category,
-                    key: field.key,
-                    isStructural: field.isStructural,
-                    config: stripConfig
-                ) else { continue }
+            for field in source.fields where isRemoved(field) {
                 grouped[field.category, default: [:]][field.key] = field.value
             }
             return grouped
@@ -1088,173 +1161,201 @@ final class ScrubberViewModel {
 
     /// Sequentially processes every item in `batchItems` using the supplied config.
     ///
-    /// **Memory safety:** Images are processed one-at-a-time.  Local `UIImage` and
-    /// `Data` references are explicitly nullified at the end of each iteration so ARC
-    /// can reclaim the memory before the next image is decoded.  Concurrent
-    /// `TaskGroup` execution is intentionally avoided — parallel Vision / CoreGraphics
-    /// workers spike RAM and cause OOM crashes on device.
+    /// **Memory safety:** Images are processed one-at-a-time.  Each photo's decoded
+    /// bitmap and intermediate buffers live only inside `processBatchItem`, so ARC
+    /// reclaims them before the next image is decoded.  Concurrent `TaskGroup`
+    /// execution is intentionally avoided — parallel Vision / CoreGraphics workers
+    /// spike RAM and cause OOM crashes on device.
     func processBatch(config: BatchConfig) async {
         isBatchProcessing = true
         batchProgress     = (0, batchItems.count)
         batchReports      = []
+        batchFailedCount  = 0
         batchErrorMessage = nil
-
-        // Capture the list once; `batchItems` must not be mutated during the loop.
-        let items = batchItems
 
         // Request photo library authorization once before entering the loop.
         // Replace mode needs readWrite; save-as-new only needs addOnly.
         let requiredLevel: PHAccessLevel = config.saveMode == .replaceOriginal ? .readWrite : .addOnly
         let status = await PHPhotoLibrary.requestAuthorization(for: requiredLevel)
         guard status == .authorized || status == .limited else {
-            batchErrorMessage = "Photo library access was denied. Please enable it in Settings."
+            batchErrorMessage = String(localized: "Photo library access was denied. Please enable it in Settings.")
             isBatchProcessing = false
             return
         }
 
-        for (index, item) in items.enumerated() {
-            batchProgress = (index + 1, items.count)
+        // Capture the list once; `batchItems` must not be mutated during the loop.
+        let sources = batchItems.map { item in
+            BatchSource(assetIdentifier: item.itemIdentifier) {
+                try? await item.loadTransferable(type: Data.self)
+            }
+        }
+        await runBatch(sources: sources, config: config, save: Self.saveBatchItemToPhotos)
+    }
 
-            // ── Step 1: Load raw bytes ──────────────────────────────────────
-            guard var imageData = try? await item.loadTransferable(type: Data.self) else {
+    /// The batch loop proper, separated from `PhotosPickerItem` and
+    /// `PHPhotoLibrary` so unit tests can drive it with in-memory sources.
+    ///
+    /// **Fail closed:** a photo is only written when every step the user asked
+    /// for succeeded.  If stripping or redaction fails, the photo is counted as
+    /// failed and nothing is saved — silently saving the untouched original as a
+    /// "cleaned" copy would defeat the purpose of the app.
+    func runBatch(sources: [BatchSource], config: BatchConfig, save: BatchSaver) async {
+        isBatchProcessing = true
+        batchProgress     = (0, sources.count)
+        batchReports      = []
+        batchFailedCount  = 0
+        batchErrorMessage = nil
+
+        let preset = config.outputFormat.exportPreset
+        let formatTitle = config.outputFormat.title
+        var originalsNotFound = 0
+
+        for (index, source) in sources.enumerated() {
+            batchProgress = (index + 1, sources.count)
+
+            // Load + scan + redact + strip all run off the main actor; only the
+            // resulting bytes and report rows come back.
+            guard let sourceData = await source.load(),
+                  let output = await Self.processBatchItem(
+                      sourceData: sourceData,
+                      stripMetadata: config.stripMetadata,
+                      redactVisualPII: config.redactVisualPII,
+                      preset: preset
+                  )
+            else {
+                batchFailedCount += 1
                 continue
             }
-            let sourceData = imageData
 
-            var visualRedactions: [RedactionReport] = []
-            var redactedImage: UIImage?
-
-            // ── Step 2: Visual PII redaction ────────────────────────────────
-            // Sequential scan + render — no concurrent Tasks to avoid OOM.
-            if config.redactVisualPII {
-                if let scanResults = try? await PIIScanner().scanImage(data: imageData) {
-                    let allInstances = scanResults.flatMap(\.instances)
-                    if !allInstances.isEmpty {
-                        var localImage: UIImage? = UIImage(data: imageData)
-                        if let img = localImage,
-                           let burned = await ImageRedactor().redact(image: img, instances: allInstances) {
-                            redactedImage = burned
-                        }
-                        localImage = nil   // explicit release before metadata step
-                    }
-                    visualRedactions = scanResults.map {
-                        RedactionReport(type: $0.type.description, instanceCount: $0.matchCount)
-                    }
-                }
+            switch await save(output.data, source.assetIdentifier, config.saveMode) {
+            case .failed:
+                batchFailedCount += 1
+                continue
+            case .savedCopyOriginalMissing:
+                originalsNotFound += 1
+            case .saved:
+                break
             }
 
-            // ── Step 3: Metadata stripping ──────────────────────────────────
-            var metadataStripped: [MetadataCategoryReport] = []
-            var finalData = imageData
+            // Only photos the library accepted appear in the audit log.
+            batchReports.append(AuditReport(
+                scanDate: Date(),
+                formatSelected: formatTitle,
+                visualRedactions: output.visualRedactions,
+                metadataStripped: output.metadataStripped
+            ))
+        }
 
-            if config.stripMetadata {
-                let preset = config.outputFormat.exportPreset
-                let result: ProcessedImage?
-                if let redactedImage {
-                    result = try? ImageProcessor.process(
-                        image: redactedImage,
-                        sourceData: sourceData,
-                        preset: preset,
-                        config: .allEnabled
-                    )
-                } else {
-                    result = try? ImageProcessor.process(
-                        data: sourceData,
-                        preset: preset,
-                        config: .allEnabled
-                    )
-                }
-
-                if let result {
-                    finalData = result.data
-
-                    // Build the per-category report from the *pre-strip* source props.
-                    var rawProps: [CFString: Any]?
-                    if let src = CGImageSourceCreateWithData(sourceData as CFData, nil) {
-                        rawProps = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [CFString: Any]
-                    }
-                    let sourceMeta = ImageProcessor.catalogueStrippedMetadata(
-                        from: rawProps, config: .allEnabled
-                    )
-                    var grouped: [String: [String: String]] = [:]
-                    for field in sourceMeta.fields where !field.isStructural {
-                        grouped[field.category, default: [:]][field.key] = field.value
-                    }
-                    metadataStripped = grouped
-                        .map { MetadataCategoryReport(category: $0.key, strippedFields: $0.value) }
-                        .sorted { $0.category < $1.category }
-                }
-            } else if let redactedImage,
-                      let result = try? ImageProcessor.process(
-                        image: redactedImage,
-                        sourceData: sourceData,
-                        preset: config.outputFormat.exportPreset,
-                        config: StripConfig(categoryEnabled: [:], fieldOverrides: [:])
-                      ) {
-                finalData = result.data
-            }
-
-            // ── Step 4: Save to Photo Library ───────────────────────────────
-            let dataToSave = finalData
-            var saveSucceeded = false
-            switch config.saveMode {
-            case .saveAsNew:
-                do {
-                    try await PHPhotoLibrary.shared().performChanges {
-                        let request = PHAssetCreationRequest.forAsset()
-                        request.addResource(with: .photo, data: dataToSave, options: nil)
-                    }
-                    saveSucceeded = true
-                } catch {
-                    batchErrorMessage = "Some photos could not be saved."
-                }
-            case .replaceOriginal:
-                if let identifier = item.itemIdentifier,
-                   let asset = PHAsset.fetchAssets(
-                       withLocalIdentifiers: [identifier], options: nil
-                   ).firstObject {
-                    do {
-                        try await PHPhotoLibrary.shared().performChanges {
-                            let createRequest = PHAssetCreationRequest.forAsset()
-                            createRequest.addResource(with: .photo, data: dataToSave, options: nil)
-                            PHAssetChangeRequest.deleteAssets([asset] as NSArray)
-                        }
-                        saveSucceeded = true
-                    } catch {
-                        batchErrorMessage = "Some photos could not be replaced."
-                    }
-                } else {
-                    // Fallback: original not found (e.g. not yet downloaded from iCloud).
-                    do {
-                        try await PHPhotoLibrary.shared().performChanges {
-                            let request = PHAssetCreationRequest.forAsset()
-                            request.addResource(with: .photo, data: dataToSave, options: nil)
-                        }
-                        saveSucceeded = true
-                        batchErrorMessage = "Some originals could not be identified, so cleaned copies were saved instead."
-                    } catch {
-                        batchErrorMessage = "Some photos could not be saved."
-                    }
-                }
-            }
-
-            // ── Step 5: Accumulate audit entry ──────────────────────────────
-            if saveSucceeded {
-                batchReports.append(AuditReport(
-                    scanDate: Date(),
-                    formatSelected: config.outputFormat.title,
-                    visualRedactions: visualRedactions,
-                    metadataStripped: metadataStripped
-                ))
-            }
-
-            // OOM prevention: release large buffers before the next iteration.
-            imageData = Data()
-            finalData = Data()
+        if batchFailedCount > 0 {
+            batchErrorMessage = String(localized: "Some photos could not be cleaned and were not saved.")
+        } else if originalsNotFound > 0 {
+            batchErrorMessage = String(localized: "Some originals could not be identified, so cleaned copies were saved instead.")
         }
 
         isBatchProcessing = false
         batchComplete     = true
+    }
+
+    /// Scans, redacts, and strips one photo entirely off the main actor.
+    ///
+    /// Returns `nil` when any requested step fails so the caller can fail closed.
+    @concurrent
+    nonisolated private static func processBatchItem(
+        sourceData: Data,
+        stripMetadata: Bool,
+        redactVisualPII: Bool,
+        preset: ExportPreset
+    ) async -> BatchItemOutput? {
+        var visualRedactions: [RedactionReport] = []
+        var redactedImage: UIImage?
+
+        // ── Step 1: Visual PII redaction ────────────────────────────────────
+        if redactVisualPII {
+            guard let scanResults = try? await PIIScanner().scanImage(data: sourceData) else {
+                return nil
+            }
+            let allInstances = scanResults.flatMap(\.instances)
+            if !allInstances.isEmpty {
+                guard let image = UIImage(data: sourceData),
+                      let burned = await ImageRedactor().redact(image: image, instances: allInstances)
+                else { return nil }
+                redactedImage = burned
+            }
+            visualRedactions = scanResults.map {
+                RedactionReport(type: $0.type.description, instanceCount: $0.matchCount)
+            }
+        }
+
+        // ── Step 2: Metadata stripping / re-encode ──────────────────────────
+        let keepEverything = StripConfig(categoryEnabled: [:], fieldOverrides: [:])
+        let result: ProcessedImage?
+        switch (stripMetadata, redactedImage) {
+        case (true, let redacted?):
+            result = try? ImageProcessor.process(
+                image: redacted, sourceData: sourceData, preset: preset, config: .allEnabled
+            )
+        case (true, nil):
+            result = try? ImageProcessor.process(data: sourceData, preset: preset, config: .allEnabled)
+        case (false, let redacted?):
+            // Redaction changed the pixels, so a re-encode is unavoidable; keep
+            // every metadata field the encoder is able to write back.
+            result = try? ImageProcessor.process(
+                image: redacted, sourceData: sourceData, preset: preset, config: keepEverything
+            )
+        case (false, nil):
+            // Nothing to strip and nothing to redact: pass the bytes through.
+            return BatchItemOutput(data: sourceData, visualRedactions: visualRedactions, metadataStripped: [])
+        }
+        guard let result else { return nil }
+
+        // ── Step 3: Per-category report from the *pre-strip* source fields ──
+        var metadataStripped: [MetadataCategoryReport] = []
+        if stripMetadata {
+            var grouped: [String: [String: String]] = [:]
+            for field in result.stripped.fields where !field.isStructural {
+                grouped[field.category, default: [:]][field.key] = field.value
+            }
+            metadataStripped = grouped
+                .map { MetadataCategoryReport(category: $0.key, strippedFields: $0.value) }
+                .sorted { $0.category < $1.category }
+        }
+
+        return BatchItemOutput(
+            data: result.data,
+            visualRedactions: visualRedactions,
+            metadataStripped: metadataStripped
+        )
+    }
+
+    /// Writes one cleaned photo to the library, deleting the original in replace mode.
+    private static func saveBatchItemToPhotos(
+        data: Data,
+        assetIdentifier: String?,
+        mode: BatchSaveMode
+    ) async -> BatchSaveResult {
+        var originalMissing = false
+        var original: PHAsset?
+        if mode == .replaceOriginal {
+            original = assetIdentifier.flatMap {
+                PHAsset.fetchAssets(withLocalIdentifiers: [$0], options: nil).firstObject
+            }
+            // Original not found (e.g. not yet downloaded from iCloud): fall
+            // back to saving a cleaned copy and tell the user afterwards.
+            originalMissing = original == nil
+        }
+
+        do {
+            try await PHPhotoLibrary.shared().performChanges { [original] in
+                let request = PHAssetCreationRequest.forAsset()
+                request.addResource(with: .photo, data: data, options: nil)
+                if let original {
+                    PHAssetChangeRequest.deleteAssets([original] as NSArray)
+                }
+            }
+            return originalMissing ? .savedCopyOriginalMissing : .saved
+        } catch {
+            return .failed
+        }
     }
 
     /// Wraps all per-photo `AuditReport`s in a `BatchAuditReport`, encodes it as
@@ -1262,7 +1363,8 @@ final class ScrubberViewModel {
     func generateBatchAuditJSON() -> URL? {
         let batch = BatchAuditReport(
             batchDate: Date(),
-            photoCount: batchItems.count,
+            photoCount: batchReports.count,
+            failedCount: batchFailedCount,
             reports: batchReports
         )
         let encoder = JSONEncoder()
@@ -1282,13 +1384,17 @@ final class ScrubberViewModel {
         batchProgress     = (0, 0)
         batchComplete     = false
         batchReports      = []
+        batchFailedCount  = 0
         batchErrorMessage = nil
         activeSheet       = nil
     }
 
     func clearState() {
+        loadTask?.cancel()
+        loadTask                = nil
+        loadToken               = UUID()
+        processingToken         = UUID()
         selectedItem            = nil
-        isClearing              = false
         rawImageData            = nil
         rawSourceProps          = nil
         inputImage              = nil
