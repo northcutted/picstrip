@@ -1,0 +1,210 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "NSPhotoLibraryAddUsageDescription" : {
+      "comment" : "Privacy - Photo Library Additions Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحفظ PicStrip الصورة المنظَّفة في مكتبة الصور الخاصة بك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip sichert das bereinigte Bild in deiner Fotomediathek."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PicStrip saves the scrubbed image to your photo library."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip guarda la imagen limpia en tu fototeca."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip enregistre l’image nettoyée dans votre photothèque."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip salva l’immagine pulita nella tua libreria foto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは、クリーンアップした画像を写真ライブラリに保存します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip은 정리된 이미지를 사진 보관함에 저장합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip bewaart de opgeschoonde afbeelding in je fotobibliotheek."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip zachowuje wyczyszczony obraz w Twojej bibliotece zdjęć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip salva a imagem limpa na sua fototeca."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip guarda a imagem limpa na sua fototeca."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip sparar den rensade bilden i ditt bildbibliotek."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip, temizlenen görüntüyü fotoğraf arşivinize kaydeder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 会将清理后的图像存储到你的照片图库。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 會將清理後的這張影像儲存到你的照片圖庫。"
+          }
+        }
+      }
+    },
+    "NSPhotoLibraryUsageDescription" : {
+      "comment" : "Privacy - Photo Library Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يحتاج PicStrip إلى الوصول إلى مكتبة الصور لاستبدال الصورة الأصلية عند طلب ذلك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip benötigt Zugriff auf deine Fotomediathek, um das Originalbild auf Wunsch zu ersetzen."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PicStrip needs access to your photo library to replace the original image when requested."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip necesita acceder a tu fototeca para reemplazar la imagen original cuando lo pidas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip a besoin d’accéder à votre photothèque pour remplacer l’image originale lorsque vous le demandez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip ha bisogno di accedere alla tua libreria foto per sostituire l’immagine originale quando lo richiedi."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは、リクエストに応じて元の画像を置き換えるために、写真ライブラリへのアクセスを必要とします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "원본 이미지를 교체하려면 PicStrip이 사진 보관함에 접근할 수 있어야 합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip heeft toegang tot je fotobibliotheek nodig om de originele afbeelding te vervangen wanneer je daarom vraagt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip potrzebuje dostępu do biblioteki zdjęć, aby na Twoje żądanie zastąpić oryginalny obraz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip precisa de acesso à sua fototeca para substituir a imagem original quando você pedir."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip necessita de acesso à sua fototeca para substituir a imagem original quando o pedir."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip behöver åtkomst till ditt bildbibliotek för att kunna ersätta originalbilden när du väljer det."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip, istediğinizde orijinal görüntüyü değiştirebilmek için fotoğraf arşivinize erişmek ister."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 需要访问你的照片图库，以便在你要求时替换原始图像。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 需要取用你的照片圖庫，才能在你要求時取代原始影像。"
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}

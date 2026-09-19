@@ -1,413 +1,413 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "Clean photos with ${applicationName}": {
-      "comment": "Siri shortcut phrase — opens PicStrip batch photo picker",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Clean photos with ${applicationName}"
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Clean photos with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نظّف الصور باستخدام ${applicationName}"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpia fotos con ${applicationName}"
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos mit ${applicationName} bereinigen"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpe fotos com ${applicationName}"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean photos with ${applicationName}"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fotos limpas com ${applicationName}"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia fotos con ${applicationName}"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName}で写真をキレイにする"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyer des photos avec ${applicationName}"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 清理照片"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulisci foto con ${applicationName}"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpe fotos com ${applicationName}"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}で写真をクリーンアップ"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName}로 사진 정리하기"
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}으로 사진 정리하기"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pulisci foto con ${applicationName}"
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto’s opschonen met ${applicationName}"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Foto's opschonen met ${applicationName}"
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść zdjęcia za pomocą ${applicationName}"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Wyczyść zdjęcia za pomocą ${applicationName}"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpe fotos com ${applicationName}"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rensa foton med ${applicationName}"
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar fotografias com o ${applicationName}"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} ile fotoğrafları temizle"
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rensa bilder med ${applicationName}"
           }
         },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "نظّف الصور باستخدام ${applicationName}"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile fotoğrafları temizle"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 清理照片"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 ${applicationName} 清理照片"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpe fotos com ${applicationName}"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 ${applicationName} 清理照片"
           }
         }
       }
     },
-    "Remove metadata with ${applicationName}": {
-      "comment": "Siri shortcut phrase — opens PicStrip batch photo picker",
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remove metadata with ${applicationName}"
+    "Remove metadata with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "احذف بيانات الصور في ${applicationName}"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elimina metadatos con ${applicationName}"
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten mit ${applicationName} löschen"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supprimer les métadonnées avec ${applicationName}"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove metadata with ${applicationName}"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Entfernen Sie Metadaten mit ${applicationName}"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quita los metadatos de mis fotos con ${applicationName}"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} でメタデータを削除する"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer les données EXIF d’une photo avec ${applicationName}"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 删除元数据"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina i dati nascosti con ${applicationName}"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remover metadados com ${applicationName}"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}で写真のメタデータを消す"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName}으로 메타데이터 제거하기"
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}에서 사진 메타데이터 지우기"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rimuovi i metadata con ${applicationName}"
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Locatiegegevens uit foto’s wissen met ${applicationName}"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Verwijder metadata met ${applicationName}"
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane za pomocą ${applicationName}"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usuń metadane za pomocą ${applicationName}"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apague os metadados das fotos com ${applicationName}"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ta bort metadata med ${applicationName}"
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadados com o ${applicationName}"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} ile meta verileri kaldır"
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rensa metadata med ${applicationName}"
           }
         },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "إزالة البيانات الوصفية باستخدام ${applicationName}"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile EXIF verilerini sil"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 移除元数据"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 ${applicationName} 清除照片元数据"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remover metadados com ${applicationName}"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 ${applicationName} 清除照片的隱私資訊"
           }
         }
       }
     },
-    "Scrub photos with ${applicationName}": {
-      "comment": "Siri shortcut phrase — opens PicStrip batch photo picker",
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Scrub photos with ${applicationName}"
+    "Scrub photos with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جهّز صورة للمشاركة باستخدام ${applicationName}"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpia fotos con ${applicationName}"
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos mit ${applicationName} säubern"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nettoyer les photos avec ${applicationName}"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scrub photos with ${applicationName}"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fotos mit ${applicationName} bereinigen"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre ${applicationName} para limpiar fotos"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} で写真をクリーンアップ"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anonymiser une photo avec ${applicationName}"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 清理照片"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ripulisci le mie foto con ${applicationName}"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpar fotos com ${applicationName}"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}で写真をきれいにする"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName}로 사진 정리하기"
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}으로 사진 깨끗하게 만들기"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pulisci le foto con ${applicationName}"
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto’s schoonmaken met ${applicationName}"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Foto's schoonmaken met ${applicationName}"
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oczyść zdjęcia w ${applicationName}"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Czyść zdjęcia za pomocą ${applicationName}"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Proteja a privacidade das minhas fotos com ${applicationName}"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rensa foton med ${applicationName}"
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apagar metadados das fotografias com o ${applicationName}"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} ile fotoğrafları temizle"
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Städa mina bilder med ${applicationName}"
           }
         },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nettoyer les photos avec ${applicationName}"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile fotoğrafları paylaşmaya hazırla"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 清理照片"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 ${applicationName} 净化照片"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Limpar fotos com ${applicationName}"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打開 ${applicationName} 清理我的照片"
           }
         }
       }
     },
-    "Strip metadata with ${applicationName}": {
-      "comment": "Siri shortcut phrase — opens PicStrip batch photo picker",
-      "extractionState": "stale",
-      "localizations": {
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Strip metadata with ${applicationName}"
+    "Strip metadata with ${applicationName}" : {
+      "comment" : "Siri shortcut phrase — opens PicStrip batch photo picker",
+      "extractionState" : "stale",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أزِل البيانات الوصفية باستخدام ${applicationName}"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Elimina metadatos con ${applicationName}"
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten mit ${applicationName} entfernen"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Usuń metadane za pomocą ${applicationName}"
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Strip metadata with ${applicationName}"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ta bort metadata med ${applicationName}"
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina metadatos con ${applicationName}"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} ile meta verileri kaldır"
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les métadonnées avec ${applicationName}"
           }
         },
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "قم بإزالة بيانات التعريف باستخدام ${applicationName}"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i metadati con ${applicationName}"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 剝除元數據"
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}でメタデータを削除"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remover metadados com ${applicationName}"
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName}으로 메타데이터 제거하기"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Supprimer les métadonnées avec ${applicationName}"
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadata verwijderen met ${applicationName}"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Metadaten mit ${applicationName} entfernen"
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane ze zdjęć w ${applicationName}"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName} でメタデータを削除する"
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remova os metadados com ${applicationName}"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "使用 ${applicationName} 去除元数据"
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados com o ${applicationName}"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Remover metadados com ${applicationName}"
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort metadata med ${applicationName}"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "${applicationName}를 사용하여 메타데이터 제거"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${applicationName} ile meta verileri kaldır"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rimuovi i metadati con ${applicationName}"
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用 ${applicationName} 移除元数据"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Metagegevens verwijderen met ${applicationName}"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用 ${applicationName} 移除後設資料"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }
