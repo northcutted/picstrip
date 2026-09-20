@@ -364,7 +364,7 @@ See the [release operations guide](docs/release-pipeline.md) for setup, verifica
 
 ### 100% on-device
 
-- No internet required
+- No internet required (one opt-in exception: on iOS 27, iOS downloads Apple's object-selection model the first time you agree to use tap-to-select — the model only, never your photos)
 - No analytics or tracking
 - No data collection
 - No remote servers

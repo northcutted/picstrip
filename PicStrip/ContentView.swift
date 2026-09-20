@@ -212,6 +212,33 @@ struct ContentView: View {
         } message: {
             Text("Camera access was denied. Please enable it in Settings.")
         }
+        // ── Tap an object to redact it ────────────────────────────────────
+        // The model behind it is downloaded by iOS from Apple, once.  PicStrip
+        // makes no other network request, so it never starts this one unasked.
+        .task { await viewModel.refreshObjectSelectionSupport() }
+        .alert("Download Object Selection?", isPresented: $viewModel.isAskingToDownloadObjectModel) {
+            Button("Download") {
+                Task {
+                    let before = viewModel.redactionRegions.count
+                    await viewModel.downloadObjectModelAndContinue()
+                    if viewModel.redactionRegions.count > before { isAddingRedaction = false }
+                }
+            }
+            Button("Not Now", role: .cancel) { viewModel.declineObjectModelDownload() }
+        } message: {
+            Text("Tapping an object to redact it uses an Apple model that iOS downloads once. Only the model is downloaded — your photos never leave your device.")
+        }
+        .alert(
+            "Object Selection",
+            isPresented: Binding(
+                get: { viewModel.objectSelectionMessage != nil },
+                set: { if !$0 { viewModel.objectSelectionMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.objectSelectionMessage ?? "")
+        }
         // ── Paste button visibility ───────────────────────────────────────
         // Copying usually happens in another app, so re-check on every return
         // to the foreground; the notifications cover copies made while PicStrip
@@ -483,6 +510,7 @@ struct ContentView: View {
                     canUndo: viewModel.canUndo,
                     canRedo: viewModel.canRedo,
                     isAddingRedaction: isAddingRedaction,
+                    canSelectObjects: viewModel.isObjectSelectionSupported,
                     onSelect: { id in
                         viewModel.selectRedactionRegion(id: id)
                     },
@@ -572,6 +600,14 @@ struct ContentView: View {
                             viewModel.addCustomRedaction(rect: rect)
                             isAddingRedaction = false
                         },
+                        onSelectObject: viewModel.isObjectSelectionSupported ? { point in
+                            haptic(.light)
+                            Task {
+                                let before = viewModel.redactionRegions.count
+                                await viewModel.selectObject(at: point)
+                                if viewModel.redactionRegions.count > before { isAddingRedaction = false }
+                            }
+                        } : nil,
                         onBeginUpdateRedaction: { id in
                             viewModel.beginRedactionUpdate(id: id)
                         },
@@ -592,6 +628,14 @@ struct ContentView: View {
                 // Processing overlay
                 if viewModel.isProcessing {
                     processingOverlay
+                }
+
+                if viewModel.isSelectingObject {
+                    ProgressView()
+                        .controlSize(.large)
+                        .padding(18)
+                        .glassEffect(in: .rect(cornerRadius: 16))
+                        .accessibilityLabel("Finding the object")
                 }
 
                 // × dismiss button
@@ -996,6 +1040,8 @@ private struct RedactionEditorDrawer: View {
     let canUndo: Bool
     let canRedo: Bool
     let isAddingRedaction: Bool
+    /// Whether a tap on the photo can outline an object (iOS 27).
+    var canSelectObjects = false
 
     // Single-region callbacks
     let onSelect: (String?) -> Void
@@ -1104,7 +1150,9 @@ private struct RedactionEditorDrawer: View {
                     Image(systemName: "hand.draw")
                         .font(.system(size: 13, weight: .medium))
                         .accessibilityHidden(true)
-                    Text("Drag on the photo to draw a redaction box")
+                    Text(canSelectObjects
+                         ? "Drag on the photo to draw a redaction box, or tap an object"
+                         : "Drag on the photo to draw a redaction box")
                         .font(.caption)
                 }
                 .foregroundStyle(.orange)

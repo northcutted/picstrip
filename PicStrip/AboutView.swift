@@ -385,7 +385,7 @@ struct AboutView: View {
                         icon: "wifi.slash",
                         color: .orange,
                         title: "No Internet Required",
-                        detail: "PicStrip works completely offline. It makes zero network requests. Ever."
+                        detail: "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree."
                     )
                     privacyRow(
                         icon: "chart.bar.xaxis",

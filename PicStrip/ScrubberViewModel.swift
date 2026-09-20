@@ -411,20 +411,26 @@ final class ScrubberViewModel {
     // MARK: - Private
 
     @ObservationIgnored private let scanImage: @Sendable (Data, ScanHints) async throws -> [DetectionResult]
+    @ObservationIgnored private let objectSelection: ObjectSelection
 
     /// Keep format/export tests independent of Vision model startup while the
     /// application continues to use the real on-device scanner by default.
     init(
         scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult] = {
             try await PIIScanner().scanImage(data: $0, hints: $1)
-        }
+        },
+        objectSelection: ObjectSelection = .live
     ) {
         self.scanImage = scanImageWithHints
+        self.objectSelection = objectSelection
     }
 
     /// For tests that do not care about scan hints.
-    convenience init(scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult]) {
-        self.init(scanImageWithHints: { data, _ in try await scanImage(data) })
+    convenience init(
+        scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult],
+        objectSelection: ObjectSelection = .unsupported
+    ) {
+        self.init(scanImageWithHints: { data, _ in try await scanImage(data) }, objectSelection: objectSelection)
     }
 
     /// The in-flight picker load, cancelled when a newer selection supersedes it.
@@ -687,6 +693,78 @@ final class ScrubberViewModel {
         redactionRegions.append(region)
         selectedRedactionRegionID = region.id
         redactedUIImage = nil
+    }
+
+    // MARK: - Tap an object to redact it
+
+    /// Whether tapping an object can be offered at all on this OS.
+    private(set) var isObjectSelectionSupported = false
+
+    /// `true` while the consent prompt for the one-time model download is due.
+    /// The model is fetched by the OS from Apple; PicStrip never starts that
+    /// without asking, because the app otherwise never touches the network.
+    var isAskingToDownloadObjectModel = false
+
+    /// `true` while the model downloads or an object is being outlined.
+    private(set) var isSelectingObject = false
+
+    /// Set when a tap found nothing, or the model could not be fetched.
+    var objectSelectionMessage: String?
+
+    /// The tap waiting for the user's answer to the download prompt.
+    @ObservationIgnored private var pendingObjectPoint: CGPoint?
+
+    func refreshObjectSelectionSupport() async {
+        isObjectSelectionSupported = await objectSelection.availability() != .unsupported
+    }
+
+    /// Adds a region around the object under `point` (normalised, top-left origin).
+    func selectObject(at point: CGPoint) async {
+        guard let data = rawImageData, !isSelectingObject else { return }
+        switch await objectSelection.availability() {
+        case .unsupported:
+            return
+        case .needsDownload:
+            pendingObjectPoint = point
+            isAskingToDownloadObjectModel = true
+        case .ready:
+            await outlineObject(at: point, in: data)
+        }
+    }
+
+    /// The user agreed to the download: fetch the model, then finish the tap that asked for it.
+    func downloadObjectModelAndContinue() async {
+        guard let point = pendingObjectPoint else { return }
+        pendingObjectPoint = nil
+        isSelectingObject = true
+        do {
+            try await objectSelection.downloadModel()
+        } catch {
+            isSelectingObject = false
+            objectSelectionMessage = String(localized: "The object selection model could not be downloaded. You can still drag to draw a box.")
+            return
+        }
+        isSelectingObject = false
+        guard let data = rawImageData else { return }
+        await outlineObject(at: point, in: data)
+    }
+
+    func declineObjectModelDownload() {
+        pendingObjectPoint = nil
+    }
+
+    private func outlineObject(at point: CGPoint, in data: Data) async {
+        isSelectingObject = true
+        defer { isSelectingObject = false }
+        let token = loadToken
+        let box = try? await objectSelection.boundingBox(point, data)
+        // The photo may have been replaced while the model was working.
+        guard loadToken == token else { return }
+        guard let box else {
+            objectSelectionMessage = String(localized: "No object was found there. Drag to draw a box instead.")
+            return
+        }
+        addCustomRedaction(rect: RedactionRegion.clamped(box))
     }
 
     func updateRedactionRegion(id: String, rect: CGRect) {

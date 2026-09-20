@@ -28,6 +28,9 @@ PicStrip asks for camera access only when you tap "Scan Document". The scan is h
 
 PicStrip never saves the original, un-redacted scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
 
+## Optional Object Selection Model
+On iOS 27 you can tap an object to redact it. That uses an Apple on-device model which iOS downloads from Apple the first time — and only after PicStrip has asked and you have agreed. Only the model is downloaded. Your photo is analysed on your device like everything else; nothing about it is sent anywhere. If you decline, nothing is downloaded and you can still draw redaction boxes by hand.
+
 ## Third-Party Services
 PicStrip does not use any third-party SDKs, analytics tools, advertising networks, or crash reporting services.
 

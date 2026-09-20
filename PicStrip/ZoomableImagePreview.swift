@@ -55,6 +55,9 @@ struct ZoomableImagePreview: View {
     var accessibilityIdentifier: String = "metadataPhotoPreview"
     var onTap: (() -> Void)?
     var onAddRedaction: ((CGRect) -> Void)?
+    /// A single tap while adding a region: outline the object under it.
+    /// `nil` where tap-an-object is not available.
+    var onSelectObject: ((CGPoint) -> Void)?
     var onBeginUpdateRedaction: ((String) -> Void)?
     var onUpdateRedaction: ((String, CGRect) -> Void)?
     var onSelectRedaction: ((String?) -> Void)?
@@ -125,8 +128,15 @@ struct ZoomableImagePreview: View {
                 // Use a regular (non-simultaneous) gesture for the single-tap deselect/tap-through.
                 // Unlike simultaneousGesture, a regular .gesture() FAILS when a child view's own
                 // gesture fires — so tapping a region selects it instead of immediately deselecting.
-                .gesture(TapGesture().onEnded {
-                    if isRedactionEditing {
+                .gesture(SpatialTapGesture(coordinateSpace: .named("zoomablePreviewContainer")).onEnded { tap in
+                    if isRedactionEditing, isAddingRedaction, let onSelectObject {
+                        let point = imageNormalizedPoint(
+                            tap.location, imageSize: fittedSize, containerSize: geo.size,
+                            scale: scale, panOffset: offset
+                        )
+                        guard (0...1).contains(point.x), (0...1).contains(point.y) else { return }
+                        onSelectObject(point)
+                    } else if isRedactionEditing {
                         selectRedaction(nil)
                     } else {
                         onTap?()
@@ -205,7 +215,7 @@ struct ZoomableImagePreview: View {
 
     private var zoomHintText: LocalizedStringKey {
         if isAddingRedaction {
-            return "Drag to redact"
+            return onSelectObject == nil ? "Drag to redact" : "Drag to redact, or tap an object"
         }
         if isRedactionEditing {
             return "Drag boxes to adjust"
