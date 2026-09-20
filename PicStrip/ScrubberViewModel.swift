@@ -473,7 +473,7 @@ final class ScrubberViewModel {
     /// Loads images captured inside the app.  One page opens in the editor like
     /// any other image; several pages go through the batch flow.
     func loadCaptured(_ pages: CapturedPages) async {
-        guard pages.count > 0 else { return }
+        guard pages.count >= 1 else { return }
         if pages.count == 1 {
             guard let data = await pages.data(0) else {
                 errorMessage = String(localized: "The document could not be scanned.")

@@ -900,17 +900,35 @@ private struct BreathingGradient: View {
     @State private var bottomBright = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
+    /// One breathing blob.  The gradient is drawn at `peak` and dimmed by an
+    /// opacity factor, so the animated value is a single number: `floor`…`peak`,
+    /// or `still` under Reduce Motion.
+    private struct Blob {
+        let color: Color
+        let peak: Double
+        let floor: Double
+        let still: Double
+        let center: UnitPoint
+        let radius: CGFloat
+        let period: Double
+    }
+
+    /// Top-left accent blob — cycles every 4 s.
+    private static let top = Blob(
+        color: .accentColor, peak: 0.20, floor: 0.05, still: 0.12,
+        center: .topLeading, radius: 420, period: 4.0
+    )
+    /// Bottom-right indigo blob — cycles every 5.5 s, out of sync with the first.
+    private static let bottom = Blob(
+        color: .indigo, peak: 0.14, floor: 0.03, still: 0.08,
+        center: .bottomTrailing, radius: 380, period: 5.5
+    )
+
     var body: some View {
         ZStack {
             Color(.systemBackground)
-
-            // Top-left accent blob — cycles every 4 s.
-            blob(.accentColor, peak: 0.20, floor: 0.05, still: 0.12,
-                 center: .topLeading, radius: 420, period: 4.0, bright: topBright)
-
-            // Bottom-right indigo blob — cycles every 5.5 s, out of sync with the first.
-            blob(.indigo, peak: 0.14, floor: 0.03, still: 0.08,
-                 center: .bottomTrailing, radius: 380, period: 5.5, bright: bottomBright)
+            view(for: Self.top, bright: topBright)
+            view(for: Self.bottom, bright: bottomBright)
         }
         .ignoresSafeArea()
         .accessibilityHidden(true) // decorative background
@@ -921,20 +939,15 @@ private struct BreathingGradient: View {
         }
     }
 
-    /// The gradient is drawn at `peak` and dimmed by an opacity factor, so the
-    /// animated value is a single number: `floor`…`peak`, or `still` under Reduce Motion.
-    private func blob(
-        _ color: Color, peak: Double, floor: Double, still: Double,
-        center: UnitPoint, radius: CGFloat, period: Double, bright: Bool
-    ) -> some View {
+    private func view(for blob: Blob, bright: Bool) -> some View {
         RadialGradient(
-            colors: [color.opacity(peak), .clear],
-            center: center,
+            colors: [blob.color.opacity(blob.peak), .clear],
+            center: blob.center,
             startRadius: 0,
-            endRadius: radius
+            endRadius: blob.radius
         )
-        .animation(reduceMotion ? nil : .easeInOut(duration: period).repeatForever(autoreverses: true)) {
-            $0.opacity(reduceMotion ? still / peak : (bright ? 1 : floor / peak))
+        .animation(reduceMotion ? nil : .easeInOut(duration: blob.period).repeatForever(autoreverses: true)) {
+            $0.opacity(reduceMotion ? blob.still / blob.peak : (bright ? 1 : blob.floor / blob.peak))
         }
     }
 }
