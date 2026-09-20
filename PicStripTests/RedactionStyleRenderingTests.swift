@@ -123,6 +123,33 @@ final class RedactionStyleRenderingTests: XCTestCase {
         XCTAssertLessThan(rightLevels, leftLevels, "The strong region should have fewer blocks than the light one.")
     }
 
+    /// Portrait iPhone photos are stored sideways with an orientation flag.  The
+    /// Core Image styles must land where the box was drawn, not where that spot
+    /// sits in the unrotated sensor data.
+    func testBlurLandsOnTheBoxForARotatedPhoto() async throws {
+        let sensor = UIGraphicsImageRenderer(size: CGSize(width: 200, height: 100), format: format).image { ctx in
+            for row in 0..<100 {
+                for column in 0..<200 {
+                    ((row + column).isMultiple(of: 2) ? UIColor.black : UIColor.white).setFill()
+                    ctx.fill(CGRect(x: column, y: row, width: 1, height: 1))
+                }
+            }
+        }
+        let portrait = UIImage(cgImage: try XCTUnwrap(sensor.cgImage), scale: 1, orientation: .right)
+        XCTAssertEqual(portrait.size, CGSize(width: 100, height: 200))
+
+        for style in [RedactionStyle.blur, .pixelate] {
+            let top = RedactionSpec(rect: CGRect(x: 0, y: 0, width: 1, height: 0.3), style: style, color: .black, isEnabled: true)
+            let rendered = await ImageRedactor().redact(image: portrait, specs: [top])
+            let result = try Bitmap(XCTUnwrap(rendered))
+
+            let insideA = Int(result.pixel(50, 30)[0]), insideB = Int(result.pixel(51, 30)[0])
+            XCTAssertLessThan(abs(insideA - insideB), 40, "\(style): the top of the photo is still a crisp checkerboard.")
+            let outsideA = Int(result.pixel(50, 150)[0]), outsideB = Int(result.pixel(51, 150)[0])
+            XCTAssertGreaterThan(abs(outsideA - outsideB), 200, "\(style): the rest of the photo must be untouched.")
+        }
+    }
+
     // MARK: - View model
 
     func testChangingStrengthIsOneUndoStepAndOnlyAppliesToStylesThatUseIt() {

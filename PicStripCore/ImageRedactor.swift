@@ -328,8 +328,8 @@ nonisolated struct ImageRedactor {
         to image: UIImage,
         specs: [RedactionSpec]
     ) -> UIImage? {
-        guard !specs.isEmpty, let ciImage = CIImage(image: image) else { return nil }
-        let extent = ciImage.extent   // CI pixel space (Y-up, device pixels)
+        guard !specs.isEmpty, let ciImage = uprightCIImage(image) else { return nil }
+        let extent = ciImage.extent   // CI pixel space (Y-up, device pixels), upright
 
         // ── 1. Resolve rects in CI pixel space ───────────────────────────────
         let ciRects: [CGRect] = specs.compactMap { spec in
@@ -394,6 +394,31 @@ nonisolated struct ImageRedactor {
         guard let result = blendFilter.outputImage else { return nil }
 
         guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
-        return UIImage(cgImage: cgOut, scale: image.scale, orientation: image.imageOrientation)
+        return UIImage(cgImage: cgOut, scale: image.scale, orientation: .up)
+    }
+
+    /// The image's pixels turned the way it is displayed, with the extent at the origin.
+    ///
+    /// `CIImage(image:)` ignores `imageOrientation`, and a portrait iPhone photo is
+    /// stored sideways.  Region rects are in display space, so without this the
+    /// effect lands somewhere else and the chosen region stays readable.
+    nonisolated private static func uprightCIImage(_ image: UIImage) -> CIImage? {
+        guard let base = CIImage(image: image) else { return nil }
+        let exif: CGImagePropertyOrientation
+        switch image.imageOrientation {
+        case .up:            exif = .up
+        case .down:          exif = .down
+        case .left:          exif = .left
+        case .right:         exif = .right
+        case .upMirrored:    exif = .upMirrored
+        case .downMirrored:  exif = .downMirrored
+        case .leftMirrored:  exif = .leftMirrored
+        case .rightMirrored: exif = .rightMirrored
+        @unknown default:    exif = .up
+        }
+        let upright = base.oriented(exif)
+        return upright.transformed(by: CGAffineTransform(
+            translationX: -upright.extent.minX, y: -upright.extent.minY
+        ))
     }
 }
