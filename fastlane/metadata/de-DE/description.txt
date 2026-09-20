@@ -23,6 +23,7 @@ SCHWÄRZUNGSEDITOR
 IMPORT VON ÜBERALL
 • Fotomediathek
 • Dateien-App — Bilder und Screenshots direkt öffnen
+• Fotos in der App aufnehmen — das Original landet nie in deiner Fotomediathek
 • Dokumente mit der Kamera scannen — das Original landet nie in deiner Fotomediathek
 • Drag & Drop in die App
 • Teilen-Erweiterung — direkt aus Fotos, Safari oder jeder App bereinigen, ohne PicStrip zu öffnen

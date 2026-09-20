@@ -23,6 +23,7 @@ EDITOR DI OSCURAMENTO
 IMPORTA DA QUALSIASI POSTO
 • Libreria Foto
 • App File — apri qualsiasi immagine o screenshot direttamente
+• Scatta una foto nell'app — l'originale non arriva mai nella libreria foto
 • Scansiona documenti con la fotocamera — l'originale non arriva mai nella libreria foto
 • Trascina e rilascia le immagini nell'app
 • Estensione di condivisione — ripulisci direttamente da Foto, Safari o qualsiasi app senza aprire PicStrip

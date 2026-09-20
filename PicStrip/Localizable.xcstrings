@@ -3109,6 +3109,101 @@
         }
       }
     },
+    "**Take Photo** — tap “Take Photo” to shoot straight into PicStrip. The original photo is never saved to your photo library; only the cleaned copy is." : {
+      "comment" : "About screen, Ways to Import. The quoted name must match the \"Take Photo\" button title.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**التقاط صورة** — اضغط على ”التقاط صورة“ للتصوير مباشرةً داخل PicStrip. لا تُحفظ الصورة الأصلية في مكتبة الصور أبدًا؛ تُحفظ النسخة المنظَّفة فقط."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Foto aufnehmen** – tippe auf „Foto aufnehmen“, um direkt in PicStrip zu fotografieren. Das Originalfoto wird nie in deiner Fotomediathek gesichert; nur die bereinigte Kopie."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Hacer una foto**: toca «Hacer una foto» para capturar directamente en PicStrip. La foto original nunca se guarda en tu fototeca; solo se guarda la copia limpia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Prendre une photo** — touchez « Prendre une photo » pour photographier directement dans PicStrip. La photo originale n’est jamais enregistrée dans votre photothèque ; seule la copie nettoyée l’est."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Scatta foto** — tocca “Scatta foto” per fotografare direttamente in PicStrip. La foto originale non viene mai salvata nella libreria foto; viene salvata solo la copia pulita."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**写真を撮る**：「写真を撮る」をタップすると、カメラで撮った写真をそのままPicStripに取り込めます。元の写真が写真ライブラリに保存されることはありません。保存されるのはクリーンアップしたコピーだけです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**사진 촬영** — “사진 촬영”을 탭하면 PicStrip에서 바로 사진을 촬영할 수 있습니다. 원본 사진은 사진 보관함에 저장되지 않으며, 정리된 사본만 저장됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Maak foto** — tik op ‘Maak foto’ om rechtstreeks in PicStrip te fotograferen. De originele foto wordt nooit in je fotobibliotheek bewaard; alleen de opgeschoonde kopie."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zrób zdjęcie** – stuknij „Zrób zdjęcie”, aby zrobić zdjęcie bezpośrednio w PicStrip. Oryginalne zdjęcie nigdy nie jest zachowywane w bibliotece zdjęć; zachowywana jest tylko wyczyszczona kopia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tirar Foto** — toque em “Tirar Foto” para fotografar direto no PicStrip. A foto original nunca é salva na sua fototeca; apenas a cópia limpa é salva."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tirar fotografia** — toque em “Tirar fotografia” para fotografar diretamente no PicStrip. A fotografia original nunca é guardada na sua fototeca; apenas a cópia limpa é guardada."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ta bild** – tryck på ”Ta bild” för att fotografera direkt in i PicStrip. Originalbilden sparas aldrig i ditt bildbibliotek; bara den rensade kopian sparas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Fotoğraf Çek** — doğrudan PicStrip’e fotoğraf çekmek için “Fotoğraf Çek” düğmesine dokunun. Orijinal fotoğraf hiçbir zaman fotoğraf arşivinize kaydedilmez; yalnızca temizlenen kopya kaydedilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**拍照**——轻点“拍照”，即可直接在 PicStrip 中拍摄照片。原始照片绝不会存储到你的照片图库，只会存储清理后的副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**拍照**：點一下「拍照」，即可直接在 PicStrip 中拍攝照片。原始照片永遠不會儲存到你的照片圖庫，只會儲存清理後的副本。"
+          }
+        }
+      }
+    },
     "17-character ISO 3779 VIN (no I/O/Q)" : {
       "localizations" : {
         "ar" : {
@@ -40544,6 +40639,195 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "SWIFT/BIC 銀行代碼——需要附近有 SWIFT/BIC 標示才會判定，以避免誤判"
+          }
+        }
+      }
+    },
+    "Take a photo with the camera" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التقط صورة باستخدام الكاميرا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Foto mit der Kamera aufnehmen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer una foto con la cámara"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prendre une photo avec l’appareil photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scatta una foto con la fotocamera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラで写真を撮る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라로 사진 촬영"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een foto maken met de camera"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrób zdjęcie aparatem"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tirar uma foto com a câmera"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tirar uma fotografia com a câmara"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta en bild med kameran"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerayla fotoğraf çekin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用相机拍摄照片"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用相機拍攝照片"
+          }
+        }
+      }
+    },
+    "Take Photo" : {
+      "comment" : "Home-screen button: open the camera and take a photo straight into the editor.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التقاط صورة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto aufnehmen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hacer una foto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prendre une photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scatta foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真を撮る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 촬영"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maak foto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zrób zdjęcie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tirar Foto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tirar fotografia"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bild"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotoğraf Çek"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍照"
           }
         }
       }

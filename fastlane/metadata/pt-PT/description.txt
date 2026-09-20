@@ -23,6 +23,7 @@ EDITOR DE OCULTAÇÃO
 IMPORTAÇÃO DE QUALQUER LADO
 • Biblioteca de Fotografias
 • App Ficheiros — abra qualquer imagem ou captura de ecrã directamente
+• Tire uma fotografia na app — o original nunca chega à sua fototeca
 • Digitalize documentos com a câmara — o original nunca chega à sua fototeca
 • Arraste e largue imagens na aplicação
 • Extensão de partilha — limpe directamente a partir de Fotografias, Safari ou de qualquer app sem abrir o PicStrip

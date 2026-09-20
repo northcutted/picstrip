@@ -23,6 +23,7 @@ EDITOR DE OCULTAÇÃO
 IMPORTE DE QUALQUER LUGAR
 • Biblioteca de Fotos
 • App Arquivos — abra qualquer imagem ou captura de tela diretamente
+• Tire uma foto no app — o original nunca chega à sua fototeca
 • Escaneie documentos com a câmera — o original nunca chega à sua fototeca
 • Arraste e solte imagens no app
 • Extensão de compartilhamento — limpe fotos direto de Fotos, Safari ou qualquer app sem abrir o PicStrip

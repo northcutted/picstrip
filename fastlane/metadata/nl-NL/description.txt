@@ -23,6 +23,7 @@ BEDEKKINGSEDITOR
 OVERAL VANDAAN IMPORTEREN
 • Foto's-bibliotheek
 • Bestanden-app — open elke afbeelding of schermafbeelding direct
+• Maak een foto in de app — het origineel komt nooit in je fotobibliotheek
 • Scan documenten met de camera — het origineel komt nooit in je fotobibliotheek
 • Sleep afbeeldingen in de app
 • Deel-extensie — opschonen vanuit Foto's, Safari of welke app dan ook, zonder PicStrip te openen

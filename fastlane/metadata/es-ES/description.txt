@@ -23,6 +23,7 @@ EDITOR DE REDACCIÓN
 IMPORTA DESDE CUALQUIER LUGAR
 • Fototeca de Fotos
 • App Archivos — abre imágenes y capturas directamente
+• Haz una foto en la app — el original nunca llega a tu fototeca
 • Escanea documentos con la cámara — el original nunca llega a tu fototeca
 • Arrastra y suelta imágenes en la app
 • Extensión de compartir — limpia desde Fotos, Safari o cualquier app sin abrir PicStrip
