@@ -30,6 +30,6 @@ The collection, use, disclosure, sharing, storage, and retention of face data ar
 
 > Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared.
 
-## Addendum — September 19, 2026: document scanning
+## Addendum — September 19, 2026: in-app camera and document scanning
 
-PicStrip can now capture a document with Apple's system document camera ("Scan Document"). A scanned page enters the same on-device flow as a photo chosen from the library, so everything above applies unchanged: face detection produces only temporary bounding rectangles for the current page, nothing is identified, compared, uploaded, or shared, and the results are discarded with the session. The original scan is never saved to the photo library by PicStrip; only the cleaned copy the user chooses to save or share persists. The camera is used for nothing else — there is no live face detection on the camera feed.
+PicStrip can now capture a photo with the system camera ("Take Photo") or a document with Apple's system document camera ("Scan Document"). A capture enters the same on-device flow as a photo chosen from the library, so everything above applies unchanged: face detection produces only temporary bounding rectangles for the current page, nothing is identified, compared, uploaded, or shared, and the results are discarded with the session. The original capture is never saved to the photo library by PicStrip; only the cleaned copy the user chooses to save or share persists. The camera is used for nothing else — there is no live face detection on the camera feed.

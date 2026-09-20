@@ -90,6 +90,8 @@ PicStrip/
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
 │   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
+│   ├── CameraCaptureView.swift # System photo camera + CameraHardware (is there a real camera?)
+│   ├── ObjectSegmenter.swift   # Tap-an-object selection (iOS 27 Vision segmentation) behind ObjectSelection closures
 │   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, CapturedImageEncoder
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
@@ -267,6 +269,7 @@ User taps "Scan Document"
 DocumentScanFlow.step(for: camera permission) → present / request access / explain denial
     ↓
 DocumentScannerView (VNDocumentCameraViewController) → ScannedDocument, held in memory
+   ("Take Photo" is the same flow with CameraCaptureView → CapturedPages(photo:), without the document hint)
     ↓  (acted on in the cover's onDismiss — presenting a sheet mid-dismissal can drop it)
 ScrubberViewModel.loadCaptured(CapturedPages)
     ├─ 1 page  → CapturedImageEncoder → loadData(_:)      (the single-photo flow above)
@@ -925,6 +928,10 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 ### Batch Processing Must Remain Sequential
 
 Concurrent batch processing would require holding multiple decoded `UIImage` objects in memory simultaneously. On a device processing ten 12 MP photos, this exceeds available memory. The sequential loop with explicit `nil` assignments is not defensive programming overhead — it is the memory model.
+
+### The Object-Selection Model Is Never Downloaded Unasked
+
+Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model is an asset the OS downloads from Apple on request (`assetStatus` / `downloadAssets()`); it cannot be bundled. It is the only thing in the app that can cause a network transfer, so `ScrubberViewModel.selectObject(at:)` never calls `downloadModel` itself: a `.needsDownload` status raises the consent alert, and only `downloadObjectModelAndContinue()` — the alert's "Download" button — fetches it. Keep that property when touching this code; `ObjectSelectionFlowTests` pins it. Regions are rectangles, so the mask is reduced to its bounding box (`SegmentationMask.boundingBox`), and a mask covering almost the whole image is rejected as "the background".
 
 ### Captured Pages Are Encoded Lazily
 

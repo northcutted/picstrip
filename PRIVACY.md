@@ -24,9 +24,9 @@ PicStrip does not identify people, perform face recognition, compare faces acros
 Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared. If you save a cleaned image, the saved file is stored in your own Photos library according to your device settings; PicStrip does not store a separate copy or any separate face data.
 
 ## Camera and Document Scanning
-PicStrip asks for camera access only when you tap "Scan Document". The scan is handled by Apple's system document camera and handed to PicStrip in memory, where it goes through the same on-device detection and redaction as any other image.
+PicStrip asks for camera access only when you tap "Take Photo" or "Scan Document". The capture is handled by Apple's system camera and handed to PicStrip in memory, where it goes through the same on-device detection and redaction as any other image.
 
-PicStrip never saves the original, un-redacted scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
+PicStrip never saves the original, un-redacted photo or scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
 
 ## Optional Object Selection Model
 On iOS 27 you can tap an object to redact it. That uses an Apple on-device model which iOS downloads from Apple the first time — and only after PicStrip has asked and you have agreed. Only the model is downloaded. Your photo is analysed on your device like everything else; nothing about it is sent anywhere. If you decline, nothing is downloaded and you can still draw redaction boxes by hand.
