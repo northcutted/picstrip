@@ -36,11 +36,6 @@ struct ContentView: View {
     /// Index of the currently displayed motto.
     @State private var mottoIndex = 0
 
-    /// Drives the top-left accent blob (faster cycle).
-    @State private var topBlobPhase = false
-    /// Drives the bottom-right indigo blob (slower cycle, offset feel).
-    @State private var bottomBlobPhase = false
-
     @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -239,17 +234,18 @@ struct ContentView: View {
                 }
                 .frame(height: 44)
                 .clipped()
+                // Scoped to the motto: a global `withAnimation` would also animate
+                // any layout that happens to settle in the same transaction.
+                .animation(.easeInOut(duration: 0.45), value: mottoIndex)
             }
             .padding(.top, 20)
-                .task {
-                // Cycle mottos every 3.5 s; task cancels automatically when view disappears.
+            .task {
+                // Cycle mottos every 5.5 s; task cancels automatically when view disappears.
                 // Skip cycling when Reduce Motion is on — show first motto statically.
                 guard !reduceMotion else { return }
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(5.5))
-                    withAnimation(.easeInOut(duration: 0.45)) {
-                        mottoIndex = (mottoIndex + 1) % mottos.count
-                    }
+                    mottoIndex = (mottoIndex + 1) % mottos.count
                 }
             }
 
@@ -285,6 +281,7 @@ struct ContentView: View {
                     PillLabel(icon: "photo.stack", text: "Select Multiple Photos")
                 }
                 .buttonStyle(.glass)
+                .accessibilityIdentifier("selectMultiplePhotosButton")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
 
                 Button {
@@ -319,37 +316,7 @@ struct ContentView: View {
     // MARK: - Breathing gradient
 
     private var breathingGradient: some View {
-        ZStack {
-            Color(.systemBackground)
-
-            // Top-left accent blob — cycles every 4 s.
-            RadialGradient(
-                colors: [Color.accentColor.opacity(reduceMotion ? 0.12 : (topBlobPhase ? 0.20 : 0.05)), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 420
-            )
-
-            // Bottom-right indigo blob — cycles every 5.5 s, so the two blobs
-            // are never in sync and the background never looks like it resets.
-            RadialGradient(
-                colors: [Color.indigo.opacity(reduceMotion ? 0.08 : (bottomBlobPhase ? 0.14 : 0.03)), .clear],
-                center: .bottomTrailing,
-                startRadius: 0,
-                endRadius: 380
-            )
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true) // decorative background
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
-                topBlobPhase = true
-            }
-            withAnimation(.easeInOut(duration: 5.5).repeatForever(autoreverses: true)) {
-                bottomBlobPhase = true
-            }
-        }
+        BreathingGradient()
     }
 
     // MARK: - Haptics
@@ -799,6 +766,59 @@ struct ContentView: View {
         }
     }
 
+}
+
+// MARK: - Breathing gradient
+
+/// Decorative home-screen background: two radial blobs whose opacity breathes
+/// on different periods, so the background never looks like it resets.
+///
+/// The phases are local state and the repeating animation is scoped to each
+/// blob's opacity alone.  A global `withAnimation(….repeatForever())` here leaks
+/// into whatever else lays out in the same transaction — on device it made the
+/// home-screen buttons' glass backgrounds grow and shrink forever.
+private struct BreathingGradient: View {
+    @State private var topBright = false
+    @State private var bottomBright = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ZStack {
+            Color(.systemBackground)
+
+            // Top-left accent blob — cycles every 4 s.
+            blob(.accentColor, peak: 0.20, floor: 0.05, still: 0.12,
+                 center: .topLeading, radius: 420, period: 4.0, bright: topBright)
+
+            // Bottom-right indigo blob — cycles every 5.5 s, out of sync with the first.
+            blob(.indigo, peak: 0.14, floor: 0.03, still: 0.08,
+                 center: .bottomTrailing, radius: 380, period: 5.5, bright: bottomBright)
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true) // decorative background
+        .onAppear {
+            guard !reduceMotion else { return }
+            topBright = true
+            bottomBright = true
+        }
+    }
+
+    /// The gradient is drawn at `peak` and dimmed by an opacity factor, so the
+    /// animated value is a single number: `floor`…`peak`, or `still` under Reduce Motion.
+    private func blob(
+        _ color: Color, peak: Double, floor: Double, still: Double,
+        center: UnitPoint, radius: CGFloat, period: Double, bright: Bool
+    ) -> some View {
+        RadialGradient(
+            colors: [color.opacity(peak), .clear],
+            center: center,
+            startRadius: 0,
+            endRadius: radius
+        )
+        .animation(reduceMotion ? nil : .easeInOut(duration: period).repeatForever(autoreverses: true)) {
+            $0.opacity(reduceMotion ? still / peak : (bright ? 1 : floor / peak))
+        }
+    }
 }
 
 // MARK: - Pill button label
