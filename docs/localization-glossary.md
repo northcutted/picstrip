@@ -5,6 +5,8 @@ use the same terms — inconsistent terminology was the most common defect the r
 *redact* = cover part of the picture so it cannot be read (never the editorial "edit/write" family);
 *region* = an area of the image (never a territory); *strip* = remove metadata from the file;
 *field* = one metadata entry; *instance* = one occurrence of a detected item.
+*scan* = analyse a photo for sensitive content — except "Scan Document", which is capturing paper with the
+camera and takes Apple's localized term for document scanning (the last row of each table).
 
 Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized iOS.
 
@@ -46,6 +48,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Undo/Redo | تراجع / إعادة |
 | Replace | استبدال |
 | About | حول |
+| Scan Document (camera, not PII analysis) | مسح مستند ضوئيًا |
 
 ## German (`de`)
 
@@ -77,6 +80,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | redaction editor | Schwärzungs-Editor |
 | Undo / Redo | Widerrufen / Wiederholen |
 | formality | informell (du), Apple-iOS-Stil |
+| Scan Document (camera, not PII analysis) | Dokument scannen |
 
 ## Spanish (international) (`es`)
 
@@ -110,6 +114,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | confidence badges | Baja · Media · Alta (femenino, concuerdan con «confianza») |
 | quotes | «…» |
 | formality | tú (imperativo de Apple) |
+| Scan Document (camera, not PII analysis) | Escanear documento |
 
 ## French (France) (`fr`)
 
@@ -142,6 +147,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Select / Select All | Sélectionner / Tout sélectionner |
 | Undo / Redo | Annuler / Rétablir |
 | redaction editor | éditeur de masquage |
+| Scan Document (camera, not PII analysis) | Scanner un document |
 
 ## Italian (`it`)
 
@@ -169,6 +175,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Save | Salva |
 | tap | tocca |
 | double tap | tocca due volte |
+| Scan Document (camera, not PII analysis) | Scansiona documento |
 
 ## Japanese (`ja`)
 
@@ -196,6 +203,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Save | 保存 |
 | tap | タップ |
 | double tap | ダブルタップ |
+| Scan Document (camera, not PII analysis) | 書類をスキャン |
 
 ## Korean (`ko`)
 
@@ -230,6 +238,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Deselect All | 모두 선택 해제 |
 | counters | 사진 %lld장 · 영역/필드/유형 %lld개 · 감지 항목 %lld건 |
 | speech level | 설명문 ~합니다 / 지시문 ~하세요 (당신의·귀하의 사용 금지) |
+| Scan Document (camera, not PII analysis) | 도큐멘트 스캔 |
 
 ## Dutch (`nl`)
 
@@ -257,6 +266,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Save | Bewaar / bewaren |
 | tap | tik |
 | double tap | tik twee keer |
+| Scan Document (camera, not PII analysis) | Scan document |
 
 ## Polish (`pl`)
 
@@ -289,6 +299,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | barcode | kod kreskowy |
 | confidence badge | pewność: Niska / Średnia / Wysoka |
 | typography | „…” cudzysłowy, spacjowany półpauza –, znak … |
+| Scan Document (camera, not PII analysis) | Skanuj dokument |
 
 ## Portuguese (Brazil) (`pt-BR`)
 
@@ -322,6 +333,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | pinch | afaste os dedos (para ampliar) |
 | findings | achados |
 | scan | análise / analisar |
+| Scan Document (camera, not PII analysis) | Escanear Documento |
 
 ## Portuguese (Portugal) (`pt-PT`)
 
@@ -349,6 +361,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Save | Guardar |
 | tap | toque (toque em…) |
 | double tap | toque duas vezes |
+| Scan Document (camera, not PII analysis) | Digitalizar documento |
 
 ## Swedish (`sv`)
 
@@ -384,6 +397,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | Select / Select All / Deselect All | Markera / Markera alla / Avmarkera alla |
 | Undo / Redo | Ångra / Gör om |
 | Privacy | Integritet |
+| Scan Document (camera, not PII analysis) | Skanna dokument |
 
 ## Turkish (`tr`)
 
@@ -418,6 +432,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | format | biçim |
 | detect | algıla |
 | device | cihaz |
+| Scan Document (camera, not PII analysis) | Belge Tara |
 
 ## Chinese (Simplified, Mainland China) (`zh-Hans`)
 
@@ -454,6 +469,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | pinch | 双指开合 |
 | app | 应用 |
 | second person | 你（Apple zh-Hans 风格，不用“您”） |
+| Scan Document (camera, not PII analysis) | 扫描文稿 |
 
 ## Chinese (Traditional, Taiwan) (`zh-Hant`)
 
@@ -484,3 +500,4 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | other platform terms | 設定, 分享擴充功能, 選取, 全選, 取消全選, 還原/重做, 取代, 拖移, 兩指開合, 打開, 螢幕截圖, 原況照片 (Live Photo), 色彩描述檔, App, 影像/照片, 網路, 裝置, 資訊, 檔案, 權杖 (token), 金鑰 (key), 身分證件 |
 | style | 樣式 (never 風格) |
 | image | 影像 (never 圖像) |
+| Scan Document (camera, not PII analysis) | 掃描文件 |

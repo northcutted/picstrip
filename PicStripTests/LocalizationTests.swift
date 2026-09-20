@@ -81,12 +81,22 @@ final class LocalizationTests: XCTestCase {
 
     /// The permission prompts and the share-sheet action name come from InfoPlist tables.
     func testInfoPlistStringsAreLocalized() throws {
+        let keys = [
+            "NSPhotoLibraryAddUsageDescription",
+            "NSPhotoLibraryUsageDescription",
+            "NSCameraUsageDescription"
+        ]
         for locale in Self.locales {
-            let value = try table(for: locale).localizedString(
-                forKey: "NSPhotoLibraryAddUsageDescription", value: "missing", table: "InfoPlist"
-            )
-            XCTAssertNotEqual(value, "missing", "\(locale) has no localized photo-library prompt.")
-            XCTAssertTrue(value.contains("PicStrip"), "\(locale): “\(value)”")
+            for key in keys {
+                let value = try table(for: locale).localizedString(forKey: key, value: "missing", table: "InfoPlist")
+                XCTAssertNotEqual(value, "missing", "\(locale) has no localized \(key).")
+                XCTAssertTrue(value.contains("PicStrip"), "\(locale) \(key): “\(value)”")
+            }
         }
+    }
+
+    /// iOS kills the app when it asks for the camera without this key.
+    func testCameraUsageDescriptionIsDeclared() {
+        XCTAssertNotNil(Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription"))
     }
 }

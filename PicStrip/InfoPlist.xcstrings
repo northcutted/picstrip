@@ -1,6 +1,108 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "NSCameraUsageDescription" : {
+      "comment" : "Privacy - Camera Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم PicStrip الكاميرا لالتقاط المستندات والصور التي تريد تنظيفها. تتم معالجة اللقطات على جهازك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip verwendet die Kamera, um Dokumente und Fotos aufzunehmen, die du bereinigen möchtest. Die Aufnahmen werden auf deinem Gerät verarbeitet."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PicStrip uses the camera to capture documents and photos you want to clean. Captures are processed on your device."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip usa la cámara para capturar documentos y fotos que quieres limpiar. Las capturas se procesan en tu dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip utilise l’appareil photo pour capturer les documents et les photos que vous souhaitez nettoyer. Les captures sont traitées sur votre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip usa la fotocamera per acquisire documenti e foto che vuoi pulire. Le acquisizioni vengono elaborate sul tuo dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは、クリーンアップしたい書類や写真を取り込むためにカメラを使用します。取り込んだデータはお使いのデバイス上で処理されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip은 정리하려는 도큐멘트와 사진을 촬영하기 위해 카메라를 사용합니다. 촬영한 항목은 기기에서 처리됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip gebruikt de camera om documenten en foto’s vast te leggen die je wilt opschonen. De opnamen worden op je apparaat verwerkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip używa aparatu do rejestrowania dokumentów i zdjęć, które chcesz wyczyścić. Przechwycone obrazy są przetwarzane na Twoim urządzeniu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip usa a câmera para capturar documentos e fotos que você quer limpar. As capturas são processadas no seu dispositivo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip usa a câmara para capturar documentos e fotografias que pretende limpar. As capturas são processadas no seu dispositivo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip använder kameran för att fånga dokument och bilder som du vill rensa. Det du fångar behandlas på din enhet."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip, temizlemek istediğiniz belgeleri ve fotoğrafları yakalamak için kamerayı kullanır. Yakalananlar cihazınızda işlenir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 使用相机拍摄你想清理的文稿和照片。拍摄的内容在你的设备上处理。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 使用相機拍攝你想清理的文件和照片。拍攝的內容會在你的裝置上處理。"
+          }
+        }
+      }
+    },
     "NSPhotoLibraryAddUsageDescription" : {
       "comment" : "Privacy - Photo Library Additions Usage Description",
       "extractionState" : "extracted_with_value",
