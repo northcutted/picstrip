@@ -47,6 +47,8 @@ struct BatchConfig {
 struct BatchSource {
     /// Photo library identifier of the original, when the picker supplied one.
     let assetIdentifier: String?
+    /// What is already known about the image (e.g. it is a document scan).
+    var hints: ScanHints = .none
     /// Loads the photo's raw bytes; `nil` when the item cannot be read.
     let load: @Sendable () async -> Data?
 }
@@ -139,6 +141,11 @@ final class ScrubberViewModel {
     /// `aspectRatio`-constrained overlay without re-decoding raw bytes.
     var sourceUIImage: UIImage?
 
+    /// How many times larger the exported image is than `sourceUIImage` (≥ 1).
+    /// The editor's live preview scales pixel-based effects by this so a box
+    /// looks the way it will in the saved file.
+    private(set) var exportScale: CGFloat = 1
+
     /// The scrubbed, re-encoded image bytes ready for saving or sharing.
     var processedData: Data?
 
@@ -208,6 +215,13 @@ final class ScrubberViewModel {
     /// `true` while the current image's OCR pass is still running.
     var isScanningPII: Bool = false
 
+    /// How far the running scan has got, from the scanner's own milestones.
+    private(set) var scanProgress = ScanProgress.notStarted
+
+    /// `true` while the on-device language model is still looking for names in a
+    /// scan that has already been published.  Nothing waits on it.
+    private(set) var isFindingNames = false
+
     /// Populated when any step throws; `nil` on success.
     var errorMessage: String?
 
@@ -233,8 +247,15 @@ final class ScrubberViewModel {
     /// stay in sync without requiring callers to call
     /// `replaceDetectedRedactionRegions` separately.
     var detectedPII: [DetectionResult] = [] {
-        didSet { replaceDetectedRedactionRegions(from: detectedPII) }
+        didSet {
+            guard !isAppendingDetections else { return }
+            replaceDetectedRedactionRegions(from: detectedPII)
+        }
     }
+
+    /// Set while late findings are added, so the regions the user may already
+    /// have moved, restyled or deleted are not rebuilt from scratch.
+    @ObservationIgnored private var isAppendingDetections = false
 
     /// Pixel dimensions of the currently loaded image.
     /// Used by ContentView to compute the exact rendered frame of a .scaledToFit()
@@ -259,7 +280,7 @@ final class ScrubberViewModel {
     /// Currently selected redaction box in the preview editor.
     var selectedRedactionRegionID: String?
 
-    var selectedRedactionRegion: RedactionRegion? {
+    private var selectedRedactionRegion: RedactionRegion? {
         guard let selectedRedactionRegionID else { return nil }
         return redactionRegions.first { $0.id == selectedRedactionRegionID }
     }
@@ -296,6 +317,20 @@ final class ScrubberViewModel {
 
     /// Items selected for batch processing via the multi-photo picker.
     var batchItems: [PhotosPickerItem] = []
+
+    /// Pages captured in-app (document scanner) queued for batch processing.
+    /// They exist only in memory: there is no library original to replace, and
+    /// dropping this array is what releases the un-redacted capture.
+    var scannedBatchSources: [BatchSource] = []
+
+    /// How many images the batch sheet is about to process.
+    var batchCount: Int {
+        scannedBatchSources.isEmpty ? batchItems.count : scannedBatchSources.count
+    }
+
+    /// Captured pages were never in the photo library, so "Replace Original"
+    /// has nothing to replace.
+    var batchAllowsReplaceOriginal: Bool { scannedBatchSources.isEmpty }
 
     /// `true` while the sequential batch processing loop is running.
     var isBatchProcessing: Bool = false
@@ -394,16 +429,42 @@ final class ScrubberViewModel {
 
     // MARK: - Private
 
-    @ObservationIgnored private let scanImage: @Sendable (Data) async throws -> [DetectionResult]
+    @ObservationIgnored private let scan: @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput
+    @ObservationIgnored private let semantic: SemanticPII
+    @ObservationIgnored private let objectSelection: ObjectSelection
 
-    /// Keep format/export tests independent of Vision model startup while the
-    /// application continues to use the real on-device scanner by default.
+    /// The application uses the real on-device scanner, language model and
+    /// segmentation; tests inject their own so they never boot Vision or a model.
     init(
-        scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult] = {
-            try await PIIScanner().scanImage(data: $0)
-        }
+        scan: @escaping @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput = {
+            try await PIIScanner().scan(data: $0, hints: $1, progress: $2)
+        },
+        semantic: SemanticPII = .live,
+        objectSelection: ObjectSelection = .live
     ) {
-        self.scanImage = scanImage
+        self.scan = scan
+        self.semantic = semantic
+        self.objectSelection = objectSelection
+    }
+
+    /// For tests that supply findings directly: no recognised text, so no name pass.
+    convenience init(
+        scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult],
+        objectSelection: ObjectSelection = .unsupported
+    ) {
+        self.init(
+            scan: { data, hints, _ in ScanOutput(results: try await scanImageWithHints(data, hints), lines: []) },
+            semantic: .unavailable,
+            objectSelection: objectSelection
+        )
+    }
+
+    /// For tests that do not care about scan hints.
+    convenience init(
+        scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult],
+        objectSelection: ObjectSelection = .unsupported
+    ) {
+        self.init(scanImageWithHints: { data, _ in try await scanImage(data) }, objectSelection: objectSelection)
     }
 
     /// The in-flight picker load, cancelled when a newer selection supersedes it.
@@ -414,6 +475,9 @@ final class ScrubberViewModel {
     private var loadToken = UUID()
 
     private var piiScanTask: Task<Void, Never>?
+    /// The on-device name pass.  It runs after the scan has been published, so
+    /// neither the editor nor a save ever waits for the language model.
+    private var nameScanTask: Task<Void, Never>?
     private var piiScanToken = UUID()
     private(set) var piiFocusTask: Task<Void, Never>?
 
@@ -444,7 +508,7 @@ final class ScrubberViewModel {
     /// Used for every input that is not a Photos picker selection: Files, drag
     /// and drop, paste, the Share Extension hand-off, and UITest fixture
     /// injection (`PICSTRIP_FIXTURE` in `launchEnvironment`).
-    func loadData(_ data: Data) async {
+    func loadData(_ data: Data, hints: ScanHints = .none) async {
         loadTask?.cancel()
         loadTask = nil
         // These bytes did not come from the picker, so any previous selection no
@@ -453,7 +517,28 @@ final class ScrubberViewModel {
         selectedItem = nil
 
         let token = resetForNewImage()
-        await ingest(data, token: token)
+        await ingest(data, token: token, hints: hints)
+    }
+
+    /// Loads images captured inside the app.  One page opens in the editor like
+    /// any other image; several pages go through the batch flow.
+    func loadCaptured(_ pages: CapturedPages) async {
+        guard pages.count >= 1 else { return }
+        if pages.count == 1 {
+            guard let data = await pages.data(0) else {
+                errorMessage = pages.hints.wholeImageIsDocument
+                    ? String(localized: "The document could not be scanned.")
+                    : String(localized: "The selected item could not be loaded as image data.")
+                return
+            }
+            await loadData(data, hints: pages.hints)
+        } else {
+            batchItems = []
+            scannedBatchSources = (0..<pages.count).map { index in
+                BatchSource(assetIdentifier: nil, hints: pages.hints) { await pages.data(index) }
+            }
+            activeSheet = .batch
+        }
     }
 
     private func loadAndProcess(item: PhotosPickerItem) async {
@@ -495,10 +580,14 @@ final class ScrubberViewModel {
         rawSourceProps = nil
         piiScanTask?.cancel()
         piiScanTask = nil
+        nameScanTask?.cancel()
+        nameScanTask = nil
         piiFocusTask?.cancel()
         piiFocusTask = nil
         piiScanToken = UUID()
         isScanningPII = false
+        isFindingNames = false
+        scanProgress = .notStarted
         detectedPII = []
         imageSize = .zero
         activeSheet = nil
@@ -512,13 +601,23 @@ final class ScrubberViewModel {
         return token
     }
 
-    private func ingest(_ data: Data, token: UUID) async {
+    /// Decoding the preview, reading the metadata and scanning do not depend on
+    /// each other, so they all start at once: a large PNG takes seconds to decode,
+    /// and nothing else should queue behind that.
+    private func ingest(_ data: Data, token: UUID, hints: ScanHints = .none) async {
+        startPIIScan(data: data, hints: hints)
+        async let metadata: Void = catalogSourceMetadata(from: data)
         let preview = await Self.makePreviewImage(from: data)
         guard loadToken == token else { return }
 
         // Pasted, dropped, and shared bytes are not guaranteed to be an image
-        // ImageIO can decode.  Without a preview there is nothing to show or edit.
+        // ImageIO can decode.  Without a preview there is nothing to show or edit,
+        // and the scan's own complaint about the same bytes would be noise.
         guard let preview else {
+            piiScanTask?.cancel()
+            piiScanTask = nil
+            piiScanToken = UUID()
+            isScanningPII = false
             errorMessage = String(localized: "The selected item could not be loaded as image data.")
             isProcessing = false
             return
@@ -527,21 +626,19 @@ final class ScrubberViewModel {
         rawImageData  = data
         inputImage    = Image(uiImage: preview)
         sourceUIImage = preview
+        let previewLongEdge = max(preview.size.width, preview.size.height) * preview.scale
+        let fullLongEdge = ImageProcessor.pixelSize(of: data).map { max($0.width, $0.height) } ?? previewLongEdge
+        exportScale = previewLongEdge > 0 ? max(1, fullLongEdge / previewLongEdge) : 1
         // Store point dimensions (not pixel dimensions).
         // ContentView's .scaledToFit() math operates in SwiftUI points,
         // so we match that coordinate space here.
         imageSize = preview.size
+        isProcessing = false
 
-        startPIIScan(data: data)
-        await catalogSourceMetadata(from: data)
+        await metadata
     }
 
     // MARK: - Processing
-
-    func processCurrentImage() {
-        guard rawImageData != nil else { return }
-        Task { await processCurrentImageNow() }
-    }
 
     private func processCurrentImageNow() async {
         guard let raw = rawImageData else {
@@ -573,7 +670,6 @@ final class ScrubberViewModel {
         pendingStrippedMetadata = catalog.stripped
         allSourceMetadata       = catalog.all
         sourceUTType            = catalog.utType
-        isProcessing            = false
     }
 
     private static func makePreviewImage(from data: Data) async -> UIImage? {
@@ -582,17 +678,33 @@ final class ScrubberViewModel {
         }.value
     }
 
-    private func startPIIScan(data: Data) {
+    private func startPIIScan(data: Data, hints: ScanHints = .none) {
         piiScanTask?.cancel()
         let token = UUID()
         piiScanToken = token
         isScanningPII = true
+        scanProgress = .started
 
-        piiScanTask = Task { [scanImage] in
+        nameScanTask?.cancel()
+        nameScanTask = nil
+        isFindingNames = false
+
+        // The scanner reports from its own executor; hop back before touching state.
+        let report: ScanProgressHandler = { [weak self] step in
+            Task { @MainActor in
+                guard let self, self.piiScanToken == token, self.isScanningPII else { return }
+                self.scanProgress.record(step)
+            }
+        }
+
+        piiScanTask = Task { [scan] in
             let result: [DetectionResult]
+            var lines: [ScannedLine] = []
             var scanError: String?
             do {
-                result = try await scanImage(data)
+                let output = try await scan(data, hints, report)
+                result = output.results
+                lines = output.lines
             } catch {
                 // Never let a failed scan look like a clean one: tell the user so
                 // they know to check the photo themselves.
@@ -608,11 +720,59 @@ final class ScrubberViewModel {
                 // `detectedPII.didSet` already called replaceDetectedRedactionRegions;
                 // syncDetectedRegionEnablement (via typesToRedact.didSet) then enables
                 // each region whose type is in typesToRedact.
-                self.typesToRedact = Set(result.map(\.type))
+                self.typesToRedact = Set(result.map(\.type).filter(\.isRedactedByDefault))
                 self.isScanningPII = false
+                self.scanProgress = .finished
                 self.piiScanTask = nil
+                self.startNameScan(lines: lines, token: token)
             }
         }
+    }
+
+    /// Asks the on-device language model for people's names in the recognised
+    /// text and adds what it finds to the already-published scan.
+    private func startNameScan(lines: [ScannedLine], token: UUID) {
+        guard !lines.isEmpty, semantic.isAvailable() else { return }
+        isFindingNames = true
+        nameScanTask = Task { [semantic] in
+            let names = await semantic.findNames(lines.map(\.text))
+            // The photo may have been replaced while the model was thinking.
+            guard !Task.isCancelled, self.piiScanToken == token else { return }
+            self.appendDetections(SemanticPIIMerger.merge(names: names, lines: lines, into: []))
+            self.nameScanTask = nil
+            self.isFindingNames = false
+        }
+    }
+
+    /// Adds findings that arrived after the scan was published.  Unlike setting
+    /// `detectedPII`, this leaves every existing region exactly as the user has
+    /// it — moved, restyled, disabled or deleted — and adds the new ones to the
+    /// undo history too, so an undo cannot make them vanish.
+    private func appendDetections(_ results: [DetectionResult]) {
+        guard !results.isEmpty else { return }
+        isAppendingDetections = true
+        detectedPII = PIIScanner.sorted(detectedPII + results)
+        isAppendingDetections = false
+
+        let regions = results.flatMap { result in
+            result.instances.enumerated().map { index, instance in
+                RedactionRegion.detected(
+                    result: result, instance: instance, index: index,
+                    isEnabled: typesToRedact.contains(result.type)
+                )
+            }
+        }
+        // Detected regions come before custom ones, as in `replaceDetectedRedactionRegions`.
+        func adding(to existing: [RedactionRegion]) -> [RedactionRegion] {
+            let firstCustom = existing.firstIndex { $0.source == .custom } ?? existing.endIndex
+            var updated = existing
+            updated.insert(contentsOf: regions, at: firstCustom)
+            return updated
+        }
+        redactionRegions = adding(to: redactionRegions)
+        undoStack = undoStack.map(adding)
+        redoStack = redoStack.map(adding)
+        if regions.contains(where: \.isEnabled) { redactedUIImage = nil }
     }
 
     private func waitForCurrentPIIScan() async {
@@ -647,6 +807,78 @@ final class ScrubberViewModel {
         redactionRegions.append(region)
         selectedRedactionRegionID = region.id
         redactedUIImage = nil
+    }
+
+    // MARK: - Tap an object to redact it
+
+    /// Whether tapping an object can be offered at all on this OS.
+    private(set) var isObjectSelectionSupported = false
+
+    /// `true` while the consent prompt for the one-time model download is due.
+    /// The model is fetched by the OS from Apple; PicStrip never starts that
+    /// without asking, because the app otherwise never touches the network.
+    var isAskingToDownloadObjectModel = false
+
+    /// `true` while the model downloads or an object is being outlined.
+    private(set) var isSelectingObject = false
+
+    /// Set when a tap found nothing, or the model could not be fetched.
+    var objectSelectionMessage: String?
+
+    /// The tap waiting for the user's answer to the download prompt.
+    @ObservationIgnored private var pendingObjectPoint: CGPoint?
+
+    func refreshObjectSelectionSupport() async {
+        isObjectSelectionSupported = await objectSelection.availability() != .unsupported
+    }
+
+    /// Adds a region around the object under `point` (normalised, top-left origin).
+    func selectObject(at point: CGPoint) async {
+        guard let data = rawImageData, !isSelectingObject else { return }
+        switch await objectSelection.availability() {
+        case .unsupported:
+            return
+        case .needsDownload:
+            pendingObjectPoint = point
+            isAskingToDownloadObjectModel = true
+        case .ready:
+            await outlineObject(at: point, in: data)
+        }
+    }
+
+    /// The user agreed to the download: fetch the model, then finish the tap that asked for it.
+    func downloadObjectModelAndContinue() async {
+        guard let point = pendingObjectPoint else { return }
+        pendingObjectPoint = nil
+        isSelectingObject = true
+        do {
+            try await objectSelection.downloadModel()
+        } catch {
+            isSelectingObject = false
+            objectSelectionMessage = String(localized: "The object selection model could not be downloaded. You can still drag to draw a box.")
+            return
+        }
+        isSelectingObject = false
+        guard let data = rawImageData else { return }
+        await outlineObject(at: point, in: data)
+    }
+
+    func declineObjectModelDownload() {
+        pendingObjectPoint = nil
+    }
+
+    private func outlineObject(at point: CGPoint, in data: Data) async {
+        isSelectingObject = true
+        defer { isSelectingObject = false }
+        let token = loadToken
+        let box = try? await objectSelection.boundingBox(point, data)
+        // The photo may have been replaced while the model was working.
+        guard loadToken == token else { return }
+        guard let box else {
+            objectSelectionMessage = String(localized: "No object was found there. Drag to draw a box instead.")
+            return
+        }
+        addCustomRedaction(rect: RedactionRegion.clamped(box))
     }
 
     func updateRedactionRegion(id: String, rect: CGRect) {
@@ -713,7 +945,7 @@ final class ScrubberViewModel {
     }
 
     /// Changes the fill colour for a specific redaction region.
-    /// Ignored if the region's current style does not support colour (e.g. `.pixelate`).
+    /// Ignored if the region's current style does not support colour (`.pixelate`, `.blur`).
     /// The mutation is undoable and clears any cached redacted image.
     func changeRedactionColor(id: String, color: RedactionColor) {
         guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
@@ -723,7 +955,30 @@ final class ScrubberViewModel {
         redactedUIImage = nil
     }
 
+    /// Changes how hard a `.pixelate` / `.blur` region scrambles what is under it.
+    /// The mutation is undoable and clears any cached redacted image.
+    func changeRedactionStrength(id: String, strength: Double) {
+        bulkChangeRedactionStrength(ids: [id], strength: strength)
+    }
+
     // MARK: - Bulk Redaction Operations
+
+    /// Applies `strength` to every region in `ids` whose style uses it.
+    /// A single undo snapshot is pushed for the batch.
+    func bulkChangeRedactionStrength(ids: Set<String>, strength: Double) {
+        let strength = RedactionStrength.clamped(strength)
+        let indicesToChange = redactionRegions.indices.filter {
+            ids.contains(redactionRegions[$0].id)
+                && redactionRegions[$0].style.supportsStrength
+                && redactionRegions[$0].strength != strength
+        }
+        guard !indicesToChange.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indicesToChange {
+            redactionRegions[index].strength = strength
+        }
+        redactedUIImage = nil
+    }
 
     /// Applies `style` to every region whose ID is in `ids`.
     ///
@@ -744,7 +999,7 @@ final class ScrubberViewModel {
 
     /// Applies `color` to every region whose ID is in `ids` and whose style supports colour.
     ///
-    /// Regions using `.pixelate` are silently skipped.
+    /// Regions whose style has no colour (`.pixelate`, `.blur`) are silently skipped.
     /// A single undo snapshot is pushed for the batch.
     func bulkChangeRedactionColor(ids: Set<String>, color: RedactionColor) {
         let indicesToChange = redactionRegions.indices.filter {
@@ -839,7 +1094,7 @@ final class ScrubberViewModel {
 
     /// Recomputes `pendingStrippedMetadata` from cached source props without re-encoding.
     /// Called when only `stripConfig` changes and a full re-process would be redundant.
-    func refreshPendingMetadata() {
+    private func refreshPendingMetadata() {
         pendingStrippedMetadata = ImageProcessor.catalogueStrippedMetadata(
             from: rawSourceProps?.dictionary,
             config: stripConfig
@@ -1051,10 +1306,7 @@ final class ScrubberViewModel {
         defer { isProcessing = false }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges {
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-            }
+            try await PhotoLibraryWriter.save(data)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
@@ -1075,24 +1327,11 @@ final class ScrubberViewModel {
         defer { isProcessing = false }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges {
-                let createRequest = PHAssetCreationRequest.forAsset()
-                createRequest.addResource(with: .photo, data: data, options: nil)
-                PHAssetChangeRequest.deleteAssets([asset] as NSArray)
-            }
+            try await PhotoLibraryWriter.save(data, deleting: asset)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
         }
-    }
-
-    /// Number of non-structural metadata fields that will be stripped given the current config.
-    private var pendingFieldCount: Int {
-        pendingMetadataFields.count
-    }
-
-    private var pendingMetadataFields: [MetadataField] {
-        allSourceMetadata?.fields.filter(isRemoved) ?? []
     }
 
     /// `true` when `field` will be — or, once an encode has run, actually was —
@@ -1177,8 +1416,10 @@ final class ScrubberViewModel {
     /// execution is intentionally avoided — parallel Vision / CoreGraphics workers
     /// spike RAM and cause OOM crashes on device.
     func processBatch(config: BatchConfig) async {
+        let config = effectiveBatchConfig(config)
+
         isBatchProcessing = true
-        batchProgress     = (0, batchItems.count)
+        batchProgress     = (0, batchCount)
         batchReports      = []
         batchFailedCount  = 0
         batchErrorMessage = nil
@@ -1193,13 +1434,28 @@ final class ScrubberViewModel {
             return
         }
 
-        // Capture the list once; `batchItems` must not be mutated during the loop.
-        let sources = batchItems.map { item in
+        // Capture the list once; the batch must not be mutated during the loop.
+        await runBatch(sources: currentBatchSources(), config: config, save: Self.saveBatchItemToPhotos)
+    }
+
+    /// The config a batch actually runs with.  Captured pages have no library
+    /// original, so replace mode is never honoured for them — whatever the UI sent.
+    func effectiveBatchConfig(_ config: BatchConfig) -> BatchConfig {
+        guard !batchAllowsReplaceOriginal else { return config }
+        var config = config
+        config.saveMode = .saveAsNew
+        return config
+    }
+
+    /// What the batch sheet is about to process: captured pages when there are
+    /// any, otherwise the picker selection.
+    func currentBatchSources() -> [BatchSource] {
+        guard scannedBatchSources.isEmpty else { return scannedBatchSources }
+        return batchItems.map { item in
             BatchSource(assetIdentifier: item.itemIdentifier) {
                 try? await item.loadTransferable(type: Data.self)
             }
         }
-        await runBatch(sources: sources, config: config, save: Self.saveBatchItemToPhotos)
     }
 
     /// The batch loop proper, separated from `PhotosPickerItem` and
@@ -1228,6 +1484,7 @@ final class ScrubberViewModel {
             guard let sourceData = await source.load(),
                   let output = await Self.processBatchItem(
                       sourceData: sourceData,
+                      hints: source.hints,
                       stripMetadata: config.stripMetadata,
                       redactVisualPII: config.redactVisualPII,
                       preset: preset
@@ -1272,6 +1529,7 @@ final class ScrubberViewModel {
     @concurrent
     nonisolated private static func processBatchItem(
         sourceData: Data,
+        hints: ScanHints,
         stripMetadata: Bool,
         redactVisualPII: Bool,
         preset: ExportPreset
@@ -1281,10 +1539,11 @@ final class ScrubberViewModel {
 
         // ── Step 1: Visual PII redaction ────────────────────────────────────
         if redactVisualPII {
-            guard let scanResults = try? await PIIScanner().scanImage(data: sourceData) else {
+            guard let scanResults = try? await PIIScanner().scanImage(data: sourceData, hints: hints) else {
                 return nil
             }
-            let allInstances = scanResults.flatMap(\.instances)
+            // Batch burns what the editor would have pre-selected — never more.
+            let allInstances = scanResults.filter(\.type.isRedactedByDefault).flatMap(\.instances)
             if !allInstances.isEmpty {
                 guard let image = UIImage(data: sourceData),
                       let burned = await ImageRedactor().redact(image: image, instances: allInstances)
@@ -1355,13 +1614,7 @@ final class ScrubberViewModel {
         }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges { [original] in
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-                if let original {
-                    PHAssetChangeRequest.deleteAssets([original] as NSArray)
-                }
-            }
+            try await PhotoLibraryWriter.save(data, deleting: original)
             return originalMissing ? .savedCopyOriginalMissing : .saved
         } catch {
             return .failed
@@ -1390,6 +1643,7 @@ final class ScrubberViewModel {
     /// Resets all batch-related state and dismisses the batch sheet.
     func clearBatchState() {
         batchItems        = []
+        scannedBatchSources = []
         isBatchProcessing = false
         batchProgress     = (0, 0)
         batchComplete     = false

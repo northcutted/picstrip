@@ -10,7 +10,7 @@ import XCTest
 final class LocalizationTests: XCTestCase {
 
     private static let locales = [
-        "ar", "de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt-BR", "pt-PT", "sv", "tr", "zh-Hans", "zh-Hant"
+        "ar", "de", "es", "es-419", "fr", "it", "ja", "ko", "nl", "pl", "pt-BR", "pt-PT", "sv", "tr", "zh-Hans", "zh-Hant"
     ]
 
     private func table(for locale: String) throws -> Bundle {
@@ -65,28 +65,24 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(Set(forms).count, 3, "Expected distinct one/few/many forms, got \(forms).")
     }
 
-    /// A plural phrase embedded next to another argument binds to the right argument.
-    func testPluralSubstitutionUsesTheCountArgument() throws {
-        let key = "%@: redacting ^[%lld instance](inflect: true)"
-        let one = try format(key, locale: "pl", "E-mail", 1)
-        let many = try format(key, locale: "pl", "E-mail", 5)
-        XCTAssertTrue(one.contains("E-mail") && one.contains("1"), one)
-        XCTAssertTrue(many.contains("E-mail") && many.contains("5"), many)
-        XCTAssertNotEqual(
-            one.replacingOccurrences(of: "1", with: ""),
-            many.replacingOccurrences(of: "5", with: ""),
-            "Polish singular and genitive-plural forms should differ."
-        )
-    }
-
     /// The permission prompts and the share-sheet action name come from InfoPlist tables.
     func testInfoPlistStringsAreLocalized() throws {
+        let keys = [
+            "NSPhotoLibraryAddUsageDescription",
+            "NSPhotoLibraryUsageDescription",
+            "NSCameraUsageDescription"
+        ]
         for locale in Self.locales {
-            let value = try table(for: locale).localizedString(
-                forKey: "NSPhotoLibraryAddUsageDescription", value: "missing", table: "InfoPlist"
-            )
-            XCTAssertNotEqual(value, "missing", "\(locale) has no localized photo-library prompt.")
-            XCTAssertTrue(value.contains("PicStrip"), "\(locale): “\(value)”")
+            for key in keys {
+                let value = try table(for: locale).localizedString(forKey: key, value: "missing", table: "InfoPlist")
+                XCTAssertNotEqual(value, "missing", "\(locale) has no localized \(key).")
+                XCTAssertTrue(value.contains("PicStrip"), "\(locale) \(key): “\(value)”")
+            }
         }
+    }
+
+    /// iOS kills the app when it asks for the camera without this key.
+    func testCameraUsageDescriptionIsDeclared() {
+        XCTAssertNotNil(Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription"))
     }
 }

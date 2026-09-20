@@ -97,22 +97,6 @@ nonisolated struct MetadataField: Identifiable {
 nonisolated struct StrippedMetadata {
     let fields: [MetadataField]
 
-    /// Convenience: fields grouped by category, preserving category insertion order.
-    var byCategory: [(category: String, fields: [MetadataField])] {
-        var order: [String] = []
-        var groups: [String: [MetadataField]] = [:]
-        for field in fields {
-            if groups[field.category] == nil {
-                order.append(field.category)
-                groups[field.category] = []
-            }
-            groups[field.category, default: []].append(field)
-        }
-        return order.compactMap { category in
-            groups[category].map { fields in (category: category, fields: fields) }
-        }
-    }
-
     var isEmpty: Bool { fields.isEmpty }
 }
 
@@ -137,7 +121,6 @@ nonisolated enum ImageProcessor {
         case imageDecodingFailed
         case destinationCreationFailed
         case finalizationFailed
-        case unsupportedSourceFormat
 
         var errorDescription: String? {
             switch self {
@@ -149,8 +132,6 @@ nonisolated enum ImageProcessor {
                 return String(localized: "Could not create a CGImageDestination for the requested output format.")
             case .finalizationFailed:
                 return String(localized: "CGImageDestination finalization failed. The image could not be encoded.")
-            case .unsupportedSourceFormat:
-                return String(localized: "The source image format is not supported for re-encoding.")
             }
         }
     }
@@ -238,6 +219,18 @@ nonisolated enum ImageProcessor {
     }
 
     // MARK: - Public API
+
+    /// The pixel dimensions ImageIO reports for `data`, without decoding it.
+    /// Unrotated — callers that only need the long edge or the area can ignore that.
+    nonisolated static func pixelSize(of data: Data) -> CGSize? {
+        let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = props[kCGImagePropertyPixelWidth] as? CGFloat,
+              let height = props[kCGImagePropertyPixelHeight] as? CGFloat,
+              width > 0, height > 0 else { return nil }
+        return CGSize(width: width, height: height)
+    }
 
     /// Creates a display-sized UIImage without decoding the full-resolution source
     /// into memory. Export paths still use the original bytes; this is only for UI

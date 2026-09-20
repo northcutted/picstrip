@@ -57,6 +57,7 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .face, icon: "face.dashed", color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
     .init(type: .barcode, icon: "qrcode", color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
     // Unstructured
+    .init(type: .personName, icon: "person.text.rectangle", color: .teal, detail: "People's names, found by Apple's on-device language model where Apple Intelligence is on. Listed, but not redacted until you switch them on"),
     .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
 
@@ -197,6 +198,16 @@ struct AboutView: View {
                             icon: "folder",
                             color: .orange,
                             text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
+                        )
+                        instructionRow(
+                            icon: "camera",
+                            color: .pink,
+                            text: "**Take Photo** — tap \u{201C}Take Photo\u{201D} to shoot straight into PicStrip. The original photo is never saved to your photo library; only the cleaned copy is."
+                        )
+                        instructionRow(
+                            icon: "doc.viewfinder",
+                            color: .green,
+                            text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."
                         )
                         instructionRow(
                             icon: "arrow.down.to.line",
@@ -380,7 +391,7 @@ struct AboutView: View {
                         icon: "wifi.slash",
                         color: .orange,
                         title: "No Internet Required",
-                        detail: "PicStrip works completely offline. It makes zero network requests. Ever."
+                        detail: "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree."
                     )
                     privacyRow(
                         icon: "chart.bar.xaxis",

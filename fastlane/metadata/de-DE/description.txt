@@ -1,4 +1,4 @@
-Teile Fotos, ohne deinen Standort, deine Identität oder unsichtbare Geheimnisse mitzuteilen. PicStrip entfernt unsichtbare Metadaten und schwärzt sensible Informationen — komplett auf dem Gerät, ohne Konto, ohne Uploads und ohne jegliche Netzwerkverbindungen.
+Teile Fotos, ohne deinen Standort, deine Identität oder unsichtbare Geheimnisse mitzuteilen. PicStrip entfernt unsichtbare Metadaten und schwärzt sensible Informationen — komplett auf dem Gerät, ohne Konto, ohne Uploads und ohne dass eine Netzwerkverbindung nötig ist.
 
 METADATEN ENTFERNEN
 Jedes Foto trägt unsichtbar GPS-Koordinaten, Zeitstempel, Kameradaten, Objektivinfos und Seriennummern. PicStrip entfernt all das vor dem Teilen — per Tipp.
@@ -16,13 +16,17 @@ Jede Erkennung zeigt Typ, Konfidenz-Score und Risikostufe — damit du weißt, w
 SCHWÄRZUNGSEDITOR
 • Zeichne überall, um manuell abzudecken, was der Scanner übersehen hat
 • Mehrfachauswahl und Massenaktionen für Bereiche
-• 3 Stile: Vollton, Weichzeichner oder Pixelierung
-• 10 Farben für Volltonschwärzungen
+• 4 Stile: Vollton, Kreuzschraffur, Pixelierung oder Weichzeichner
+• Stärke von Weichzeichner und Pixelierung einstellbar
+• Vor dem Speichern sehen, wie jede Schwärzung wirklich aussieht
+• 12 Farben für Vollton- und Kreuzschraffur-Schwärzungen
 • 50-Schritte Rückgängig/Wiederherstellen
 
 IMPORT VON ÜBERALL
 • Fotomediathek
 • Dateien-App — Bilder und Screenshots direkt öffnen
+• Fotos in der App aufnehmen — das Original landet nie in deiner Fotomediathek
+• Dokumente mit der Kamera scannen — das Original landet nie in deiner Fotomediathek
 • Drag & Drop in die App
 • Teilen-Erweiterung — direkt aus Fotos, Safari oder jeder App bereinigen, ohne PicStrip zu öffnen
 

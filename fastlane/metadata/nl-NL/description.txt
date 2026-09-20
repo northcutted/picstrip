@@ -1,4 +1,4 @@
-Deel foto's zonder je locatie, identiteit of onzichtbare geheimen mee te delen. PicStrip verwijdert onzichtbare metadata en bedekt gevoelige informatie — volledig op je toestel, zonder account, zonder uploads en zonder netwerkverbindingen.
+Deel foto's zonder je locatie, identiteit of onzichtbare geheimen mee te delen. PicStrip verwijdert onzichtbare metadata en bedekt gevoelige informatie — volledig op je toestel, zonder account, zonder uploads en zonder dat een netwerkverbinding nodig is.
 
 METADATA VERWIJDEREN
 Elke foto bevat ongezien GPS-coördinaten, tijdstempels, camera- en lensgegevens, serienummers en Apple-fabrikantnotities. PicStrip verwijdert alles vóór het delen — met één tik.
@@ -16,13 +16,17 @@ Elke detectie toont het type, een betrouwbaarheidsscore en het risiconiveau, zod
 BEDEKKINGSEDITOR
 • Teken overal om handmatig af te dekken wat de scanner miste
 • Selecteer meerdere gebieden tegelijk en pas wijzigingen in bulk toe
-• 3 stijlen: effen, vervaging of pixelvorming
-• 10 kleuren voor effen vlakken
+• 4 stijlen: effen, kruisarcering, pixelvorming of vervaging
+• Instelbare sterkte voor vervaging en pixelvorming
+• Zie precies hoe elke stijl eruitziet voordat je opslaat
+• 12 kleuren voor effen vlakken en kruisarcering
 • 50 stappen ongedaan maken/opnieuw
 
 OVERAL VANDAAN IMPORTEREN
 • Foto's-bibliotheek
 • Bestanden-app — open elke afbeelding of schermafbeelding direct
+• Maak een foto in de app — het origineel komt nooit in je fotobibliotheek
+• Scan documenten met de camera — het origineel komt nooit in je fotobibliotheek
 • Sleep afbeeldingen in de app
 • Deel-extensie — opschonen vanuit Foto's, Safari of welke app dan ook, zonder PicStrip te openen
 

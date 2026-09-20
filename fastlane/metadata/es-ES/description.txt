@@ -1,4 +1,4 @@
-Comparte fotos sin compartir tu ubicación, tu identidad ni secretos que no puedes ver. PicStrip elimina los metadatos invisibles y oculta la información sensible — totalmente en tu dispositivo, sin cuenta, sin subidas y sin conexiones de red.
+Comparte fotos sin compartir tu ubicación, tu identidad ni secretos que no puedes ver. PicStrip elimina los metadatos invisibles y oculta la información sensible — totalmente en tu dispositivo, sin cuenta, sin subidas y sin necesidad de conexión de red.
 
 ELIMINACIÓN DE METADATOS
 Cada foto lleva GPS, marcas de tiempo, datos del dispositivo, información del objetivo y números de serie incrustados de forma invisible. PicStrip lo elimina todo antes de compartir — en un toque.
@@ -13,16 +13,20 @@ Bajo — fechas de nacimiento, enlaces, códigos de barras
 
 Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para ayudarte a priorizar qué ocultar.
 
-EDITOR DE REDACCIÓN
+EDITOR DE CENSURAS
 • Dibuja en cualquier zona para cubrir manualmente lo que el escáner no detectó
 • Selección múltiple y cambios masivos
-• 3 estilos: sólido, desenfoque o pixelado
-• 10 colores para bloques sólidos
+• 4 estilos: sólido, trama cruzada, pixelado o desenfoque
+• Intensidad ajustable del desenfoque y el pixelado
+• Comprueba exactamente cómo quedará cada estilo sobre la foto antes de guardar
+• 12 colores para bloques sólidos y de trama cruzada
 • 50 pasos de deshacer/rehacer
 
 IMPORTA DESDE CUALQUIER LUGAR
 • Fototeca de Fotos
 • App Archivos — abre imágenes y capturas directamente
+• Haz una foto en la app — el original nunca llega a tu fototeca
+• Escanea documentos con la cámara — el original nunca llega a tu fototeca
 • Arrastra y suelta imágenes en la app
 • Extensión de compartir — limpia desde Fotos, Safari o cualquier app sin abrir PicStrip
 

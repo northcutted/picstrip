@@ -1,3 +1,4 @@
+import AVFoundation
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
@@ -24,6 +25,23 @@ struct ContentView: View {
     /// True while a drag is hovering over the drop target.
     @State private var isDropTargeted = false
 
+    /// Whether the pasteboard holds an image; shows or hides the Paste button.
+    @State private var pasteboard = PasteboardMonitor()
+
+    /// Drives the document camera.
+    @State private var isShowingScanner = false
+    /// What the document camera returned; acted on once its cover has gone,
+    /// because presenting the batch sheet mid-dismissal can drop the sheet.
+    @State private var scanOutcome: DocumentScannerView.Outcome?
+    /// Drives the live-preview camera; handled like the document camera above.
+    @State private var isShowingLiveCamera = false
+    @State private var liveCameraOutcome: LiveCameraView.Outcome?
+    /// The system camera, used when the live-preview camera cannot be set up.
+    @State private var isShowingCamera = false
+    @State private var cameraOutcome: CameraCaptureView.Outcome?
+    /// Shown when the camera permission has been refused.
+    @State private var isShowingCameraDenied = false
+
     /// Rotating taglines shown beneath the app title on the home screen.
     private let mottos: [LocalizedStringKey] = [
         "Share the photo. Not the story behind it.",
@@ -36,13 +54,9 @@ struct ContentView: View {
     /// Index of the currently displayed motto.
     @State private var mottoIndex = 0
 
-    /// Drives the top-left accent blob (faster cycle).
-    @State private var topBlobPhase = false
-    /// Drives the bottom-right indigo blob (slower cycle, offset feel).
-    @State private var bottomBlobPhase = false
-
     @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
 
@@ -82,6 +96,18 @@ struct ContentView: View {
                     breathingGradient
                 }
 
+                // Opening a large file takes a moment before there is a photo to
+                // show.  Say so — after a beat, so a quick load does not flash.
+                if !hasPhoto, viewModel.isProcessing {
+                    processingOverlay
+                        .ignoresSafeArea()
+                        .zIndex(1)
+                        .transition(.asymmetric(
+                            insertion: .opacity.animation(.easeIn(duration: 0.2).delay(0.35)),
+                            removal: .opacity.animation(.easeOut(duration: 0.15))
+                        ))
+                }
+
                 if hasPhoto {
                     photoLayout
                         .navigationTitle("PicStrip")
@@ -94,13 +120,32 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.hidden, for: .navigationBar)
                         .toolbar {
+                            // System paste control: reads the pasteboard without the
+                            // "Allow Paste" prompt.  It cannot take the glass pill style,
+                            // so it lives in the bar, where a compact system control
+                            // belongs, and only while the pasteboard holds an image.
+                            if pasteboard.hasImage {
+                                ToolbarItem(placement: .topBarLeading) {
+                                    PasteButton(payloadType: IncomingImage.self) { images in
+                                        haptic(.light)
+                                        load(images)
+                                    }
+                                    .labelStyle(.titleAndIcon)
+                                    .buttonBorderShape(.capsule)
+                                    // Opaque on purpose: the system disables a paste
+                                    // control whose tint is translucent or low-contrast.
+                                    .tint(Color("PasteControlTint"))
+                                    .accessibilityIdentifier("pasteImageButton")
+                                }
+                                // The control draws its own capsule; the bar's glass
+                                // around it would make two outlines.
+                                .sharedBackgroundVisibility(.hidden)
+                            }
                             ToolbarItem(placement: .topBarTrailing) {
                                 Button {
                                     showingAbout = true
                                 } label: {
                                     Image(systemName: "questionmark.circle")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundStyle(.primary.opacity(0.7))
                                 }
                                 .accessibilityIdentifier("infoButton")
                                 .accessibilityLabel("About PicStrip")
@@ -115,6 +160,9 @@ struct ContentView: View {
         }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
+            // A scan lives only as long as its batch sheet; swiping the sheet
+            // away must release the un-redacted pages too.
+            viewModel.scannedBatchSources = []
         }, content: { sheet in
             switch sheet {
             case .preSave: PreSaveReviewView(viewModel: viewModel)
@@ -183,6 +231,89 @@ struct ContentView: View {
             load(images)
         }
         .photosPickerKeepsMetadata()
+        // ── Document camera ───────────────────────────────────────────────
+        .fullScreenCover(isPresented: $isShowingScanner, onDismiss: handleScanOutcome) {
+            DocumentScannerView { outcome in
+                scanOutcome = outcome
+                isShowingScanner = false
+            }
+            .ignoresSafeArea()
+        }
+        .fullScreenCover(isPresented: $isShowingLiveCamera, onDismiss: handleLiveCameraOutcome) {
+            LiveCameraView { outcome in
+                liveCameraOutcome = outcome
+                isShowingLiveCamera = false
+            }
+        }
+        .fullScreenCover(isPresented: $isShowingCamera, onDismiss: handleCameraOutcome) {
+            CameraCaptureView { outcome in
+                cameraOutcome = outcome
+                isShowingCamera = false
+            }
+            .ignoresSafeArea()
+        }
+        .alert("Camera Access Needed", isPresented: $isShowingCameraDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Camera access was denied. Please enable it in Settings.")
+        }
+        // ── Tap an object to redact it ────────────────────────────────────
+        // The model behind it is downloaded by iOS from Apple, once.  PicStrip
+        // makes no other network request, so it never starts this one unasked.
+        .task { await viewModel.refreshObjectSelectionSupport() }
+        // Load the on-device language model while the user is still choosing a
+        // photo, so the name pass of the first scan does not pay the cold start.
+        .task { SemanticPII.live.prewarm() }
+        .alert("Download Object Selection?", isPresented: $viewModel.isAskingToDownloadObjectModel) {
+            Button("Download") {
+                Task {
+                    let before = viewModel.redactionRegions.count
+                    await viewModel.downloadObjectModelAndContinue()
+                    if viewModel.redactionRegions.count > before { isAddingRedaction = false }
+                }
+            }
+            Button("Not Now", role: .cancel) { viewModel.declineObjectModelDownload() }
+        } message: {
+            Text("Tapping an object to redact it uses an Apple model that iOS downloads once. Only the model is downloaded — your photos never leave your device.")
+        }
+        .alert(
+            "Object Selection",
+            isPresented: Binding(
+                get: { viewModel.objectSelectionMessage != nil },
+                set: { if !$0 { viewModel.objectSelectionMessage = nil } }
+            )
+        ) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(viewModel.objectSelectionMessage ?? "")
+        }
+        // ── Paste button visibility ───────────────────────────────────────
+        // Copying usually happens in another app, so re-check on every return
+        // to the foreground; the notifications cover copies made while PicStrip
+        // is frontmost and iPad multitasking, where the scene phase never changes.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            guard phase == .active else { return }
+            Task { await pasteboard.refresh() }
+        }
+        .onChange(of: hasPhoto) { _, hasPhoto in
+            guard !hasPhoto else { return }
+            Task { await pasteboard.refresh() }
+        }
+        .task {
+            for await _ in NotificationCenter.default.notifications(named: UIPasteboard.changedNotification) {
+                await pasteboard.refresh()
+            }
+        }
+        .task {
+            for await _ in NotificationCenter.default.notifications(named: UIWindow.didBecomeKeyNotification) {
+                await pasteboard.refresh()
+            }
+        }
         // Load failures happen while no photo is on screen, where the control
         // panel's error banner does not exist — surface them as an alert.
         .alert(
@@ -224,7 +355,7 @@ struct ContentView: View {
                     .font(.system(.largeTitle, design: .rounded).weight(.bold))
                     .foregroundStyle(.primary)
 
-                // Fixed-height clip zone keeps layout stable as motto length varies.
+                // The clip zone keeps the sliding transition inside the motto's own box.
                 ZStack {
                     Text(mottos[mottoIndex])
                         .font(.subheadline)
@@ -237,32 +368,47 @@ struct ContentView: View {
                             removal: .move(edge: .top).combined(with: .opacity)
                         ))
                 }
-                .frame(height: 44)
+                // A minimum, not a fixed height: at large text sizes — and in the
+                // longer translations — a motto needs two or three lines.
+                .frame(minHeight: 44)
                 .clipped()
+                // Scoped to the motto: a global `withAnimation` would also animate
+                // any layout that happens to settle in the same transaction.
+                .animation(.easeInOut(duration: 0.45), value: mottoIndex)
             }
             .padding(.top, 20)
-                .task {
-                // Cycle mottos every 3.5 s; task cancels automatically when view disappears.
+            .task {
+                // Cycle mottos every 5.5 s; task cancels automatically when view disappears.
                 // Skip cycling when Reduce Motion is on — show first motto statically.
                 guard !reduceMotion else { return }
                 while !Task.isCancelled {
                     try? await Task.sleep(for: .seconds(5.5))
-                    withAnimation(.easeInOut(duration: 0.45)) {
-                        mottoIndex = (mottoIndex + 1) % mottos.count
-                    }
+                    mottoIndex = (mottoIndex + 1) % mottos.count
                 }
             }
 
             Spacer()
 
-            // Hero animation
-            ScannerHeroView()
-                .padding(.vertical, 8)
-                .accessibilityHidden(true)
+            // Hero animation — shrinks, then gives way, on screens too short to
+            // hold it above the buttons.
+            ViewThatFits(in: .vertical) {
+                ScannerHeroView()
+                    .padding(.vertical, 8)
+                ScannerHeroView()
+                    .scaleEffect(0.7)
+                    .frame(width: 154, height: 112)
+                Color.clear
+                    .frame(height: 0)
+            }
+            .layoutPriority(1)
+            .accessibilityHidden(true)
 
             Spacer()
 
-            // Action buttons
+            // Action buttons.  One container, so the pills share a single glass
+            // pass; its spacing is the *merge* distance and stays below the 12 pt
+            // gap so they never fuse into one shape.
+            GlassEffectContainer(spacing: 8) {
             VStack(spacing: 12) {
                 PhotosPicker(
                     selection: $viewModel.selectedItem,
@@ -285,7 +431,32 @@ struct ContentView: View {
                     PillLabel(icon: "photo.stack", text: "Select Multiple Photos")
                 }
                 .buttonStyle(.glass)
+                .accessibilityIdentifier("selectMultiplePhotosButton")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
+
+                if CameraCaptureView.isAvailable {
+                    Button {
+                        haptic(.light)
+                        openCamera { isShowingLiveCamera = true }
+                    } label: {
+                        PillLabel(icon: "camera", text: "Take Photo")
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityIdentifier("takePhotoButton")
+                    .accessibilityLabel("Take a photo with the camera")
+                }
+
+                if DocumentScannerView.isAvailable {
+                    Button {
+                        haptic(.light)
+                        openCamera { isShowingScanner = true }
+                    } label: {
+                        PillLabel(icon: "doc.viewfinder", text: "Scan Document")
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityIdentifier("scanDocumentButton")
+                    .accessibilityLabel("Scan a document with the camera")
+                }
 
                 Button {
                     haptic(.light)
@@ -297,16 +468,7 @@ struct ContentView: View {
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
 
-                // System paste control: reads the pasteboard without the "Allow
-                // Paste" prompt, and disables itself when no image is available.
-                PasteButton(payloadType: IncomingImage.self) { images in
-                    haptic(.light)
-                    load(images)
-                }
-                .labelStyle(.titleAndIcon)
-                .buttonBorderShape(.capsule)
-                .tint(.secondary)
-                .accessibilityIdentifier("pasteImageButton")
+            }
             }
             .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)
@@ -319,37 +481,7 @@ struct ContentView: View {
     // MARK: - Breathing gradient
 
     private var breathingGradient: some View {
-        ZStack {
-            Color(.systemBackground)
-
-            // Top-left accent blob — cycles every 4 s.
-            RadialGradient(
-                colors: [Color.accentColor.opacity(reduceMotion ? 0.12 : (topBlobPhase ? 0.20 : 0.05)), .clear],
-                center: .topLeading,
-                startRadius: 0,
-                endRadius: 420
-            )
-
-            // Bottom-right indigo blob — cycles every 5.5 s, so the two blobs
-            // are never in sync and the background never looks like it resets.
-            RadialGradient(
-                colors: [Color.indigo.opacity(reduceMotion ? 0.08 : (bottomBlobPhase ? 0.14 : 0.03)), .clear],
-                center: .bottomTrailing,
-                startRadius: 0,
-                endRadius: 380
-            )
-        }
-        .ignoresSafeArea()
-        .accessibilityHidden(true) // decorative background
-        .onAppear {
-            guard !reduceMotion else { return }
-            withAnimation(.easeInOut(duration: 4.0).repeatForever(autoreverses: true)) {
-                topBlobPhase = true
-            }
-            withAnimation(.easeInOut(duration: 5.5).repeatForever(autoreverses: true)) {
-                bottomBlobPhase = true
-            }
-        }
+        BreathingGradient()
     }
 
     // MARK: - Haptics
@@ -363,6 +495,58 @@ struct ContentView: View {
     }
 
     private enum HapticWeight { case light, medium }
+
+    // MARK: - Document camera
+
+    /// Runs `present` once the camera may be used, asking for or explaining the
+    /// permission first.  Shared by the photo camera and the document camera.
+    private func openCamera(_ present: @escaping () -> Void) {
+        switch DocumentScanFlow.step(for: AVCaptureDevice.authorizationStatus(for: .video)) {
+        case .present:
+            present()
+        case .requestAccess:
+            Task {
+                if await AVCaptureDevice.requestAccess(for: .video) {
+                    present()
+                } else {
+                    isShowingCameraDenied = true
+                }
+            }
+        case .explainDenied:
+            isShowingCameraDenied = true
+        }
+    }
+
+    private func handleLiveCameraOutcome() {
+        defer { liveCameraOutcome = nil }
+        switch liveCameraOutcome {
+        case .captured(let data):
+            // The camera's own bytes: metadata intact, exactly like a library photo.
+            Task { await viewModel.loadCaptured(CapturedPages(count: 1) { _ in data }) }
+        case .unavailable:
+            isShowingCamera = true
+        case .cancelled, nil:
+            break
+        }
+    }
+
+    private func handleCameraOutcome() {
+        defer { cameraOutcome = nil }
+        guard case .captured(let photo) = cameraOutcome else { return }
+        Task { await viewModel.loadCaptured(CapturedPages(photo: photo)) }
+    }
+
+    private func handleScanOutcome() {
+        defer { scanOutcome = nil }
+        switch scanOutcome {
+        case .scanned(let document):
+            Task { await viewModel.loadCaptured(document.pages) }
+        case .failed:
+            viewModel.errorMessage = String(localized: "The document could not be scanned.")
+        case .cancelled, nil:
+            break
+        }
+    }
 
     // MARK: - Drag-and-drop / paste
 
@@ -398,6 +582,7 @@ struct ContentView: View {
                     canUndo: viewModel.canUndo,
                     canRedo: viewModel.canRedo,
                     isAddingRedaction: isAddingRedaction,
+                    canSelectObjects: viewModel.isObjectSelectionSupported,
                     onSelect: { id in
                         viewModel.selectRedactionRegion(id: id)
                     },
@@ -418,11 +603,17 @@ struct ContentView: View {
                     onChangeColor: { id, color in
                         viewModel.changeRedactionColor(id: id, color: color)
                     },
+                    onChangeStrength: { id, strength in
+                        viewModel.changeRedactionStrength(id: id, strength: strength)
+                    },
                     onBulkChangeStyle: { ids, style in
                         viewModel.bulkChangeRedactionStyle(ids: ids, style: style)
                     },
                     onBulkChangeColor: { ids, color in
                         viewModel.bulkChangeRedactionColor(ids: ids, color: color)
+                    },
+                    onBulkChangeStrength: { ids, strength in
+                        viewModel.bulkChangeRedactionStrength(ids: ids, strength: strength)
                     },
                     onBulkDelete: { ids in
                         viewModel.bulkDeleteRedactionRegions(ids: ids)
@@ -471,6 +662,7 @@ struct ContentView: View {
                     ZoomableImagePreview(
                         image: uiImage,
                         redactionRegions: viewModel.redactionRegions,
+                        exportScale: viewModel.exportScale,
                         selectedRedactionRegionID: Binding(
                             get: { viewModel.selectedRedactionRegionID },
                             set: { viewModel.selectRedactionRegion(id: $0) }
@@ -487,6 +679,14 @@ struct ContentView: View {
                             viewModel.addCustomRedaction(rect: rect)
                             isAddingRedaction = false
                         },
+                        onSelectObject: viewModel.isObjectSelectionSupported ? { point in
+                            haptic(.light)
+                            Task {
+                                let before = viewModel.redactionRegions.count
+                                await viewModel.selectObject(at: point)
+                                if viewModel.redactionRegions.count > before { isAddingRedaction = false }
+                            }
+                        } : nil,
                         onBeginUpdateRedaction: { id in
                             viewModel.beginRedactionUpdate(id: id)
                         },
@@ -509,6 +709,14 @@ struct ContentView: View {
                     processingOverlay
                 }
 
+                if viewModel.isSelectingObject {
+                    ProgressView()
+                        .controlSize(.large)
+                        .padding(18)
+                        .glassEffect(in: .rect(cornerRadius: 16))
+                        .accessibilityLabel("Finding the object")
+                }
+
                 // × dismiss button
                 if hasPhoto {
                     Button {
@@ -519,7 +727,7 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .frame(width: 20, height: 20)
                     }
                     .buttonStyle(.glass)
@@ -559,7 +767,9 @@ struct ContentView: View {
         VStack(spacing: 12) {
             Image(systemName: "photo.badge.plus")
                 .font(.system(size: 56, weight: .thin))
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text("Select a Photo")
                 .font(.headline)
                 .foregroundStyle(.secondary)
@@ -576,10 +786,12 @@ struct ContentView: View {
 
     private var processingOverlay: some View {
         ZStack {
-            Color(.systemBackground).opacity(0.7)
+            // A material, not a translucent colour: it turns opaque under Reduce
+            // Transparency, which a raw `.opacity(0.7)` never does.
+            Rectangle().fill(.regularMaterial)
             ProgressView("Processing…")
                 .padding()
-                .glassEffect(in: .rect(cornerRadius: 12))
+                .glassEffect(in: .rect(cornerRadius: 16))
         }
     }
 
@@ -590,10 +802,13 @@ struct ContentView: View {
 
             // Error banner
             if let error = viewModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Label {
+                    Text(error).foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                }
+                .font(.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             // ── Redaction entry — adapts to PII scan state ─────────────
@@ -608,6 +823,24 @@ struct ContentView: View {
                 } else {
                     editRedactionsRow
                         .transition(.opacity.combined(with: .move(edge: .top)))
+
+                    // The scan is already published; the language model may
+                    // still add names to it.  Nothing waits on this.
+                    if viewModel.isFindingNames {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .controlSize(.mini)
+                                .accessibilityHidden(true)
+                            Text("Looking for names…")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("findingNamesLabel")
+                        .transition(.opacity)
+                    }
                 }
             }
 
@@ -630,14 +863,12 @@ struct ContentView: View {
 
                 MetadataBadgeRow(
                     metadata: metadata,
-                    onPhoto: false,
                     selectedCategory: Binding(
                         get: { isPanelOpen ? visiblePanelCategory : nil },
                         set: { newValue in
                             if let newValue { openPanel(category: newValue) } else { closePanel() }
                         }
-                    ),
-                    trailingPill: nil
+                    )
                 )
                 .padding(.horizontal, -4)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -678,38 +909,61 @@ struct ContentView: View {
         .animation(.spring(duration: 0.3), value: hasPhoto)
         .animation(.easeInOut(duration: 0.35), value: viewModel.detectedPII)
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isFindingNames)
     }
 
-    // MARK: - Scanning row (muted, not interactive)
+    // MARK: - Scanning row (not interactive)
 
+    /// What the scan is doing and how far it has got.  The bar is driven by the
+    /// scanner's own milestones (`ScanProgress`), not by a timer.
     private var scanningRow: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle().fill(Color.secondary.opacity(0.12))
-                ProgressView()
-                    .controlSize(.small)
-                    .accessibilityHidden(true)
-            }
-            .frame(width: 38, height: 38)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Color.accentColor.opacity(0.12))
+                    Image(systemName: "text.viewfinder")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .symbolEffect(.pulse, options: .repeating)
+                        .accessibilityHidden(true)
+                }
+                .frame(width: 38, height: 38)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Scanning for sensitive data")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text("Checking visible text before save")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Scanning for sensitive data")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(scanStageText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.opacity)
+                }
+                Spacer(minLength: 8)
             }
-            Spacer(minLength: 8)
+
+            ScanProgressBar(progress: viewModel.scanProgress)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 12))
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color(.separator), lineWidth: 1)
         )
+        .animation(.easeInOut(duration: 0.2), value: viewModel.scanProgress.stage)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Scanning for sensitive data")
+        .accessibilityValue(
+            Text(viewModel.scanProgress.fraction, format: .percent.precision(.fractionLength(0)))
+        )
+        .accessibilityIdentifier("scanningRow")
+    }
+
+    private var scanStageText: LocalizedStringKey {
+        switch viewModel.scanProgress.stage {
+        case .analysing: return "Reading text, faces and codes"
+        case .matching:  return "Checking for sensitive details"
+        }
     }
 
     // MARK: - Edit Redactions row
@@ -740,29 +994,30 @@ struct ContentView: View {
                 if regionCount == 0 {
                     Text("None")
                         .font(.caption)
-                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.tertiary))
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                 } else {
                     Text("^[\(regionCount) region](inflect: true)")
                         .font(.caption)
-                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.secondary))
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.5)) : AnyShapeStyle(.tertiary))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
             .background(
                 hasPIIDetections
                     ? AnyShapeStyle(Color.red.opacity(0.08))
-                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
+                    : AnyShapeStyle(Color(.tertiarySystemFill)),
                 in: RoundedRectangle(cornerRadius: 12)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(
-                        hasPIIDetections ? Color.red.opacity(0.20) : Color.primary.opacity(0.06),
+                        hasPIIDetections ? Color.red.opacity(0.35) : Color(.separator),
                         lineWidth: 1
                     )
             )
@@ -801,6 +1056,72 @@ struct ContentView: View {
 
 }
 
+// MARK: - Breathing gradient
+
+/// Decorative home-screen background: two radial blobs whose opacity breathes
+/// on different periods, so the background never looks like it resets.
+///
+/// The phases are local state and the repeating animation is scoped to each
+/// blob's opacity alone.  A global `withAnimation(….repeatForever())` here leaks
+/// into whatever else lays out in the same transaction — on device it made the
+/// home-screen buttons' glass backgrounds grow and shrink forever.
+private struct BreathingGradient: View {
+    @State private var topBright = false
+    @State private var bottomBright = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// One breathing blob.  The gradient is drawn at `peak` and dimmed by an
+    /// opacity factor, so the animated value is a single number: `floor`…`peak`,
+    /// or `still` under Reduce Motion.
+    private struct Blob {
+        let color: Color
+        let peak: Double
+        let floor: Double
+        let still: Double
+        let center: UnitPoint
+        let radius: CGFloat
+        let period: Double
+    }
+
+    /// Top-left accent blob — cycles every 4 s.
+    private static let top = Blob(
+        color: .accentColor, peak: 0.20, floor: 0.05, still: 0.12,
+        center: .topLeading, radius: 420, period: 4.0
+    )
+    /// Bottom-right indigo blob — cycles every 5.5 s, out of sync with the first.
+    private static let bottom = Blob(
+        color: .indigo, peak: 0.14, floor: 0.03, still: 0.08,
+        center: .bottomTrailing, radius: 380, period: 5.5
+    )
+
+    var body: some View {
+        ZStack {
+            Color(.systemBackground)
+            view(for: Self.top, bright: topBright)
+            view(for: Self.bottom, bright: bottomBright)
+        }
+        .ignoresSafeArea()
+        .accessibilityHidden(true) // decorative background
+        .onAppear {
+            guard !reduceMotion else { return }
+            topBright = true
+            bottomBright = true
+        }
+    }
+
+    private func view(for blob: Blob, bright: Bool) -> some View {
+        RadialGradient(
+            colors: [blob.color.opacity(blob.peak), .clear],
+            center: blob.center,
+            startRadius: 0,
+            endRadius: blob.radius
+        )
+        .animation(reduceMotion ? nil : .easeInOut(duration: blob.period).repeatForever(autoreverses: true)) {
+            $0.opacity(reduceMotion ? blob.still / blob.peak : (bright ? 1 : blob.floor / blob.peak))
+        }
+    }
+}
+
 // MARK: - Pill button label
 
 /// Full-width icon + title content for the large capsule buttons.  The surface
@@ -826,6 +1147,185 @@ nonisolated private struct PillLabel: View {
     }
 }
 
+// MARK: - Scan progress bar
+
+/// A determinate bar for the privacy scan.
+///
+/// `progress.fraction` only moves when the scanner reports a finished step, and
+/// reading text — most of the work — is a single step.  So between steps the bar
+/// drifts a little way toward the next one, to show the scan is alive; it never
+/// drifts far, and it never reaches the end on its own.  VoiceOver is given the
+/// real fraction, not the drift.
+private struct ScanProgressBar: View {
+    let progress: ScanProgress
+
+    @State private var displayed = 0.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ProgressView(value: min(1, displayed))
+            .progressViewStyle(.linear)
+            .tint(Color.accentColor)
+            .animation(.easeOut(duration: 0.4), value: displayed)
+            .accessibilityHidden(true)
+            .task(id: progress.fraction) {
+                displayed = max(displayed, progress.fraction)
+                guard !reduceMotion else { return }
+                let ceiling = min(0.96, progress.fraction + 0.22)
+                while !Task.isCancelled, displayed < ceiling - 0.004 {
+                    try? await Task.sleep(for: .milliseconds(180))
+                    guard !Task.isCancelled else { return }
+                    displayed += (ceiling - displayed) * 0.07
+                }
+            }
+    }
+}
+
+// MARK: - Redaction style / colour pickers
+
+/// The style choices, shared by the single-region panel and the bulk panel.
+///
+/// Text follows Dynamic Type; at accessibility sizes four chips no longer fit
+/// side by side, so they wrap into two rows instead of shrinking past legibility.
+private struct RedactionStylePicker: View {
+    /// `nil` when the selected regions do not share one style.
+    let selection: RedactionStyle?
+    let isBulk: Bool
+    let onSelect: (RedactionStyle) -> Void
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let columns = dynamicTypeSize.isAccessibilitySize ? 2 : RedactionStyle.allCases.count
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: columns), spacing: 6) {
+            ForEach(RedactionStyle.allCases, id: \.self) { style in
+                let isActive = selection == style
+                Button {
+                    onSelect(style)
+                } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: style.symbolName)
+                            .font(.subheadline)
+                            .fontWeight(isActive ? .bold : .regular)
+                        Text(style.displayName)
+                            .font(.caption2)
+                            .fontWeight(isActive ? .semibold : .regular)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                    .foregroundStyle(isActive ? Color.accentColor : .primary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(
+                        isActive ? AnyShapeStyle(Color.accentColor.opacity(0.12)) : AnyShapeStyle(Color(.tertiarySystemFill)),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(isActive ? Color.accentColor.opacity(0.5) : Color(.separator), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    isBulk ? "Apply \(style.displayName) style to selected regions" : "\(style.displayName) style"
+                )
+                .accessibilityAddTraits(isActive ? .isSelected : [])
+                .accessibilityIdentifier(isBulk ? "bulkStyleButton-\(style.rawValue)" : "styleButton-\(style.rawValue)")
+            }
+        }
+    }
+}
+
+/// The colour swatches, shared by the single-region panel and the bulk panel.
+/// The swatch art is 28 pt; its button is a full 44 pt touch target.
+private struct RedactionColorPicker: View {
+    /// `nil` when the selected regions do not share one colour.
+    let selection: RedactionColor?
+    let isBulk: Bool
+    let onSelect: (RedactionColor) -> Void
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 4)], spacing: 4) {
+            ForEach(RedactionColor.allCases, id: \.self) { color in
+                let isActive = selection == color
+                Button {
+                    onSelect(color)
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(color.color)
+                            .frame(width: 28, height: 28)
+                        if color.isLight {
+                            Circle()
+                                .strokeBorder(Color(.separator), lineWidth: 1)
+                                .frame(width: 28, height: 28)
+                        }
+                        if isActive {
+                            Circle()
+                                .strokeBorder(Color.accentColor, lineWidth: 2.5)
+                                .frame(width: 34, height: 34)
+                            Image(systemName: "checkmark")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(color.isLight ? Color.black : Color.white)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    isBulk ? "Apply \(color.displayName) color to selected regions" : "\(color.displayName) color"
+                )
+                .accessibilityAddTraits(isActive ? .isSelected : [])
+                .accessibilityIdentifier(isBulk ? "bulkColorButton-\(color.rawValue)" : "colorButton-\(color.rawValue)")
+            }
+        }
+    }
+}
+
+/// How hard pixelate / blur scramble a region, shared by the single-region
+/// panel and the bulk panel.
+///
+/// The thumb moves freely but the change is committed once, when the drag
+/// ends, so one adjustment is one undo step.
+private struct RedactionStrengthSlider: View {
+    /// `nil` when the selected regions do not share one strength.
+    let selection: Double?
+    let isBulk: Bool
+    let onCommit: (Double) -> Void
+
+    @State private var value = RedactionStrength.standard
+
+    var body: some View {
+        Slider(
+            value: $value,
+            in: RedactionStrength.range,
+            step: RedactionStrength.step
+        ) {
+            Text("Strength")
+        } minimumValueLabel: {
+            Image(systemName: "circle.dotted")
+                .accessibilityHidden(true)
+        } maximumValueLabel: {
+            Image(systemName: "circle.fill")
+                .accessibilityHidden(true)
+        } onEditingChanged: { isEditing in
+            if !isEditing { onCommit(value) }
+        }
+        .frame(minHeight: 44)
+        .foregroundStyle(.secondary)
+        .accessibilityValue(Text(value, format: .percent.precision(.fractionLength(0))))
+        // VoiceOver's adjust actions change the value without an editing phase.
+        .accessibilityAdjustableAction { direction in
+            let delta = direction == .increment ? RedactionStrength.step : -RedactionStrength.step
+            value = RedactionStrength.clamped(value + delta)
+            onCommit(value)
+        }
+        .accessibilityIdentifier(isBulk ? "bulkStrengthSlider" : "strengthSlider")
+        .onAppear { value = selection ?? RedactionStrength.standard }
+        .onChange(of: selection) { _, new in value = new ?? RedactionStrength.standard }
+    }
+}
+
 // MARK: - Redaction Editor Drawer
 
 /// Bottom-panel UI that replaces `controlPanel` while the user is editing redaction regions.
@@ -845,6 +1345,8 @@ private struct RedactionEditorDrawer: View {
     let canUndo: Bool
     let canRedo: Bool
     let isAddingRedaction: Bool
+    /// Whether a tap on the photo can outline an object (iOS 27).
+    var canSelectObjects = false
 
     // Single-region callbacks
     let onSelect: (String?) -> Void
@@ -853,10 +1355,12 @@ private struct RedactionEditorDrawer: View {
     let onDeleteRegion: (String) -> Void
     let onChangeStyle: (String, RedactionStyle) -> Void
     let onChangeColor: (String, RedactionColor) -> Void
+    let onChangeStrength: (String, Double) -> Void
 
     // Bulk callbacks
     let onBulkChangeStyle: (Set<String>, RedactionStyle) -> Void
     let onBulkChangeColor: (Set<String>, RedactionColor) -> Void
+    let onBulkChangeStrength: (Set<String>, Double) -> Void
     let onBulkDelete: (Set<String>) -> Void
     let onBulkToggle: (Set<String>) -> Void
 
@@ -909,7 +1413,6 @@ private struct RedactionEditorDrawer: View {
                         .font(.caption.weight(.semibold))
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(isAddingRedaction ? .secondary : .accentColor)
                     .controlSize(.small)
                     .accessibilityIdentifier("addRedactionButton")
                     .accessibilityLabel(isAddingRedaction ? "Cancel drawing redaction" : "Draw a new redaction region")
@@ -951,12 +1454,15 @@ private struct RedactionEditorDrawer: View {
             if isAddingRedaction && !isMultiSelectMode {
                 HStack(spacing: 8) {
                     Image(systemName: "hand.draw")
-                        .font(.system(size: 13, weight: .medium))
+                        .imageScale(.small)
+                        .foregroundStyle(.orange)
                         .accessibilityHidden(true)
-                    Text("Drag on the photo to draw a redaction box")
+                    Text(canSelectObjects
+                         ? "Drag on the photo to draw a redaction box, or tap an object"
+                         : "Drag on the photo to draw a redaction box")
                         .font(.caption)
+                        .foregroundStyle(.primary)
                 }
-                .foregroundStyle(.orange)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -970,8 +1476,9 @@ private struct RedactionEditorDrawer: View {
                     Spacer()
                     VStack(spacing: 6) {
                         Image(systemName: "square.dashed")
-                            .font(.system(size: 22, weight: .light))
+                            .font(.title2.weight(.light))
                             .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
                         Text("No redaction regions")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
@@ -1127,7 +1634,7 @@ private struct RedactionEditorDrawer: View {
     // MARK: - Single-region Style + Colour Panel
 
     /// Compact contextual panel shown when exactly one region is selected.
-    /// Style choices are always visible; the colour row is hidden for `.pixelate`.
+    /// Style choices are always visible; the colour row is hidden for styles without a colour.
     @ViewBuilder
     private func styleColorPanel(for region: RedactionRegion) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1138,85 +1645,36 @@ private struct RedactionEditorDrawer: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 6) {
-                    ForEach(RedactionStyle.allCases, id: \.self) { style in
-                        let isActive = region.style == style
-                        Button {
-                            onChangeStyle(region.id, style)
-                        } label: {
-                            VStack(spacing: 3) {
-                                Image(systemName: style.symbolName)
-                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
-                                Text(style.displayName)
-                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
-                            }
-                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 7)
-                            .background(
-                                isActive
-                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
-                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
-                                in: RoundedRectangle(cornerRadius: 8)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .strokeBorder(
-                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
-                                        lineWidth: 1
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("\(style.displayName) style")
-                        .accessibilityAddTraits(isActive ? .isSelected : [])
-                        .accessibilityIdentifier("styleButton-\(style.rawValue)")
-                    }
+                RedactionStylePicker(selection: region.style, isBulk: false) { style in
+                    onChangeStyle(region.id, style)
                 }
             }
 
-            // ── Colour row (suppressed for pixelate) ──────────────────────
+            // ── Colour row (suppressed for pixelate / blur) ───────────────
             if region.style.supportsColor {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Color")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
-                        spacing: 8
-                    ) {
-                        ForEach(RedactionColor.allCases, id: \.self) { color in
-                            let isActive = region.color == color
-                            Button {
-                                onChangeColor(region.id, color)
-                            } label: {
-                                ZStack {
-                                    Circle()
-                                        .fill(color.color)
-                                        .frame(width: 28, height: 28)
-                                    if color.isLight {
-                                        Circle()
-                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
-                                            .frame(width: 28, height: 28)
-                                    }
-                                    if isActive {
-                                        Circle()
-                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
-                                            .frame(width: 34, height: 34)
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
-                                    }
-                                }
-                                .frame(width: 36, height: 36)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(color.displayName) color")
-                            .accessibilityAddTraits(isActive ? .isSelected : [])
-                            .accessibilityIdentifier("colorButton-\(color.rawValue)")
-                        }
+                    RedactionColorPicker(selection: region.color, isBulk: false) { color in
+                        onChangeColor(region.id, color)
                     }
+                }
+            }
+
+            // ── Strength row (pixelate / blur only) ───────────────────────
+            if region.style.supportsStrength {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Strength")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    RedactionStrengthSlider(selection: region.strength, isBulk: false) { strength in
+                        onChangeStrength(region.id, strength)
+                    }
+                    // A new region gets a new slider, not the last one's thumb.
+                    .id(region.id)
                 }
             }
         }
@@ -1249,8 +1707,15 @@ private struct RedactionEditorDrawer: View {
             return colours.count == 1 ? colours.first : nil
         }()
 
-        // Show colour row unless ALL selected regions are currently pixelated
-        let showColorRow = !selectedRegions.allSatisfy { $0.style == .pixelate }
+        // Show colour row unless NONE of the selected regions can take a colour
+        let showColorRow = selectedRegions.contains { $0.style.supportsColor }
+
+        // Strength applies to pixelate / blur regions only
+        let strengthRegions = selectedRegions.filter(\.style.supportsStrength)
+        let sharedStrength: Double? = {
+            let strengths = Set(strengthRegions.map(\.strength))
+            return strengths.count == 1 ? strengths.first : nil
+        }()
 
         VStack(alignment: .leading, spacing: 10) {
 
@@ -1265,39 +1730,8 @@ private struct RedactionEditorDrawer: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 6) {
-                    ForEach(RedactionStyle.allCases, id: \.self) { style in
-                        let isActive = sharedStyle == style
-                        Button {
-                            onBulkChangeStyle(multiSelectedIDs, style)
-                        } label: {
-                            VStack(spacing: 3) {
-                                Image(systemName: style.symbolName)
-                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
-                                Text(style.displayName)
-                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
-                            }
-                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 7)
-                            .background(
-                                isActive
-                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
-                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
-                                in: RoundedRectangle(cornerRadius: 8)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .strokeBorder(
-                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
-                                        lineWidth: 1
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Apply \(style.displayName) style to selected regions")
-                        .accessibilityAddTraits(isActive ? .isSelected : [])
-                    }
+                RedactionStylePicker(selection: sharedStyle, isBulk: true) { style in
+                    onBulkChangeStyle(multiSelectedIDs, style)
                 }
             }
 
@@ -1308,39 +1742,21 @@ private struct RedactionEditorDrawer: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
-                        spacing: 8
-                    ) {
-                        ForEach(RedactionColor.allCases, id: \.self) { color in
-                            let isActive = sharedColor == color
-                            Button {
-                                onBulkChangeColor(multiSelectedIDs, color)
-                            } label: {
-                                ZStack {
-                                    Circle()
-                                        .fill(color.color)
-                                        .frame(width: 28, height: 28)
-                                    if color.isLight {
-                                        Circle()
-                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
-                                            .frame(width: 28, height: 28)
-                                    }
-                                    if isActive {
-                                        Circle()
-                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
-                                            .frame(width: 34, height: 34)
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
-                                    }
-                                }
-                                .frame(width: 36, height: 36)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Apply \(color.displayName) color to selected regions")
-                            .accessibilityAddTraits(isActive ? .isSelected : [])
-                        }
+                    RedactionColorPicker(selection: sharedColor, isBulk: true) { color in
+                        onBulkChangeColor(multiSelectedIDs, color)
+                    }
+                }
+            }
+
+            // ── Strength row ──────────────────────────────────────────────
+            if !strengthRegions.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Strength")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    RedactionStrengthSlider(selection: sharedStrength, isBulk: true) { strength in
+                        onBulkChangeStrength(multiSelectedIDs, strength)
                     }
                 }
             }
@@ -1380,7 +1796,7 @@ private struct RedactionEditorDrawer: View {
                             .foregroundStyle(.accent)
                     }
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .font(.callout.weight(.semibold))
                 .frame(width: 28, height: 28)
                 .background(
                     (region.type.map { riskColor($0.riskLevel) } ?? Color.accentColor).opacity(0.12),
@@ -1423,17 +1839,17 @@ private struct RedactionEditorDrawer: View {
                     }
                 }
 
-                Spacer(minLength: 4)
+                Spacer(minLength: 8)
 
                 // ── Trailing: checkbox in multi-select; toggle+delete in normal ──
                 if isMultiSelectMode {
                     Image(systemName: isMultiChecked ? "checkmark.circle.fill" : "circle")
                         .font(.title3)
                         .foregroundStyle(isMultiChecked ? Color.accentColor : .secondary)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .accessibilityHidden(true)
                 } else {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 0) {
                         // Enable / disable toggle
                         Button {
                             onToggleRegion(region.id)
@@ -1441,7 +1857,7 @@ private struct RedactionEditorDrawer: View {
                             Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
                                 .font(.title3)
                                 .foregroundStyle(region.isEnabled ? .red : .secondary)
-                                .frame(width: 36, height: 36)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -1455,9 +1871,9 @@ private struct RedactionEditorDrawer: View {
                             onDeleteRegion(region.id)
                         } label: {
                             Image(systemName: "trash")
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .foregroundStyle(.red)
-                                .frame(width: 30, height: 30)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)

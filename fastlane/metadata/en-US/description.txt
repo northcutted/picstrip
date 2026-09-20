@@ -1,4 +1,4 @@
-Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info - fully on-device, with no account, no uploads, and zero network calls.
+Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info - fully on-device, with no account, no uploads, and no network required.
 
 METADATA STRIPPING
 Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share - in one tap.
@@ -16,13 +16,17 @@ Each detection shows its type, confidence score, and risk level so you can prior
 REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
-• 3 redaction styles: solid, blur, or pixelate
-• 10 colors for solid redactions
+• 4 redaction styles: solid, crosshatch, pixelate, or blur
+• Adjustable blur and pixelate strength
+• See exactly how every redaction will look before you save
+• 12 colors for solid and crosshatch redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE
 • Photos library
 • Files app - open any image or screenshot directly
+• Take a photo in the app - the original never reaches your photo library
+• Scan documents with the camera - the original never reaches your photo library
 • Drag and drop images into the app
 • Share Extension - clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 

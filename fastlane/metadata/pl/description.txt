@@ -1,4 +1,4 @@
-Udostępniaj zdjęcia bez udostępniania swojej lokalizacji, tożsamości ani niewidocznych sekretów. PicStrip usuwa niewidoczne metadane i zakrywa wrażliwe informacje — w całości na urządzeniu, bez konta, bez przesyłania i bez połączeń sieciowych.
+Udostępniaj zdjęcia bez udostępniania swojej lokalizacji, tożsamości ani niewidocznych sekretów. PicStrip usuwa niewidoczne metadane i zakrywa wrażliwe informacje — w całości na urządzeniu, bez konta, bez przesyłania i bez potrzeby połączenia z siecią.
 
 USUWANIE METADANYCH
 Każde zdjęcie niesie ze sobą niewidocznie współrzędne GPS, znaczniki czasu, markę i model aparatu, dane obiektywu, numery seryjne oraz notatki producenta Apple. PicStrip usuwa to wszystko przed udostępnieniem — jednym dotknięciem.
@@ -16,13 +16,17 @@ Każde wykrycie pokazuje typ, ocenę pewności i poziom ryzyka, więc wiesz, co 
 EDYTOR ZAKRYWANIA
 • Rysuj w dowolnym miejscu, aby ręcznie zakryć to, co skaner przeoczył
 • Zaznaczanie wielokrotne i wprowadzanie zmian zbiorczo
-• 3 style: pełny kolor, rozmycie lub pikselizacja
-• 10 kolorów dla pełnych zakryć
+• 4 style: pełny kolor, kreskowanie, pikselizacja lub rozmycie
+• Regulowana siła rozmycia i pikselizacji
+• Zobacz dokładnie, jak będzie wyglądać każde zakrycie przed zapisem
+• 12 kolorów dla pełnych zakryć i kreskowania
 • 50 kroków cofania/ponawiania
 
 IMPORT ZEWSZĄD
 • Biblioteka Zdjęć
 • Aplikacja Pliki — otwórz dowolny obraz lub zrzut ekranu bezpośrednio
+• Zrób zdjęcie w aplikacji — oryginał nigdy nie trafia do biblioteki zdjęć
+• Skanuj dokumenty aparatem — oryginał nigdy nie trafia do biblioteki zdjęć
 • Przeciągnij i upuść obrazy w aplikacji
 • Rozszerzenie udostępniania — wyczyść zdjęcia bezpośrednio ze Zdjęć, Safari lub dowolnej aplikacji, bez otwierania PicStrip
 

@@ -186,9 +186,11 @@ final class DetectionRegistryTests: XCTestCase {
         // Types whose detection is handled outside the regex registry:
         //   • NSDataDetector:  .phoneNumber, .address, .link
         //   • Vision framework: .face, .barcode
+        //   • On-device language model (app only): .personName
         let ruleExemptTypes: Set<PIIType> = [
             .phoneNumber, .address, .link,  // NSDataDetector
-            .face, .barcode,                // VNDetectFaceRectanglesRequest / VNDetectBarcodesRequest
+            .face, .barcode,                // DetectFaceRectanglesRequest / DetectBarcodesRequest
+            .personName,                    // SemanticPII
         ]
 
         for type in PIIType.allCases where !ruleExemptTypes.contains(type) {

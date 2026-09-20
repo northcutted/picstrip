@@ -1,4 +1,4 @@
-Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau.
+Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau requise.
 
 SUPPRESSION DES MÉTADONNÉES
 Chaque photo contient secrètement des coordonnées GPS, des horodatages, la marque et le modèle de l'appareil, les données de l'objectif et des numéros de série. PicStrip supprime tout cela avant le partage — en un clic.
@@ -16,13 +16,17 @@ Chaque détection affiche son type, son score de confiance et son niveau de risq
 ÉDITEUR DE MASQUAGE
 • Dessinez n'importe où pour couvrir manuellement ce que le scanner a manqué
 • Sélection multiple et modifications en masse
-• 3 styles : plein, flou ou pixelisé
-• 10 couleurs pour les blocs pleins
+• 4 styles : plein, hachures croisées, pixelisé ou flou
+• Intensité réglable du flou et de la pixelisation
+• Voyez le rendu exact de chaque style sur la photo avant d'enregistrer
+• 12 couleurs pour les blocs pleins et à hachures croisées
 • 50 niveaux d'annulation/rétablissement
 
 IMPORTER DE N'IMPORTE OÙ
 • Bibliothèque Photos
 • App Fichiers — ouvrez directement toute image ou capture d'écran
+• Prenez une photo dans l'app — l'original n'atteint jamais votre photothèque
+• Scannez des documents avec l'appareil photo — l'original n'atteint jamais votre photothèque
 • Glisser-déposer des images dans l'app
 • Extension de partage — nettoyez directement depuis Photos, Safari ou toute app, sans ouvrir PicStrip
 

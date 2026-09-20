@@ -1,4 +1,4 @@
-Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza alcuna connessione di rete.
+Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza bisogno di connessione di rete.
 
 RIMOZIONE DEI METADATI
 Ogni foto contiene di nascosto coordinate GPS, timestamp, marca e modello della fotocamera, dati dell'obiettivo, numeri di serie e note del produttore Apple. PicStrip rimuove tutto prima della condivisione — con un tocco.
@@ -16,13 +16,17 @@ Ogni rilevamento mostra tipo, punteggio di affidabilità e livello di rischio, c
 EDITOR DI OSCURAMENTO
 • Disegna ovunque per coprire manualmente ciò che lo scanner ha mancato
 • Selezione multipla e modifiche in blocco
-• 3 stili: pieno, sfocato o pixelato
-• 10 colori per i blocchi pieni
+• 4 stili: pieno, tratteggiato, pixelato o sfocato
+• Intensità regolabile per sfocato e pixelato
+• Guarda come apparirà ogni stile sulla foto prima di salvare
+• 12 colori per i blocchi pieni e tratteggiati
 • 50 livelli di annullamento/ripristino
 
 IMPORTA DA QUALSIASI POSTO
 • Libreria Foto
 • App File — apri qualsiasi immagine o screenshot direttamente
+• Scatta una foto nell'app — l'originale non arriva mai nella libreria foto
+• Scansiona documenti con la fotocamera — l'originale non arriva mai nella libreria foto
 • Trascina e rilascia le immagini nell'app
 • Estensione di condivisione — ripulisci direttamente da Foto, Safari o qualsiasi app senza aprire PicStrip
 

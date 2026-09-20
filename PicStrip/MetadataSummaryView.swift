@@ -65,16 +65,11 @@ func metadataCategoryDescription(for category: String) -> String {
 
 /// A horizontally scrolling row of coloured pill badges — one per detected metadata category.
 ///
-/// - `onPhoto`: When `true`, renders for a dark photo background (white text, opaque fill).
-///   Badges are not tappable in this mode.
-/// - `selectedCategory`: When provided, tapping a badge selects/deselects it (off-photo only).
+/// - `selectedCategory`: When provided, tapping a badge selects/deselects it.
 struct MetadataBadgeRow: View {
 
     let metadata: StrippedMetadata
-    var onPhoto: Bool = false
     var selectedCategory: Binding<String?>?
-    /// Optional extra pill injected at the trailing end of the badge row.
-    var trailingPill: AnyView?
 
     /// Categories present in the metadata, in canonical display order, with field counts.
     private var presentCategories: [(category: String, count: Int)] {
@@ -91,9 +86,6 @@ struct MetadataBadgeRow: View {
                 ForEach(presentCategories, id: \.category) { item in
                     badge(category: item.category, count: item.count)
                 }
-                if let pill = trailingPill {
-                    pill
-                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -103,7 +95,7 @@ struct MetadataBadgeRow: View {
     private func badge(category: String, count: Int) -> some View {
         let color = metadataIconColor(for: category)
         let isSelected = selectedCategory?.wrappedValue == category
-        let interactive = !onPhoto && selectedCategory != nil
+        let interactive = selectedCategory != nil
 
         return Button {
             guard interactive else { return }
@@ -113,9 +105,13 @@ struct MetadataBadgeRow: View {
                 selectedCategory?.wrappedValue = category
             }
         } label: {
+            // The category colour stays on the glyph and the fill; the words are
+            // `.primary`, because orange or red caption text on a 10 % tint of
+            // itself is unreadable.
             HStack(spacing: 4) {
                 Image(systemName: metadataIconName(for: category))
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(color)
                     .accessibilityHidden(true)
                 Text(metadataCategoryDisplayName(for: category))
                     .font(.caption2.weight(.semibold))
@@ -124,28 +120,19 @@ struct MetadataBadgeRow: View {
                     .font(.caption2.weight(.bold))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
-                    .background(
-                        onPhoto
-                            ? Color.white.opacity(0.25)
-                            : (isSelected ? color.opacity(0.25) : color.opacity(0.18)),
-                        in: Capsule()
-                    )
+                    .background(isSelected ? color.opacity(0.25) : color.opacity(0.18), in: Capsule())
                 // Selected indicator
                 if isSelected {
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 8, weight: .bold))
+                        .font(.caption2.weight(.bold))
+                        .imageScale(.small)
                         .accessibilityHidden(true)
                 }
             }
-            .foregroundStyle(onPhoto ? .white : (isSelected ? color : color))
+            .foregroundStyle(.primary)
             .padding(.horizontal, 9)
             .padding(.vertical, 5)
-            .background(
-                onPhoto
-                    ? color.opacity(0.75)
-                    : (isSelected ? color.opacity(0.18) : color.opacity(0.10)),
-                in: Capsule()
-            )
+            .background(isSelected ? color.opacity(0.18) : color.opacity(0.10), in: Capsule())
             .overlay(
                 Capsule()
                     .strokeBorder(
@@ -155,7 +142,6 @@ struct MetadataBadgeRow: View {
             )
         }
         .buttonStyle(.plain)
-        .disabled(onPhoto)
         .frame(minHeight: 44)
         .contentShape(Rectangle())
         .accessibilityLabel(Text(verbatim: metadataCategoryDisplayName(for: category)))
@@ -164,67 +150,6 @@ struct MetadataBadgeRow: View {
         .accessibilityHint(interactive ? (isSelected ? "Double tap to close" : "Double tap to review") : "")
         .accessibilityAddTraits(isSelected ? [.isSelected] : [])
         .animation(.spring(duration: 0.2), value: isSelected)
-    }
-}
-
-// MARK: - MetadataFieldListView
-
-/// Embeddable list of stripped metadata fields grouped by category.
-/// Designed to be placed inside a `List` or `ScrollView`.
-struct MetadataFieldListView: View {
-
-    let metadata: StrippedMetadata
-
-    var body: some View {
-        if metadata.isEmpty {
-            emptyState
-        } else {
-            ForEach(metadata.byCategory, id: \.category) { group in
-                Section(header: categoryHeader(group.category)) {
-                    ForEach(group.fields) { field in
-                        fieldRow(field)
-                    }
-                }
-            }
-        }
-    }
-
-    private var emptyState: some View {
-        VStack(spacing: 12) {
-            Image(systemName: "checkmark.seal.fill")
-                .font(.system(size: 44))
-                .foregroundStyle(.green)
-            Text("No Private Metadata Found")
-                .font(.headline)
-            Text("This image contained no EXIF, GPS, or other private metadata.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-    }
-
-    private func categoryHeader(_ category: String) -> some View {
-        HStack(spacing: 6) {
-            Image(systemName: metadataIconName(for: category))
-                .font(.caption)
-                .foregroundStyle(metadataIconColor(for: category))
-            Text(metadataCategoryDisplayName(for: category))
-        }
-    }
-
-    private func fieldRow(_ field: MetadataField) -> some View {
-        VStack(alignment: .leading, spacing: 3) {
-            Text(field.key)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Text(field.value)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(3)
-        }
-        .padding(.vertical, 2)
     }
 }
 
@@ -239,32 +164,8 @@ struct MetadataFieldListView: View {
         MetadataField(category: "TIFF", key: "Software", value: "17.0")
     ])
     VStack(spacing: 24) {
-        MetadataBadgeRow(metadata: metadata, onPhoto: false, selectedCategory: $selected)
+        MetadataBadgeRow(metadata: metadata, selectedCategory: $selected)
         Text(verbatim: "Selected: \(selected ?? "none")").font(.caption).foregroundStyle(.secondary)
     }
     .padding()
-}
-
-#Preview("Badge row — on photo") {
-    ZStack {
-        Color.black
-        MetadataBadgeRow(metadata: StrippedMetadata(fields: [
-            MetadataField(category: "GPS", key: "GPSLatitude", value: "37.33"),
-            MetadataField(category: "EXIF", key: "Make", value: "Apple")
-        ]), onPhoto: true)
-    }
-    .frame(height: 60)
-}
-
-#Preview("Field list") {
-    List {
-        MetadataFieldListView(metadata: StrippedMetadata(fields: [
-            MetadataField(category: "GPS", key: "GPSLatitude", value: "37.3317"),
-            MetadataField(category: "GPS", key: "GPSLongitude", value: "-122.0307"),
-            MetadataField(category: "EXIF", key: "DateTimeOriginal", value: "2024:06:15 14:32:01"),
-            MetadataField(category: "EXIF", key: "Make", value: "Apple"),
-            MetadataField(category: "TIFF", key: "Software", value: "17.0")
-        ]))
-    }
-    .listStyle(.insetGrouped)
 }

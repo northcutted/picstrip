@@ -29,6 +29,12 @@
             "value" : "Limpiar con PicStrip"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar con PicStrip"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -126,6 +132,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip guarda las imágenes limpias en tu fototeca."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip guarda las imágenes limpias en tu fototeca."

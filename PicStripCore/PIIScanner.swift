@@ -1,3 +1,4 @@
+import CoreVideo
 import Foundation
 import ImageIO
 import Vision
@@ -18,6 +19,90 @@ nonisolated enum PIIScannerError: Error, LocalizedError {
             return String(localized: "The sensitive-data scan could not run on this image. Review it manually before sharing.")
         }
     }
+}
+
+// MARK: - ScanHints
+
+/// What the caller already knows about an image before it is scanned.
+nonisolated struct ScanHints: Sendable, Equatable {
+    /// The image is one document, edge to edge — a document-camera scan.
+    ///
+    /// Such an image has no rectangle for Vision to find, so without this hint
+    /// the document-context scoring never runs on exactly the images that are
+    /// most likely to be documents.  With it, the whole frame is scored as the
+    /// document; unlike a document found *inside* a photo, it is never turned
+    /// into a redaction region of its own, which would black out the whole page.
+    var wholeImageIsDocument = false
+
+    static let none = ScanHints()
+    static let scannedDocument = ScanHints(wholeImageIsDocument: true)
+}
+
+// MARK: - ScanStep
+
+/// A milestone inside one scan, reported as it happens so the UI can show real
+/// progress instead of a spinner.  The Vision requests run together and finish
+/// in any order; pattern matching starts once they are all in.
+nonisolated enum ScanStep: Sendable, Equatable {
+    enum Subject: Sendable, Hashable, CaseIterable {
+        case text, faces, barcodes, documentEdges
+    }
+
+    /// Vision finished looking for this — whether or not it found any, or failed.
+    case analysed(Subject)
+    /// Vision is done; the recognised text is being checked against the rules.
+    case matchingPatterns
+}
+
+typealias ScanProgressHandler = @Sendable (ScanStep) -> Void
+
+// MARK: - ScanOutput
+
+/// One line of recognised text, for callers that look for sensitive content the
+/// pattern rules cannot express (the app's on-device language-model pass).
+nonisolated struct ScannedLine: Sendable {
+    let text: String
+    /// Normalised, top-left origin — the same space as `DetectedInstance.boundingBox`.
+    let boundingBox: CGRect
+    let confidence: Float
+    /// Character-level geometry, when the line came from Vision.
+    private let candidate: RecognizedText?
+
+    init(text: String, boundingBox: CGRect, confidence: Float, candidate: RecognizedText? = nil) {
+        self.text = text
+        self.boundingBox = boundingBox
+        self.confidence = confidence
+        self.candidate = candidate
+    }
+
+    /// Tight box around the first occurrence of `substring` (case-insensitive),
+    /// or `nil` when this line does not contain it.  Without Vision geometry the
+    /// box is estimated from the substring's position along the line.
+    func boundingBox(of substring: String) -> CGRect? {
+        guard !substring.isEmpty,
+              let range = text.range(of: substring, options: [.caseInsensitive, .diacriticInsensitive])
+        else { return nil }
+
+        if let quad = candidate?.boundingBox(for: range) {
+            return PIIScanner.swiftUIBox(from: quad.boundingBox.cgRect)
+        }
+        let total = max(text.count, 1)
+        let start = text.distance(from: text.startIndex, to: range.lowerBound)
+        let length = text.distance(from: range.lowerBound, to: range.upperBound)
+        return CGRect(
+            x: boundingBox.minX + boundingBox.width * CGFloat(start) / CGFloat(total),
+            y: boundingBox.minY,
+            width: boundingBox.width * CGFloat(length) / CGFloat(total),
+            height: boundingBox.height
+        )
+    }
+}
+
+/// Everything one scan produced: the findings, and the text they were found in.
+nonisolated struct ScanOutput: Sendable {
+    let results: [DetectionResult]
+    /// Recognised lines in reading order.
+    let lines: [ScannedLine]
 }
 
 // MARK: - Scanner
@@ -41,7 +126,17 @@ nonisolated struct PIIScanner {
     /// `@concurrent`: always runs off the caller's actor, so invoking it from the
     /// main actor never blocks the UI on Vision or regex work.
     @concurrent
-    func scanImage(data: Data) async throws -> [DetectionResult] {
+    func scanImage(data: Data, hints: ScanHints = .none) async throws -> [DetectionResult] {
+        try await scan(data: data, hints: hints).results
+    }
+
+    /// `scanImage` plus the recognised text, for callers that run a further pass over it.
+    @concurrent
+    func scan(
+        data: Data,
+        hints: ScanHints = .none,
+        progress: ScanProgressHandler? = nil
+    ) async throws -> ScanOutput {
         // Stage 1: Validate — ensures a meaningful error if the caller passes
         // non-image bytes before we hand anything to Vision.
         // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
@@ -75,6 +170,13 @@ nonisolated struct PIIScanner {
         var textRecognitionRan = false
         var faceDetectionFailed = false
 
+        // Vision can deliver more than one result for a request; a step is
+        // reported the first time only.
+        var reported: Set<ScanStep.Subject> = []
+        func report(_ subject: ScanStep.Subject) {
+            if reported.insert(subject).inserted { progress?(.analysed(subject)) }
+        }
+
         // `performAll` reports each request's outcome independently, so a single
         // sub-request failing (e.g. rectangle detection on the simulator with no
         // Neural Engine) arrives as its own `.error` and never discards the
@@ -84,12 +186,20 @@ nonisolated struct PIIScanner {
             case .recognizeText(_, let found):
                 observations = found
                 textRecognitionRan = true
-            case .detectFaceRectangles(_, let found): faces = found
-            case .detectBarcodes(_, let found):       barcodes = found
-            case .detectRectangles(_, let found):     rectangles = found
+                report(.text)
+            case .detectFaceRectangles(_, let found):
+                faces = found
+                report(.faces)
+            case .detectBarcodes(_, let found):
+                barcodes = found
+                report(.barcodes)
+            case .detectRectangles(_, let found):
+                rectangles = found
+                report(.documentEdges)
             case .error(let request, _):
                 // An error for one request must not discard the others' results.
                 if request is DetectFaceRectanglesRequest { faceDetectionFailed = true }
+                if let subject = Self.subject(of: request) { report(subject) }
             default:
                 break
             }
@@ -117,11 +227,16 @@ nonisolated struct PIIScanner {
         // model produced a result — Vision rejected the image outright, or both
         // requests errored — say so instead of reporting a clean image.
         guard textRecognitionRan else { throw PIIScannerError.textRecognitionFailed }
+        progress?(.matchingPatterns)
 
         let primaryLineContexts = Self.recognizedLineContexts(from: observations)
         let faceRects = faces.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
         let barcodeContexts = Self.barcodeContexts(from: barcodes)
-        let documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
+        var documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
+        let wholeImage: WholeImageDocument? = hints.wholeImageIsDocument
+            ? WholeImageDocument(aspectRatio: Self.displayAspectRatio(of: source))
+            : nil
+        if wholeImage != nil { documentRects.append(WholeImageDocument.rect) }
 
         // Stage 3: Per-observation two-stage PII analysis with state tracking.
         var results = try Self.detectPII(in: observations)
@@ -139,15 +254,93 @@ nonisolated struct PIIScanner {
             documentRects: documentRects,
             faceRects: faceRects,
             barcodeContexts: barcodeContexts,
-            textLines: primaryLineContexts
+            textLines: primaryLineContexts,
+            wholeImage: wholeImage
         )
         results = Self.resolveCreditCardPhoneConflicts(results)
 
-        // Re-sort combined results: highest score first, alphabetical tiebreak.
-        return results.sorted {
+        return ScanOutput(results: Self.sorted(results), lines: Self.scannedLines(from: observations))
+    }
+
+    // MARK: - Live preview
+
+    /// A fast, approximate pass over one camera frame, for the viewfinder's
+    /// advisory boxes: what PicStrip would redact if the shutter were pressed now.
+    ///
+    /// OCR, default faces, barcodes, and the same pattern rules — but none of the
+    /// document scoring, and no retries.  It is only a preview: the captured photo
+    /// goes through `scan(data:hints:)` like any other image.  Nothing about a
+    /// frame is kept; the boxes are the only thing that leaves this function.
+    ///
+    /// Accurate OCR by default: the pattern rules need the digits right, and the
+    /// fast model garbles them (and reads nothing at all on the simulator).  The
+    /// caller's throttle, not the model, is what keeps the frame rate sane.
+    @concurrent
+    static func liveBoxes(
+        in pixelBuffer: CVPixelBuffer,
+        orientation: CGImagePropertyOrientation = .up,
+        textLevel: RecognizeTextRequest.RecognitionLevel = .accurate
+    ) async -> [CGRect] {
+        let requests: [any VisionRequest] = [
+            makeTextRequest(level: textLevel),
+            DetectFaceRectanglesRequest(),
+            DetectBarcodesRequest()
+        ]
+        var observations: [RecognizedTextObservation] = []
+        var boxes: [CGRect] = []
+        for await result in ImageRequestHandler(pixelBuffer, orientation: orientation).performAll(requests) {
+            switch result {
+            case .recognizeText(_, let found):
+                observations = found
+            case .detectFaceRectangles(_, let found):
+                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+            case .detectBarcodes(_, let found):
+                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+            default:
+                break
+            }
+        }
+        let textFindings = (try? detectPII(in: observations)) ?? []
+        boxes += textFindings
+            .filter(\.type.isRedactedByDefault)
+            .flatMap(\.instances)
+            .map(\.boundingBox)
+        return boxes
+    }
+
+    /// Highest score first, alphabetical tiebreak.
+    nonisolated static func sorted(_ results: [DetectionResult]) -> [DetectionResult] {
+        results.sorted {
             $0.score != $1.score
                 ? $0.score > $1.score
                 : $0.type.description < $1.type.description
+        }
+    }
+
+    nonisolated private static func subject(of request: any VisionRequest) -> ScanStep.Subject? {
+        switch request {
+        case is RecognizeTextRequest:        return .text
+        case is DetectFaceRectanglesRequest: return .faces
+        case is DetectBarcodesRequest:       return .barcodes
+        case is DetectRectanglesRequest:     return .documentEdges
+        default:                             return nil
+        }
+    }
+
+    nonisolated private static func scannedLines(from observations: [RecognizedTextObservation]) -> [ScannedLine] {
+        observations.compactMap { observation -> ScannedLine? in
+            guard let candidate = observation.topCandidates(1).first else { return nil }
+            return ScannedLine(
+                text: candidate.string,
+                boundingBox: swiftUIBox(from: observation.boundingBox.cgRect),
+                confidence: candidate.confidence,
+                candidate: candidate
+            )
+        }.sorted {
+            if abs($0.boundingBox.midY - $1.boundingBox.midY) > 0.02 {
+                return $0.boundingBox.midY < $1.boundingBox.midY
+            }
+            return $0.boundingBox.minX < $1.boundingBox.minX
         }
     }
 
@@ -1135,19 +1328,31 @@ nonisolated struct PIIScanner {
         }
     }
 
+    /// The frame itself, when the caller said the image is one document
+    /// (`ScanHints.wholeImageIsDocument`).
+    nonisolated struct WholeImageDocument: Equatable {
+        /// The normalised rect that stands for the whole image.
+        static let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
+        /// Long edge over short edge, in displayed pixels.  A normalised rect is
+        /// always square, so the card/page shape has to come from the image.
+        let aspectRatio: CGFloat
+    }
+
     nonisolated static func applyDocumentContext(
         results: [DetectionResult],
         documentRects: [CGRect],
         faceRects: [CGRect],
         barcodeContexts: [BarcodeContext],
-        textLines: [RecognizedLineContext]
+        textLines: [RecognizedLineContext],
+        wholeImage: WholeImageDocument? = nil
     ) -> [DetectionResult] {
         let contexts = inferDocumentContexts(
             results: results,
             documentRects: documentRects,
             faceRects: faceRects,
             barcodeContexts: barcodeContexts,
-            textLines: textLines
+            textLines: textLines,
+            wholeImage: wholeImage
         )
         guard !contexts.isEmpty else { return results }
 
@@ -1186,7 +1391,9 @@ nonisolated struct PIIScanner {
             return DetectionResult(type: result.type, score: resultScore, instances: adjustedInstances)
         }
 
-        for context in contexts {
+        // A document found inside a photo becomes a region of its own.  The whole
+        // frame never does: redacting it would leave nothing of the scan.
+        for context in contexts where !(wholeImage != nil && context.boundingBox == WholeImageDocument.rect) {
             let instance = DetectedInstance(
                 snippet: context.kind.snippet,
                 subtype: context.kind.subtype,
@@ -1247,7 +1454,8 @@ nonisolated struct PIIScanner {
         documentRects: [CGRect],
         faceRects: [CGRect],
         barcodeContexts: [BarcodeContext],
-        textLines: [RecognizedLineContext]
+        textLines: [RecognizedLineContext],
+        wholeImage: WholeImageDocument? = nil
     ) -> [DocumentContext] {
         let candidateRects = documentRects.filter { rect in
             rect.width > 0.08 && rect.height > 0.08
@@ -1267,7 +1475,9 @@ nonisolated struct PIIScanner {
             let hasBarcode = !containedBarcodes.isEmpty
             let hasPDF417 = containedBarcodes.contains(where: \.isPDF417)
 
-            let cardAspect = Self.aspectRatio(of: rect)
+            let cardAspect = (wholeImage != nil && rect == WholeImageDocument.rect)
+                ? wholeImage?.aspectRatio ?? Self.aspectRatio(of: rect)
+                : Self.aspectRatio(of: rect)
             let cardLike = (1.35...1.9).contains(cardAspect)
             let pageLike = (0.65...1.35).contains(cardAspect) || (1.9...3.0).contains(cardAspect)
 
@@ -1377,6 +1587,15 @@ nonisolated struct PIIScanner {
 
     nonisolated private static func rect(_ rect: CGRect, containsCentreOf child: CGRect) -> Bool {
         rect.contains(CGPoint(x: child.midX, y: child.midY))
+    }
+
+    /// Long edge over short edge of the image as displayed.  Orientation does not
+    /// matter for a long/short ratio, so the stored pixel size is enough.
+    nonisolated private static func displayAspectRatio(of source: CGImageSource) -> CGFloat {
+        let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let width = (properties?[kCGImagePropertyPixelWidth] as? NSNumber)?.doubleValue ?? 1
+        let height = (properties?[kCGImagePropertyPixelHeight] as? NSNumber)?.doubleValue ?? 1
+        return aspectRatio(of: CGRect(x: 0, y: 0, width: width, height: height))
     }
 
     nonisolated private static func aspectRatio(of rect: CGRect) -> CGFloat {

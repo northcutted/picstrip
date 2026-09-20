@@ -57,14 +57,17 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
     case connectionString
 
     // MARK: - Vision-detected (not text-based)
-    /// Human faces detected via VNDetectFaceRectanglesRequest.
+    /// Human faces detected via Vision's `DetectFaceRectanglesRequest`.
     case face
-    /// QR codes and barcodes detected via VNDetectBarcodesRequest.
+    /// QR codes and barcodes detected via Vision's `DetectBarcodesRequest`.
     /// The snippet carries the decoded payload for richer context.
     case barcode
 
     // MARK: - Unstructured / Contextual
     case unstructuredCredential
+    /// A person's name.  No pattern can find one, so this type only ever comes
+    /// from the app's on-device language-model pass (Apple Intelligence devices).
+    case personName
 
     // MARK: - Risk Level
 
@@ -119,7 +122,8 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
         // Contextual information; exposure risk depends heavily on the recipient.
         case .dateOfBirth,
              .link,
-             .barcode:
+             .barcode,
+             .personName:
             return .low
         }
     }
@@ -170,6 +174,12 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
         case .barcode:                  return String(localized: "QR Code / Barcode")
         // Unstructured / Contextual
         case .unstructuredCredential:   return String(localized: "Physical Credential / Password")
+        case .personName:               return String(localized: "Name")
         }
     }
+
+    /// Whether findings of this type are selected for redaction as soon as they
+    /// are detected.  Names are everywhere — a chat screenshot is mostly names —
+    /// so they are listed for the user to switch on rather than blacked out unasked.
+    nonisolated var isRedactedByDefault: Bool { self != .personName }
 }

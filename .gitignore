@@ -106,3 +106,6 @@ vendor/bundle/
 # Python tooling
 __pycache__/
 *.py[cod]
+
+# Raw xcodebuild logs from screenshot runs (local paths, simulator IDs)
+fastlane/screenshot_logs/

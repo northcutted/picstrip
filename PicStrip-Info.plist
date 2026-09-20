@@ -29,6 +29,8 @@
     <false/>
 
     <!-- Privacy usage descriptions -->
+    <key>NSCameraUsageDescription</key>
+    <string>PicStrip uses the camera to capture documents and photos you want to clean. Captures are processed on your device.</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
     <string>PicStrip saves the scrubbed image to your photo library.</string>
     <key>NSPhotoLibraryUsageDescription</key>

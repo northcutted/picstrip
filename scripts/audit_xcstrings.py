@@ -35,7 +35,7 @@ DEFAULT_CATALOGS = [
     'PicStripShareExtension/InfoPlist.xcstrings',
 ]
 
-LOCALES = ['ar', 'de', 'es', 'fr', 'it', 'ja', 'ko', 'nl', 'pl', 'pt-BR', 'pt-PT', 'sv', 'tr', 'zh-Hans', 'zh-Hant']
+LOCALES = ['ar', 'de', 'es', 'es-419', 'fr', 'it', 'ja', 'ko', 'nl', 'pl', 'pt-BR', 'pt-PT', 'sv', 'tr', 'zh-Hans', 'zh-Hant']
 
 # CLDR cardinal categories a plural variation must provide.
 PLURAL_CATEGORIES = {

@@ -123,7 +123,13 @@ struct ScannerHeroView: View {
         .shadow(color: .black.opacity(0.06), radius: 12, x: 0, y: 4)
         .accessibilityHidden(true) // decorative animation — no semantic content
         .task(id: reduceMotion) {
-            if reduceMotion { return }
+            if reduceMotion {
+                // Show where the animation ends — a document with its sensitive
+                // lines redacted — instead of an empty card.
+                piiStates = [.redacted, .redacted, .redacted]
+                dotVisible = Array(repeating: false, count: dotVisible.count)
+                return
+            }
             await runLoop()
         }
     }
@@ -245,20 +251,6 @@ struct ScannerHeroView: View {
     private func runLoop() async {
         while !Task.isCancelled {
             do { try await runCycle() } catch { break }
-        }
-    }
-
-    /// Unified scan-event used to merge box and dot triggers into one
-    /// sorted sequence for each beam pass.
-    private enum ScanEvent {
-        case outlineBox(Int)
-        case showDot(Int)
-        case redactBox(Int)
-        case hideDot(Int)
-
-        var yFrac: Double {
-            // Computed in context of runCycle() — see helper below.
-            0
         }
     }
 

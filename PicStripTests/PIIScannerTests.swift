@@ -598,6 +598,66 @@ final class PIIScannerTests: XCTestCase {
                           "Known credit-card context should dampen incompatible ID-like false positives inside the card")
     }
 
+    /// A document scan is cropped to the page, so Vision finds no rectangle in it.
+    /// With the whole-image hint the frame is scored as the card — boosting the
+    /// card number and dampening look-alike IDs — but it must never become a
+    /// redaction region itself, which would black out the entire scan.
+    func testWholeImageDocumentScoresTheFrameWithoutRedactingIt() {
+        let cardNumber = DetectedInstance(
+            snippet: "4111 1111 1111 1111",
+            boundingBox: CGRect(x: 0.15, y: 0.48, width: 0.6, height: 0.08),
+            score: 0.88
+        )
+        let ambiguousID = DetectedInstance(
+            snippet: "123456789",
+            boundingBox: CGRect(x: 0.15, y: 0.2, width: 0.3, height: 0.07),
+            score: 0.82
+        )
+        let results = [
+            DetectionResult(type: .creditCard, score: 0.88, instances: [cardNumber]),
+            DetectionResult(type: .governmentID, score: 0.82, instances: [ambiguousID])
+        ]
+        let lines = [
+            PIIScanner.RecognizedLineContext(
+                text: "VISA", boundingBox: CGRect(x: 0.7, y: 0.08, width: 0.2, height: 0.08), confidence: 0.96
+            ),
+            PIIScanner.RecognizedLineContext(
+                text: "VALID THRU 12/29", boundingBox: CGRect(x: 0.15, y: 0.7, width: 0.35, height: 0.07), confidence: 0.94
+            )
+        ]
+        let frame = PIIScanner.WholeImageDocument.rect
+
+        let hinted = PIIScanner.applyDocumentContext(
+            results: results, documentRects: [frame], faceRects: [], barcodeContexts: [], textLines: lines,
+            wholeImage: PIIScanner.WholeImageDocument(aspectRatio: 1.586)
+        )
+
+        XCTAssertFalse(
+            hinted.flatMap(\.instances).contains { $0.boundingBox == frame },
+            "The whole frame must never be added as a redaction region.")
+        XCTAssertGreaterThan(
+            hinted.first { $0.type == .creditCard }?.instances.first?.score ?? 0, cardNumber.score,
+            "The card number should be boosted by the whole-image card context.")
+        XCTAssertLessThan(
+            hinted.first { $0.type == .governmentID }?.instances.first?.score ?? 1, ambiguousID.score,
+            "ID look-alikes on a card scan should be dampened.")
+
+        // Without the hint the same rectangle is an ordinary document in a photo
+        // and does become a region — which is exactly what a scan must avoid.
+        let unhinted = PIIScanner.applyDocumentContext(
+            results: results, documentRects: [frame], faceRects: [], barcodeContexts: [], textLines: lines
+        )
+        XCTAssertTrue(unhinted.flatMap(\.instances).contains { $0.boundingBox == frame })
+    }
+
+    /// End to end through Vision: the hint must never produce a full-frame region.
+    func testScanHintNeverProducesAFullFrameRegion() async throws {
+        let data = try loadTestImageData(named: "test_pii", extension: "png")
+        let results = try await PIIScanner().scanImage(data: data, hints: .scannedDocument)
+        XCTAssertFalse(results.isEmpty)
+        XCTAssertFalse(results.flatMap(\.instances).contains { $0.boundingBox == PIIScanner.WholeImageDocument.rect })
+    }
+
     func testInferDocumentContextsDetectsDriversLicenseFromFacePDF417AndLabels() {
         let cardRect = CGRect(x: 0.08, y: 0.22, width: 0.84, height: 0.52)
         let results = [

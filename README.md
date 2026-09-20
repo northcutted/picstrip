@@ -4,7 +4,7 @@
 # PicStrip
 
 [![iOS 26+](https://img.shields.io/badge/iOS-26%2B-blue.svg)](https://www.apple.com/ios/)
-[![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
+[![Swift 6](https://img.shields.io/badge/Swift-6-orange.svg)](https://swift.org)
 [![CI](https://github.com/northcutted/picstrip/actions/workflows/main.yml/badge.svg)](https://github.com/northcutted/picstrip/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
@@ -12,13 +12,17 @@
 
 </div>
 
-PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Every byte of processing happens locally using Apple frameworks. No network calls, no analytics, no third-party code.
+PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Every byte of processing happens locally using Apple frameworks. No network required, no analytics, no third-party code.
 
 ---
 
 ## Screenshots
 
-The App Store carousel and the marketing PNGs uploaded to App Store Connect live in [`fastlane/screenshots/processed/<locale>/`](fastlane/screenshots/processed/) (Git LFS — 5 screens × 2 devices × 16 locales). Raw simulator captures live in [`fastlane/screenshots/<locale>/`](fastlane/screenshots/). Both regenerate via `gh workflow run screenshots.yml -f generate_new=true`.
+<p align="center">
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_PhotoLoaded.png" width="240" alt="A loaded photo with its risks ranked"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-04_RedactionEditor.png" width="240" alt="The redaction editor"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-05_ReviewAndSave.png" width="240" alt="Review and save"/>
+</p>
 
 ---
 
@@ -26,53 +30,50 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 
 | Feature | Description |
 |---------|-------------|
-| **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata |
-| **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
-| **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
-| **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
-| **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
-| **Save or Replace** | Save a new cleaned asset, or replace the original in your Photos library |
-| **Flexible Export** | PNG (privacy default), JPEG, HEIC, or match original format |
-| **Per-Field Control** | Fine-grained toggles for individual metadata fields and PII types |
-| **Audit Reports** | Export a JSON audit of every stripped field and redacted region |
-| **Share Extension** | Clean photos directly from the iOS share sheet without opening the app |
-| **Siri Shortcuts** | "Clean Photos with PicStrip" opens the picker from Shortcuts and Spotlight; "Strip Metadata from Images" cleans files in the background for automations |
+| **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata, with per-field control over what to keep |
+| **Visual PII Detection** | On-device OCR and Vision find 31 kinds of sensitive data across 4 risk tiers (Critical, High, Medium, Low) |
+| **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
+| **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
+| **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
+| **Take Photo** | A viewfinder that shows, live, what will be redacted; the photo goes straight into the editor and the original never reaches your photo library |
+| **Scan Document** | Scan paper straight into the editor; multi-page scans go through batch. The un-redacted scan is never saved |
+| **Import Anywhere** | Photos, Files, paste, drag and drop — always the original bytes, metadata intact |
+| **Batch Processing** | Clean many photos at once with one privacy policy; nothing is saved unless every requested step succeeded |
+| **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG (privacy default), JPEG, HEIC, or the original format |
+| **Audit Reports** | Export a JSON record of every stripped field and redacted region |
+| **Share Extension** | Clean photos from the share sheet without opening the app |
+| **Shortcuts** | "Clean Photos with PicStrip" opens the picker; "Strip Metadata from Images" cleans files in the background |
+
+Available in English and 16 more localizations, including separate Spanish for Spain and Latin America.
 
 ---
 
-## Why It's Interesting
+## Privacy
 
-**Two-pass ImageIO privacy pipeline.**
-A single-pass re-encode still triggers iOS to auto-synthesise a minimal EXIF block (ColorSpace, PixelDimensions). PicStrip defeats this with a deliberate two-pass strategy: pass 1 decodes pixels and force-zeros the EXIF/TIFF dictionaries; pass 2 uses `CGImageDestinationCopyImageSource` with `kCGImageDestinationMergeMetadata: false` to replace the entire metadata tree with only what the user explicitly chose to keep. The result is provably clean output, not "mostly clean."
+- **No network required.** PicStrip has no server and no account, and makes no network request of its own.
+- No analytics, no tracking, no data collection, no third-party code.
+- Names are found by Apple's **on-device** language model only — never Private Cloud Compute — and are not redacted until you switch them on.
+- The "Take Photo" viewfinder analyses frames in memory to show what would be redacted; no frame and no result is stored.
+- Photos you take or scan in the app never reach your photo library un-redacted.
+- One opt-in exception to "no network": on iOS 27, iOS downloads Apple's object-selection model the first time you agree to use tap to redact — the model only, never your photos.
 
-**Orientation-safe OCR.**
-PII bounding boxes must land on the right pixels regardless of how the photo was captured. PicStrip passes raw `Data` (not a pre-decoded `CGImage`) to Vision's `ImageRequestHandler` so Vision reads the embedded EXIF orientation tag. Passing a decoded `CGImage` strips that tag, causing highlight boxes to land in the wrong position for any portrait-mode iPhone photo.
-
-**Sequential memory-safe batch processing.**
-Each image in a batch is processed, saved, and explicitly deallocated before the next one begins. This keeps peak memory at ~one image at a time rather than accumulating a full batch in RAM, which matters on constrained devices and inside the share extension's 120 MB process ceiling.
-
-**Preview memory discipline.**
-PicStrip keeps full-resolution source bytes for export, but decodes bounded ImageIO thumbnails for display and review. Heavy encode/decode work runs off the MainActor, then the view model publishes only final state back to SwiftUI.
-
-**Layered PII detection across 30 types.**
-Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; a reused `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Face and barcode detection run as separate Vision requests (`VNDetectFaceRectanglesRequest`, `VNDetectBarcodesRequest`). Face detection uses temporary on-device rectangles only; PicStrip does not identify people, create biometric templates, transmit face data, or retain face data after the current photo/session is cleared. Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins. Every type carries a static `RiskLevel` (critical / high / medium / low) that is independent of detection confidence.
-
-**Zero runtime third-party dependencies.**
-Every framework is Apple-native: `ImageIO`, `Vision`, `Photos`, `PhotosUI`, `AppIntents`, `CoreGraphics`, `UIKit`, `SwiftUI`. No package manager dependencies appear in the final binary.
+The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permissions and required-reason APIs are covered in [DEVELOPMENT.md](DEVELOPMENT.md#privacy--security).
 
 ---
 
-## Architecture
+## How It Works
 
 ```mermaid
 graph TD
-    A["SwiftUI Views\nContentView · PreSaveReviewView · BatchConfigView"] -->|observes| B["ScrubberViewModel\n@Observable @MainActor"]
+    A["SwiftUI Views\nContentView · LiveCameraView · PreSaveReviewView · BatchConfigView"] -->|observes| B["ScrubberViewModel\n@Observable @MainActor"]
     B -->|calls| C["ImageProcessor\nstateless enum"]
     B -->|calls| D["PIIScanner\nstateless struct"]
     B -->|calls| E["ImageRedactor\nstateless struct"]
-    C -->|ImageIO| F["Apple Frameworks\nImageIO · Vision · Photos · AppIntents"]
+    B -->|calls| G["SemanticPII · ObjectSelection\non-device models, app only"]
+    C -->|ImageIO| F["Apple Frameworks\nImageIO · Vision · VisionKit · AVFoundation · CoreImage\nFoundationModels · Photos · AppIntents"]
     D -->|Vision + NSDataDetector| F
-    E -->|CoreGraphics| F
+    E -->|CoreGraphics + CoreImage| F
+    G -->|FoundationModels + Vision| F
 
     classDef views   fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
     classDef vm      fill:#1f7a61,stroke:#0a2a22,color:#ffffff
@@ -81,196 +82,19 @@ graph TD
 
     class A views
     class B vm
-    class C,D,E service
+    class C,D,E,G service
     class F system
 ```
 
-### Design pattern: MVVM
+**A two-pass ImageIO pipeline.** A single re-encode still lets iOS synthesise a minimal EXIF block. PicStrip decodes and zeroes the EXIF/TIFF dictionaries, then uses `CGImageDestinationCopyImageSource` with `kCGImageDestinationMergeMetadata: false` to replace the whole metadata tree with only what you chose to keep.
 
-| Layer | Type | Notes |
-|-------|------|-------|
-| `ScrubberViewModel` | `@Observable @MainActor final class` | Owns all mutable state; drives the full data-flow pipeline |
-| `ImageProcessor` | `enum` (stateless, static methods) | Two-pass metadata stripping; re-encodes via `ImageIO` |
-| `PIIScanner` | `struct` (stateless) | Async and `@concurrent`; runs Vision OCR off the caller's actor |
-| `ImageRedactor` | `struct` (stateless) | Burns redaction boxes via `UIGraphicsImageRenderer` |
-| `DetectionRegistry` | `enum` (static `let`) | All regex rules compiled once at app startup |
+**Layered detection.** One `ImageRequestHandler(data).performAll(...)` pass runs text, face, barcode and document-rectangle requests; 60 regex rules, `NSDataDetector` and a cross-line credential heuristic work over the recognised text; checksums adjust confidence; document context boosts what belongs on a card or ID. Raw `Data` — not a decoded image — goes to Vision, so boxes land correctly whatever the photo's orientation.
+
+**Zero runtime third-party dependencies.** Every framework is Apple's. Details, data flows and the full detection catalog are in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ---
 
-## Processing Flow
-
-```mermaid
-flowchart TD
-    A[User picks photo] --> B[ScrubberViewModel\nloads raw Data]
-    B --> C{Parallel}
-    C --> D[ImageProcessor\ncatalogues metadata fields]
-    C --> E[PIIScanner\nVision OCR → regex + NSDataDetector]
-    D --> F[Review screen\nmetadata panel + PII overlays]
-    E --> F
-    F --> G{User decisions}
-    G -->|toggle fields / types| F
-    G -->|save / share| H[PreSaveReviewView\nexport format + summary]
-    H --> I{Redaction enabled?}
-    I -->|yes| J[ImageRedactor\nburns boxes onto UIImage]
-    I -->|no| K[ImageProcessor.process\ntwo-pass strip + re-encode]
-    J --> K
-    K --> L[PHPhotoLibrary save\nor UIActivityViewController share]
-    L --> M[AuditReport JSON\ngenerated + available for export]
-
-    classDef input    fill:#1f7a61,stroke:#0a2a22,color:#ffffff
-    classDef process  fill:#d1f5e8,stroke:#3db87f,color:#0a2a22
-    classDef decision fill:#e0e7ff,stroke:#4338ca,color:#1e1b4b
-    classDef ui       fill:#a8e6cc,stroke:#1f7a61,color:#0a2a22
-    classDef output   fill:#0a2a22,stroke:#000000,color:#3db87f
-
-    class A,B input
-    class D,E,J,K process
-    class C,G,I decision
-    class F,H ui
-    class L,M output
-```
-
----
-
-## PII Detection — 30 Types
-
-| Risk | Type | Detection method |
-|------|------|-----------------|
-| **Critical** | Social Security Number | Regex (`XXX-XX-XXXX`) |
-| **Critical** | National Insurance Number | Regex |
-| **Critical** | Government ID | Regex (CA SIN, IN PAN/Aadhaar, ES DNI/NIE, BR CPF, DE Steuer-ID, IT Codice Fiscale, FR INSEE, JP My Number) |
-| **Critical** | Credit Card Number | Regex (Luhn-pattern) |
-| **Critical** | AWS Access Key | Regex (`AKIA…`) |
-| **Critical** | GitHub Token | Regex (`ghp_…`) |
-| **Critical** | Google API Key | Regex |
-| **Critical** | OpenAI API Key | Regex |
-| **Critical** | Slack Token | Regex (`xox…`) |
-| **Critical** | Stripe Key | Regex |
-| **Critical** | Private Key | Regex (PEM header) |
-| **Critical** | JWT Token | Regex (double `eyJ` header) |
-| **Critical** | Developer Secret | Regex (Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord) |
-| **Critical** | Database Connection String | Regex (inline credentials in URI) |
-| **High** | Face | Vision `VNDetectFaceRectanglesRequest` |
-| **High** | IBAN | Regex |
-| **High** | ABA Routing Number | Regex + context keyword (`routing`, `ABA`) |
-| **High** | SWIFT / BIC Code | Regex + context keyword |
-| **High** | Physical Credential / Password | Cross-observation heuristic |
-| **Medium** | Email Address | Regex (RFC 5322) + `NSDataDetector` |
-| **Medium** | Phone Number | `NSDataDetector` |
-| **Medium** | Address | `NSDataDetector` |
-| **Medium** | Crypto Wallet Address | Regex |
-| **Medium** | Vehicle Identification Number | Regex (17-char, no I/O/Q) |
-| **Medium** | License Plate Number | Regex (structural CA-style + keyword fallback for regional formats) |
-| **Medium** | MAC Address | Regex |
-| **Medium** | IP Address | Regex |
-| **Low** | Date of Birth | Regex |
-| **Low** | Link / URL | `NSDataDetector` |
-| **Low** | QR Code / Barcode | Vision `VNDetectBarcodesRequest` |
-
-Each match is scored as `baseScore × ocrConfidence`. The result-level score upgrades when a later pass finds a stronger hit for the same type, ensuring the regex pass (higher base scores) always wins over `NSDataDetector` for overlapping types such as email. Risk level is a static, editorial property of the type itself — it does not change with confidence score.
-
----
-
-## Metadata Categories Stripped
-
-| Category | Example fields |
-|----------|----------------|
-| **GPS** | `GPSLatitude`, `GPSLongitude`, `GPSAltitude`, `GPSTimestamp` |
-| **EXIF** | `DateTimeOriginal`, `Make`, `Model`, `LensMake`, `ExposureTime`, `FNumber` |
-| **EXIF Auxiliary** | `LensInfo`, `InternalSerialNumber` |
-| **TIFF** | `ImageDescription`, `Make`, `Model`, `Software`, `DateTime` |
-| **IPTC** | `Keywords`, `Copyright`, `Creator`, `CaptionAbstract` |
-| **Apple Maker Note** | Private Apple camera tuning data |
-
-Structural rendering fields (`PixelWidth`, `PixelHeight`, `ColorModel`, `Orientation`, `XResolution`, `YResolution`) are re-synthesised unconditionally by the iOS encoder and are not privacy-sensitive. The UI marks them with a lock icon and explains why they cannot be removed.
-
----
-
-## Repo Map
-
-```
-PicStrip/
-├── PicStrip.xcodeproj/
-├── README.md
-├── DEVELOPMENT.md
-├── PRIVACY.md
-├── CHANGELOG.md
-├── LICENSE
-├── .swiftlint.yml
-├── .releaserc.json          # semantic-release config
-├── Gemfile                  # fastlane + Ruby toolchain
-├── package.json             # semantic-release Node toolchain
-│
-├── .github/workflows/
-│   ├── pr.yml               # PR checks: lint, analyze, test
-│   ├── main.yml             # Release prep: version → QA → build → provenance → TestFlight → tag
-│   ├── app-store-deploy.yml # Tag deploy: verify handoff, then request review
-│   ├── promote.yml          # Manual promotion of an exact signed candidate
-│   ├── observe.yml          # Hourly App Store status
-│   ├── metadata-only.yml    # Pinned metadata amendments through production gate
-│   └── screenshots.yml      # Manual: capture App Store screenshots
-│
-├── fastlane/
-│   ├── Fastfile             # Lane definitions
-│   ├── Snapfile             # Devices (iPhone 18 Pro Max + iPad Pro 13") + 16 capture locales
-│   ├── MarketingHeadlines.xcstrings  # Localized headline copy for marketing screenshots
-│   ├── accessibility_declarations.json  # App Store Accessibility Nutrition Label config
-│   ├── screenshots/
-│   │   ├── manifest.json    # Expected raw-capture filename inventory
-│   │   ├── <locale>/        # Raw App Store captures, one folder per locale (16 locales)
-│   │   └── processed/       # Marketing PNGs uploaded to App Store Connect (Git LFS)
-│   │       └── <locale>/    # 5 screens × 2 devices, framed + composed per locale
-│   └── metadata/            # App Store metadata (title, description, keywords, release notes)
-│
-├── scripts/
-│   ├── process_screenshots.py  # Marketing compositor: custom frame + headline + brand gradient
-│   ├── requirements.txt        # Python deps for the compositor (Pillow, arabic-reshaper, python-bidi)
-│   ├── semantic_dry_run.mjs    # Read-only version and release-note analysis
-│   ├── update_release_platform.py  # Update all trusted platform pins together
-│   ├── translate_xcstrings.js  # Localization automation (pseudo + OpenAI providers)
-│   ├── audit_localization_strings.sh  # Hard-coded-string audit for shared core/extension code
-│   └── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms
-│
-├── docs/
-│   ├── icons/               # Generated app icon variants (Default, Dark, Tinted)
-│   └── marketing/           # App Store marketing copy + index
-│
-├── PicStripCore/            # Shared pure processing/domain code compiled into app + extension
-│   ├── ImageProcessor.swift
-│   ├── PIIScanner.swift
-│   ├── ImageRedactor.swift
-│   ├── DetectionModels.swift
-│   ├── DetectionRule.swift
-│   ├── PIIType.swift
-│   └── ExportPreset.swift
-│
-├── PicStrip/                # Main app target
-│   ├── PicStripApp.swift
-│   ├── ContentView.swift
-│   ├── ScrubberViewModel.swift
-│   ├── AuditReport.swift
-│   ├── AboutView.swift
-│   ├── PreSaveReviewView.swift
-│   └── PrivacyInfo.xcprivacy
-│
-├── PicStripShareExtension/  # Share Extension target (separate binary)
-│   ├── ShareViewController.swift   # UIKit host + UIHostingController
-│   └── PrivacyInfo.xcprivacy
-│
-├── PicStripTests/           # Unit tests
-│   ├── PIIScannerTests.swift
-│   ├── ImageProcessorTests.swift
-│   └── DetectionRegistryTests.swift
-│
-└── PicStripUITests/         # UI / screenshot tests
-    └── PicStripUITests.swift        # single testAllScreenshots() method
-```
-
----
-
-## Local Setup
-
-### Run the app
+## Run It
 
 ```bash
 git clone https://github.com/northcutted/picstrip.git
@@ -278,23 +102,16 @@ cd picstrip
 open PicStrip.xcodeproj
 ```
 
-1. Select the **PicStrip** target → **Signing & Capabilities** → change **Team** to your Apple Developer account.
-2. Repeat for **PicStripShareExtension**.
-3. Select an iPhone 17 simulator (or a physical device running iOS 26+).
-4. Press **Cmd + R**.
+1. Select the **PicStrip** target → **Signing & Capabilities** → set **Team** to your Apple Developer account. Repeat for **PicStripShareExtension**.
+2. Pick an iPhone 17 simulator, or a device running iOS 26 or later. The camera, document scanner and tap to redact need a real device.
+3. Press **Cmd + R**.
 
-### Contributor / release tooling
-
-CI pins Ruby 3.4.10 for Fastlane and uses Node 24 for read-only Conventional Commit analysis.
-
-```bash
-# Ruby toolchain (Fastlane)
-gem install bundler
-bundle install          # installs fastlane ~> 2.240
-
-# Node toolchain (semantic-release)
-npm ci --ignore-scripts
-```
+| | |
+|-|-|
+| **iOS** | 26.0+ (tap to redact needs iOS 27; name detection needs Apple Intelligence) |
+| **Xcode** | 27.0 (26.6 is the pinned compatibility build; iOS 27-only code compiles out below Swift 6.4) |
+| **Swift** | Swift 6 language mode |
+| **Apple Developer Account** | Required for signing and the share extension's App Group |
 
 ---
 
@@ -302,133 +119,30 @@ npm ci --ignore-scripts
 
 | Command | What it does |
 |---------|--------------|
-| `make help` | Lists local helper commands |
-| `make test` | Runs `bundle exec fastlane test` |
-| `make build` | Runs `bundle exec fastlane build` |
-| `make audit-localization` | Checks for unlocalized string literals and audits the string catalogs (every key translated in all 15 locales, placeholders intact, plural forms complete) |
-| `make localization-export` | Exports Xcode `.xcloc` localization packages to `build/localization-export/` |
-| `make localization-pseudo LANGUAGES="es fr"` | Fills missing `.xcstrings` localizations with `[lang] source` markers for layout smoke testing |
-| `make localization-validate` | Validates string catalog JSON, the localization audit, and SwiftLint |
-| `make test-fixture` | Regenerates the OCR test fixture (`PicStripUITests/test_list.png`) via `scripts/make_fixture.py` |
-| `make screenshots` | Runs the full screenshot capture; pass `DEVICE="iPhone 18 Pro Max"` or `DEVICES="iPhone 18 Pro Max,iPad Pro 13-inch (M5)"` for subsets |
-| `make process-screenshots` | Composes marketing PNGs from existing raw captures into `fastlane/screenshots/processed/<locale>/` (custom frame + brand gradient + localized headline) |
-| `bundle exec fastlane lint` | SwiftLint strict mode — fails on any warning |
-| `bundle exec fastlane analyze` | `xcodebuild analyze` static analysis |
-| `bundle exec fastlane test` | `PicStripTests` unit tests on iPhone 17 simulator; outputs JUnit XML to `build/test_output/` |
-| `bundle exec fastlane build` | Signs + exports IPA (requires App Store certificates) |
-| `bundle exec fastlane screenshots` | Captures App Store screenshots (reads `fastlane/Snapfile`); pass `device:"iPhone 18 Pro Max"` to limit the device matrix or `languages:"en-US,de-DE"` to limit the locale subset |
-| `bundle exec fastlane process_screenshots` | Runs the Python compositor over every locale present under `fastlane/screenshots/<locale>/` |
+| `make help` | Lists every helper command |
+| `make test` | Unit tests on the iPhone 17 simulator |
+| `make lint` | SwiftLint (strict) plus the string catalog audit |
+| `make audit-localization` | Finds unlocalized literals and catalog gaps (every key in all 16 localizations, placeholders intact, plural forms complete) |
+| `make screenshots` | App Store screenshot capture; `DEVICE=` / `DEVICES=` select a subset |
 
----
-
-## Localization
-
-PicStrip uses Apple string catalogs:
-
-- `PicStrip/Localizable.xcstrings` — runtime app + extension copy
-- `PicStrip/AppShortcuts.xcstrings` — Siri / Shortcuts phrases
-- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headlines
-
-**Translations are LLM-generated.** English is the canonical source; the catalog and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
-
-For layout smoke testing — exercising the UI against longer strings, RTL mirroring, and non-ASCII glyphs *before* the real translations land — use the pseudo-localizer:
-
-```bash
-make localization-pseudo LANGUAGES="es"     # writes [es] <source> into missing slots
-make localization-validate                  # JSON + SwiftLint + hard-coded-string audit
-```
-
-Pseudo entries should be replaced with real translations before release.
-
-Use Xcode's localization package flow when handing strings to a human translator:
-
-```bash
-make localization-export
-```
-
----
-
-## CI/CD Pipeline
-
-- **PRs** — always-reporting `CI Gate` covers workflow policy, locked tools, SwiftLint, analysis, and iOS 27/iOS 26 tests. Add the `screenshots` label for an en-US capture smoke test.
-- **Releases** — main prepares a verified candidate with parallel QA, archive creation, and packaging. Explicit manual promotion selects its artifact ID and digest; Linux waits for Apple processing. A signed processed handoff can be reused for immutable publication without another upload.
-- **App Store** — publication triggers verified staging. Production approval preserves metadata edits and requires the recorded App Store build immediately before submission. Metadata-only requests use the same gate.
-- **Screenshots** — manual capture validates all locale/device sets and opens a reviewed PR against main.
-
-See the [release operations guide](docs/release-pipeline.md) for setup, verification-only rollout, retries, and performance measurement.
-
----
-
-## Privacy
-
-### 100% on-device
-
-- No internet required
-- No analytics or tracking
-- No data collection
-- No remote servers
-
-Every step runs locally: `UIImage(data:)` decoding, `ImageIO` metadata extraction and re-encoding, Vision OCR, `NSRegularExpression` matching, `CoreGraphics` redaction rendering. Network Inspector in Xcode will show zero outbound connections.
-
-### Privacy manifest
-
-Both the main app and the share extension declare zero data collection and zero tracking domains in `PrivacyInfo.xcprivacy`. The only required-reason API used is `NSPrivacyAccessedAPICategoryFileTimestamp` (`C617.1`) for ImageIO file timestamp access during metadata extraction — not for fingerprinting.
-
-### Permissions
-
-| Permission | When |
-|-----------|------|
-| `NSPhotoLibraryAddUsageDescription` (add-only) | Saving a new cleaned asset |
-| `NSPhotoLibraryUsageDescription` (read + write) | "Replace Original" — needs read access to delete the source |
-
----
-
-## Supply Chain Security (SLSA Level 3)
-
-The pinned [public iOS release platform](https://github.com/northcutted/ios-release-workflows) targets defensible SLSA Build Level 3 for the GitHub-built `application.ipa`, using an isolated provenance generator, signed release manifests, and exact-source/digest verification before distribution. The initial rollout runs in verification-only mode until repository controls and a signed candidate are validated.
-
-This scope excludes Apple's redistributed binary, which may be re-signed, encrypted, or thinned. See the [SLSA control coverage and trust limits](docs/release-pipeline.md#slsa-build-l3-scope) and [verification commands](docs/release-pipeline.md#local-verification-and-benchmarks).
-
----
-
-## App Store
-
-PicStrip is available on the App Store.
-
-[![Download on the App Store](https://img.shields.io/badge/Download-App%20Store-black?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/app/picstrip/id6765989071)
-
----
-
-## Requirements
-
-| | |
-|-|-|
-| **iOS** | 26.0+ |
-| **Xcode** | 26.0+ (Xcode 27 to compile the iOS 27-only features) |
-| **Swift** | 6.2+ toolchain |
-| **macOS** | 14.0+ (for development) |
-| **Apple Developer Account** | Required for signing and share extension entitlements |
+Releases run through a pinned public iOS release platform that targets SLSA Build Level 3 for the GitHub-built IPA; see the [release operations guide](docs/release-pipeline.md). Translations are LLM-generated from the English source and edited inline; the rules and per-locale terms are in [DEVELOPMENT.md](DEVELOPMENT.md#localization) and the [localization glossary](docs/localization-glossary.md).
 
 ---
 
 ## Contributing
 
-See [DEVELOPMENT.md](DEVELOPMENT.md) for architecture details, data-flow diagrams, the PII detection deep-dive, and step-by-step instructions for adding a new PII type.
+See [DEVELOPMENT.md](DEVELOPMENT.md) for the architecture, data flows, the detection engine, and how to add a new PII type.
 
-Commits follow [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` — minor version bump
-- `fix:` / `perf:` / `revert:` — patch bump
-- `BREAKING CHANGE:` — major bump
+Commits follow [Conventional Commits](https://www.conventionalcommits.org/): `feat:` bumps the minor version, `fix:` / `perf:` / `revert:` the patch, `BREAKING CHANGE:` the major.
 
 ---
 
-## License
+## App Store
 
-MIT. See [LICENSE](LICENSE).
+[![Download on the App Store](https://img.shields.io/badge/Download-App%20Store-black?logo=apple&logoColor=white&style=for-the-badge)](https://apps.apple.com/app/picstrip/id6765989071)
 
 ---
 
-## Support
+## License and Support
 
-- Open an [Issue](https://github.com/northcutted/picstrip/issues)
-- Start a [Discussion](https://github.com/northcutted/picstrip/discussions)
+MIT — see [LICENSE](LICENSE). Questions and bugs: open an [Issue](https://github.com/northcutted/picstrip/issues) or start a [Discussion](https://github.com/northcutted/picstrip/discussions).

@@ -85,7 +85,6 @@ struct BatchSummaryView: View {
                 }
                 .buttonStyle(.bordered)
                 .controlSize(.large)
-                .tint(.secondary)
 
                 Spacer(minLength: 24)
             }

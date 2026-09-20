@@ -236,14 +236,13 @@ struct PreSaveReviewView: View {
                         Task { await viewModel.saveToPhotos(replacing: false) }
                     } label: {
                         Label("Save as New Photo", systemImage: "plus.square.on.square")
-                            .symbolRenderingMode(.monochrome)
-                            .foregroundStyle(.white)
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    .accessibilityIdentifier("saveAsNewPhotoButton")
 
                     // Only library photos have an original to replace; images from
                     // Files, drag and drop, paste, or the Share Extension do not.
@@ -252,8 +251,6 @@ struct PreSaveReviewView: View {
                             Task { await viewModel.saveToPhotos(replacing: true) }
                         } label: {
                             Label("Replace Original", systemImage: "arrow.triangle.2.circlepath")
-                                .symbolRenderingMode(.monochrome)
-                                .foregroundStyle(.red)
                                 .font(.body.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
@@ -272,30 +269,24 @@ struct PreSaveReviewView: View {
                             )
                         ) {
                             Label("Share Image", systemImage: "square.and.arrow.up")
-                                .symbolRenderingMode(.monochrome)
-                                .foregroundStyle(.secondary)
                                 .font(.body.weight(.semibold))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 4)
                         }
                         .buttonStyle(.bordered)
                         .controlSize(.large)
-                        .tint(.secondary)
                     }
 
                     Button {
                         auditURL = viewModel.generateAuditJSON()
                     } label: {
                         Label("Export Findings (JSON)", systemImage: "doc.text.magnifyingglass")
-                            .symbolRenderingMode(.monochrome)
-                            .foregroundStyle(.secondary)
                             .font(.body.weight(.semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
                     }
                     .buttonStyle(.bordered)
                     .controlSize(.large)
-                    .tint(.secondary)
 
                     if originalMetadataCount > 0 {
                         HStack(alignment: .top, spacing: 6) {

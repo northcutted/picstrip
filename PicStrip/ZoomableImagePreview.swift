@@ -46,6 +46,9 @@ struct ZoomableImagePreview: View {
     var highlightedResults: [DetectionResult] = []
     var focusedResult: DetectionResult?
     var redactionRegions: [RedactionRegion] = []
+    /// Export pixels per pixel of `image` (≥ 1).  Pixel-based effects in the live
+    /// redaction preview are scaled by it so a box looks as it will when saved.
+    var exportScale: CGFloat = 1
     var selectedRedactionRegionID: Binding<String?>?
     var isRedactionEditing: Bool = false
     var isAddingRedaction: Bool = false
@@ -55,6 +58,9 @@ struct ZoomableImagePreview: View {
     var accessibilityIdentifier: String = "metadataPhotoPreview"
     var onTap: (() -> Void)?
     var onAddRedaction: ((CGRect) -> Void)?
+    /// A single tap while adding a region: outline the object under it.
+    /// `nil` where tap-an-object is not available.
+    var onSelectObject: ((CGPoint) -> Void)?
     var onBeginUpdateRedaction: ((String) -> Void)?
     var onUpdateRedaction: ((String, CGRect) -> Void)?
     var onSelectRedaction: ((String?) -> Void)?
@@ -78,6 +84,8 @@ struct ZoomableImagePreview: View {
     /// Used to suppress the simultaneous pan gesture so the background does not
     /// scroll while a redaction handle is being moved.
     @State private var isDraggingRedaction: Bool = false
+    /// Whole-image pixelate / blur renders that the live preview masks to each region.
+    @State private var obscuredLayers: [ObscuredLayerKey: UIImage] = [:]
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -125,8 +133,15 @@ struct ZoomableImagePreview: View {
                 // Use a regular (non-simultaneous) gesture for the single-tap deselect/tap-through.
                 // Unlike simultaneousGesture, a regular .gesture() FAILS when a child view's own
                 // gesture fires — so tapping a region selects it instead of immediately deselecting.
-                .gesture(TapGesture().onEnded {
-                    if isRedactionEditing {
+                .gesture(SpatialTapGesture(coordinateSpace: .named("zoomablePreviewContainer")).onEnded { tap in
+                    if isRedactionEditing, isAddingRedaction, let onSelectObject {
+                        let point = imageNormalizedPoint(
+                            tap.location, imageSize: fittedSize, containerSize: geo.size,
+                            scale: scale, panOffset: offset
+                        )
+                        guard (0...1).contains(point.x), (0...1).contains(point.y) else { return }
+                        onSelectObject(point)
+                    } else if isRedactionEditing {
                         selectRedaction(nil)
                     } else {
                         onTap?()
@@ -136,7 +151,7 @@ struct ZoomableImagePreview: View {
                 if showZoomHint {
                     Label(zoomHintText, systemImage: isAddingRedaction ? "plus.square.dashed" : "hand.draw")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
                         .glassEffect(in: .capsule)
@@ -150,7 +165,13 @@ struct ZoomableImagePreview: View {
         .accessibilityValue(previewAccessibilityValue)
         .accessibilityHint("Pinch to zoom and drag to pan")
         .accessibilityIdentifier(accessibilityIdentifier)
-        .onChange(of: image) { _, _ in resetZoom() }
+        .onChange(of: image) { _, _ in
+            resetZoom()
+            obscuredLayers = [:]
+        }
+        .task(id: ObscuredLayerRequest(image: ObjectIdentifier(image), keys: obscuredGroups.map(\.key))) {
+            await renderMissingObscuredLayers()
+        }
         .onChange(of: focusedResult?.id) { _, _ in pulseFocusedResult() }
         .onChange(of: isAddingRedaction) { _, _ in draftRedactionRect = nil }
         .onChange(of: resetZoomRequest) { _, _ in resetZoom() }
@@ -178,6 +199,7 @@ struct ZoomableImagePreview: View {
             .equatable()
 
             if !redactionRegions.isEmpty {
+                redactionStylePreview(size: size)
                 redactionRegionOverlay(size: size, container: container)
             }
 
@@ -189,7 +211,8 @@ struct ZoomableImagePreview: View {
                     size: size,
                     isSelected: true,
                     isEnabled: true,
-                    overlayColor: .accentColor
+                    overlayColor: .accentColor,
+                    isDraft: true
                 )
                 .allowsHitTesting(false)
                 .position(
@@ -205,7 +228,7 @@ struct ZoomableImagePreview: View {
 
     private var zoomHintText: LocalizedStringKey {
         if isAddingRedaction {
-            return "Drag to redact"
+            return onSelectObject == nil ? "Drag to redact" : "Drag to redact, or tap an object"
         }
         if isRedactionEditing {
             return "Drag boxes to adjust"
@@ -291,11 +314,7 @@ struct ZoomableImagePreview: View {
     private func redactionRegionOverlay(size: CGSize, container: CGSize) -> some View {
         ZStack {
             ForEach(redactionRegions) { region in
-                // During drag/resize, use the local live rect for visual feedback
-                // so only ZoomableImagePreview re-renders — not ContentView.
-                let isActiveDrag = isDraggingRedaction
-                    && selectedRedactionRegionID?.wrappedValue == region.id
-                let effectiveRect = isActiveDrag ? (dragLiveRect ?? region.rect) : region.rect
+                let effectiveRect = liveRect(of: region)
 
                 let cx = (effectiveRect.minX + effectiveRect.width  / 2) * size.width
                 let cy = (effectiveRect.minY + effectiveRect.height / 2) * size.height
@@ -336,11 +355,125 @@ struct ZoomableImagePreview: View {
         )
     }
 
-    /// Renders the redaction box border + fill using the region's chosen overlay colour.
+    // MARK: - Live style preview
+
+    /// A region's rect as it should be drawn right now.  During a drag or resize
+    /// that is the local live rect, so only this view re-renders — not ContentView.
+    private func liveRect(of region: RedactionRegion) -> CGRect {
+        let isActiveDrag = isDraggingRedaction && selectedRedactionRegionID?.wrappedValue == region.id
+        return isActiveDrag ? (dragLiveRect ?? region.rect) : region.rect
+    }
+
+    /// Enabled pixelate / blur regions, grouped the way the export groups them:
+    /// one pass, and so one block size, per style and strength.
     ///
-    /// `overlayColor` is the SwiftUI colour to use for the border and semi-transparent
-    /// fill. Pass `region.color.color` for existing regions, `.accentColor` for the
-    /// draft box while the user is still drawing.
+    /// Block sizes come from the committed rects, not the live drag rect, so the
+    /// layer under a moving box stays put; it is re-rendered when the drag ends.
+    private var obscuredGroups: [ObscuredGroup] {
+        let previewPixels = CGSize(width: image.size.width * image.scale, height: image.size.height * image.scale)
+        let exportPixels = CGSize(width: previewPixels.width * exportScale, height: previewPixels.height * exportScale)
+        let regions = redactionRegions.filter { $0.isEnabled && $0.style.obscuresSourcePixels }
+        let grouped = Dictionary(grouping: regions) {
+            ObscuredPass(style: $0.style, strength: RedactionStrength.clamped($0.strength))
+        }
+        return grouped
+            .map { pass, members in
+                let exportBlock = RedactionStrength.blockSize(
+                    forNormalizedRects: members.map(\.rect), pixelSize: exportPixels, strength: pass.strength
+                )
+                let key = ObscuredLayerKey(style: pass.style, blockSize: max(1, Int((exportBlock / exportScale).rounded())))
+                return ObscuredGroup(pass: pass, key: key, regions: members)
+            }
+            // Pixelate before blur, light before strong — the export's order.
+            .sorted { ($0.pass.style == .pixelate ? 0 : 1, $0.pass.strength) < ($1.pass.style == .pixelate ? 0 : 1, $1.pass.strength) }
+    }
+
+    private func renderMissingObscuredLayers() async {
+        let needed = Set(obscuredGroups.map(\.key))
+        for key in needed where obscuredLayers[key] == nil {
+            let layer = await ImageRedactor().previewLayer(key.style, blockSize: CGFloat(key.blockSize), of: image)
+            guard !Task.isCancelled else { return }
+            obscuredLayers[key] = layer
+        }
+        obscuredLayers = obscuredLayers.filter { needed.contains($0.key) }
+    }
+
+    /// Draws every enabled region in the style it will be saved with.
+    ///
+    /// Pixelate and blur mask a whole-image render to the region, so the effect
+    /// follows a box in real time.  Solid and crosshatch go see-through while
+    /// they are being moved, so you can see what you are about to cover.
+    private func redactionStylePreview(size: CGSize) -> some View {
+        ZStack(alignment: .topLeading) {
+            ForEach(obscuredGroups, id: \.pass) { group in
+                let mask = Path { path in
+                    for region in group.regions { path.addRect(displayRect(liveRect(of: region), in: size)) }
+                }
+                // While a new block size renders (a resize just ended), keep showing
+                // the last render of this style instead of flashing a placeholder.
+                let stale = obscuredLayers.first { $0.key.style == group.key.style }?.value
+                if let layer = obscuredLayers[group.key] ?? stale {
+                    Image(uiImage: layer)
+                        .resizable()
+                        .frame(width: size.width, height: size.height)
+                        .mask(alignment: .topLeading) { mask.frame(width: size.width, height: size.height) }
+                } else {
+                    // Until the render lands, never show the region untouched.
+                    mask.fill(Color(.systemGray3))
+                }
+            }
+
+            Canvas { context, _ in
+                let previewPixelWidth = image.size.width * image.scale
+                let exportPixels = CGSize(
+                    width: previewPixelWidth * exportScale,
+                    height: image.size.height * image.scale * exportScale
+                )
+                let pointsPerExportPixel = exportPixels.width > 0 ? size.width / exportPixels.width : 1
+
+                for region in redactionRegions where region.isEnabled && !region.style.obscuresSourcePixels {
+                    let live = liveRect(of: region)
+                    let rect = displayRect(live, in: size)
+                    var layer = context
+                    let isMoving = isDraggingRedaction && selectedRedactionRegionID?.wrappedValue == region.id
+                    layer.opacity = isMoving ? 0.55 : 1
+                    layer.fill(Path(rect), with: .color(region.color.color))
+
+                    guard region.style == .crosshatch else { continue }
+                    let exportRect = CGRect(
+                        x: live.minX * exportPixels.width, y: live.minY * exportPixels.height,
+                        width: live.width * exportPixels.width, height: live.height * exportPixels.height
+                    )
+                    let lattice = RedactionLattice.metrics(rect: exportRect, imageSize: exportPixels)
+                    layer.clip(to: Path(rect))
+                    layer.stroke(
+                        Path(RedactionLattice.path(in: rect, spacing: lattice.spacing * pointsPerExportPixel)),
+                        with: .color(Color(uiColor: region.color.latticeColor)),
+                        lineWidth: lattice.lineWidth * pointsPerExportPixel
+                    )
+                }
+            }
+            .frame(width: size.width, height: size.height)
+        }
+        .frame(width: size.width, height: size.height)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+
+    private func displayRect(_ normalized: CGRect, in size: CGSize) -> CGRect {
+        CGRect(
+            x: normalized.minX * size.width, y: normalized.minY * size.height,
+            width: normalized.width * size.width, height: normalized.height * size.height
+        )
+    }
+
+    /// The redaction box's border — what you grab, and what marks the selection.
+    ///
+    /// An enabled region has no fill of its own: `redactionStylePreview` draws
+    /// its real style underneath.  The draft box (still being drawn) has no style
+    /// yet, so it keeps a tint; pass `.accentColor` and `isDraft` for it.  The
+    /// selected region is outlined — outside its edge — in the accent colour with
+    /// a white hairline, because the region's own colour vanishes against its fill.
     ///
     /// No `.offset()` — callers are responsible for positioning via `.position()`.
     private func redactionShape(
@@ -348,11 +481,14 @@ struct ZoomableImagePreview: View {
         size: CGSize,
         isSelected: Bool,
         isEnabled: Bool,
-        overlayColor: Color
+        overlayColor: Color,
+        isDraft: Bool = false
     ) -> some View {
-        RoundedRectangle(cornerRadius: isSelected ? 4 : 2)
+        let marksSelection = isSelected && !isDraft
+        let fillOpacity = isDraft ? 0.24 : (isEnabled ? 0 : 0.05)
+        return RoundedRectangle(cornerRadius: isSelected ? 4 : 2)
             .strokeBorder(
-                overlayColor.opacity(isEnabled ? 0.95 : 0.4),
+                overlayColor.opacity(marksSelection ? 0 : (isEnabled ? 0.95 : 0.4)),
                 style: StrokeStyle(
                     lineWidth: isSelected ? 3 : 1.5,
                     dash: isEnabled ? [] : [5, 4]
@@ -360,8 +496,23 @@ struct ZoomableImagePreview: View {
             )
             .background(
                 RoundedRectangle(cornerRadius: isSelected ? 4 : 2)
-                    .fill(overlayColor.opacity(isEnabled ? (isSelected ? 0.24 : 0.12) : 0.05))
+                    .fill(overlayColor.opacity(fillOpacity))
             )
+            .overlay {
+                // Drawn outside the box, so it never covers the style preview
+                // of a region that is only a line of text tall.
+                if marksSelection {
+                    RoundedRectangle(cornerRadius: 6)
+                        .strokeBorder(Color.white.opacity(0.9), lineWidth: 1)
+                        .padding(-4)
+                    RoundedRectangle(cornerRadius: 5)
+                        .strokeBorder(
+                            Color.accentColor.opacity(isEnabled ? 1 : 0.5),
+                            style: StrokeStyle(lineWidth: 3, dash: isEnabled ? [] : [5, 4])
+                        )
+                        .padding(-3)
+                }
+            }
             .frame(width: rect.width * size.width, height: rect.height * size.height)
             .accessibilityHidden(!isRedactionEditing)
     }
@@ -376,6 +527,9 @@ struct ZoomableImagePreview: View {
             .fill(Color.red)
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.white, lineWidth: 2))
+            // The dot stays 18 pt; the thing you grab is a full 44 pt target.
+            .frame(width: 44, height: 44)
+            .contentShape(Circle())
             .position(
                 x: rect.maxX * size.width,
                 y: rect.maxY * size.height
@@ -700,43 +854,107 @@ private struct StaticImageLayer: View, Equatable {
 
 // MARK: - PhotoScanSweep
 
+/// Shown over the photo while the privacy scan runs: viewfinder brackets that
+/// breathe, and a soft band that travels down the photo and back.
+///
+/// Both animations are scoped to the one modifier they drive.  A
+/// `withAnimation(.repeatForever)` here would put the whole transaction — and
+/// any layout that happens to resolve in it — on a loop.
 private struct PhotoScanSweep: View {
     let reduceMotion: Bool
-    @State private var sweep = false
+    @State private var isRunning = false
+
+    private let bandHeight: CGFloat = 72
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
-                Color.green.opacity(reduceMotion ? 0.08 : 0.03)
+                Color.accentColor.opacity(0.06)
 
-                if reduceMotion {
-                    RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(Color.green.opacity(0.45), lineWidth: 2)
-                } else {
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .clear, location: 0.0),
-                                    .init(color: Color.green.opacity(0.85), location: 0.5),
-                                    .init(color: .clear, location: 1.0)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 26)
-                        .shadow(color: .green.opacity(0.45), radius: 10)
-                        .offset(y: sweep ? geo.size.height + 20 : -40)
-                        .onAppear {
-                            sweep = false
-                            withAnimation(.linear(duration: 1.15).repeatForever(autoreverses: false)) {
-                                sweep = true
-                            }
+                if !reduceMotion {
+                    band
+                        .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                            $0.offset(y: isRunning ? geo.size.height - bandHeight / 2 : -bandHeight / 2)
                         }
                 }
+
+                ScanBrackets(armLength: min(28, min(geo.size.width, geo.size.height) / 5))
+                    .stroke(.white, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .shadow(color: .black.opacity(0.4), radius: 2)
+                    .padding(8)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                        $0.opacity(isRunning && !reduceMotion ? 0.5 : 1)
+                    }
             }
+            .onAppear { isRunning = true }
         }
+        .clipped()
         .accessibilityHidden(true)
     }
+
+    /// Symmetrical, so it reads the same travelling down and back up.
+    private var band: some View {
+        LinearGradient(
+            stops: [
+                .init(color: .clear, location: 0),
+                .init(color: Color.accentColor.opacity(0.38), location: 0.5),
+                .init(color: .clear, location: 1)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: bandHeight)
+        .overlay {
+            Rectangle()
+                .fill(.white.opacity(0.9))
+                .frame(height: 2)
+                .shadow(color: Color.accentColor, radius: 6)
+        }
+    }
+}
+
+/// The four corners of a viewfinder.
+nonisolated private struct ScanBrackets: Shape {
+    let armLength: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        for (corner, inward) in [
+            (CGPoint(x: rect.minX, y: rect.minY), CGVector(dx: 1, dy: 1)),
+            (CGPoint(x: rect.maxX, y: rect.minY), CGVector(dx: -1, dy: 1)),
+            (CGPoint(x: rect.maxX, y: rect.maxY), CGVector(dx: -1, dy: -1)),
+            (CGPoint(x: rect.minX, y: rect.maxY), CGVector(dx: 1, dy: -1))
+        ] {
+            path.move(to: CGPoint(x: corner.x + inward.dx * armLength, y: corner.y))
+            path.addLine(to: corner)
+            path.addLine(to: CGPoint(x: corner.x, y: corner.y + inward.dy * armLength))
+        }
+        return path
+    }
+}
+
+// MARK: - Live preview support
+
+/// One export pass: every enabled region with this style and strength.
+private struct ObscuredPass: Hashable {
+    let style: RedactionStyle
+    let strength: Double
+}
+
+/// A whole-image render the preview can reuse: the style and its block size in
+/// preview pixels.  Two passes that resolve to the same block size share one.
+private struct ObscuredLayerKey: Hashable {
+    let style: RedactionStyle
+    let blockSize: Int
+}
+
+private struct ObscuredGroup {
+    let pass: ObscuredPass
+    let key: ObscuredLayerKey
+    let regions: [RedactionRegion]
+}
+
+private struct ObscuredLayerRequest: Hashable {
+    let image: ObjectIdentifier
+    let keys: [ObscuredLayerKey]
 }

@@ -8,7 +8,7 @@ SUBMIT_FOR_REVIEW ?= false
 RELEASE_TAG ?=
 METADATA_COMMIT ?=
 
-.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots screenshots-full screenshots-device screenshots-devices clean-screenshots
+.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
@@ -93,23 +93,6 @@ screenshots:
 	else \
 		$(FASTLANE) screenshots; \
 	fi
-
-screenshots-full:
-	$(FASTLANE) screenshots
-
-screenshots-device:
-	@if [ -z "$(DEVICE)" ]; then \
-		echo "Set DEVICE, for example: make screenshots-device DEVICE=\"iPhone 18 Pro Max\""; \
-		exit 1; \
-	fi
-	$(FASTLANE) screenshots device:"$(DEVICE)"
-
-screenshots-devices:
-	@if [ -z "$(DEVICES)" ]; then \
-		echo "Set DEVICES, for example: make screenshots-devices DEVICES=\"iPhone 18 Pro Max,iPad Pro 13-inch (M5)\""; \
-		exit 1; \
-	fi
-	$(FASTLANE) screenshots devices:"$(DEVICES)"
 
 process-screenshots:
 	$(FASTLANE) process_screenshots

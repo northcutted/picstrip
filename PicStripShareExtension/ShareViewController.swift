@@ -8,7 +8,6 @@ import UniformTypeIdentifiers
 private enum AppGroup {
     static let identifier = "group.com.northcutt.PicStrip"
     static let pendingEditFilename = "pending-edit.data"
-    static let urlScheme = "picstrip://edit-from-extension"
 
     static var pendingEditURL: URL? {
         FileManager.default
@@ -204,10 +203,7 @@ class ShareViewController: UIViewController {
             case .photos:
                 // ── Save cleaned image to Photos library ───────────────────
                 do {
-                    try await PHPhotoLibrary.shared().performChanges {
-                        let request = PHAssetCreationRequest.forAsset()
-                        request.addResource(with: .photo, data: finalData, options: nil)
-                    }
+                    try await PhotoLibraryWriter.save(finalData)
                     savedCount += 1
                 } catch {
                     // Non-fatal: continue with the remaining images.
@@ -441,10 +437,13 @@ private struct ExtensionConfigView: View {
                 .padding(.bottom, 20)
 
             if let error = viewModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Label {
+                    Text(error).foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                }
+                .font(.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 12)
                     .transition(.opacity)

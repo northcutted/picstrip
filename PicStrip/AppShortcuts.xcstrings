@@ -28,6 +28,12 @@
             "value" : "Limpia fotos con ${applicationName}"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia fotos con ${applicationName}"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -125,6 +131,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quita los metadatos de mis fotos con ${applicationName}"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quita los metadatos de mis fotos con ${applicationName}"
@@ -232,6 +244,12 @@
             "value" : "Abre ${applicationName} para limpiar fotos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre ${applicationName} para limpiar fotos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -329,6 +347,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina metadatos con ${applicationName}"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elimina metadatos con ${applicationName}"

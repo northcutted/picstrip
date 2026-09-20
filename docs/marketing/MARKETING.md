@@ -78,7 +78,7 @@ PicStrip strips hidden metadata and redacts sensitive info, including faces, on-
 ### 2.4 Description · max 4,000
 
 ```
-Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and zero network calls.
+Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and no network required.
 
 METADATA STRIPPING
 Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.
@@ -96,13 +96,17 @@ Each detection shows its type, confidence score, and risk level so you can prior
 REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
-• 3 redaction styles: solid, blur, or pixelate
-• 10 colors for solid redactions
+• 4 redaction styles: solid, crosshatch, pixelate, or blur
+• Adjustable blur and pixelate strength
+• See exactly how every redaction will look before you save
+• 12 colors for solid and crosshatch redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE
 • Photos library
 • Files app — open any image or screenshot directly
+• Take a photo in the app — the original never reaches your photo library
+• Scan documents with the camera — the original never reaches your photo library
 • Drag and drop images into the app
 • Share Extension — clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 
@@ -142,8 +146,11 @@ Every detection is now labelled Critical, High, Medium, or Low so you know exact
 MULTI-SELECT REDACTION EDITOR
 Select multiple regions at once and apply style, color, enable/disable, or delete — all in bulk.
 
-3 REDACTION STYLES, 10 COLORS
-Solid, blur, or pixelate. Solid blocks support 10 color options per-region or bulk-applied.
+4 REDACTION STYLES, 12 COLORS, ADJUSTABLE STRENGTH
+Solid, crosshatch, pixelate, or blur. Solid and crosshatch blocks support 12 color options per-region or bulk-applied; blur and pixelate have an adjustable strength.
+
+LIVE REDACTION PREVIEW
+Every redaction is drawn in its real style on the photo while you edit, so what you see in the editor is what gets saved.
 
 50-STEP UNDO/REDO
 Every edit is now undoable up to 50 steps.
@@ -207,7 +214,7 @@ Source: [`fastlane/metadata/review_information/`](../../fastlane/metadata/review
 |------|------|
 | **First name** | Eddie |
 | **Last name** | Northcutt |
-| **Phone number** | +1 618-541-8770 |
+| **Phone number** | _(kept in App Store Connect — not in this repository)_ |
 | **Email** | northcutted@gmail.com |
 | **Demo account user** | _(none — leave blank)_ |
 | **Demo account password** | _(none — leave blank)_ |
@@ -224,10 +231,10 @@ No login or demo credentials required. The app works entirely with photos from t
 1. Launch PicStrip and grant Photos read access when prompted.
 2. Tap "Choose Photo" and pick any image from the simulator's photo library (the bundled Photos library samples include images with GPS metadata).
 3. Confirm the metadata panel shows GPS, EXIF, and TIFF fields with values populated.
-4. Tap "Save Cleaned Copy". The cleaned image is saved back to the simulator photo library — no network request is made.
+4. Tap "Save Cleaned Copy". The cleaned image is saved back to the simulator photo library — the app makes no network request.
 5. Optional: open the iOS Share Sheet from Photos, choose PicStrip, and confirm the share extension processes a photo without opening the main app.
 
-The app uses no remote services. Network Inspector in Xcode confirms zero outbound connections at any point in the flow.
+The app uses no remote services and has no server. On iOS 27, the optional tap-to-redact feature asks iOS to download Apple's object-selection model, and only after the user taps Download in an in-app consent alert; that model is the only thing ever transferred, and no photo or photo-derived data is sent anywhere at any point.
 ```
 
 ---
@@ -250,12 +257,13 @@ PicStrip does not collect face data. Face detection uses Apple's on-device Visio
 
 | Key | Copy |
 |-----|------|
-| `NSPhotoLibraryAddUsageDescription` | "PicStrip saves the cleaned copy back to your photo library." (add-only) |
-| `NSPhotoLibraryUsageDescription` | "Replace Original requires read access so PicStrip can delete the source after saving the cleaned copy." (read + write) |
+| `NSPhotoLibraryAddUsageDescription` | "PicStrip saves the scrubbed image to your photo library." (add-only) |
+| `NSPhotoLibraryUsageDescription` | "PicStrip needs access to your photo library to replace the original image when requested." (read + write) |
+| `NSCameraUsageDescription` | "PicStrip uses the camera to capture documents and photos you want to clean. Captures are processed on your device." |
 
-These strings ship in [`PicStrip/Localizable.xcstrings`](../../PicStrip/Localizable.xcstrings) and are localized to all 16 supported locales.
+These strings ship in [`PicStrip/InfoPlist.xcstrings`](../../PicStrip/InfoPlist.xcstrings) and are localized for every supported locale.
 
-**Accessibility Nutrition Label:** declared in [`fastlane/accessibility_declarations.json`](../../fastlane/accessibility_declarations.json) and synced via `bundle exec fastlane accessibility` (also chained from the `submit` lane).
+**Accessibility Nutrition Label:** declared in [`fastlane/accessibility_declarations.json`](../../fastlane/accessibility_declarations.json) and uploaded by the verified deployment workflow; the local `accessibility` lane is deliberately fail-closed.
 
 ---
 
@@ -287,6 +295,7 @@ PicStrip is localized into **16 locales**. Each locale ships:
 | `ar-SA` | Arabic | Saudi Arabia (RTL) |
 | `de-DE` | German | Germany |
 | `es-ES` | Spanish | Spain |
+| `es-MX` | Spanish | Latin America (app locale `es-419`) |
 | `fr-FR` | French | France |
 | `it` | Italian | Italy |
 | `ja` | Japanese | Japan |
@@ -308,6 +317,7 @@ App Store Connect localized text field coverage:
 | `ar-SA` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `de-DE` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `es-ES` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| `es-MX` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `fr-FR` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `it`    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `ja`    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
@@ -336,8 +346,8 @@ All 16 supported locales ship localized ASC text. Translations are LLM-generated
 | **Subscriptions** | None |
 | **Availability** | All territories |
 | **Pre-order** | Not used |
-| **Phased release** | Enabled (7-day staged rollout — `phased_release: true` in `submit` lane) |
-| **Automatic release on approval** | Enabled (`automatic_release: true` in `submit` lane) |
+| **Phased release** | Enabled (7-day staged rollout — `phased_release` in `.github/ios-release.json`) |
+| **Automatic release on approval** | Enabled (`"release_type": "AFTER_APPROVAL"` in `.github/ios-release.json`) |
 
 ---
 
@@ -359,16 +369,13 @@ All 16 supported locales ship localized ASC text. Translations are LLM-generated
 ## Workflow: how to refresh screenshots after a UI change
 
 ```bash
-# Local one-shot (re-uses the API key from your keychain).
-make upload-screenshots                  # process + upload from raw captures
-
-# CI path (preferred — keeps API keys off your workstation).
+# CI path — keeps API keys off your workstation.
 gh workflow run screenshots.yml \
   -f generate_new=true \
   -f languages=en-US,de-DE,ja            # optional locale subset
 ```
 
-The CI path commits the regenerated marketing PNGs back to `main` via Git LFS with `[skip ci]`, then uploads them to App Store Connect. Subsequent runs of the same workflow with `generate_new=false` (the default) will reuse those committed PNGs.
+The workflow opens a reviewed PR against `main` with the regenerated marketing PNGs. Merge it, then ship them through the verified deployment path; App Store uploads never happen straight from a capture run. A new locale (such as `es-MX`) needs one capture run before its first release.
 
 ---
 

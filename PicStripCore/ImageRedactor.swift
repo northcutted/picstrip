@@ -12,16 +12,19 @@ import UIKit
 nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
     /// Flat opaque fill — the classic government-document redaction bar.
     case solid
-    /// Dense diagonal crosshatch lines over a semi-transparent base fill.
+    /// Opaque fill with a contrasting diagonal lattice drawn over it.
     case crosshatch
     /// Pixellates (mosaics) the underlying image region. The `color` property is ignored.
     case pixelate
+    /// Smoothly blurs the underlying image region. The `color` property is ignored.
+    case blur
 
     var displayName: String {
         switch self {
         case .solid:      return String(localized: "Solid")
         case .crosshatch: return String(localized: "Crosshatch")
         case .pixelate:   return String(localized: "Pixelate")
+        case .blur:       return String(localized: "Blur")
         }
     }
 
@@ -30,11 +33,58 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
         case .solid:      return "rectangle.fill"
         case .crosshatch: return "grid"
         case .pixelate:   return "square.grid.3x3.middle.filled"
+        case .blur:       return "drop.fill"
         }
     }
 
     /// Whether the `color` property has any visual effect on the rendered output.
-    var supportsColor: Bool { self != .pixelate }
+    var supportsColor: Bool { !obscuresSourcePixels }
+
+    /// `true` for styles that scramble the pixels underneath (Core Image pass)
+    /// instead of painting over them.
+    var obscuresSourcePixels: Bool { self == .pixelate || self == .blur }
+
+    /// Whether `RedactionSpec.strength` changes the rendered output.
+    var supportsStrength: Bool { obscuresSourcePixels }
+}
+
+// MARK: - RedactionStrength
+
+/// How hard `.pixelate` and `.blur` scramble a region, from 0 (lightest) to 1.
+///
+/// The lightest setting is what PicStrip shipped before strength existed, so no
+/// setting is weaker than that; the default is deliberately stronger.
+nonisolated enum RedactionStrength {
+    static let range: ClosedRange<Double> = 0...1
+    /// The UI moves in these steps, which also bounds how many Core Image
+    /// passes one export can need (one per style and distinct strength).
+    static let step = 0.25
+    static let standard = 0.5
+
+    static func clamped(_ value: Double) -> Double {
+        let snapped = (value / step).rounded() * step
+        return min(range.upperBound, max(range.lowerBound, snapped))
+    }
+
+    /// The block edge one export pass uses for `rects` (normalised, 0 … 1) on an
+    /// image of `pixelSize`: every region in a pass shares the size chosen for
+    /// the smallest of them.
+    static func blockSize(forNormalizedRects rects: [CGRect], pixelSize: CGSize, strength: Double) -> CGFloat {
+        let smallest = rects
+            .map { min($0.width * pixelSize.width, $0.height * pixelSize.height) }
+            .filter { $0 > 0 }
+            .min() ?? 100
+        return blockSize(shortSide: smallest, strength: strength)
+    }
+
+    /// Mosaic block edge, in pixels, for a region whose short side is `shortSide`.
+    /// Blur uses the same blocks and then smooths them, so it scales with this too.
+    static func blockSize(shortSide: CGFloat, strength: Double) -> CGFloat {
+        let t = CGFloat(clamped(strength))
+        let fraction = 0.12 + (0.45 - 0.12) * t
+        let cap = 40 + (160 - 40) * t
+        return min(cap, max(10, shortSide * fraction))
+    }
 }
 
 // MARK: - RedactionColor
@@ -94,21 +144,65 @@ nonisolated enum RedactionColor: String, CaseIterable, Equatable, Hashable, Coda
     }
 }
 
+nonisolated extension RedactionColor {
+    /// The crosshatch lattice: light lines on dark fills, dark lines on light ones.
+    var latticeColor: UIColor {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        let luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+        return luminance > 0.5 ? UIColor(white: 0, alpha: 0.55) : UIColor(white: 1, alpha: 0.6)
+    }
+}
+
+// MARK: - RedactionLattice
+
+/// Geometry of the crosshatch lattice, shared by the export renderer and the
+/// editor's live preview so the two cannot drift apart.
+nonisolated enum RedactionLattice {
+    /// Line spacing and width, in the same units as `rect` and `imageSize`.
+    ///
+    /// The lattice scales with the region and the image, so it is still a
+    /// visible pattern on a 48 MP photo instead of hairlines that average out
+    /// to a flat tint.
+    static func metrics(rect: CGRect, imageSize: CGSize) -> (spacing: CGFloat, lineWidth: CGFloat) {
+        let shortSide = min(rect.width, rect.height)
+        let floor = max(6, max(imageSize.width, imageSize.height) / 160)
+        let spacing = max(floor, shortSide / 3.5)
+        return (spacing, max(1.5, spacing * 0.16))
+    }
+
+    /// Both diagonal families across `rect`; the caller clips to `rect`.
+    static func path(in rect: CGRect, spacing: CGFloat) -> CGPath {
+        let path = CGMutablePath()
+        var startX = rect.minX - rect.height
+        while startX < rect.maxX {
+            path.move(to: CGPoint(x: startX, y: rect.minY))
+            path.addLine(to: CGPoint(x: startX + rect.height, y: rect.maxY))
+            path.move(to: CGPoint(x: startX + rect.height, y: rect.minY))
+            path.addLine(to: CGPoint(x: startX, y: rect.maxY))
+            startX += spacing
+        }
+        return path
+    }
+}
+
 // MARK: - RedactionSpec
 
 /// A lightweight rendering descriptor that is available in both the main app
 /// target and the Share Extension.
 ///
 /// `ScrubberViewModel` (main app) maps `[RedactionRegion]` → `[RedactionSpec]`
-/// before calling `ImageRedactor.redact(image:specs:)`.  The Share Extension
-/// uses the backward-compatible `redact(image:instances:)` wrapper which
-/// synthesises solid-black specs internally.
+/// before calling `ImageRedactor.redact(image:specs:)`.  Batch processing and
+/// the Share Extension use `redact(image:instances:)`, which synthesises
+/// solid-black specs.
 nonisolated struct RedactionSpec {
     let rect: CGRect
     let style: RedactionStyle
     let color: RedactionColor
     /// When `false` this spec is skipped by the renderer.
     let isEnabled: Bool
+    /// See `RedactionStrength`.  Ignored unless the style `supportsStrength`.
+    var strength: Double = RedactionStrength.standard
 }
 
 // MARK: - ImageRedactor
@@ -120,10 +214,13 @@ nonisolated struct RedactionSpec {
 /// directly into the `UIGraphicsImageRenderer` coordinate space.
 ///
 /// **Rendering pipeline:**
-/// 1. For any `.pixelate` specs, a CIFilter pre-pass mosaics those areas of
-///    the source image first (reads pixels, colour-agnostic).
-/// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-pixellated)
+/// 1. For any `.pixelate` / `.blur` specs, a CIFilter pre-pass obscures those
+///    areas of the source image first (reads pixels, colour-agnostic).
+/// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-obscured)
 ///    base image, then stamps each remaining style on top.
+///
+/// **Fail closed:** if a Core Image pass cannot run, its regions are painted
+/// solid instead — a region the user asked to hide is never left readable.
 nonisolated struct ImageRedactor {
 
     nonisolated private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
@@ -140,12 +237,20 @@ nonisolated struct ImageRedactor {
         let enabled = specs.filter(\.isEnabled)
         guard !enabled.isEmpty else { return image }
 
-        // ── Step 1: Pixelate pre-pass ──────────────────────────────────────
-        let pixelateSpecs = enabled.filter { $0.style == .pixelate }
+        // ── Step 1: Core Image pre-pass (pixelate, then blur) ──────────────
         var workingImage = image
-        if !pixelateSpecs.isEmpty,
-           let pixellated = Self.applyPixellate(to: image, specs: pixelateSpecs) {
-            workingImage = pixellated
+        var paintedSolidInstead: [RedactionSpec] = []
+        for style in [RedactionStyle.pixelate, .blur] {
+            let styled = enabled.filter { $0.style == style }
+            // One pass per strength in use: a pass has a single block size.
+            for strength in Set(styled.map { RedactionStrength.clamped($0.strength) }).sorted() {
+                let group = styled.filter { RedactionStrength.clamped($0.strength) == strength }
+                if let obscured = Self.applyObscuring(style, strength: strength, to: workingImage, specs: group) {
+                    workingImage = obscured
+                } else {
+                    paintedSolidInstead += group
+                }
+            }
         }
 
         // ── Step 2: Raster pass for remaining styles ───────────────────────
@@ -156,7 +261,8 @@ nonisolated struct ImageRedactor {
         return renderer.image { ctx in
             workingImage.draw(at: .zero)
 
-            for spec in enabled where spec.style != .pixelate {
+            let painted = enabled.filter { !$0.style.obscuresSourcePixels } + paintedSolidInstead
+            for spec in painted {
                 let rect = CGRect(
                     x: spec.rect.minX * size.width,
                     y: spec.rect.minY * size.height,
@@ -169,26 +275,37 @@ nonisolated struct ImageRedactor {
                 case .solid:
                     Self.renderSolid(color: spec.color.uiColor, rect: rect)
                 case .crosshatch:
-                    Self.renderCrosshatch(color: spec.color.uiColor, rect: rect, in: ctx)
-                case .pixelate:
-                    break  // handled in step 1
+                    Self.renderCrosshatch(color: spec.color, rect: rect, imageSize: size, in: ctx)
+                case .pixelate, .blur:
+                    // Only reached when the Core Image pass failed.
+                    Self.renderSolid(color: RedactionColor.black.uiColor, rect: rect)
                 }
             }
         }
     }
 
-    // MARK: - Backward-compatible overloads
+    // MARK: - Live preview
 
-    /// Burns opaque solid-black rectangles over every supplied `DetectedInstance`.
-    /// Kept for the Share Extension batch-processing code path.
-    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage? {
-        await redact(image: image, rects: instances.map(\.boundingBox))
+    /// The whole of `image` obscured with `style` at a fixed `blockSize` (in
+    /// `image` pixels).  The editor masks this to each region, so a box shows the
+    /// real effect while it is being dragged.  `nil` for the painted styles.
+    @concurrent
+    func previewLayer(_ style: RedactionStyle, blockSize: CGFloat, of image: UIImage) async -> UIImage? {
+        guard style.obscuresSourcePixels,
+              let ciImage = Self.uprightCIImage(image),
+              let layer = Self.obscuredLayer(style, blockSize: max(1, blockSize), of: ciImage),
+              let cgImage = Self.ciContext.createCGImage(layer, from: ciImage.extent) else { return nil }
+        return UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
     }
 
-    /// Burns opaque solid-black rectangles over every supplied normalised rect.
-    /// Kept so existing tests compile without changes.
-    func redact(image: UIImage, rects: [CGRect]) async -> UIImage? {
-        let specs = rects.map { RedactionSpec(rect: $0, style: .solid, color: .black, isEnabled: true) }
+    // MARK: - Unattended redaction
+
+    /// Burns opaque solid-black rectangles over every supplied `DetectedInstance`.
+    /// Used where nobody picks a style: batch processing and the Share Extension.
+    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage? {
+        let specs = instances.map {
+            RedactionSpec(rect: $0.boundingBox, style: .solid, color: .black, isEnabled: true)
+        }
         return await redact(image: image, specs: specs)
     }
 
@@ -201,50 +318,41 @@ nonisolated struct ImageRedactor {
 
     // MARK: - Crosshatch
 
-    /// Dense diagonal crosshatch — a 35 % base fill plus forward- and backward-
-    /// diagonal lines spaced 7 pt apart, clipped to the region rect.
+    /// An opaque block with a diagonal lattice in a contrasting tone.
+    ///
+    /// The base is fully opaque on purpose: a see-through fill leaves the text
+    /// underneath readable, which is not a redaction.
     private static func renderCrosshatch(
-        color: UIColor,
+        color: RedactionColor,
         rect: CGRect,
+        imageSize: CGSize,
         in ctx: UIGraphicsImageRendererContext
     ) {
         let cgCtx = ctx.cgContext
         cgCtx.saveGState()
 
-        // Semi-transparent base
-        color.withAlphaComponent(0.35).setFill()
+        color.uiColor.setFill()
         UIRectFill(rect)
 
-        // Clip diagonal lines to the region rect
+        let lattice = RedactionLattice.metrics(rect: rect, imageSize: imageSize)
         cgCtx.clip(to: rect)
-        color.withAlphaComponent(0.80).setStroke()
-        cgCtx.setLineWidth(1.0)
-
-        let spacing: CGFloat = 7.0
-
-        // Forward diagonals (↘)
-        var startX = rect.minX - rect.height
-        while startX < rect.maxX {
-            cgCtx.move(to: CGPoint(x: startX, y: rect.minY))
-            cgCtx.addLine(to: CGPoint(x: startX + rect.height, y: rect.maxY))
-            startX += spacing
-        }
-        // Backward diagonals (↙)
-        startX = rect.minX - rect.height
-        while startX < rect.maxX {
-            cgCtx.move(to: CGPoint(x: startX + rect.height, y: rect.minY))
-            cgCtx.addLine(to: CGPoint(x: startX, y: rect.maxY))
-            startX += spacing
-        }
+        color.latticeColor.setStroke()
+        cgCtx.setLineWidth(lattice.lineWidth)
+        cgCtx.addPath(RedactionLattice.path(in: rect, spacing: lattice.spacing))
         cgCtx.strokePath()
         cgCtx.restoreGState()
     }
 
-    // MARK: - Pixellate (CIFilter pre-pass)
+    // MARK: - Pixellate / blur (CIFilter pre-pass)
 
-    /// Uses a single `CIPixellate` evaluation plus one mask-driven blend to
-    /// mosaic every supplied region in one pass.  Colour is ignored — the effect
-    /// shows scrambled source pixels, not a solid fill.
+    /// Uses a single filter evaluation plus one mask-driven blend to obscure
+    /// every supplied region in one pass.  Colour is ignored — the effect shows
+    /// scrambled source pixels, not a solid fill.
+    ///
+    /// **Blur is a mosaic first.**  A plain Gaussian blur of text can be
+    /// sharpened back into something legible, so `.blur` pixellates exactly as
+    /// `.pixelate` does and then blurs the mosaic: it looks smooth, but carries
+    /// no more information than the blocks underneath.
     ///
     /// The previous implementation ran one CIPixellate + CIBlendWithMask per spec,
     /// each iteration feeding the accumulated result forward.  That scaled poorly
@@ -252,9 +360,14 @@ nonisolated struct ImageRedactor {
     /// triggered a fresh full-image Core Image evaluation.  The combined-mask
     /// approach evaluates the pixellated layer exactly once and composites it
     /// against a single union-of-rects mask.
-    nonisolated private static func applyPixellate(to image: UIImage, specs: [RedactionSpec]) -> UIImage? {
-        guard !specs.isEmpty, let ciImage = CIImage(image: image) else { return nil }
-        let extent = ciImage.extent   // CI pixel space (Y-up, device pixels)
+    nonisolated private static func applyObscuring(
+        _ style: RedactionStyle,
+        strength: Double,
+        to image: UIImage,
+        specs: [RedactionSpec]
+    ) -> UIImage? {
+        guard !specs.isEmpty, let ciImage = uprightCIImage(image) else { return nil }
+        let extent = ciImage.extent   // CI pixel space (Y-up, device pixels), upright
 
         // ── 1. Resolve rects in CI pixel space ───────────────────────────────
         let ciRects: [CGRect] = specs.compactMap { spec in
@@ -272,20 +385,12 @@ nonisolated struct ImageRedactor {
         // Keeps the visual character of pixelation for the privacy-critical
         // small regions; large regions get slightly chunkier blocks, which is
         // still adequately obscuring.
-        let smallestDim = ciRects
-            .map { min($0.width, $0.height) }
-            .min() ?? 100
-        let blockSize = Float(min(40, max(10, smallestDim * 0.12)))
+        let blockSize = RedactionStrength.blockSize(
+            forNormalizedRects: specs.map(\.rect), pixelSize: extent.size, strength: strength
+        )
 
         // ── 3. Run CIPixellate ONCE over the whole image ─────────────────────
-        guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
-        pixFilter.setValue(ciImage, forKey: kCIInputImageKey)
-        pixFilter.setValue(
-            CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
-            forKey: kCIInputCenterKey
-        )
-        pixFilter.setValue(blockSize, forKey: "inputScale")
-        guard let pixellated = pixFilter.outputImage else { return nil }
+        guard let obscured = obscuredLayer(style, blockSize: blockSize, of: ciImage) else { return nil }
 
         // ── 4. Build a single mask CIImage = union of white rects ────────────
         // CIImage(color: white) is infinite-extent; cropping to a rect produces
@@ -304,11 +409,64 @@ nonisolated struct ImageRedactor {
         // ── 5. Single blend pass ─────────────────────────────────────────────
         guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { return nil }
         blendFilter.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
-        blendFilter.setValue(pixellated, forKey: kCIInputImageKey)
+        blendFilter.setValue(obscured, forKey: kCIInputImageKey)
         blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
         guard let result = blendFilter.outputImage else { return nil }
 
         guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
-        return UIImage(cgImage: cgOut, scale: image.scale, orientation: image.imageOrientation)
+        return UIImage(cgImage: cgOut, scale: image.scale, orientation: .up)
+    }
+
+    /// The whole of `ciImage` pixellated — and, for `.blur`, then blurred.
+    nonisolated private static func obscuredLayer(
+        _ style: RedactionStyle,
+        blockSize: CGFloat,
+        of ciImage: CIImage
+    ) -> CIImage? {
+        let extent = ciImage.extent
+        guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
+        // A mosaic block takes its colour from its centre.  Blocks that straddle
+        // the photo's edge have their centre outside it, so without clamping they
+        // come out transparent — a see-through rim, and a blur that fades into it.
+        pixFilter.setValue(ciImage.clampedToExtent(), forKey: kCIInputImageKey)
+        pixFilter.setValue(
+            CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
+            forKey: kCIInputCenterKey
+        )
+        pixFilter.setValue(Float(blockSize), forKey: "inputScale")
+        guard let pixellated = pixFilter.outputImage else { return nil }
+        guard style == .blur else { return pixellated.cropped(to: extent) }
+
+        // The mosaic is already infinite (clamped input), so the blur has real
+        // colour to pull in at the edges; crop back to the photo afterwards.
+        let blur = CIFilter.gaussianBlur()
+        blur.inputImage = pixellated
+        blur.radius = Float(blockSize * 1.5)
+        return blur.outputImage?.cropped(to: extent)
+    }
+
+    /// The image's pixels turned the way it is displayed, with the extent at the origin.
+    ///
+    /// `CIImage(image:)` ignores `imageOrientation`, and a portrait iPhone photo is
+    /// stored sideways.  Region rects are in display space, so without this the
+    /// effect lands somewhere else and the chosen region stays readable.
+    nonisolated private static func uprightCIImage(_ image: UIImage) -> CIImage? {
+        guard let base = CIImage(image: image) else { return nil }
+        let exif: CGImagePropertyOrientation
+        switch image.imageOrientation {
+        case .up:            exif = .up
+        case .down:          exif = .down
+        case .left:          exif = .left
+        case .right:         exif = .right
+        case .upMirrored:    exif = .upMirrored
+        case .downMirrored:  exif = .downMirrored
+        case .leftMirrored:  exif = .leftMirrored
+        case .rightMirrored: exif = .rightMirrored
+        @unknown default:    exif = .up
+        }
+        let upright = base.oriented(exif)
+        return upright.transformed(by: CGAffineTransform(
+            translationX: -upright.extent.minX, y: -upright.extent.minY
+        ))
     }
 }
