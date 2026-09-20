@@ -37,6 +37,55 @@ nonisolated struct ScanHints: Sendable, Equatable {
     static let scannedDocument = ScanHints(wholeImageIsDocument: true)
 }
 
+// MARK: - ScanOutput
+
+/// One line of recognised text, for callers that look for sensitive content the
+/// pattern rules cannot express (the app's on-device language-model pass).
+nonisolated struct ScannedLine: Sendable {
+    let text: String
+    /// Normalised, top-left origin — the same space as `DetectedInstance.boundingBox`.
+    let boundingBox: CGRect
+    let confidence: Float
+    /// Character-level geometry, when the line came from Vision.
+    private let candidate: RecognizedText?
+
+    init(text: String, boundingBox: CGRect, confidence: Float, candidate: RecognizedText? = nil) {
+        self.text = text
+        self.boundingBox = boundingBox
+        self.confidence = confidence
+        self.candidate = candidate
+    }
+
+    /// Tight box around the first occurrence of `substring` (case-insensitive),
+    /// or `nil` when this line does not contain it.  Without Vision geometry the
+    /// box is estimated from the substring's position along the line.
+    func boundingBox(of substring: String) -> CGRect? {
+        guard !substring.isEmpty,
+              let range = text.range(of: substring, options: [.caseInsensitive, .diacriticInsensitive])
+        else { return nil }
+
+        if let quad = candidate?.boundingBox(for: range) {
+            return PIIScanner.swiftUIBox(from: quad.boundingBox.cgRect)
+        }
+        let total = max(text.count, 1)
+        let start = text.distance(from: text.startIndex, to: range.lowerBound)
+        let length = text.distance(from: range.lowerBound, to: range.upperBound)
+        return CGRect(
+            x: boundingBox.minX + boundingBox.width * CGFloat(start) / CGFloat(total),
+            y: boundingBox.minY,
+            width: boundingBox.width * CGFloat(length) / CGFloat(total),
+            height: boundingBox.height
+        )
+    }
+}
+
+/// Everything one scan produced: the findings, and the text they were found in.
+nonisolated struct ScanOutput: Sendable {
+    let results: [DetectionResult]
+    /// Recognised lines in reading order.
+    let lines: [ScannedLine]
+}
+
 // MARK: - Scanner
 
 nonisolated struct PIIScanner {
@@ -59,6 +108,12 @@ nonisolated struct PIIScanner {
     /// main actor never blocks the UI on Vision or regex work.
     @concurrent
     func scanImage(data: Data, hints: ScanHints = .none) async throws -> [DetectionResult] {
+        try await scan(data: data, hints: hints).results
+    }
+
+    /// `scanImage` plus the recognised text, for callers that run a further pass over it.
+    @concurrent
+    func scan(data: Data, hints: ScanHints = .none) async throws -> ScanOutput {
         // Stage 1: Validate — ensures a meaningful error if the caller passes
         // non-image bytes before we hand anything to Vision.
         // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
@@ -165,11 +220,32 @@ nonisolated struct PIIScanner {
         )
         results = Self.resolveCreditCardPhoneConflicts(results)
 
-        // Re-sort combined results: highest score first, alphabetical tiebreak.
-        return results.sorted {
+        return ScanOutput(results: Self.sorted(results), lines: Self.scannedLines(from: observations))
+    }
+
+    /// Highest score first, alphabetical tiebreak.
+    nonisolated static func sorted(_ results: [DetectionResult]) -> [DetectionResult] {
+        results.sorted {
             $0.score != $1.score
                 ? $0.score > $1.score
                 : $0.type.description < $1.type.description
+        }
+    }
+
+    nonisolated private static func scannedLines(from observations: [RecognizedTextObservation]) -> [ScannedLine] {
+        observations.compactMap { observation -> ScannedLine? in
+            guard let candidate = observation.topCandidates(1).first else { return nil }
+            return ScannedLine(
+                text: candidate.string,
+                boundingBox: swiftUIBox(from: observation.boundingBox.cgRect),
+                confidence: candidate.confidence,
+                candidate: candidate
+            )
+        }.sorted {
+            if abs($0.boundingBox.midY - $1.boundingBox.midY) > 0.02 {
+                return $0.boundingBox.midY < $1.boundingBox.midY
+            }
+            return $0.boundingBox.minX < $1.boundingBox.minX
         }
     }
 

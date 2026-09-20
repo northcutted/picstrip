@@ -417,12 +417,26 @@ final class ScrubberViewModel {
     /// application continues to use the real on-device scanner by default.
     init(
         scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult] = {
-            try await PIIScanner().scanImage(data: $0, hints: $1)
+            try await ScrubberViewModel.liveScan(data: $0, hints: $1)
         },
         objectSelection: ObjectSelection = .live
     ) {
         self.scanImage = scanImageWithHints
         self.objectSelection = objectSelection
+    }
+
+    /// The editor's scan: Vision and the pattern rules, then the on-device
+    /// language model over the recognised text for what patterns cannot find.
+    /// Batch and the share extension use the pattern scan alone.
+    @concurrent
+    nonisolated static func liveScan(
+        data: Data,
+        hints: ScanHints,
+        semantic: SemanticPII = .live
+    ) async throws -> [DetectionResult] {
+        let output = try await PIIScanner().scan(data: data, hints: hints)
+        let names = await semantic.findNames(output.lines.map(\.text))
+        return SemanticPIIMerger.merge(names: names, lines: output.lines, into: output.results)
     }
 
     /// For tests that do not care about scan hints.
@@ -656,7 +670,7 @@ final class ScrubberViewModel {
                 // `detectedPII.didSet` already called replaceDetectedRedactionRegions;
                 // syncDetectedRegionEnablement (via typesToRedact.didSet) then enables
                 // each region whose type is in typesToRedact.
-                self.typesToRedact = Set(result.map(\.type))
+                self.typesToRedact = Set(result.map(\.type).filter(\.isRedactedByDefault))
                 self.isScanningPII = false
                 self.piiScanTask = nil
             }
@@ -1423,7 +1437,8 @@ final class ScrubberViewModel {
             guard let scanResults = try? await PIIScanner().scanImage(data: sourceData, hints: hints) else {
                 return nil
             }
-            let allInstances = scanResults.flatMap(\.instances)
+            // Batch burns what the editor would have pre-selected — never more.
+            let allInstances = scanResults.filter(\.type.isRedactedByDefault).flatMap(\.instances)
             if !allInstances.isEmpty {
                 guard let image = UIImage(data: sourceData),
                       let burned = await ImageRedactor().redact(image: image, instances: allInstances)

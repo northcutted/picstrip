@@ -226,6 +226,9 @@ struct ContentView: View {
         // The model behind it is downloaded by iOS from Apple, once.  PicStrip
         // makes no other network request, so it never starts this one unasked.
         .task { await viewModel.refreshObjectSelectionSupport() }
+        // Load the on-device language model while the user is still choosing a
+        // photo, so the name pass of the first scan does not pay the cold start.
+        .task { SemanticPII.live.prewarm() }
         .alert("Download Object Selection?", isPresented: $viewModel.isAskingToDownloadObjectModel) {
             Button("Download") {
                 Task {

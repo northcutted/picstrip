@@ -57,6 +57,7 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .face, icon: "face.dashed", color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
     .init(type: .barcode, icon: "qrcode", color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
     // Unstructured
+    .init(type: .personName, icon: "person.text.rectangle", color: .teal, detail: "People's names, found by Apple's on-device language model where Apple Intelligence is on. Listed, but not redacted until you switch them on"),
     .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
 
