@@ -90,7 +90,7 @@ PicStrip/
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
 │   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
-│   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, ScannedPageEncoder
+│   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, CapturedImageEncoder
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
 │   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
@@ -269,7 +269,7 @@ DocumentScanFlow.step(for: camera permission) → present / request access / exp
 DocumentScannerView (VNDocumentCameraViewController) → ScannedDocument, held in memory
     ↓  (acted on in the cover's onDismiss — presenting a sheet mid-dismissal can drop it)
 ScrubberViewModel.loadCaptured(CapturedPages)
-    ├─ 1 page  → ScannedPageEncoder → loadData(_:)      (the single-photo flow above)
+    ├─ 1 page  → CapturedImageEncoder → loadData(_:)      (the single-photo flow above)
     └─ N pages → scannedBatchSources → BatchConfigView  (the batch flow above; no Save Mode)
 ```
 

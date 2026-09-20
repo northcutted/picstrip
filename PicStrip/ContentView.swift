@@ -33,6 +33,9 @@ struct ContentView: View {
     /// What the document camera returned; acted on once its cover has gone,
     /// because presenting the batch sheet mid-dismissal can drop the sheet.
     @State private var scanOutcome: DocumentScannerView.Outcome?
+    /// Drives the photo camera; handled like the document camera above.
+    @State private var isShowingCamera = false
+    @State private var cameraOutcome: CameraCaptureView.Outcome?
     /// Shown when the camera permission has been refused.
     @State private var isShowingCameraDenied = false
 
@@ -199,6 +202,13 @@ struct ContentView: View {
             DocumentScannerView { outcome in
                 scanOutcome = outcome
                 isShowingScanner = false
+            }
+            .ignoresSafeArea()
+        }
+        .fullScreenCover(isPresented: $isShowingCamera, onDismiss: handleCameraOutcome) {
+            CameraCaptureView { outcome in
+                cameraOutcome = outcome
+                isShowingCamera = false
             }
             .ignoresSafeArea()
         }
@@ -376,10 +386,22 @@ struct ContentView: View {
                 .accessibilityIdentifier("selectMultiplePhotosButton")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
 
+                if CameraCaptureView.isAvailable {
+                    Button {
+                        haptic(.light)
+                        openCamera { isShowingCamera = true }
+                    } label: {
+                        PillLabel(icon: "camera", text: "Take Photo")
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityIdentifier("takePhotoButton")
+                    .accessibilityLabel("Take a photo with the camera")
+                }
+
                 if DocumentScannerView.isAvailable {
                     Button {
                         haptic(.light)
-                        startScan()
+                        openCamera { isShowingScanner = true }
                     } label: {
                         PillLabel(icon: "doc.viewfinder", text: "Scan Document")
                     }
@@ -447,14 +469,16 @@ struct ContentView: View {
 
     // MARK: - Document camera
 
-    private func startScan() {
+    /// Runs `present` once the camera may be used, asking for or explaining the
+    /// permission first.  Shared by the photo camera and the document camera.
+    private func openCamera(_ present: @escaping () -> Void) {
         switch DocumentScanFlow.step(for: AVCaptureDevice.authorizationStatus(for: .video)) {
         case .present:
-            isShowingScanner = true
+            present()
         case .requestAccess:
             Task {
                 if await AVCaptureDevice.requestAccess(for: .video) {
-                    isShowingScanner = true
+                    present()
                 } else {
                     isShowingCameraDenied = true
                 }
@@ -462,6 +486,12 @@ struct ContentView: View {
         case .explainDenied:
             isShowingCameraDenied = true
         }
+    }
+
+    private func handleCameraOutcome() {
+        defer { cameraOutcome = nil }
+        guard case .captured(let photo) = cameraOutcome else { return }
+        Task { await viewModel.loadCaptured(CapturedPages(photo: photo)) }
     }
 
     private func handleScanOutcome() {

@@ -157,6 +157,7 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(app.buttons["selectMultiplePhotosButton"].exists)
         XCTAssertTrue(app.buttons["browseFilesButton"].exists)
         XCTAssertFalse(app.buttons["scanDocumentButton"].exists)
+        XCTAssertFalse(app.buttons["takePhotoButton"].exists)
     }
 
     /// With the scan button present, every import action must still be on screen and tappable.
@@ -167,7 +168,10 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        for identifier in ["selectPhotoButton", "selectMultiplePhotosButton", "scanDocumentButton", "browseFilesButton"] {
+        let identifiers = [
+            "selectPhotoButton", "selectMultiplePhotosButton", "takePhotoButton", "scanDocumentButton", "browseFilesButton"
+        ]
+        for identifier in identifiers {
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be reachable on the home screen.")
         }
     }

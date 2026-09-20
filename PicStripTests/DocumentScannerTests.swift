@@ -3,9 +3,9 @@ import ImageIO
 import XCTest
 @testable import PicStrip
 
-// MARK: - ScannedPageEncoder
+// MARK: - CapturedImageEncoder
 
-final class ScannedPageEncoderTests: XCTestCase {
+final class CapturedImageEncoderTests: XCTestCase {
 
     private func page(width: Int, height: Int, orientation: UIImage.Orientation = .up) throws -> UIImage {
         let format = UIGraphicsImageRendererFormat()
@@ -26,7 +26,7 @@ final class ScannedPageEncoderTests: XCTestCase {
     }
 
     func testEncode_producesADecodableImageWithNoLocation() async throws {
-        let encoded = await ScannedPageEncoder.encode(try page(width: 40, height: 60))
+        let encoded = await CapturedImageEncoder.encode(try page(width: 40, height: 60))
         let data = try XCTUnwrap(encoded)
 
         let decoded = try XCTUnwrap(UIImage(data: data))
@@ -40,14 +40,14 @@ final class ScannedPageEncoderTests: XCTestCase {
         let sideways = try page(width: 60, height: 40, orientation: .right)
         XCTAssertEqual(sideways.size, CGSize(width: 40, height: 60), "Fixture must present as portrait.")
 
-        let encoded = await ScannedPageEncoder.encode(sideways)
+        let encoded = await CapturedImageEncoder.encode(sideways)
         let data = try XCTUnwrap(encoded)
 
         XCTAssertEqual(try XCTUnwrap(UIImage(data: data)).size, CGSize(width: 40, height: 60))
     }
 
     func testEncode_capsTheLongEdge() async throws {
-        let encoded = await ScannedPageEncoder.encode(try page(width: 200, height: 400), maxLongEdge: 100)
+        let encoded = await CapturedImageEncoder.encode(try page(width: 200, height: 400), maxLongEdge: 100)
         let data = try XCTUnwrap(encoded)
 
         let decoded = try XCTUnwrap(UIImage(data: data))
@@ -55,7 +55,7 @@ final class ScannedPageEncoderTests: XCTestCase {
     }
 
     func testEncode_leavesPagesWithinTheCapAtFullSize() async throws {
-        let encoded = await ScannedPageEncoder.encode(try page(width: 100, height: 50), maxLongEdge: 100)
+        let encoded = await CapturedImageEncoder.encode(try page(width: 100, height: 50), maxLongEdge: 100)
         let data = try XCTUnwrap(encoded)
 
         XCTAssertEqual(try XCTUnwrap(UIImage(data: data)).size, CGSize(width: 100, height: 50))

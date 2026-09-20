@@ -199,6 +199,11 @@ struct AboutView: View {
                             text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
                         )
                         instructionRow(
+                            icon: "camera",
+                            color: .pink,
+                            text: "**Take Photo** — tap \u{201C}Take Photo\u{201D} to shoot straight into PicStrip. The original photo is never saved to your photo library; only the cleaned copy is."
+                        )
+                        instructionRow(
                             icon: "doc.viewfinder",
                             color: .green,
                             text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."

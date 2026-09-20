@@ -15,13 +15,9 @@ struct DocumentScannerView: UIViewControllerRepresentable {
         case failed
     }
 
-    /// `false` where there is no camera.  `isSupported` alone is not enough: the
-    /// iOS 27 simulator reports `true`, then fails with "Unable to capture media".
-    /// `PICSTRIP_FORCE_SCAN_BUTTON` lets UI tests check the home-screen layout
-    /// with the button present.
     static var isAvailable: Bool {
-        (VNDocumentCameraViewController.isSupported && AVCaptureDevice.default(for: .video) != nil)
-            || ProcessInfo.processInfo.environment["PICSTRIP_FORCE_SCAN_BUTTON"] == "1"
+        (VNDocumentCameraViewController.isSupported && CameraHardware.isPresent)
+            || CameraHardware.isForcedForUITests
     }
 
     let onFinish: (Outcome) -> Void

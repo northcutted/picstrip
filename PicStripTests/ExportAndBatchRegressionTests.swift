@@ -477,6 +477,29 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         XCTAssertNotNil(viewModel.errorMessage)
     }
 
+    func testCapturedPhoto_isEncodedAndOpensInTheEditor() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let photo = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 24), format: format).image { ctx in
+            UIColor.orange.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 32, height: 24))
+        }
+        let scanned = ScannedBytes()
+        let viewModel = ScrubberViewModel(scanImageWithHints: { data, hints in
+            await scanned.record(data, hints: hints)
+            return []
+        })
+
+        await viewModel.loadCaptured(CapturedPages(photo: photo))
+        try await waitUntil { viewModel.inputImage != nil && !viewModel.isScanningPII }
+
+        XCTAssertFalse(viewModel.canReplaceOriginal)
+        let hints = await scanned.hints
+        XCTAssertEqual(hints, [ScanHints.none], "A photo is not a document edge to edge.")
+        let seen = await scanned.all
+        XCTAssertEqual(Fixture.type(of: try XCTUnwrap(seen.first)), .jpeg)
+    }
+
     func testCapturedPages_goThroughBatchAndAreNeverReplaceable() async throws {
         let viewModel = makeViewModel()
         let page = try Fixture.image(properties: [kCGImagePropertyGPSDictionary: Fixture.gps])

@@ -19,6 +19,13 @@ struct CapturedPages: Sendable {
     let data: @Sendable (Int) async -> Data?
 }
 
+extension CapturedPages {
+    /// A single photo taken with the in-app camera.
+    init(photo: UIImage) {
+        self.init(count: 1) { _ in await CapturedImageEncoder.encode(photo) }
+    }
+}
+
 // MARK: - ScannedDocument
 
 /// Holds a finished document-camera scan for as long as its pages are needed.
@@ -38,21 +45,22 @@ final class ScannedDocument {
 
     private func pageData(at index: Int) async -> Data? {
         guard index >= 0, index < scan.pageCount else { return nil }
-        return await ScannedPageEncoder.encode(scan.imageOfPage(at: index))
+        return await CapturedImageEncoder.encode(scan.imageOfPage(at: index))
     }
 }
 
-// MARK: - ScannedPageEncoder
+// MARK: - CapturedImageEncoder
 
-nonisolated enum ScannedPageEncoder {
+nonisolated enum CapturedImageEncoder {
 
-    /// Longest edge kept from a captured page.  Far above what text recognition
-    /// needs, and it bounds memory should a device ever deliver larger pages.
+    /// Longest edge kept from a capture.  A 12 MP photo fits untouched; it is far
+    /// above what text recognition needs, and it bounds memory should a device
+    /// ever deliver something larger.
     static let defaultMaxLongEdge: CGFloat = 4096
 
-    /// Encodes a captured page as the bytes the rest of the pipeline works on.
+    /// Encodes a captured page or photo as the bytes the rest of the pipeline works on.
     ///
-    /// JPEG at high quality rather than PNG: a PNG of a full-resolution page
+    /// JPEG at high quality rather than PNG: a PNG of a full-resolution capture
     /// takes about a second longer to write and is 10–30 MB, and JPEG carries
     /// the orientation tag that `ImageRequestHandler(data)` and ImageIO honour.
     /// The default export format is PNG, so a page is lossy-encoded at most once.

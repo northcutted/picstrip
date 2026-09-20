@@ -489,7 +489,9 @@ final class ScrubberViewModel {
         guard pages.count >= 1 else { return }
         if pages.count == 1 {
             guard let data = await pages.data(0) else {
-                errorMessage = String(localized: "The document could not be scanned.")
+                errorMessage = pages.hints.wholeImageIsDocument
+                    ? String(localized: "The document could not be scanned.")
+                    : String(localized: "The selected item could not be loaded as image data.")
                 return
             }
             await loadData(data, hints: pages.hints)
