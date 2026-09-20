@@ -108,6 +108,27 @@ struct ContentView: View {
                         .navigationBarTitleDisplayMode(.inline)
                         .toolbarBackground(.hidden, for: .navigationBar)
                         .toolbar {
+                            // System paste control: reads the pasteboard without the
+                            // "Allow Paste" prompt.  It cannot take the glass pill style,
+                            // so it lives in the bar, where a compact system control
+                            // belongs, and only while the pasteboard holds an image.
+                            if pasteboard.hasImage {
+                                ToolbarItem(placement: .topBarLeading) {
+                                    PasteButton(payloadType: IncomingImage.self) { images in
+                                        haptic(.light)
+                                        load(images)
+                                    }
+                                    .labelStyle(.titleAndIcon)
+                                    .buttonBorderShape(.capsule)
+                                    // Opaque on purpose: the system disables a paste
+                                    // control whose tint is translucent or low-contrast.
+                                    .tint(Color("PasteControlTint"))
+                                    .accessibilityIdentifier("pasteImageButton")
+                                }
+                                // The control draws its own capsule; the bar's glass
+                                // around it would make two outlines.
+                                .sharedBackgroundVisibility(.hidden)
+                            }
                             ToolbarItem(placement: .topBarTrailing) {
                                 Button {
                                     showingAbout = true
@@ -432,26 +453,6 @@ struct ContentView: View {
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
 
-                // System paste control: reads the pasteboard without the "Allow
-                // Paste" prompt.  Only offered while the pasteboard holds an image;
-                // the slot keeps its height so the buttons above never shift.
-                ZStack {
-                    if pasteboard.hasImage {
-                        PasteButton(payloadType: IncomingImage.self) { images in
-                            haptic(.light)
-                            load(images)
-                        }
-                        .labelStyle(.titleAndIcon)
-                        .buttonBorderShape(.capsule)
-                        // Opaque on purpose: the system disables a paste control
-                        // whose tint is translucent or low-contrast.
-                        .tint(Color("PasteControlTint"))
-                        .accessibilityIdentifier("pasteImageButton")
-                        .transition(.opacity)
-                    }
-                }
-                .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
-                .animation(.easeInOut(duration: 0.2), value: pasteboard.hasImage)
             }
             .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)

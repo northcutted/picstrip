@@ -19,8 +19,15 @@ final class PasteboardMonitor {
     private let probe: @Sendable () -> Bool
 
     /// - Parameter probe: Injected so tests never touch the real pasteboard.
-    init(probe: @escaping @Sendable () -> Bool = { UIPasteboard.general.hasImages }) {
+    init(probe: @escaping @Sendable () -> Bool = PasteboardMonitor.systemProbe) {
         self.probe = probe
+    }
+
+    /// `PICSTRIP_FORCE_PASTE_BUTTON` lets UI tests see the button without
+    /// putting anything on the (Mac-synced) simulator pasteboard.
+    nonisolated static let systemProbe: @Sendable () -> Bool = {
+        UIPasteboard.general.hasImages
+            || ProcessInfo.processInfo.environment["PICSTRIP_FORCE_PASTE_BUTTON"] == "1"
     }
 
     /// Re-checks the pasteboard.  The probe runs off the main actor because

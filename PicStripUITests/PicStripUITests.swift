@@ -160,6 +160,26 @@ final class PicStripUITests: XCTestCase {
         XCTAssertFalse(app.buttons["takePhotoButton"].exists)
     }
 
+    /// Paste is offered only while the pasteboard holds an image, and then from the
+    /// navigation bar — never as a stray control among the import buttons.
+    @MainActor
+    func testPasteIsOfferedOnlyWhenThereIsAnImageToPaste() throws {
+        let app = XCUIApplication()
+        app.launch()
+        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
+        XCTAssertFalse(app.descendants(matching: .any)["pasteImageButton"].firstMatch.exists)
+        app.terminate()
+
+        app.launchEnvironment["PICSTRIP_FORCE_PASTE_BUTTON"] = "1"
+        app.launch()
+        let paste = app.descendants(matching: .any)["pasteImageButton"].firstMatch
+        XCTAssertTrue(paste.waitForExistence(timeout: 15))
+        XCTAssertLessThan(
+            paste.frame.maxY, app.buttons["selectPhotoButton"].frame.minY,
+            "Paste belongs in the bar at the top, above every import button."
+        )
+    }
+
     /// With the scan button present, every import action must still be on screen and tappable.
     @MainActor
     func testHomeScreenFitsAllImportActionsWithScan() throws {
