@@ -66,6 +66,17 @@ nonisolated enum RedactionStrength {
         return min(range.upperBound, max(range.lowerBound, snapped))
     }
 
+    /// The block edge one export pass uses for `rects` (normalised, 0 … 1) on an
+    /// image of `pixelSize`: every region in a pass shares the size chosen for
+    /// the smallest of them.
+    static func blockSize(forNormalizedRects rects: [CGRect], pixelSize: CGSize, strength: Double) -> CGFloat {
+        let smallest = rects
+            .map { min($0.width * pixelSize.width, $0.height * pixelSize.height) }
+            .filter { $0 > 0 }
+            .min() ?? 100
+        return blockSize(shortSide: smallest, strength: strength)
+    }
+
     /// Mosaic block edge, in pixels, for a region whose short side is `shortSide`.
     /// Blur uses the same blocks and then smooths them, so it scales with this too.
     static func blockSize(shortSide: CGFloat, strength: Double) -> CGFloat {
@@ -140,6 +151,38 @@ nonisolated extension RedactionColor {
         uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
         let luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
         return luminance > 0.5 ? UIColor(white: 0, alpha: 0.55) : UIColor(white: 1, alpha: 0.6)
+    }
+}
+
+// MARK: - RedactionLattice
+
+/// Geometry of the crosshatch lattice, shared by the export renderer and the
+/// editor's live preview so the two cannot drift apart.
+nonisolated enum RedactionLattice {
+    /// Line spacing and width, in the same units as `rect` and `imageSize`.
+    ///
+    /// The lattice scales with the region and the image, so it is still a
+    /// visible pattern on a 48 MP photo instead of hairlines that average out
+    /// to a flat tint.
+    static func metrics(rect: CGRect, imageSize: CGSize) -> (spacing: CGFloat, lineWidth: CGFloat) {
+        let shortSide = min(rect.width, rect.height)
+        let floor = max(6, max(imageSize.width, imageSize.height) / 160)
+        let spacing = max(floor, shortSide / 3.5)
+        return (spacing, max(1.5, spacing * 0.16))
+    }
+
+    /// Both diagonal families across `rect`; the caller clips to `rect`.
+    static func path(in rect: CGRect, spacing: CGFloat) -> CGPath {
+        let path = CGMutablePath()
+        var startX = rect.minX - rect.height
+        while startX < rect.maxX {
+            path.move(to: CGPoint(x: startX, y: rect.minY))
+            path.addLine(to: CGPoint(x: startX + rect.height, y: rect.maxY))
+            path.move(to: CGPoint(x: startX + rect.height, y: rect.minY))
+            path.addLine(to: CGPoint(x: startX, y: rect.maxY))
+            startX += spacing
+        }
+        return path
     }
 }
 
@@ -241,6 +284,20 @@ nonisolated struct ImageRedactor {
         }
     }
 
+    // MARK: - Live preview
+
+    /// The whole of `image` obscured with `style` at a fixed `blockSize` (in
+    /// `image` pixels).  The editor masks this to each region, so a box shows the
+    /// real effect while it is being dragged.  `nil` for the painted styles.
+    @concurrent
+    func previewLayer(_ style: RedactionStyle, blockSize: CGFloat, of image: UIImage) async -> UIImage? {
+        guard style.obscuresSourcePixels,
+              let ciImage = Self.uprightCIImage(image),
+              let layer = Self.obscuredLayer(style, blockSize: max(1, blockSize), of: ciImage),
+              let cgImage = Self.ciContext.createCGImage(layer, from: ciImage.extent) else { return nil }
+        return UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
+    }
+
     // MARK: - Unattended redaction
 
     /// Burns opaque solid-black rectangles over every supplied `DetectedInstance`.
@@ -264,9 +321,7 @@ nonisolated struct ImageRedactor {
     /// An opaque block with a diagonal lattice in a contrasting tone.
     ///
     /// The base is fully opaque on purpose: a see-through fill leaves the text
-    /// underneath readable, which is not a redaction.  The lattice scales with
-    /// the region and the image, so it is still a visible pattern on a 48 MP
-    /// photo instead of hairlines that average out to a flat tint.
+    /// underneath readable, which is not a redaction.
     private static func renderCrosshatch(
         color: RedactionColor,
         rect: CGRect,
@@ -279,28 +334,11 @@ nonisolated struct ImageRedactor {
         color.uiColor.setFill()
         UIRectFill(rect)
 
-        let shortSide = min(rect.width, rect.height)
-        let floor = max(6, max(imageSize.width, imageSize.height) / 160)
-        let spacing = max(floor, shortSide / 3.5)
-
+        let lattice = RedactionLattice.metrics(rect: rect, imageSize: imageSize)
         cgCtx.clip(to: rect)
         color.latticeColor.setStroke()
-        cgCtx.setLineWidth(max(1.5, spacing * 0.16))
-
-        // Forward diagonals (↘)
-        var startX = rect.minX - rect.height
-        while startX < rect.maxX {
-            cgCtx.move(to: CGPoint(x: startX, y: rect.minY))
-            cgCtx.addLine(to: CGPoint(x: startX + rect.height, y: rect.maxY))
-            startX += spacing
-        }
-        // Backward diagonals (↙)
-        startX = rect.minX - rect.height
-        while startX < rect.maxX {
-            cgCtx.move(to: CGPoint(x: startX + rect.height, y: rect.minY))
-            cgCtx.addLine(to: CGPoint(x: startX, y: rect.maxY))
-            startX += spacing
-        }
+        cgCtx.setLineWidth(lattice.lineWidth)
+        cgCtx.addPath(RedactionLattice.path(in: rect, spacing: lattice.spacing))
         cgCtx.strokePath()
         cgCtx.restoreGState()
     }
@@ -347,30 +385,12 @@ nonisolated struct ImageRedactor {
         // Keeps the visual character of pixelation for the privacy-critical
         // small regions; large regions get slightly chunkier blocks, which is
         // still adequately obscuring.
-        let smallestDim = ciRects
-            .map { min($0.width, $0.height) }
-            .min() ?? 100
-        let blockSize = Float(RedactionStrength.blockSize(shortSide: smallestDim, strength: strength))
+        let blockSize = RedactionStrength.blockSize(
+            forNormalizedRects: specs.map(\.rect), pixelSize: extent.size, strength: strength
+        )
 
         // ── 3. Run CIPixellate ONCE over the whole image ─────────────────────
-        guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
-        pixFilter.setValue(ciImage, forKey: kCIInputImageKey)
-        pixFilter.setValue(
-            CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
-            forKey: kCIInputCenterKey
-        )
-        pixFilter.setValue(blockSize, forKey: "inputScale")
-        guard var obscured = pixFilter.outputImage else { return nil }
-
-        if style == .blur {
-            // Clamp first so the blur does not pull transparent pixels in at the
-            // image edges; crop back to the original extent afterwards.
-            let blur = CIFilter.gaussianBlur()
-            blur.inputImage = obscured.clampedToExtent()
-            blur.radius = blockSize * 1.5
-            guard let blurred = blur.outputImage else { return nil }
-            obscured = blurred.cropped(to: extent)
-        }
+        guard let obscured = obscuredLayer(style, blockSize: blockSize, of: ciImage) else { return nil }
 
         // ── 4. Build a single mask CIImage = union of white rects ────────────
         // CIImage(color: white) is infinite-extent; cropping to a rect produces
@@ -395,6 +415,31 @@ nonisolated struct ImageRedactor {
 
         guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
         return UIImage(cgImage: cgOut, scale: image.scale, orientation: .up)
+    }
+
+    /// The whole of `ciImage` pixellated — and, for `.blur`, then blurred.
+    nonisolated private static func obscuredLayer(
+        _ style: RedactionStyle,
+        blockSize: CGFloat,
+        of ciImage: CIImage
+    ) -> CIImage? {
+        let extent = ciImage.extent
+        guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
+        pixFilter.setValue(ciImage, forKey: kCIInputImageKey)
+        pixFilter.setValue(
+            CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
+            forKey: kCIInputCenterKey
+        )
+        pixFilter.setValue(Float(blockSize), forKey: "inputScale")
+        guard let pixellated = pixFilter.outputImage else { return nil }
+        guard style == .blur else { return pixellated.cropped(to: extent) }
+
+        // Clamp first so the blur does not pull transparent pixels in at the
+        // image edges; crop back to the original extent afterwards.
+        let blur = CIFilter.gaussianBlur()
+        blur.inputImage = pixellated.clampedToExtent()
+        blur.radius = Float(blockSize * 1.5)
+        return blur.outputImage?.cropped(to: extent)
     }
 
     /// The image's pixels turned the way it is displayed, with the extent at the origin.

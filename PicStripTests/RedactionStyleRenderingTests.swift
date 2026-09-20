@@ -150,6 +150,58 @@ final class RedactionStyleRenderingTests: XCTestCase {
         }
     }
 
+    // MARK: - Live preview
+
+    /// The editor masks `previewLayer` to a region.  Inside the region that has
+    /// to be the same pixels the export produces, or the preview is a lie.
+    func testPreviewLayerMatchesTheExportInsideTheRegion() async throws {
+        let image = gradientImage()
+        for style in [RedactionStyle.pixelate, .blur] {
+            for strength in [0.0, 0.5, 1.0] {
+                let spec = RedactionSpec(rect: region, style: style, color: .black, isEnabled: true, strength: strength)
+                let exported = try await render(spec, over: image)
+
+                let block = RedactionStrength.blockSize(
+                    forNormalizedRects: [region], pixelSize: CGSize(width: 200, height: 200), strength: strength
+                )
+                let layer = await ImageRedactor().previewLayer(style, blockSize: block, of: image)
+                let preview = try Bitmap(XCTUnwrap(layer))
+
+                for y in stride(from: 54, to: 146, by: 7) {
+                    for x in stride(from: 54, to: 146, by: 7) {
+                        let difference = abs(Int(exported.pixel(x, y)[0]) - Int(preview.pixel(x, y)[0]))
+                        XCTAssertLessThanOrEqual(difference, 2, "\(style) @ \(strength): (\(x), \(y)) differs by \(difference).")
+                    }
+                }
+            }
+        }
+    }
+
+    func testPreviewLayerExistsOnlyForStylesThatScramblePixels() async {
+        let image = flatImage(.white)
+        for style in RedactionStyle.allCases {
+            let layer = await ImageRedactor().previewLayer(style, blockSize: 12, of: image)
+            XCTAssertEqual(layer != nil, style.obscuresSourcePixels, "\(style)")
+            if let layer { XCTAssertEqual(layer.size, image.size) }
+        }
+    }
+
+    /// The preview image is capped at 2 400 px; the view model has to say how much
+    /// bigger the export is, or pixel-sized effects would preview too coarse.
+    func testViewModelReportsHowMuchLargerTheExportIsThanThePreview() async throws {
+        let big = UIGraphicsImageRenderer(size: CGSize(width: 4800, height: 1200), format: format).image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 4800, height: 1200))
+        }
+        let viewModel = ScrubberViewModel(scanImage: { _ in [] })
+        await viewModel.loadData(try XCTUnwrap(big.jpegData(compressionQuality: 0.8)))
+        XCTAssertEqual(viewModel.exportScale, 2, accuracy: 0.01)
+
+        let small = flatImage(.white)
+        await viewModel.loadData(try XCTUnwrap(small.pngData()))
+        XCTAssertEqual(viewModel.exportScale, 1, accuracy: 0.001)
+    }
+
     // MARK: - View model
 
     func testChangingStrengthIsOneUndoStepAndOnlyAppliesToStylesThatUseIt() {

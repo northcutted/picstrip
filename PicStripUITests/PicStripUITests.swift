@@ -385,13 +385,23 @@ final class PicStripUITests: XCTestCase {
 
         slider.adjust(toNormalizedSliderPosition: 1)
         XCTAssertTrue(app.buttons["undoRedactionButton"].isEnabled, "A strength change is undoable.")
-        if let dump = ProcessInfo.processInfo.environment["PICSTRIP_UITEST_DUMP"] {
-            try? XCUIScreen.main.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: dump))
-        }
+        dumpScreen("blur")
+
+        app.buttons["styleButton-pixelate"].tap()
+        dumpScreen("pixelate")
 
         app.buttons["styleButton-crosshatch"].tap()
+        dumpScreen("crosshatch")
         XCTAssertTrue(app.buttons["colorButton-black"].waitForExistence(timeout: 5))
         XCTAssertFalse(slider.exists, "Crosshatch has no strength.")
+    }
+
+    /// Saves a screenshot for a human to look at when `PICSTRIP_UITEST_DUMP` names a folder.
+    private func dumpScreen(_ name: String) {
+        guard let folder = ProcessInfo.processInfo.environment["PICSTRIP_UITEST_DUMP"] else { return }
+        Thread.sleep(forTimeInterval: 0.6)
+        let url = URL(fileURLWithPath: folder).appendingPathComponent("\(name).png")
+        try? XCUIScreen.main.screenshot().pngRepresentation.write(to: url)
     }
 
     private func makeCleanPNG() throws -> Data {

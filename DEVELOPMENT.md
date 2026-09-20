@@ -96,7 +96,7 @@ PicStrip/
 │   ├── PicStripApp.swift       # @main entry point; drains the share extension's pending image
 │   ├── ContentView.swift       # Home screen, photo layout, control panel, redaction editor drawer
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the whole data-flow pipeline
-│   ├── ZoomableImagePreview.swift  # Zoom/pan preview, region overlays, draw / move / resize gestures
+│   ├── ZoomableImagePreview.swift  # Zoom/pan preview, live redaction-style preview, draw / move / resize gestures
 │   ├── RedactionRegion.swift   # Editable region model (app-only colour bridging)
 │   ├── PreSaveReviewView.swift # Final review: what was removed, save / replace / share / audit
 │   ├── AdvancedOptionsView.swift   # Export format picker
@@ -394,6 +394,8 @@ The method is `@concurrent`, so it always runs off the caller's actor. It throws
 **File:** `PicStripCore/ImageRedactor.swift`
 
 Burns styled redaction blocks over image regions: four styles (`RedactionStyle`: solid, crosshatch, pixelate, blur) in twelve colours (`RedactionColor`), described per region by a `RedactionSpec`. Solid and crosshatch are painted in one `UIGraphicsImageRenderer` pass; crosshatch is an **opaque** fill with a contrasting diagonal lattice whose spacing scales with the region and the image (a see-through fill would leave the text readable, and fixed hairlines vanish at photo resolution). Pixelate and blur run a Core Image pre-pass — blur mosaics first and then blurs the mosaic, so it cannot be sharpened back — and fall back to a solid fill if Core Image cannot run, so a region the user asked to hide is never left readable. Their `RedactionSpec.strength` (0–1 in 0.25 steps, `RedactionStrength`) sets the mosaic block size: 0 is the fixed size PicStrip used before strength existed, so no setting is weaker than that, and the default 0.5 is stronger. Regions are grouped by style and strength, one Core Image pass per group.
+
+**The editor previews the real thing.** `ZoomableImagePreview` draws every enabled region in the style it will be saved with, before any save. Solid and crosshatch are drawn in a `Canvas` with `RedactionLattice` — the same geometry the export uses. For pixelate and blur it asks `ImageRedactor.previewLayer` for a whole-image render at the export's block size and masks it to the regions, so the effect follows a box while it is dragged; layers are cached per style and block size and re-rendered when a drag ends. The preview image is capped at 2 400 px, so pixel-sized values are computed in export pixels and divided by `ScrubberViewModel.exportScale`. `testPreviewLayerMatchesTheExportInsideTheRegion` holds the preview to the export's pixels.
 
 ```swift
 struct ImageRedactor {

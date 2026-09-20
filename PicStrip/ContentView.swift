@@ -650,6 +650,7 @@ struct ContentView: View {
                     ZoomableImagePreview(
                         image: uiImage,
                         redactionRegions: viewModel.redactionRegions,
+                        exportScale: viewModel.exportScale,
                         selectedRedactionRegionID: Binding(
                             get: { viewModel.selectedRedactionRegionID },
                             set: { viewModel.selectRedactionRegion(id: $0) }

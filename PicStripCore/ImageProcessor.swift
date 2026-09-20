@@ -220,6 +220,18 @@ nonisolated enum ImageProcessor {
 
     // MARK: - Public API
 
+    /// The pixel dimensions ImageIO reports for `data`, without decoding it.
+    /// Unrotated — callers that only need the long edge or the area can ignore that.
+    nonisolated static func pixelSize(of data: Data) -> CGSize? {
+        let options: [CFString: Any] = [kCGImageSourceShouldCache: false]
+        guard let source = CGImageSourceCreateWithData(data as CFData, options as CFDictionary),
+              let props = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any],
+              let width = props[kCGImagePropertyPixelWidth] as? CGFloat,
+              let height = props[kCGImagePropertyPixelHeight] as? CGFloat,
+              width > 0, height > 0 else { return nil }
+        return CGSize(width: width, height: height)
+    }
+
     /// Creates a display-sized UIImage without decoding the full-resolution source
     /// into memory. Export paths still use the original bytes; this is only for UI
     /// previews where a multi-megapixel bitmap would waste RAM.

@@ -141,6 +141,11 @@ final class ScrubberViewModel {
     /// `aspectRatio`-constrained overlay without re-decoding raw bytes.
     var sourceUIImage: UIImage?
 
+    /// How many times larger the exported image is than `sourceUIImage` (≥ 1).
+    /// The editor's live preview scales pixel-based effects by this so a box
+    /// looks the way it will in the saved file.
+    private(set) var exportScale: CGFloat = 1
+
     /// The scrubbed, re-encoded image bytes ready for saving or sharing.
     var processedData: Data?
 
@@ -602,6 +607,9 @@ final class ScrubberViewModel {
         rawImageData  = data
         inputImage    = Image(uiImage: preview)
         sourceUIImage = preview
+        let previewLongEdge = max(preview.size.width, preview.size.height) * preview.scale
+        let fullLongEdge = ImageProcessor.pixelSize(of: data).map { max($0.width, $0.height) } ?? previewLongEdge
+        exportScale = previewLongEdge > 0 ? max(1, fullLongEdge / previewLongEdge) : 1
         // Store point dimensions (not pixel dimensions).
         // ContentView's .scaledToFit() math operates in SwiftUI points,
         // so we match that coordinate space here.
