@@ -10549,102 +10549,103 @@
         }
       }
     },
-    "Checking visible text before save" : {
+    "Checking for sensitive details" : {
+      "comment" : "Caption under \"Scanning for sensitive data\" while the recognised text is checked for phone numbers, emails, card numbers and the like.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "جارٍ التحقق من النص المرئي قبل الحفظ"
+            "value" : "التحقق من وجود تفاصيل حساسة"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sichtbaren Text vor dem Sichern prüfen"
+            "value" : "Sensible Daten werden geprüft"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprobando texto visible antes de guardar"
+            "value" : "Comprobando datos sensibles"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comprobando texto visible antes de guardar"
+            "value" : "Revisando datos sensibles"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vérification du texte visible avant l’enregistrement"
+            "value" : "Vérification des données sensibles"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Controllo del testo visibile prima del salvataggio"
+            "value" : "Controllo dei dati sensibili"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "保存前に表示テキストを確認しています"
+            "value" : "機密情報を確認中"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "저장 전에 보이는 텍스트 확인 중"
+            "value" : "민감한 정보 확인 중"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zichtbare tekst controleren vóór het bewaren"
+            "value" : "Controleren op gevoelige gegevens"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sprawdzanie widocznego tekstu przed zachowaniem zdjęcia"
+            "value" : "Sprawdzanie danych wrażliwych"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verificando texto visível antes de salvar"
+            "value" : "Verificando dados sensíveis"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A verificar o texto visível antes de guardar"
+            "value" : "A verificar dados sensíveis"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kontrollerar synlig text innan bilden sparas"
+            "value" : "Kontrollerar känsliga uppgifter"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Kaydetmeden önce görünen metin kontrol ediliyor"
+            "value" : "Hassas bilgiler kontrol ediliyor"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "存储前正在检查可见文字"
+            "value" : "正在检查敏感信息"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "儲存前正在檢查可見文字"
+            "value" : "正在檢查敏感資訊"
           }
         }
       }
@@ -24729,6 +24730,107 @@
         }
       }
     },
+    "Looking for names…" : {
+      "comment" : "Shown after the scan while the on-device language model is still looking for people's names in the recognised text.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "البحث عن الأسماء…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen werden gesucht…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando nombres…"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando nombres…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche de noms…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca di nomi…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前を検索中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름 찾는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeken naar namen…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Szukanie imion i nazwisk…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando nomes…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A procurar nomes…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Söker efter namn…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İsimler aranıyor…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查找姓名…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在尋找姓名…"
+          }
+        }
+      }
+    },
     "Low" : {
       "localizations" : {
         "ar" : {
@@ -33847,6 +33949,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "QR 碼與條碼——片段中會顯示解碼後的內容（Wi-Fi 密碼、vCard、URL、MFA 種子碼）"
+          }
+        }
+      }
+    },
+    "Reading text, faces and codes" : {
+      "comment" : "Caption under \"Scanning for sensitive data\" while on-device vision reads the photo's text and looks for faces and barcodes / QR codes.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "قراءة النص والوجوه والرموز"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text, Gesichter und Codes werden erkannt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leyendo texto, caras y códigos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Leyendo texto, caras y códigos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lecture du texte, des visages et des codes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lettura di testo, volti e codici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "テキスト、顔、コードを読み取り中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "텍스트, 얼굴, 코드 읽는 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst, gezichten en codes lezen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odczytywanie tekstu, twarzy i kodów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lendo texto, rostos e códigos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A ler texto, rostos e códigos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Läser text, ansikten och koder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metin, yüz ve kodlar okunuyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在读取文本、人脸和条码"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在讀取文字、人臉和條碼"
           }
         }
       }

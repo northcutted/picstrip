@@ -106,6 +106,7 @@ PicStrip/
 │   ├── ScannerHeroView.swift   # Decorative home-screen animation
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
+│   ├── ScanProgress.swift      # Scan progress built from the scanner's own milestones (ScanStep), not a clock
 │   ├── LiveCamera.swift        # Live-preview camera: CameraSession (AVCaptureSession), throttle, overlay geometry, view
 │   ├── CameraCaptureView.swift # System photo camera (fallback) + CameraHardware (is there a real camera?)
 │   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
@@ -217,19 +218,19 @@ User taps PhotosPicker
     ↓
 ContentView.selectedItem.didSet → ScrubberViewModel.handleItemChange()
     ↓
-ScrubberViewModel.processSinglePhoto()
-    ├─ Load: PhotosPickerItem → Data
-    ├─ Downsample display preview via ImageIO → sourceUIImage
-    ├─ Scan (async, @concurrent):
-    │     PIIScanner.scanImage(data:) → [DetectionResult]
-    │     └─ Vision OCR + DetectionRegistry regex + NSDataDetector
-    ├─ Off-main process/catalogue:
-    │     ImageProcessor.process(...) → processedData + processedPreviewUIImage
-    ├─ @MainActor update:
-    │     inputImage, sourceUIImage, detectionResults, stripConfig, pendingStrippedMetadata
-    └─ isProcessing = false
+ScrubberViewModel.ingest()  — the three jobs below start together; none waits for another
+    ├─ Load: PhotosPickerItem → Data            (home screen shows "Processing…" after a beat)
+    ├─ Preview:  ImageIO downsample → sourceUIImage → isProcessing = false, photo on screen
+    ├─ Metadata: CGImageSource properties → allSourceMetadata → badges appear
+    └─ Scan (@concurrent): PIIScanner.scan(data:hints:progress:)
+          ├─ Vision text / faces / barcodes / document edges, one performAll pass
+          │     each finished request → ScanStep.analysed(…) → ScanProgress → progress bar
+          ├─ ScanStep.matchingPatterns → DetectionRegistry regex + NSDataDetector + context
+          └─ published → isScanningPII = false, Save enabled
+                └─ then, if Apple Intelligence is on: SemanticPII name pass (isFindingNames);
+                   its names are appended, nothing waits on it
     ↓
-User views metadata panel + red PII overlays
+User views metadata panel + live redaction preview
     ↓
 User adjusts stripConfig (toggle categories, fields, PII types)
     ↓
@@ -243,7 +244,7 @@ User taps "Save to Photos" or "Share"
     └─ PreSaveReviewView shows format picker + stripped-field summary
     ↓
 User taps "Save as New" / "Replace Original" / "Share"
-    ├─ PHPhotoLibrary.shared().performChanges { PHAssetCreationRequest }
+    ├─ PhotoLibraryWriter.save(…)  (the only PhotoKit change block)
     ├─ Generate AuditReport JSON → FileManager.tmp
     └─ Dismiss sheet → home screen
 ```

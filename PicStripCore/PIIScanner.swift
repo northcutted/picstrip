@@ -38,6 +38,24 @@ nonisolated struct ScanHints: Sendable, Equatable {
     static let scannedDocument = ScanHints(wholeImageIsDocument: true)
 }
 
+// MARK: - ScanStep
+
+/// A milestone inside one scan, reported as it happens so the UI can show real
+/// progress instead of a spinner.  The Vision requests run together and finish
+/// in any order; pattern matching starts once they are all in.
+nonisolated enum ScanStep: Sendable, Equatable {
+    enum Subject: Sendable, Hashable, CaseIterable {
+        case text, faces, barcodes, documentEdges
+    }
+
+    /// Vision finished looking for this — whether or not it found any, or failed.
+    case analysed(Subject)
+    /// Vision is done; the recognised text is being checked against the rules.
+    case matchingPatterns
+}
+
+typealias ScanProgressHandler = @Sendable (ScanStep) -> Void
+
 // MARK: - ScanOutput
 
 /// One line of recognised text, for callers that look for sensitive content the
@@ -114,7 +132,11 @@ nonisolated struct PIIScanner {
 
     /// `scanImage` plus the recognised text, for callers that run a further pass over it.
     @concurrent
-    func scan(data: Data, hints: ScanHints = .none) async throws -> ScanOutput {
+    func scan(
+        data: Data,
+        hints: ScanHints = .none,
+        progress: ScanProgressHandler? = nil
+    ) async throws -> ScanOutput {
         // Stage 1: Validate — ensures a meaningful error if the caller passes
         // non-image bytes before we hand anything to Vision.
         // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
@@ -148,6 +170,13 @@ nonisolated struct PIIScanner {
         var textRecognitionRan = false
         var faceDetectionFailed = false
 
+        // Vision can deliver more than one result for a request; a step is
+        // reported the first time only.
+        var reported: Set<ScanStep.Subject> = []
+        func report(_ subject: ScanStep.Subject) {
+            if reported.insert(subject).inserted { progress?(.analysed(subject)) }
+        }
+
         // `performAll` reports each request's outcome independently, so a single
         // sub-request failing (e.g. rectangle detection on the simulator with no
         // Neural Engine) arrives as its own `.error` and never discards the
@@ -157,12 +186,20 @@ nonisolated struct PIIScanner {
             case .recognizeText(_, let found):
                 observations = found
                 textRecognitionRan = true
-            case .detectFaceRectangles(_, let found): faces = found
-            case .detectBarcodes(_, let found):       barcodes = found
-            case .detectRectangles(_, let found):     rectangles = found
+                report(.text)
+            case .detectFaceRectangles(_, let found):
+                faces = found
+                report(.faces)
+            case .detectBarcodes(_, let found):
+                barcodes = found
+                report(.barcodes)
+            case .detectRectangles(_, let found):
+                rectangles = found
+                report(.documentEdges)
             case .error(let request, _):
                 // An error for one request must not discard the others' results.
                 if request is DetectFaceRectanglesRequest { faceDetectionFailed = true }
+                if let subject = Self.subject(of: request) { report(subject) }
             default:
                 break
             }
@@ -190,6 +227,7 @@ nonisolated struct PIIScanner {
         // model produced a result — Vision rejected the image outright, or both
         // requests errored — say so instead of reporting a clean image.
         guard textRecognitionRan else { throw PIIScannerError.textRecognitionFailed }
+        progress?(.matchingPatterns)
 
         let primaryLineContexts = Self.recognizedLineContexts(from: observations)
         let faceRects = faces.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
@@ -276,6 +314,16 @@ nonisolated struct PIIScanner {
             $0.score != $1.score
                 ? $0.score > $1.score
                 : $0.type.description < $1.type.description
+        }
+    }
+
+    nonisolated private static func subject(of request: any VisionRequest) -> ScanStep.Subject? {
+        switch request {
+        case is RecognizeTextRequest:        return .text
+        case is DetectFaceRectanglesRequest: return .faces
+        case is DetectBarcodesRequest:       return .barcodes
+        case is DetectRectanglesRequest:     return .documentEdges
+        default:                             return nil
         }
     }
 

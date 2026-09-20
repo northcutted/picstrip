@@ -854,44 +854,82 @@ private struct StaticImageLayer: View, Equatable {
 
 // MARK: - PhotoScanSweep
 
+/// Shown over the photo while the privacy scan runs: viewfinder brackets that
+/// breathe, and a soft band that travels down the photo and back.
+///
+/// Both animations are scoped to the one modifier they drive.  A
+/// `withAnimation(.repeatForever)` here would put the whole transaction — and
+/// any layout that happens to resolve in it — on a loop.
 private struct PhotoScanSweep: View {
     let reduceMotion: Bool
-    @State private var sweep = false
+    @State private var isRunning = false
+
+    private let bandHeight: CGFloat = 72
 
     var body: some View {
         GeometryReader { geo in
             ZStack(alignment: .top) {
-                Color.green.opacity(reduceMotion ? 0.08 : 0.03)
+                Color.accentColor.opacity(0.06)
 
-                if reduceMotion {
-                    RoundedRectangle(cornerRadius: 2)
-                        .strokeBorder(Color.green.opacity(0.45), lineWidth: 2)
-                } else {
-                    Rectangle()
-                        .fill(
-                            LinearGradient(
-                                stops: [
-                                    .init(color: .clear, location: 0.0),
-                                    .init(color: Color.green.opacity(0.85), location: 0.5),
-                                    .init(color: .clear, location: 1.0)
-                                ],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            )
-                        )
-                        .frame(height: 26)
-                        .shadow(color: .green.opacity(0.45), radius: 10)
-                        .offset(y: sweep ? geo.size.height + 20 : -40)
-                        .onAppear {
-                            sweep = false
-                            withAnimation(.linear(duration: 1.15).repeatForever(autoreverses: false)) {
-                                sweep = true
-                            }
+                if !reduceMotion {
+                    band
+                        .animation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) {
+                            $0.offset(y: isRunning ? geo.size.height - bandHeight / 2 : -bandHeight / 2)
                         }
                 }
+
+                ScanBrackets(armLength: min(28, min(geo.size.width, geo.size.height) / 5))
+                    .stroke(.white, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .shadow(color: .black.opacity(0.4), radius: 2)
+                    .padding(8)
+                    .animation(reduceMotion ? nil : .easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {
+                        $0.opacity(isRunning && !reduceMotion ? 0.5 : 1)
+                    }
             }
+            .onAppear { isRunning = true }
         }
+        .clipped()
         .accessibilityHidden(true)
+    }
+
+    /// Symmetrical, so it reads the same travelling down and back up.
+    private var band: some View {
+        LinearGradient(
+            stops: [
+                .init(color: .clear, location: 0),
+                .init(color: Color.accentColor.opacity(0.38), location: 0.5),
+                .init(color: .clear, location: 1)
+            ],
+            startPoint: .top,
+            endPoint: .bottom
+        )
+        .frame(height: bandHeight)
+        .overlay {
+            Rectangle()
+                .fill(.white.opacity(0.9))
+                .frame(height: 2)
+                .shadow(color: Color.accentColor, radius: 6)
+        }
+    }
+}
+
+/// The four corners of a viewfinder.
+nonisolated private struct ScanBrackets: Shape {
+    let armLength: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        for (corner, inward) in [
+            (CGPoint(x: rect.minX, y: rect.minY), CGVector(dx: 1, dy: 1)),
+            (CGPoint(x: rect.maxX, y: rect.minY), CGVector(dx: -1, dy: 1)),
+            (CGPoint(x: rect.maxX, y: rect.maxY), CGVector(dx: -1, dy: -1)),
+            (CGPoint(x: rect.minX, y: rect.maxY), CGVector(dx: 1, dy: -1))
+        ] {
+            path.move(to: CGPoint(x: corner.x + inward.dx * armLength, y: corner.y))
+            path.addLine(to: corner)
+            path.addLine(to: CGPoint(x: corner.x, y: corner.y + inward.dy * armLength))
+        }
+        return path
     }
 }
 

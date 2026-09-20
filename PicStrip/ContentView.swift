@@ -96,6 +96,18 @@ struct ContentView: View {
                     breathingGradient
                 }
 
+                // Opening a large file takes a moment before there is a photo to
+                // show.  Say so — after a beat, so a quick load does not flash.
+                if !hasPhoto, viewModel.isProcessing {
+                    processingOverlay
+                        .ignoresSafeArea()
+                        .zIndex(1)
+                        .transition(.asymmetric(
+                            insertion: .opacity.animation(.easeIn(duration: 0.2).delay(0.35)),
+                            removal: .opacity.animation(.easeOut(duration: 0.15))
+                        ))
+                }
+
                 if hasPhoto {
                     photoLayout
                         .navigationTitle("PicStrip")
@@ -811,6 +823,24 @@ struct ContentView: View {
                 } else {
                     editRedactionsRow
                         .transition(.opacity.combined(with: .move(edge: .top)))
+
+                    // The scan is already published; the language model may
+                    // still add names to it.  Nothing waits on this.
+                    if viewModel.isFindingNames {
+                        HStack(spacing: 8) {
+                            ProgressView()
+                                .controlSize(.mini)
+                                .accessibilityHidden(true)
+                            Text("Looking for names…")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 4)
+                        .accessibilityElement(children: .combine)
+                        .accessibilityIdentifier("findingNamesLabel")
+                        .transition(.opacity)
+                    }
                 }
             }
 
@@ -879,29 +909,39 @@ struct ContentView: View {
         .animation(.spring(duration: 0.3), value: hasPhoto)
         .animation(.easeInOut(duration: 0.35), value: viewModel.detectedPII)
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
+        .animation(.easeInOut(duration: 0.25), value: viewModel.isFindingNames)
     }
 
-    // MARK: - Scanning row (muted, not interactive)
+    // MARK: - Scanning row (not interactive)
 
+    /// What the scan is doing and how far it has got.  The bar is driven by the
+    /// scanner's own milestones (`ScanProgress`), not by a timer.
     private var scanningRow: some View {
-        HStack(spacing: 12) {
-            ZStack {
-                Circle().fill(Color.secondary.opacity(0.12))
-                ProgressView()
-                    .controlSize(.small)
-                    .accessibilityHidden(true)
-            }
-            .frame(width: 38, height: 38)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle().fill(Color.accentColor.opacity(0.12))
+                    Image(systemName: "text.viewfinder")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(Color.accentColor)
+                        .symbolEffect(.pulse, options: .repeating)
+                        .accessibilityHidden(true)
+                }
+                .frame(width: 38, height: 38)
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text("Scanning for sensitive data")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.secondary)
-                Text("Checking visible text before save")
-                    .font(.caption)
-                    .foregroundStyle(.tertiary)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Scanning for sensitive data")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Text(scanStageText)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.opacity)
+                }
+                Spacer(minLength: 8)
             }
-            Spacer(minLength: 8)
+
+            ScanProgressBar(progress: viewModel.scanProgress)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
@@ -910,7 +950,20 @@ struct ContentView: View {
             RoundedRectangle(cornerRadius: 12)
                 .strokeBorder(Color(.separator), lineWidth: 1)
         )
+        .animation(.easeInOut(duration: 0.2), value: viewModel.scanProgress.stage)
+        .accessibilityElement(children: .ignore)
         .accessibilityLabel("Scanning for sensitive data")
+        .accessibilityValue(
+            Text(viewModel.scanProgress.fraction, format: .percent.precision(.fractionLength(0)))
+        )
+        .accessibilityIdentifier("scanningRow")
+    }
+
+    private var scanStageText: LocalizedStringKey {
+        switch viewModel.scanProgress.stage {
+        case .analysing: return "Reading text, faces and codes"
+        case .matching:  return "Checking for sensitive details"
+        }
     }
 
     // MARK: - Edit Redactions row
@@ -1091,6 +1144,40 @@ nonisolated private struct PillLabel: View {
         .font(.callout.weight(.semibold))
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
+    }
+}
+
+// MARK: - Scan progress bar
+
+/// A determinate bar for the privacy scan.
+///
+/// `progress.fraction` only moves when the scanner reports a finished step, and
+/// reading text — most of the work — is a single step.  So between steps the bar
+/// drifts a little way toward the next one, to show the scan is alive; it never
+/// drifts far, and it never reaches the end on its own.  VoiceOver is given the
+/// real fraction, not the drift.
+private struct ScanProgressBar: View {
+    let progress: ScanProgress
+
+    @State private var displayed = 0.0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        ProgressView(value: min(1, displayed))
+            .progressViewStyle(.linear)
+            .tint(Color.accentColor)
+            .animation(.easeOut(duration: 0.4), value: displayed)
+            .accessibilityHidden(true)
+            .task(id: progress.fraction) {
+                displayed = max(displayed, progress.fraction)
+                guard !reduceMotion else { return }
+                let ceiling = min(0.96, progress.fraction + 0.22)
+                while !Task.isCancelled, displayed < ceiling - 0.004 {
+                    try? await Task.sleep(for: .milliseconds(180))
+                    guard !Task.isCancelled else { return }
+                    displayed += (ceiling - displayed) * 0.07
+                }
+            }
     }
 }
 

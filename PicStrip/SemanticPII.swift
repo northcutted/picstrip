@@ -30,12 +30,16 @@ nonisolated struct SemanticPII: Sendable {
     /// Loads the model ahead of the first scan.  A cold model takes several
     /// seconds to answer; a warm one about two.
     var prewarm: @Sendable () -> Void = { }
+    /// Whether a name pass can find anything at all right now.  The UI only says
+    /// it is looking for names when this is true.
+    var isAvailable: @Sendable () -> Bool = { true }
 
-    static let unavailable = SemanticPII(findNames: { _ in [] })
+    static let unavailable = SemanticPII(findNames: { _ in [] }, isAvailable: { false })
 
     static let live = SemanticPII(
         findNames: { await OnDeviceNameFinder.findNames(in: $0) },
-        prewarm: { OnDeviceNameFinder.prewarm() }
+        prewarm: { OnDeviceNameFinder.prewarm() },
+        isAvailable: { OnDeviceNameFinder.isAvailable }
     )
 }
 

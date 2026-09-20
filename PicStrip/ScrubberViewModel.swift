@@ -215,6 +215,13 @@ final class ScrubberViewModel {
     /// `true` while the current image's OCR pass is still running.
     var isScanningPII: Bool = false
 
+    /// How far the running scan has got, from the scanner's own milestones.
+    private(set) var scanProgress = ScanProgress.notStarted
+
+    /// `true` while the on-device language model is still looking for names in a
+    /// scan that has already been published.  Nothing waits on it.
+    private(set) var isFindingNames = false
+
     /// Populated when any step throws; `nil` on success.
     var errorMessage: String?
 
@@ -422,15 +429,15 @@ final class ScrubberViewModel {
 
     // MARK: - Private
 
-    @ObservationIgnored private let scan: @Sendable (Data, ScanHints) async throws -> ScanOutput
+    @ObservationIgnored private let scan: @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput
     @ObservationIgnored private let semantic: SemanticPII
     @ObservationIgnored private let objectSelection: ObjectSelection
 
     /// The application uses the real on-device scanner, language model and
     /// segmentation; tests inject their own so they never boot Vision or a model.
     init(
-        scan: @escaping @Sendable (Data, ScanHints) async throws -> ScanOutput = {
-            try await PIIScanner().scan(data: $0, hints: $1)
+        scan: @escaping @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput = {
+            try await PIIScanner().scan(data: $0, hints: $1, progress: $2)
         },
         semantic: SemanticPII = .live,
         objectSelection: ObjectSelection = .live
@@ -446,7 +453,7 @@ final class ScrubberViewModel {
         objectSelection: ObjectSelection = .unsupported
     ) {
         self.init(
-            scan: { ScanOutput(results: try await scanImageWithHints($0, $1), lines: []) },
+            scan: { data, hints, _ in ScanOutput(results: try await scanImageWithHints(data, hints), lines: []) },
             semantic: .unavailable,
             objectSelection: objectSelection
         )
@@ -579,6 +586,8 @@ final class ScrubberViewModel {
         piiFocusTask = nil
         piiScanToken = UUID()
         isScanningPII = false
+        isFindingNames = false
+        scanProgress = .notStarted
         detectedPII = []
         imageSize = .zero
         activeSheet = nil
@@ -592,13 +601,23 @@ final class ScrubberViewModel {
         return token
     }
 
+    /// Decoding the preview, reading the metadata and scanning do not depend on
+    /// each other, so they all start at once: a large PNG takes seconds to decode,
+    /// and nothing else should queue behind that.
     private func ingest(_ data: Data, token: UUID, hints: ScanHints = .none) async {
+        startPIIScan(data: data, hints: hints)
+        async let metadata: Void = catalogSourceMetadata(from: data)
         let preview = await Self.makePreviewImage(from: data)
         guard loadToken == token else { return }
 
         // Pasted, dropped, and shared bytes are not guaranteed to be an image
-        // ImageIO can decode.  Without a preview there is nothing to show or edit.
+        // ImageIO can decode.  Without a preview there is nothing to show or edit,
+        // and the scan's own complaint about the same bytes would be noise.
         guard let preview else {
+            piiScanTask?.cancel()
+            piiScanTask = nil
+            piiScanToken = UUID()
+            isScanningPII = false
             errorMessage = String(localized: "The selected item could not be loaded as image data.")
             isProcessing = false
             return
@@ -614,9 +633,9 @@ final class ScrubberViewModel {
         // ContentView's .scaledToFit() math operates in SwiftUI points,
         // so we match that coordinate space here.
         imageSize = preview.size
+        isProcessing = false
 
-        startPIIScan(data: data, hints: hints)
-        await catalogSourceMetadata(from: data)
+        await metadata
     }
 
     // MARK: - Processing
@@ -651,7 +670,6 @@ final class ScrubberViewModel {
         pendingStrippedMetadata = catalog.stripped
         allSourceMetadata       = catalog.all
         sourceUTType            = catalog.utType
-        isProcessing            = false
     }
 
     private static func makePreviewImage(from data: Data) async -> UIImage? {
@@ -665,16 +683,26 @@ final class ScrubberViewModel {
         let token = UUID()
         piiScanToken = token
         isScanningPII = true
+        scanProgress = .started
 
         nameScanTask?.cancel()
         nameScanTask = nil
+        isFindingNames = false
+
+        // The scanner reports from its own executor; hop back before touching state.
+        let report: ScanProgressHandler = { [weak self] step in
+            Task { @MainActor in
+                guard let self, self.piiScanToken == token, self.isScanningPII else { return }
+                self.scanProgress.record(step)
+            }
+        }
 
         piiScanTask = Task { [scan] in
             let result: [DetectionResult]
             var lines: [ScannedLine] = []
             var scanError: String?
             do {
-                let output = try await scan(data, hints)
+                let output = try await scan(data, hints, report)
                 result = output.results
                 lines = output.lines
             } catch {
@@ -694,6 +722,7 @@ final class ScrubberViewModel {
                 // each region whose type is in typesToRedact.
                 self.typesToRedact = Set(result.map(\.type).filter(\.isRedactedByDefault))
                 self.isScanningPII = false
+                self.scanProgress = .finished
                 self.piiScanTask = nil
                 self.startNameScan(lines: lines, token: token)
             }
@@ -703,13 +732,15 @@ final class ScrubberViewModel {
     /// Asks the on-device language model for people's names in the recognised
     /// text and adds what it finds to the already-published scan.
     private func startNameScan(lines: [ScannedLine], token: UUID) {
-        guard !lines.isEmpty else { return }
+        guard !lines.isEmpty, semantic.isAvailable() else { return }
+        isFindingNames = true
         nameScanTask = Task { [semantic] in
             let names = await semantic.findNames(lines.map(\.text))
             // The photo may have been replaced while the model was thinking.
             guard !Task.isCancelled, self.piiScanToken == token else { return }
             self.appendDetections(SemanticPIIMerger.merge(names: names, lines: lines, into: []))
             self.nameScanTask = nil
+            self.isFindingNames = false
         }
     }
 

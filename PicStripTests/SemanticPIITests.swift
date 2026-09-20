@@ -128,7 +128,7 @@ final class LateNameDetectionTests: XCTestCase {
         let gate = NameGate()
         let phone = phone, lines = lines
         let viewModel = ScrubberViewModel(
-            scan: { _, _ in ScanOutput(results: [phone], lines: lines) },
+            scan: { _, _, _ in ScanOutput(results: [phone], lines: lines) },
             semantic: SemanticPII(findNames: { _ in
                 await gate.wait()
                 return [SemanticPII.Name(line: 0, text: "bob")]
@@ -165,7 +165,7 @@ final class LateNameDetectionTests: XCTestCase {
         let gate = NameGate()
         let phone = phone, lines = lines
         let viewModel = ScrubberViewModel(
-            scan: { _, _ in ScanOutput(results: [phone], lines: lines) },
+            scan: { _, _, _ in ScanOutput(results: [phone], lines: lines) },
             semantic: SemanticPII(findNames: { _ in
                 await gate.wait()
                 return [SemanticPII.Name(line: 0, text: "bob")]
