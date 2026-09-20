@@ -1,3 +1,4 @@
+import AVFoundation
 import PhotosUI
 import SwiftUI
 import UniformTypeIdentifiers
@@ -26,6 +27,14 @@ struct ContentView: View {
 
     /// Whether the pasteboard holds an image; shows or hides the Paste button.
     @State private var pasteboard = PasteboardMonitor()
+
+    /// Drives the document camera.
+    @State private var isShowingScanner = false
+    /// What the document camera returned; acted on once its cover has gone,
+    /// because presenting the batch sheet mid-dismissal can drop the sheet.
+    @State private var scanOutcome: DocumentScannerView.Outcome?
+    /// Shown when the camera permission has been refused.
+    @State private var isShowingCameraDenied = false
 
     /// Rotating taglines shown beneath the app title on the home screen.
     private let mottos: [LocalizedStringKey] = [
@@ -114,6 +123,9 @@ struct ContentView: View {
         }
         .sheet(item: $viewModel.activeSheet, onDismiss: {
             viewModel.selectedPIIResult = nil
+            // A scan lives only as long as its batch sheet; swiping the sheet
+            // away must release the un-redacted pages too.
+            viewModel.scannedBatchSources = []
         }, content: { sheet in
             switch sheet {
             case .preSave: PreSaveReviewView(viewModel: viewModel)
@@ -182,6 +194,24 @@ struct ContentView: View {
             load(images)
         }
         .photosPickerKeepsMetadata()
+        // ── Document camera ───────────────────────────────────────────────
+        .fullScreenCover(isPresented: $isShowingScanner, onDismiss: handleScanOutcome) {
+            DocumentScannerView { outcome in
+                scanOutcome = outcome
+                isShowingScanner = false
+            }
+            .ignoresSafeArea()
+        }
+        .alert("Camera Access Needed", isPresented: $isShowingCameraDenied) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Camera access was denied. Please enable it in Settings.")
+        }
         // ── Paste button visibility ───────────────────────────────────────
         // Copying usually happens in another app, so re-check on every return
         // to the foreground; the notifications cover copies made while PicStrip
@@ -277,10 +307,19 @@ struct ContentView: View {
 
             Spacer()
 
-            // Hero animation
-            ScannerHeroView()
-                .padding(.vertical, 8)
-                .accessibilityHidden(true)
+            // Hero animation — shrinks, then gives way, on screens too short to
+            // hold it above the buttons.
+            ViewThatFits(in: .vertical) {
+                ScannerHeroView()
+                    .padding(.vertical, 8)
+                ScannerHeroView()
+                    .scaleEffect(0.7)
+                    .frame(width: 154, height: 112)
+                Color.clear
+                    .frame(height: 0)
+            }
+            .layoutPriority(1)
+            .accessibilityHidden(true)
 
             Spacer()
 
@@ -309,6 +348,18 @@ struct ContentView: View {
                 .buttonStyle(.glass)
                 .accessibilityIdentifier("selectMultiplePhotosButton")
                 .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
+
+                if DocumentScannerView.isAvailable {
+                    Button {
+                        haptic(.light)
+                        startScan()
+                    } label: {
+                        PillLabel(icon: "doc.viewfinder", text: "Scan Document")
+                    }
+                    .buttonStyle(.glass)
+                    .accessibilityIdentifier("scanDocumentButton")
+                    .accessibilityLabel("Scan a document with the camera")
+                }
 
                 Button {
                     haptic(.light)
@@ -366,6 +417,37 @@ struct ContentView: View {
     }
 
     private enum HapticWeight { case light, medium }
+
+    // MARK: - Document camera
+
+    private func startScan() {
+        switch DocumentScanFlow.step(for: AVCaptureDevice.authorizationStatus(for: .video)) {
+        case .present:
+            isShowingScanner = true
+        case .requestAccess:
+            Task {
+                if await AVCaptureDevice.requestAccess(for: .video) {
+                    isShowingScanner = true
+                } else {
+                    isShowingCameraDenied = true
+                }
+            }
+        case .explainDenied:
+            isShowingCameraDenied = true
+        }
+    }
+
+    private func handleScanOutcome() {
+        defer { scanOutcome = nil }
+        switch scanOutcome {
+        case .scanned(let document):
+            Task { await viewModel.loadCaptured(document.pages) }
+        case .failed:
+            viewModel.errorMessage = String(localized: "The document could not be scanned.")
+        case .cancelled, nil:
+            break
+        }
+    }
 
     // MARK: - Drag-and-drop / paste
 

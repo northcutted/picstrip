@@ -68,7 +68,7 @@ struct BatchConfigView: View {
                         .foregroundStyle(.tint)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("^[\(viewModel.batchItems.count) Photo](inflect: true) Selected")
+                        Text("^[\(viewModel.batchCount) Photo](inflect: true) Selected")
                             .font(.headline)
                         Text("Apply a single privacy policy to all of them.")
                             .font(.caption)
@@ -102,23 +102,26 @@ struct BatchConfigView: View {
                 }
 
                 // ── Save Mode picker ────────────────────────────────────────
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("SAVE MODE")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
-
-                    Picker("Save Mode", selection: $config.saveMode) {
-                        Text("Save as New").tag(BatchSaveMode.saveAsNew)
-                        Text("Replace Original").tag(BatchSaveMode.replaceOriginal)
-                    }
-                    .pickerStyle(.segmented)
-
-                    if config.saveMode == .replaceOriginal {
-                        Text("Original photos will be permanently deleted after cleaning.")
+                // Captured pages were never in the library: nothing to replace.
+                if viewModel.batchAllowsReplaceOriginal {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("SAVE MODE")
                             .font(.caption)
-                            .foregroundStyle(.red)
+                            .foregroundStyle(.secondary)
                             .padding(.horizontal, 4)
+
+                        Picker("Save Mode", selection: $config.saveMode) {
+                            Text("Save as New").tag(BatchSaveMode.saveAsNew)
+                            Text("Replace Original").tag(BatchSaveMode.replaceOriginal)
+                        }
+                        .pickerStyle(.segmented)
+
+                        if config.saveMode == .replaceOriginal {
+                            Text("Original photos will be permanently deleted after cleaning.")
+                                .font(.caption)
+                                .foregroundStyle(.red)
+                                .padding(.horizontal, 4)
+                        }
                     }
                 }
 
@@ -154,7 +157,7 @@ struct BatchConfigView: View {
                 .disabled(!config.hasWork)
                 .accessibilityHint(config.hasWork ? "" : "Turn on at least one privacy option to start.")
                 .alert(
-                    "Replace ^[\(viewModel.batchItems.count) Original Photo](inflect: true)?",
+                    "Replace ^[\(viewModel.batchCount) Original Photo](inflect: true)?",
                     isPresented: $showReplaceConfirm
                 ) {
                     Button("Replace", role: .destructive) {

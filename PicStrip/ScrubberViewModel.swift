@@ -297,6 +297,20 @@ final class ScrubberViewModel {
     /// Items selected for batch processing via the multi-photo picker.
     var batchItems: [PhotosPickerItem] = []
 
+    /// Pages captured in-app (document scanner) queued for batch processing.
+    /// They exist only in memory: there is no library original to replace, and
+    /// dropping this array is what releases the un-redacted capture.
+    var scannedBatchSources: [BatchSource] = []
+
+    /// How many images the batch sheet is about to process.
+    var batchCount: Int {
+        scannedBatchSources.isEmpty ? batchItems.count : scannedBatchSources.count
+    }
+
+    /// Captured pages were never in the photo library, so "Replace Original"
+    /// has nothing to replace.
+    var batchAllowsReplaceOriginal: Bool { scannedBatchSources.isEmpty }
+
     /// `true` while the sequential batch processing loop is running.
     var isBatchProcessing: Bool = false
 
@@ -454,6 +468,25 @@ final class ScrubberViewModel {
 
         let token = resetForNewImage()
         await ingest(data, token: token)
+    }
+
+    /// Loads images captured inside the app.  One page opens in the editor like
+    /// any other image; several pages go through the batch flow.
+    func loadCaptured(_ pages: CapturedPages) async {
+        guard pages.count > 0 else { return }
+        if pages.count == 1 {
+            guard let data = await pages.data(0) else {
+                errorMessage = String(localized: "The document could not be scanned.")
+                return
+            }
+            await loadData(data)
+        } else {
+            batchItems = []
+            scannedBatchSources = (0..<pages.count).map { index in
+                BatchSource(assetIdentifier: nil) { await pages.data(index) }
+            }
+            activeSheet = .batch
+        }
     }
 
     private func loadAndProcess(item: PhotosPickerItem) async {
@@ -1177,8 +1210,10 @@ final class ScrubberViewModel {
     /// execution is intentionally avoided — parallel Vision / CoreGraphics workers
     /// spike RAM and cause OOM crashes on device.
     func processBatch(config: BatchConfig) async {
+        let config = effectiveBatchConfig(config)
+
         isBatchProcessing = true
-        batchProgress     = (0, batchItems.count)
+        batchProgress     = (0, batchCount)
         batchReports      = []
         batchFailedCount  = 0
         batchErrorMessage = nil
@@ -1193,13 +1228,28 @@ final class ScrubberViewModel {
             return
         }
 
-        // Capture the list once; `batchItems` must not be mutated during the loop.
-        let sources = batchItems.map { item in
+        // Capture the list once; the batch must not be mutated during the loop.
+        await runBatch(sources: currentBatchSources(), config: config, save: Self.saveBatchItemToPhotos)
+    }
+
+    /// The config a batch actually runs with.  Captured pages have no library
+    /// original, so replace mode is never honoured for them — whatever the UI sent.
+    func effectiveBatchConfig(_ config: BatchConfig) -> BatchConfig {
+        guard !batchAllowsReplaceOriginal else { return config }
+        var config = config
+        config.saveMode = .saveAsNew
+        return config
+    }
+
+    /// What the batch sheet is about to process: captured pages when there are
+    /// any, otherwise the picker selection.
+    func currentBatchSources() -> [BatchSource] {
+        guard scannedBatchSources.isEmpty else { return scannedBatchSources }
+        return batchItems.map { item in
             BatchSource(assetIdentifier: item.itemIdentifier) {
                 try? await item.loadTransferable(type: Data.self)
             }
         }
-        await runBatch(sources: sources, config: config, save: Self.saveBatchItemToPhotos)
     }
 
     /// The batch loop proper, separated from `PhotosPickerItem` and
@@ -1390,6 +1440,7 @@ final class ScrubberViewModel {
     /// Resets all batch-related state and dismisses the batch sheet.
     func clearBatchState() {
         batchItems        = []
+        scannedBatchSources = []
         isBatchProcessing = false
         batchProgress     = (0, 0)
         batchComplete     = false

@@ -448,6 +448,73 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         XCTAssertEqual(viewModel.batchFailedCount, 1)
     }
 
+    // MARK: Captured pages (document scanner)
+
+    func testCapturedSinglePage_opensInEditorWithNoOriginalToReplace() async throws {
+        let page = try Fixture.image(width: 8, height: 8)
+        let scanned = ScannedBytes()
+        let viewModel = ScrubberViewModel(scanImage: { data in
+            await scanned.record(data)
+            return []
+        })
+
+        await viewModel.loadCaptured(CapturedPages(count: 1) { _ in page })
+        try await waitUntil { viewModel.inputImage != nil && !viewModel.isScanningPII }
+
+        XCTAssertNil(viewModel.activeSheet, "One page is edited like any other image, not batched.")
+        XCTAssertFalse(viewModel.canReplaceOriginal)
+        XCTAssertTrue(viewModel.scannedBatchSources.isEmpty)
+        let seen = await scanned.all
+        XCTAssertEqual(seen, [page], "The detector must see exactly the captured bytes.")
+    }
+
+    func testCapturedSinglePage_unreadablePageIsReported() async {
+        let viewModel = makeViewModel()
+        await viewModel.loadCaptured(CapturedPages(count: 1) { _ in nil })
+        XCTAssertNil(viewModel.inputImage)
+        XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    func testCapturedPages_goThroughBatchAndAreNeverReplaceable() async throws {
+        let viewModel = makeViewModel()
+        let page = try Fixture.image(properties: [kCGImagePropertyGPSDictionary: Fixture.gps])
+
+        await viewModel.loadCaptured(CapturedPages(count: 3) { index in index == 1 ? nil : page })
+
+        XCTAssertEqual(viewModel.activeSheet, .batch)
+        XCTAssertEqual(viewModel.batchCount, 3)
+        XCTAssertFalse(viewModel.batchAllowsReplaceOriginal)
+
+        var requested = BatchConfig()
+        requested.redactVisualPII = false
+        requested.saveMode = .replaceOriginal
+        let config = viewModel.effectiveBatchConfig(requested)
+        XCTAssertEqual(config.saveMode, .saveAsNew, "A scan has no library original to delete.")
+
+        let saves = SavedCalls()
+        await viewModel.runBatch(sources: viewModel.currentBatchSources(), config: config) { _, identifier, mode in
+            await saves.record(identifier: identifier, mode: mode)
+            return .saved
+        }
+
+        let calls = await saves.all
+        XCTAssertEqual(calls.count, 2)
+        XCTAssertTrue(calls.allSatisfy { $0.identifier == nil && $0.mode == .saveAsNew })
+        XCTAssertEqual(viewModel.batchSucceededCount, 2)
+        XCTAssertEqual(viewModel.batchFailedCount, 1, "A page that cannot be produced counts as failed.")
+
+        viewModel.clearBatchState()
+        XCTAssertTrue(viewModel.scannedBatchSources.isEmpty, "Clearing the batch must release the scan.")
+        XCTAssertTrue(viewModel.batchAllowsReplaceOriginal)
+    }
+
+    func testPickerBatch_keepsTheRequestedSaveMode() {
+        let viewModel = makeViewModel()
+        var requested = BatchConfig()
+        requested.saveMode = .replaceOriginal
+        XCTAssertEqual(viewModel.effectiveBatchConfig(requested).saveMode, .replaceOriginal)
+    }
+
     func testBatchConfig_hasWorkOnlyWhenAnOptionIsOn() {
         var config = BatchConfig()
         XCTAssertTrue(config.hasWork)
@@ -494,6 +561,16 @@ private final class ControlledScan {
 }
 
 /// Collects what the injected batch saver was asked to write.
+private actor ScannedBytes {
+    private(set) var all: [Data] = []
+    func record(_ data: Data) { all.append(data) }
+}
+
+private actor SavedCalls {
+    private(set) var all: [(identifier: String?, mode: BatchSaveMode)] = []
+    func record(identifier: String?, mode: BatchSaveMode) { all.append((identifier, mode)) }
+}
+
 private actor SavedPhotos {
     private(set) var all: [Data] = []
     func append(_ data: Data) { all.append(data) }
