@@ -1,4 +1,4 @@
-Teile Fotos, ohne deinen Standort, deine Identität oder unsichtbare Geheimnisse mitzuteilen. PicStrip entfernt unsichtbare Metadaten und schwärzt sensible Informationen — komplett auf dem Gerät, ohne Konto, ohne Uploads und ohne jegliche Netzwerkverbindungen.
+Teile Fotos, ohne deinen Standort, deine Identität oder unsichtbare Geheimnisse mitzuteilen. PicStrip entfernt unsichtbare Metadaten und schwärzt sensible Informationen — komplett auf dem Gerät, ohne Konto, ohne Uploads und ohne dass eine Netzwerkverbindung nötig ist.
 
 METADATEN ENTFERNEN
 Jedes Foto trägt unsichtbar GPS-Koordinaten, Zeitstempel, Kameradaten, Objektivinfos und Seriennummern. PicStrip entfernt all das vor dem Teilen — per Tipp.

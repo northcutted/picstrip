@@ -78,7 +78,7 @@ PicStrip strips hidden metadata and redacts sensitive info, including faces, on-
 ### 2.4 Description · max 4,000
 
 ```
-Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and zero network calls.
+Share photos without sharing your location, your identity, or secrets you can't see. PicStrip strips invisible metadata and redacts sensitive info — fully on-device, with no account, no uploads, and no network required.
 
 METADATA STRIPPING
 Every photo secretly carries GPS coordinates, timestamps, camera make and model, lens data, serial numbers, and Apple maker notes. PicStrip removes all of it before you share — in one tap.

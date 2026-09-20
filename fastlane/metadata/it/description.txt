@@ -1,4 +1,4 @@
-Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza alcuna connessione di rete.
+Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza bisogno di connessione di rete.
 
 RIMOZIONE DEI METADATI
 Ogni foto contiene di nascosto coordinate GPS, timestamp, marca e modello della fotocamera, dati dell'obiettivo, numeri di serie e note del produttore Apple. PicStrip rimuove tutto prima della condivisione — con un tocco.

@@ -1,4 +1,4 @@
-Dela bilder utan att dela din position, din identitet eller hemligheter du inte ser. PicStrip tar bort osynlig metadata och döljer känslig information — helt på enheten, utan konto, utan uppladdningar och utan nätverksanslutningar.
+Dela bilder utan att dela din position, din identitet eller hemligheter du inte ser. PicStrip tar bort osynlig metadata och döljer känslig information — helt på enheten, utan konto, utan uppladdningar och utan att kräva nätverksanslutning.
 
 METADATA-BORTTAGNING
 Varje foto bär osynligt med sig GPS-koordinater, tidsstämplar, kameramärke och modell, objektivdata, serienummer och Apple-tillverkarinformation. PicStrip tar bort allt detta innan du delar — med en tryckning.

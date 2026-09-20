@@ -1,4 +1,4 @@
-Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau.
+Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau requise.
 
 SUPPRESSION DES MÉTADONNÉES
 Chaque photo contient secrètement des coordonnées GPS, des horodatages, la marque et le modèle de l'appareil, les données de l'objectif et des numéros de série. PicStrip supprime tout cela avant le partage — en un clic.

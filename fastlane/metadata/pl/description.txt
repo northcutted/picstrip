@@ -1,4 +1,4 @@
-Udostępniaj zdjęcia bez udostępniania swojej lokalizacji, tożsamości ani niewidocznych sekretów. PicStrip usuwa niewidoczne metadane i zakrywa wrażliwe informacje — w całości na urządzeniu, bez konta, bez przesyłania i bez połączeń sieciowych.
+Udostępniaj zdjęcia bez udostępniania swojej lokalizacji, tożsamości ani niewidocznych sekretów. PicStrip usuwa niewidoczne metadane i zakrywa wrażliwe informacje — w całości na urządzeniu, bez konta, bez przesyłania i bez potrzeby połączenia z siecią.
 
 USUWANIE METADANYCH
 Każde zdjęcie niesie ze sobą niewidocznie współrzędne GPS, znaczniki czasu, markę i model aparatu, dane obiektywu, numery seryjne oraz notatki producenta Apple. PicStrip usuwa to wszystko przed udostępnieniem — jednym dotknięciem.
