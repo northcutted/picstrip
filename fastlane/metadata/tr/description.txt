@@ -16,8 +16,8 @@ Her tespit; tür, güven puanı ve risk seviyesi bilgisini gösterir, böylece n
 SANSÜR EDİTÖRÜ
 • Tarayıcının kaçırdığını manuel olarak örtmek için istediğiniz yere çizin
 • Çoklu seçim ve toplu değişiklik
-• 3 stil: dolu renk, bulanıklık veya pikselleştirme
-• Dolu renk için 10 renk seçeneği
+• 4 stil: dolu renk, çapraz tarama, pikselleştirme veya bulanıklık
+• Dolu renk için 12 renk seçeneği
 • 50 adım geri al/yinele
 
 HER YERDEN İÇE AKTARMA

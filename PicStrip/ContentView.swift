@@ -1278,7 +1278,7 @@ private struct RedactionEditorDrawer: View {
     // MARK: - Single-region Style + Colour Panel
 
     /// Compact contextual panel shown when exactly one region is selected.
-    /// Style choices are always visible; the colour row is hidden for `.pixelate`.
+    /// Style choices are always visible; the colour row is hidden for styles without a colour.
     @ViewBuilder
     private func styleColorPanel(for region: RedactionRegion) -> some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -1326,7 +1326,7 @@ private struct RedactionEditorDrawer: View {
                 }
             }
 
-            // ── Colour row (suppressed for pixelate) ──────────────────────
+            // ── Colour row (suppressed for pixelate / blur) ───────────────
             if region.style.supportsColor {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Color")
@@ -1400,8 +1400,8 @@ private struct RedactionEditorDrawer: View {
             return colours.count == 1 ? colours.first : nil
         }()
 
-        // Show colour row unless ALL selected regions are currently pixelated
-        let showColorRow = !selectedRegions.allSatisfy { $0.style == .pixelate }
+        // Show colour row unless NONE of the selected regions can take a colour
+        let showColorRow = selectedRegions.contains { $0.style.supportsColor }
 
         VStack(alignment: .leading, spacing: 10) {
 

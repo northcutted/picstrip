@@ -56,7 +56,7 @@ struct RedactionRegion: Identifiable, Hashable {
     var isEnabled: Bool
     /// Visual style applied when this region is burned onto the exported image.
     var style: RedactionStyle = .solid
-    /// Fill colour for this region. Ignored when `style == .pixelate`.
+    /// Fill colour for this region. Ignored when the style obscures the source pixels (`.pixelate`, `.blur`).
     var color: RedactionColor = .black
 
     var displayName: String {

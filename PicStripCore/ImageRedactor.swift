@@ -16,12 +16,15 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
     case crosshatch
     /// Pixellates (mosaics) the underlying image region. The `color` property is ignored.
     case pixelate
+    /// Smoothly blurs the underlying image region. The `color` property is ignored.
+    case blur
 
     var displayName: String {
         switch self {
         case .solid:      return String(localized: "Solid")
         case .crosshatch: return String(localized: "Crosshatch")
         case .pixelate:   return String(localized: "Pixelate")
+        case .blur:       return String(localized: "Blur")
         }
     }
 
@@ -30,11 +33,16 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
         case .solid:      return "rectangle.fill"
         case .crosshatch: return "grid"
         case .pixelate:   return "square.grid.3x3.middle.filled"
+        case .blur:       return "drop.fill"
         }
     }
 
     /// Whether the `color` property has any visual effect on the rendered output.
-    var supportsColor: Bool { self != .pixelate }
+    var supportsColor: Bool { !obscuresSourcePixels }
+
+    /// `true` for styles that scramble the pixels underneath (Core Image pass)
+    /// instead of painting over them.
+    var obscuresSourcePixels: Bool { self == .pixelate || self == .blur }
 }
 
 // MARK: - RedactionColor
@@ -120,10 +128,13 @@ nonisolated struct RedactionSpec {
 /// directly into the `UIGraphicsImageRenderer` coordinate space.
 ///
 /// **Rendering pipeline:**
-/// 1. For any `.pixelate` specs, a CIFilter pre-pass mosaics those areas of
-///    the source image first (reads pixels, colour-agnostic).
-/// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-pixellated)
+/// 1. For any `.pixelate` / `.blur` specs, a CIFilter pre-pass obscures those
+///    areas of the source image first (reads pixels, colour-agnostic).
+/// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-obscured)
 ///    base image, then stamps each remaining style on top.
+///
+/// **Fail closed:** if a Core Image pass cannot run, its regions are painted
+/// solid instead — a region the user asked to hide is never left readable.
 nonisolated struct ImageRedactor {
 
     nonisolated private static let ciContext = CIContext(options: [.useSoftwareRenderer: false])
@@ -140,12 +151,17 @@ nonisolated struct ImageRedactor {
         let enabled = specs.filter(\.isEnabled)
         guard !enabled.isEmpty else { return image }
 
-        // ── Step 1: Pixelate pre-pass ──────────────────────────────────────
-        let pixelateSpecs = enabled.filter { $0.style == .pixelate }
+        // ── Step 1: Core Image pre-pass (pixelate, then blur) ──────────────
         var workingImage = image
-        if !pixelateSpecs.isEmpty,
-           let pixellated = Self.applyPixellate(to: image, specs: pixelateSpecs) {
-            workingImage = pixellated
+        var paintedSolidInstead: [RedactionSpec] = []
+        for style in [RedactionStyle.pixelate, .blur] {
+            let styled = enabled.filter { $0.style == style }
+            guard !styled.isEmpty else { continue }
+            if let obscured = Self.applyObscuring(style, to: workingImage, specs: styled) {
+                workingImage = obscured
+            } else {
+                paintedSolidInstead += styled
+            }
         }
 
         // ── Step 2: Raster pass for remaining styles ───────────────────────
@@ -156,7 +172,8 @@ nonisolated struct ImageRedactor {
         return renderer.image { ctx in
             workingImage.draw(at: .zero)
 
-            for spec in enabled where spec.style != .pixelate {
+            let painted = enabled.filter { !$0.style.obscuresSourcePixels } + paintedSolidInstead
+            for spec in painted {
                 let rect = CGRect(
                     x: spec.rect.minX * size.width,
                     y: spec.rect.minY * size.height,
@@ -170,8 +187,9 @@ nonisolated struct ImageRedactor {
                     Self.renderSolid(color: spec.color.uiColor, rect: rect)
                 case .crosshatch:
                     Self.renderCrosshatch(color: spec.color.uiColor, rect: rect, in: ctx)
-                case .pixelate:
-                    break  // handled in step 1
+                case .pixelate, .blur:
+                    // Only reached when the Core Image pass failed.
+                    Self.renderSolid(color: RedactionColor.black.uiColor, rect: rect)
                 }
             }
         }
@@ -240,11 +258,16 @@ nonisolated struct ImageRedactor {
         cgCtx.restoreGState()
     }
 
-    // MARK: - Pixellate (CIFilter pre-pass)
+    // MARK: - Pixellate / blur (CIFilter pre-pass)
 
-    /// Uses a single `CIPixellate` evaluation plus one mask-driven blend to
-    /// mosaic every supplied region in one pass.  Colour is ignored — the effect
-    /// shows scrambled source pixels, not a solid fill.
+    /// Uses a single filter evaluation plus one mask-driven blend to obscure
+    /// every supplied region in one pass.  Colour is ignored — the effect shows
+    /// scrambled source pixels, not a solid fill.
+    ///
+    /// **Blur is a mosaic first.**  A plain Gaussian blur of text can be
+    /// sharpened back into something legible, so `.blur` pixellates exactly as
+    /// `.pixelate` does and then blurs the mosaic: it looks smooth, but carries
+    /// no more information than the blocks underneath.
     ///
     /// The previous implementation ran one CIPixellate + CIBlendWithMask per spec,
     /// each iteration feeding the accumulated result forward.  That scaled poorly
@@ -252,7 +275,11 @@ nonisolated struct ImageRedactor {
     /// triggered a fresh full-image Core Image evaluation.  The combined-mask
     /// approach evaluates the pixellated layer exactly once and composites it
     /// against a single union-of-rects mask.
-    nonisolated private static func applyPixellate(to image: UIImage, specs: [RedactionSpec]) -> UIImage? {
+    nonisolated private static func applyObscuring(
+        _ style: RedactionStyle,
+        to image: UIImage,
+        specs: [RedactionSpec]
+    ) -> UIImage? {
         guard !specs.isEmpty, let ciImage = CIImage(image: image) else { return nil }
         let extent = ciImage.extent   // CI pixel space (Y-up, device pixels)
 
@@ -285,7 +312,17 @@ nonisolated struct ImageRedactor {
             forKey: kCIInputCenterKey
         )
         pixFilter.setValue(blockSize, forKey: "inputScale")
-        guard let pixellated = pixFilter.outputImage else { return nil }
+        guard var obscured = pixFilter.outputImage else { return nil }
+
+        if style == .blur {
+            // Clamp first so the blur does not pull transparent pixels in at the
+            // image edges; crop back to the original extent afterwards.
+            let blur = CIFilter.gaussianBlur()
+            blur.inputImage = obscured.clampedToExtent()
+            blur.radius = blockSize * 1.5
+            guard let blurred = blur.outputImage else { return nil }
+            obscured = blurred.cropped(to: extent)
+        }
 
         // ── 4. Build a single mask CIImage = union of white rects ────────────
         // CIImage(color: white) is infinite-extent; cropping to a rect produces
@@ -304,7 +341,7 @@ nonisolated struct ImageRedactor {
         // ── 5. Single blend pass ─────────────────────────────────────────────
         guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { return nil }
         blendFilter.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
-        blendFilter.setValue(pixellated, forKey: kCIInputImageKey)
+        blendFilter.setValue(obscured, forKey: kCIInputImageKey)
         blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
         guard let result = blendFilter.outputImage else { return nil }
 

@@ -16,8 +16,8 @@ Cada detecção mostra o tipo, a pontuação de confiança e o nível de risco p
 EDITOR DE OCULTAÇÃO
 • Desenhe em qualquer zona para cobrir manualmente o que o scanner não detectou
 • Selecção múltipla e alterações em lote
-• 3 estilos: sólido, desfocado ou pixelizado
-• 10 cores para blocos sólidos
+• 4 estilos: sólido, hachura cruzada, pixelizado ou desfocado
+• 12 cores para blocos sólidos
 • 50 níveis de anular/refazer
 
 IMPORTAÇÃO DE QUALQUER LADO

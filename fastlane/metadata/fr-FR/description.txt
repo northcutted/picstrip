@@ -16,8 +16,8 @@ Chaque détection affiche son type, son score de confiance et son niveau de risq
 ÉDITEUR DE MASQUAGE
 • Dessinez n'importe où pour couvrir manuellement ce que le scanner a manqué
 • Sélection multiple et modifications en masse
-• 3 styles : plein, flou ou pixelisé
-• 10 couleurs pour les blocs pleins
+• 4 styles : plein, hachures croisées, pixelisé ou flou
+• 12 couleurs pour les blocs pleins
 • 50 niveaux d'annulation/rétablissement
 
 IMPORTER DE N'IMPORTE OÙ

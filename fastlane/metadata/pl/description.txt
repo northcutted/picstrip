@@ -16,8 +16,8 @@ Każde wykrycie pokazuje typ, ocenę pewności i poziom ryzyka, więc wiesz, co 
 EDYTOR ZAKRYWANIA
 • Rysuj w dowolnym miejscu, aby ręcznie zakryć to, co skaner przeoczył
 • Zaznaczanie wielokrotne i wprowadzanie zmian zbiorczo
-• 3 style: pełny kolor, rozmycie lub pikselizacja
-• 10 kolorów dla pełnych zakryć
+• 4 style: pełny kolor, kreskowanie, pikselizacja lub rozmycie
+• 12 kolorów dla pełnych zakryć
 • 50 kroków cofania/ponawiania
 
 IMPORT ZEWSZĄD

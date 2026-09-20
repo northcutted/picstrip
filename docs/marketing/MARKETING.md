@@ -96,8 +96,8 @@ Each detection shows its type, confidence score, and risk level so you can prior
 REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
-• 3 redaction styles: solid, blur, or pixelate
-• 10 colors for solid redactions
+• 4 redaction styles: solid, crosshatch, pixelate, or blur
+• 12 colors for solid redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE
@@ -144,7 +144,7 @@ MULTI-SELECT REDACTION EDITOR
 Select multiple regions at once and apply style, color, enable/disable, or delete — all in bulk.
 
 3 REDACTION STYLES, 10 COLORS
-Solid, blur, or pixelate. Solid blocks support 10 color options per-region or bulk-applied.
+Solid, crosshatch, pixelate, or blur. Solid and crosshatch blocks support 12 color options per-region or bulk-applied.
 
 50-STEP UNDO/REDO
 Every edit is now undoable up to 50 steps.

@@ -16,8 +16,8 @@ Ogni rilevamento mostra tipo, punteggio di affidabilità e livello di rischio, c
 EDITOR DI OSCURAMENTO
 • Disegna ovunque per coprire manualmente ciò che lo scanner ha mancato
 • Selezione multipla e modifiche in blocco
-• 3 stili: pieno, sfocato o pixelato
-• 10 colori per i blocchi pieni
+• 4 stili: pieno, tratteggiato, pixelato o sfocato
+• 12 colori per i blocchi pieni
 • 50 livelli di annullamento/ripristino
 
 IMPORTA DA QUALSIASI POSTO

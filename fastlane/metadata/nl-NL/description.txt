@@ -16,8 +16,8 @@ Elke detectie toont het type, een betrouwbaarheidsscore en het risiconiveau, zod
 BEDEKKINGSEDITOR
 • Teken overal om handmatig af te dekken wat de scanner miste
 • Selecteer meerdere gebieden tegelijk en pas wijzigingen in bulk toe
-• 3 stijlen: effen, vervaging of pixelvorming
-• 10 kleuren voor effen vlakken
+• 4 stijlen: effen, kruisarcering, pixelvorming of vervaging
+• 12 kleuren voor effen vlakken
 • 50 stappen ongedaan maken/opnieuw
 
 OVERAL VANDAAN IMPORTEREN

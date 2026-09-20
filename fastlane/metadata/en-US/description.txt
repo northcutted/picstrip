@@ -16,8 +16,8 @@ Each detection shows its type, confidence score, and risk level so you can prior
 REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
-• 3 redaction styles: solid, blur, or pixelate
-• 10 colors for solid redactions
+• 4 redaction styles: solid, crosshatch, pixelate, or blur
+• 12 colors for solid redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE

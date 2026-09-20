@@ -596,12 +596,52 @@ final class RedactionFeatureTests: XCTestCase {
                        "Undo must restore the previous colour")
     }
 
-    /// `supportsColor` must be `false` only for `.pixelate`; all other styles support colour.
+    /// `supportsColor` must be `false` for the styles that scramble the source pixels;
+    /// the painted styles support colour.
     func testRedactionStyleSupportsColor() {
         XCTAssertTrue(RedactionStyle.solid.supportsColor)
         XCTAssertTrue(RedactionStyle.crosshatch.supportsColor)
         XCTAssertFalse(RedactionStyle.pixelate.supportsColor,
                        ".pixelate shows source pixels — colour choice is meaningless")
+        XCTAssertFalse(RedactionStyle.blur.supportsColor,
+                       ".blur shows source pixels — colour choice is meaningless")
+    }
+
+    /// Blur must destroy the detail inside the region — a one-pixel black/white
+    /// checkerboard has to come out as a flat grey — and must leave everything
+    /// outside the region exactly as it was.
+    func testImageRedactorBlurDestroysDetailInsideTheRegionOnly() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        format.preferredRange = .standard
+        let size = CGSize(width: 120, height: 120)
+        let image = UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            for row in 0..<120 {
+                for column in 0..<120 {
+                    ((row + column).isMultiple(of: 2) ? UIColor.black : UIColor.white).setFill()
+                    ctx.fill(CGRect(x: column, y: row, width: 1, height: 1))
+                }
+            }
+        }
+        let spec = RedactionSpec(
+            rect: CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5),
+            style: .blur, color: .black, isEnabled: true
+        )
+
+        let redacted = await ImageRedactor().redact(image: image, specs: [spec])
+        let result = try XCTUnwrap(redacted)
+        XCTAssertEqual(result.size, size)
+
+        // Inside: neighbouring pixels were opposite extremes; now they must agree and be mid-grey.
+        let inside = try samplePixel(in: result, x: 60, y: 60)
+        let neighbour = try samplePixel(in: result, x: 61, y: 60)
+        XCTAssertLessThan(abs(Int(inside[0]) - Int(neighbour[0])), 12, "Blur left the checkerboard readable.")
+        XCTAssertTrue((70...185).contains(Int(inside[0])), "Blurred checkerboard should be grey, got \(inside[0]).")
+
+        // Outside: still a crisp checkerboard.
+        let outsideA = try samplePixel(in: result, x: 4, y: 4)
+        let outsideB = try samplePixel(in: result, x: 5, y: 4)
+        XCTAssertGreaterThan(abs(Int(outsideA[0]) - Int(outsideB[0])), 200, "Pixels outside the region must be untouched.")
     }
 
     /// Redacting with a red solid region must produce a red-dominant pixel at the

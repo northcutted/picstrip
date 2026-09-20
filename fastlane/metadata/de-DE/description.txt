@@ -16,8 +16,8 @@ Jede Erkennung zeigt Typ, Konfidenz-Score und Risikostufe — damit du weißt, w
 SCHWÄRZUNGSEDITOR
 • Zeichne überall, um manuell abzudecken, was der Scanner übersehen hat
 • Mehrfachauswahl und Massenaktionen für Bereiche
-• 3 Stile: Vollton, Weichzeichner oder Pixelierung
-• 10 Farben für Volltonschwärzungen
+• 4 Stile: Vollton, Kreuzschraffur, Pixelierung oder Weichzeichner
+• 12 Farben für Volltonschwärzungen
 • 50-Schritte Rückgängig/Wiederherstellen
 
 IMPORT VON ÜBERALL

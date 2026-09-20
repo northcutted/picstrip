@@ -16,8 +16,8 @@ Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para
 EDITOR DE REDACCIÓN
 • Dibuja en cualquier zona para cubrir manualmente lo que el escáner no detectó
 • Selección múltiple y cambios masivos
-• 3 estilos: sólido, desenfoque o pixelado
-• 10 colores para bloques sólidos
+• 4 estilos: sólido, trama cruzada, pixelado o desenfoque
+• 12 colores para bloques sólidos
 • 50 pasos de deshacer/rehacer
 
 IMPORTA DESDE CUALQUIER LUGAR

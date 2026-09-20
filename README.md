@@ -28,7 +28,7 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 |---------|-------------|
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata |
 | **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
-| **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
+| **Visual PII Redaction** | Solid, crosshatch, pixelate, or blur redactions with 12 color options; multi-select bulk operations; 50-step undo/redo |
 | **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
 | **Document Scanning** | Scan paper with the camera straight into the editor — the un-redacted original is never saved to your photo library; multi-page scans go through batch |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
