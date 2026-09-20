@@ -97,22 +97,6 @@ nonisolated struct MetadataField: Identifiable {
 nonisolated struct StrippedMetadata {
     let fields: [MetadataField]
 
-    /// Convenience: fields grouped by category, preserving category insertion order.
-    var byCategory: [(category: String, fields: [MetadataField])] {
-        var order: [String] = []
-        var groups: [String: [MetadataField]] = [:]
-        for field in fields {
-            if groups[field.category] == nil {
-                order.append(field.category)
-                groups[field.category] = []
-            }
-            groups[field.category, default: []].append(field)
-        }
-        return order.compactMap { category in
-            groups[category].map { fields in (category: category, fields: fields) }
-        }
-    }
-
     var isEmpty: Bool { fields.isEmpty }
 }
 
@@ -137,7 +121,6 @@ nonisolated enum ImageProcessor {
         case imageDecodingFailed
         case destinationCreationFailed
         case finalizationFailed
-        case unsupportedSourceFormat
 
         var errorDescription: String? {
             switch self {
@@ -149,8 +132,6 @@ nonisolated enum ImageProcessor {
                 return String(localized: "Could not create a CGImageDestination for the requested output format.")
             case .finalizationFailed:
                 return String(localized: "CGImageDestination finalization failed. The image could not be encoded.")
-            case .unsupportedSourceFormat:
-                return String(localized: "The source image format is not supported for re-encoding.")
             }
         }
     }

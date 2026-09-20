@@ -108,9 +108,9 @@ nonisolated enum RedactionColor: String, CaseIterable, Equatable, Hashable, Coda
 /// target and the Share Extension.
 ///
 /// `ScrubberViewModel` (main app) maps `[RedactionRegion]` → `[RedactionSpec]`
-/// before calling `ImageRedactor.redact(image:specs:)`.  The Share Extension
-/// uses the backward-compatible `redact(image:instances:)` wrapper which
-/// synthesises solid-black specs internally.
+/// before calling `ImageRedactor.redact(image:specs:)`.  Batch processing and
+/// the Share Extension use `redact(image:instances:)`, which synthesises
+/// solid-black specs.
 nonisolated struct RedactionSpec {
     let rect: CGRect
     let style: RedactionStyle
@@ -195,18 +195,14 @@ nonisolated struct ImageRedactor {
         }
     }
 
-    // MARK: - Backward-compatible overloads
+    // MARK: - Unattended redaction
 
     /// Burns opaque solid-black rectangles over every supplied `DetectedInstance`.
-    /// Kept for the Share Extension batch-processing code path.
+    /// Used where nobody picks a style: batch processing and the Share Extension.
     func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage? {
-        await redact(image: image, rects: instances.map(\.boundingBox))
-    }
-
-    /// Burns opaque solid-black rectangles over every supplied normalised rect.
-    /// Kept so existing tests compile without changes.
-    func redact(image: UIImage, rects: [CGRect]) async -> UIImage? {
-        let specs = rects.map { RedactionSpec(rect: $0, style: .solid, color: .black, isEnabled: true) }
+        let specs = instances.map {
+            RedactionSpec(rect: $0.boundingBox, style: .solid, color: .black, isEnabled: true)
+        }
         return await redact(image: image, specs: specs)
     }
 

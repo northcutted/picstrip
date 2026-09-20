@@ -65,20 +65,6 @@ final class LocalizationTests: XCTestCase {
         XCTAssertEqual(Set(forms).count, 3, "Expected distinct one/few/many forms, got \(forms).")
     }
 
-    /// A plural phrase embedded next to another argument binds to the right argument.
-    func testPluralSubstitutionUsesTheCountArgument() throws {
-        let key = "%@: redacting ^[%lld instance](inflect: true)"
-        let one = try format(key, locale: "pl", "E-mail", 1)
-        let many = try format(key, locale: "pl", "E-mail", 5)
-        XCTAssertTrue(one.contains("E-mail") && one.contains("1"), one)
-        XCTAssertTrue(many.contains("E-mail") && many.contains("5"), many)
-        XCTAssertNotEqual(
-            one.replacingOccurrences(of: "1", with: ""),
-            many.replacingOccurrences(of: "5", with: ""),
-            "Polish singular and genitive-plural forms should differ."
-        )
-    }
-
     /// The permission prompts and the share-sheet action name come from InfoPlist tables.
     func testInfoPlistStringsAreLocalized() throws {
         let keys = [

@@ -54,9 +54,9 @@ struct PicStripApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // Drain on every foreground transition so the image written by the
-            // Share Extension is loaded even when extensionContext.open() was
-            // silently blocked by the host app (e.g. Safari).
+            // The Share Extension cannot open the app (extensions may not call
+            // `open`), so it leaves the image in the App Group and the app picks
+            // it up here, on every foreground transition.
             guard newPhase == .active else { return }
             drainPendingEdit()
         }
@@ -64,12 +64,11 @@ struct PicStripApp: App {
 
     // MARK: - URL handling
 
-    /// Handles `picstrip://edit-from-extension` opened by the Share Extension.
+    /// Handles `picstrip://edit-from-extension`.
     ///
-    /// When the URL scheme open succeeds (e.g. when invoked from Photos), this
-    /// fires immediately and `drainPendingEdit()` loads the file.  When the open
-    /// is blocked (e.g. Safari), the `scenePhase` observer above provides the
-    /// safety net on the next foreground transition.
+    /// Nothing in PicStrip opens this URL today — the Share Extension relies on
+    /// the `scenePhase` drain above — but the scheme stays registered so a
+    /// shortcut or a future extension can bring the pending image up directly.
     private func handleIncomingURL(_ url: URL) {
         guard url.scheme?.lowercased() == "picstrip",
               url.host?.lowercased() == "edit-from-extension"

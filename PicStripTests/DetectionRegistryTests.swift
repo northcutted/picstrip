@@ -189,7 +189,7 @@ final class DetectionRegistryTests: XCTestCase {
         //   • On-device language model (app only): .personName
         let ruleExemptTypes: Set<PIIType> = [
             .phoneNumber, .address, .link,  // NSDataDetector
-            .face, .barcode,                // VNDetectFaceRectanglesRequest / VNDetectBarcodesRequest
+            .face, .barcode,                // DetectFaceRectanglesRequest / DetectBarcodesRequest
             .personName,                    // SemanticPII
         ]
 

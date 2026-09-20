@@ -57,9 +57,9 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
     case connectionString
 
     // MARK: - Vision-detected (not text-based)
-    /// Human faces detected via VNDetectFaceRectanglesRequest.
+    /// Human faces detected via Vision's `DetectFaceRectanglesRequest`.
     case face
-    /// QR codes and barcodes detected via VNDetectBarcodesRequest.
+    /// QR codes and barcodes detected via Vision's `DetectBarcodesRequest`.
     /// The snippet carries the decoded payload for richer context.
     case barcode
 

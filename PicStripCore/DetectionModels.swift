@@ -250,11 +250,6 @@ nonisolated struct DetectionResult: Identifiable, Hashable {
     /// All individual occurrences of this PII type found in the image.
     var instances: [DetectedInstance]
 
-    /// Specific formats represented by this result, when available.
-    var subtypes: Set<PIISubtype> {
-        Set(instances.compactMap(\.subtype))
-    }
-
     /// Derived match count — replaces the old `matchCount` stored property.
     var matchCount: Int { instances.count }
 

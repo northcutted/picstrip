@@ -261,7 +261,7 @@ final class ScrubberViewModel {
     /// Currently selected redaction box in the preview editor.
     var selectedRedactionRegionID: String?
 
-    var selectedRedactionRegion: RedactionRegion? {
+    private var selectedRedactionRegion: RedactionRegion? {
         guard let selectedRedactionRegionID else { return nil }
         return redactionRegions.first { $0.id == selectedRedactionRegionID }
     }
@@ -599,11 +599,6 @@ final class ScrubberViewModel {
     }
 
     // MARK: - Processing
-
-    func processCurrentImage() {
-        guard rawImageData != nil else { return }
-        Task { await processCurrentImageNow() }
-    }
 
     private func processCurrentImageNow() async {
         guard let raw = rawImageData else {
@@ -973,7 +968,7 @@ final class ScrubberViewModel {
 
     /// Recomputes `pendingStrippedMetadata` from cached source props without re-encoding.
     /// Called when only `stripConfig` changes and a full re-process would be redundant.
-    func refreshPendingMetadata() {
+    private func refreshPendingMetadata() {
         pendingStrippedMetadata = ImageProcessor.catalogueStrippedMetadata(
             from: rawSourceProps?.dictionary,
             config: stripConfig
@@ -1218,15 +1213,6 @@ final class ScrubberViewModel {
         } catch {
             errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
         }
-    }
-
-    /// Number of non-structural metadata fields that will be stripped given the current config.
-    private var pendingFieldCount: Int {
-        pendingMetadataFields.count
-    }
-
-    private var pendingMetadataFields: [MetadataField] {
-        allSourceMetadata?.fields.filter(isRemoved) ?? []
     }
 
     /// `true` when `field` will be — or, once an encode has run, actually was —

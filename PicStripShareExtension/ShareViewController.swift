@@ -8,7 +8,6 @@ import UniformTypeIdentifiers
 private enum AppGroup {
     static let identifier = "group.com.northcutt.PicStrip"
     static let pendingEditFilename = "pending-edit.data"
-    static let urlScheme = "picstrip://edit-from-extension"
 
     static var pendingEditURL: URL? {
         FileManager.default
