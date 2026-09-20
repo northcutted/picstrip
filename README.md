@@ -19,9 +19,9 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 ## Screenshots
 
 <p align="center">
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2017%20Pro%20Max-03_PhotoLoaded.png" width="240" alt="A loaded photo with its risks ranked"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2017%20Pro%20Max-04_RedactionEditor.png" width="240" alt="The redaction editor"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2017%20Pro%20Max-05_ReviewAndSave.png" width="240" alt="Review and save"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_PhotoLoaded.png" width="240" alt="A loaded photo with its risks ranked"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-04_RedactionEditor.png" width="240" alt="The redaction editor"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-05_ReviewAndSave.png" width="240" alt="Review and save"/>
 </p>
 
 ---
@@ -33,7 +33,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata, with per-field control over what to keep |
 | **Visual PII Detection** | On-device OCR and Vision find 31 kinds of sensitive data across 4 risk tiers (Critical, High, Medium, Low) |
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
-| **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
+| **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
 | **Take Photo** | A viewfinder that shows, live, what will be redacted; the photo goes straight into the editor and the original never reaches your photo library |
 | **Scan Document** | Scan paper straight into the editor; multi-page scans go through batch. The un-redacted scan is never saved |
