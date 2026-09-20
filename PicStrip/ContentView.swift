@@ -24,6 +24,9 @@ struct ContentView: View {
     /// True while a drag is hovering over the drop target.
     @State private var isDropTargeted = false
 
+    /// Whether the pasteboard holds an image; shows or hides the Paste button.
+    @State private var pasteboard = PasteboardMonitor()
+
     /// Rotating taglines shown beneath the app title on the home screen.
     private let mottos: [LocalizedStringKey] = [
         "Share the photo. Not the story behind it.",
@@ -38,6 +41,7 @@ struct ContentView: View {
 
     @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
 
@@ -178,6 +182,28 @@ struct ContentView: View {
             load(images)
         }
         .photosPickerKeepsMetadata()
+        // ── Paste button visibility ───────────────────────────────────────
+        // Copying usually happens in another app, so re-check on every return
+        // to the foreground; the notifications cover copies made while PicStrip
+        // is frontmost and iPad multitasking, where the scene phase never changes.
+        .onChange(of: scenePhase, initial: true) { _, phase in
+            guard phase == .active else { return }
+            Task { await pasteboard.refresh() }
+        }
+        .onChange(of: hasPhoto) { _, hasPhoto in
+            guard !hasPhoto else { return }
+            Task { await pasteboard.refresh() }
+        }
+        .task {
+            for await _ in NotificationCenter.default.notifications(named: UIPasteboard.changedNotification) {
+                await pasteboard.refresh()
+            }
+        }
+        .task {
+            for await _ in NotificationCenter.default.notifications(named: UIWindow.didBecomeKeyNotification) {
+                await pasteboard.refresh()
+            }
+        }
         // Load failures happen while no photo is on screen, where the control
         // panel's error banner does not exist — surface them as an alert.
         .alert(
@@ -295,15 +321,25 @@ struct ContentView: View {
                 .accessibilityLabel("Browse files to select an image")
 
                 // System paste control: reads the pasteboard without the "Allow
-                // Paste" prompt, and disables itself when no image is available.
-                PasteButton(payloadType: IncomingImage.self) { images in
-                    haptic(.light)
-                    load(images)
+                // Paste" prompt.  Only offered while the pasteboard holds an image;
+                // the slot keeps its height so the buttons above never shift.
+                ZStack {
+                    if pasteboard.hasImage {
+                        PasteButton(payloadType: IncomingImage.self) { images in
+                            haptic(.light)
+                            load(images)
+                        }
+                        .labelStyle(.titleAndIcon)
+                        .buttonBorderShape(.capsule)
+                        // Opaque on purpose: the system disables a paste control
+                        // whose tint is translucent or low-contrast.
+                        .tint(Color("PasteControlTint"))
+                        .accessibilityIdentifier("pasteImageButton")
+                        .transition(.opacity)
+                    }
                 }
-                .labelStyle(.titleAndIcon)
-                .buttonBorderShape(.capsule)
-                .tint(.secondary)
-                .accessibilityIdentifier("pasteImageButton")
+                .frame(maxWidth: .infinity, minHeight: 44, maxHeight: 44)
+                .animation(.easeInOut(duration: 0.2), value: pasteboard.hasImage)
             }
             .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)
