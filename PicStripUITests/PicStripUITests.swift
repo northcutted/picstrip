@@ -147,6 +147,31 @@ final class PicStripUITests: XCTestCase {
         snapshot("05_ReviewAndSave")
     }
 
+    /// The simulator has no camera, so by default the home screen must not offer a scan.
+    @MainActor
+    func testHomeScreenHidesScanWithoutACamera() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["selectMultiplePhotosButton"].exists)
+        XCTAssertTrue(app.buttons["browseFilesButton"].exists)
+        XCTAssertFalse(app.buttons["scanDocumentButton"].exists)
+    }
+
+    /// With the scan button present, every import action must still be on screen and tappable.
+    @MainActor
+    func testHomeScreenFitsAllImportActionsWithScan() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
+        app.launch()
+
+        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
+        for identifier in ["selectPhotoButton", "selectMultiplePhotosButton", "scanDocumentButton", "browseFilesButton"] {
+            XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be reachable on the home screen.")
+        }
+    }
+
     @MainActor
     func testCleanFixtureShowsNoMetadataBanner() throws {
         let app = XCUIApplication()
