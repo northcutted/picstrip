@@ -120,6 +120,34 @@
             }
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: censura desactivada para %#@instances@"
+          },
+          "substitutions" : {
+            "instances" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencia"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencias"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -476,6 +504,34 @@
             }
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@: censura activada para %#@instances@"
+          },
+          "substitutions" : {
+            "instances" : {
+              "argNum" : 2,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencia"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencias"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -796,6 +852,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld categoría"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld categorías"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -1046,6 +1120,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tipo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tipos"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -1236,6 +1328,12 @@
             "value" : "**Ajusta las censuras** tocando para seleccionar, arrastrando para mover o pellizcando para redimensionar. Usa el botón **Seleccionar** para elegir varias áreas a la vez y aplicar el mismo estilo o color a todas ellas en un solo paso."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ajusta las censuras** tocando para seleccionar, arrastrando para mover o pellizcando para redimensionar. Usa el botón **Seleccionar** para elegir varias áreas a la vez y aplicar el mismo estilo o color a todas ellas en un solo paso."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1325,6 +1423,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Arrastrar y soltar**: arrastra cualquier imagen desde Safari, Archivos u otra app y suéltala en PicStrip para cargarla al instante."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "**Arrastrar y soltar**: arrastra cualquier imagen desde Safari, Archivos u otra app y suéltala en PicStrip para cargarla al instante."
@@ -1424,6 +1528,12 @@
             "value" : "**Dibuja un área personalizada** con el botón «Añadir área» y luego arrastra sobre la foto para tapar lo que no haya detectado el análisis automático."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Dibuja un área personalizada** con el botón “Agregar área” y luego arrastra sobre la foto para tapar lo que no haya detectado el análisis automático."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1518,6 +1628,12 @@
             "value" : "**App Archivos**: toca «Explorar archivos» para importar imágenes guardadas en el dispositivo o en iCloud Drive, Dropbox y otros proveedores."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**App Archivos**: toca “Explorar archivos” para importar imágenes guardadas en el dispositivo o en iCloud Drive, Dropbox y otros proveedores."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1607,6 +1723,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los **metadatos ocultos** como las coordenadas GPS, el modelo de cámara y las marcas de tiempo se eliminan del archivo antes de que salga de tu dispositivo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los **metadatos ocultos** como las coordenadas GPS, el modelo de cámara y las marcas de tiempo se eliminan del archivo antes de que salga de tu dispositivo."
@@ -1706,6 +1828,12 @@
             "value" : "**Fototeca**: toca «Seleccionar una foto» o «Seleccionar varias fotos» para elegir una imagen del carrete."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Fototeca**: toca “Seleccionar una foto” o “Seleccionar varias fotos” para elegir una imagen de tus álbumes."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1795,6 +1923,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**PicStrip analiza en el dispositivo** con el OCR de Vision de Apple, la detección de caras y el lector de códigos de barras para encontrar contenido sensible en la imagen."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "**PicStrip analiza en el dispositivo** con el OCR de Vision de Apple, la detección de caras y el lector de códigos de barras para encontrar contenido sensible en la imagen."
@@ -1894,6 +2028,12 @@
             "value" : "**Revisa las detecciones** en el editor de censuras. Cada hallazgo muestra su confianza de coincidencia y su nivel de riesgo para que decidas con criterio qué tapar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Revisa las detecciones** en el editor de censuras. Cada hallazgo muestra su confianza de coincidencia y su nivel de riesgo para que decidas con criterio qué tapar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -1983,6 +2123,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Guarda la foto limpia** en tu fototeca. También puedes compartirla directamente desde la app Fotos con la extensión para compartir de PicStrip."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "**Guarda la foto limpia** en tu fototeca. También puedes compartirla directamente desde la app Fotos con la extensión para compartir de PicStrip."
@@ -2082,6 +2228,12 @@
             "value" : "**Selecciona una foto** de tu fototeca, impórtala desde Archivos o arrastra una imagen directamente a PicStrip."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Selecciona una foto** de tu fototeca, impórtala desde Archivos o arrastra una imagen directamente a PicStrip."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2176,6 +2328,12 @@
             "value" : "**Selecciona varias áreas** con el botón «Seleccionar». Toca «Seleccionar todo» para marcarlas todas a la vez y luego elige un estilo o color que se aplique a toda la selección con un solo toque."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Selecciona varias áreas** con el botón “Seleccionar”. Toca “Seleccionar todo” para marcarlas todas a la vez y luego elige un estilo o color que se aplique a toda la selección con un solo toque."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2265,6 +2423,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → PicStrip para enviar una imagen a PicStrip y luego abre la app para editarla."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → PicStrip para enviar una imagen a PicStrip y luego abre la app para editarla."
@@ -2364,6 +2528,12 @@
             "value" : "**Toca la fila de un área** en el editor para seleccionarla y mostrar sus opciones de estilo y color."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Toca la fila de un área** en el editor para seleccionarla y mostrar sus opciones de estilo y color."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2453,6 +2623,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Toca el círculo** de la derecha de cada fila para activar o desactivar una censura de forma individual. Las áreas desactivadas se muestran con menos opacidad."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "**Toca el círculo** de la derecha de cada fila para activar o desactivar una censura de forma individual. Las áreas desactivadas se muestran con menos opacidad."
@@ -2552,6 +2728,12 @@
             "value" : "**Deshacer / Rehacer** cualquier cambio de estilo, movimiento, redimensionamiento o eliminación: todas las acciones son totalmente reversibles."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Deshacer / Rehacer** cualquier cambio de estilo, movimiento, redimensionamiento o eliminación: todas las acciones son totalmente reversibles."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2646,6 +2828,12 @@
             "value" : "Color %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2735,6 +2923,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estilo %@"
@@ -2846,6 +3040,12 @@
             "value" : "%1$lld de %2$lld"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$lld de %2$lld"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -2935,6 +3135,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld %% de confianza de coincidencia"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%lld %% de confianza de coincidencia"
@@ -3035,6 +3241,12 @@
             "value" : "**Escanear documento**: toca «Escanear documento» para capturar documentos en papel con la cámara. El escaneo original nunca se guarda en tu fototeca; solo se guarda la copia limpia."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Escanear documento**: toca “Escanear documento” para capturar documentos en papel con la cámara. El escaneo original nunca se guarda en tu fototeca; solo se guarda la copia limpia."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3130,6 +3342,12 @@
             "value" : "**Hacer una foto**: toca «Hacer una foto» para capturar directamente en PicStrip. La foto original nunca se guarda en tu fototeca; solo se guarda la copia limpia."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tomar una foto**: toca “Tomar una foto” para capturar directamente en PicStrip. La foto original nunca se guarda en tu fototeca; solo se guarda la copia limpia."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -3219,6 +3437,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "VIN ISO 3779 de 17 caracteres (sin I/O/Q)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "VIN ISO 3779 de 17 caracteres (sin I/O/Q)"
@@ -3361,6 +3585,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campos"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -3599,6 +3841,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campo encontrado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campos encontrados"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -3866,6 +4126,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campo, contraído"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campos, contraídos"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -4099,6 +4377,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campo, expandido"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campos, expandidos"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -4375,6 +4671,34 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%#@instances@ · %2$lld %% de confianza"
+          },
+          "substitutions" : {
+            "instances" : {
+              "argNum" : 1,
+              "formatSpecifier" : "lld",
+              "variations" : {
+                "plural" : {
+                  "one" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencia"
+                    }
+                  },
+                  "other" : {
+                    "stringUnit" : {
+                      "state" : "translated",
+                      "value" : "%arg coincidencias"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "%#@instances@ · %2$lld %% de confianza"
@@ -4710,6 +5034,24 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
+                  "value" : "No se ha podido limpiar %lld foto. No se ha guardado nada de esa foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "No se han podido limpiar %lld fotos. No se ha guardado nada de esas fotos."
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
                   "value" : "No se pudo limpiar %lld foto. No se guardó nada de esa foto."
                 }
               },
@@ -4955,6 +5297,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld foto procesada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fotos procesadas"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -5222,6 +5582,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld foto seleccionada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fotos seleccionadas"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -5455,6 +5833,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld foto seleccionada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld fotos seleccionadas"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -5722,6 +6118,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campo de privacidad eliminado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld campos de privacidad eliminados"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -5972,6 +6386,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld área"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld áreas"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -6205,6 +6637,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld área seleccionada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld áreas seleccionadas"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -6478,6 +6928,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld área de datos sensibles resaltada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld áreas de datos sensibles resaltadas"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -6711,6 +7179,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tipo detectado"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tipos detectados"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -6978,6 +7464,24 @@
             }
           }
         },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld área visual censurada"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld áreas visuales censuradas"
+                }
+              }
+            }
+          }
+        },
         "fr" : {
           "variations" : {
             "plural" : {
@@ -7168,6 +7672,12 @@
             "value" : "Procesamiento 100 % en el dispositivo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesamiento 100 % en el dispositivo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7257,6 +7767,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aadhaar / My Number"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aadhaar / My Number"
@@ -7356,6 +7872,12 @@
             "value" : "Número de ruta ABA"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de ruta ABA"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7445,6 +7967,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acerca de"
@@ -7544,6 +8072,12 @@
             "value" : "Acerca de PicStrip"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca de PicStrip"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7633,6 +8167,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acerca del proyecto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Acerca del proyecto"
@@ -7732,6 +8272,12 @@
             "value" : "Añadir área"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar área"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -7827,6 +8373,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos adicionales incrustados en esta imagen que pueden contener información privada o identificativa."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Metadatos adicionales incrustados en esta imagen que pueden contener información privada o identificativa."
@@ -7932,6 +8484,12 @@
             "value" : "Dirección postal"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección postal"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8021,6 +8579,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens de Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid y bots de Discord"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tokens de Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid y bots de Discord"
@@ -8126,6 +8690,12 @@
             "value" : "Apple HEIC: compresión eficiente, nativo de iOS/macOS"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple HEIC: compresión eficiente, nativo de iOS/macOS"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8215,6 +8785,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Maker Note"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Apple Maker Note"
@@ -8314,6 +8890,12 @@
             "value" : "Aplicar el color %@ a las áreas seleccionadas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar el color %@ a las áreas seleccionadas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8408,6 +8990,12 @@
             "value" : "Aplicar el estilo %@ a las áreas seleccionadas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplicar el estilo %@ a las áreas seleccionadas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8497,6 +9085,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aplica una única política de privacidad a todas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aplica una única política de privacidad a todas."
@@ -8639,6 +9233,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicar a %lld área"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Aplicar a %lld áreas"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -8846,6 +9458,12 @@
             "value" : "Censurar datos sensibles automáticamente"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar datos sensibles automáticamente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -8946,6 +9564,12 @@
             "value" : "Clave de acceso AWS"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de acceso AWS"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9035,6 +9659,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID de claves de acceso de AWS (prefijo AKIA...)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ID de claves de acceso de AWS (prefijo AKIA...)"
@@ -9134,6 +9764,12 @@
             "value" : "Lote completado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lote completado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9223,6 +9859,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesar lote"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Procesar lote"
@@ -9328,6 +9970,12 @@
             "value" : "Negro"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Negro"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9428,6 +10076,12 @@
             "value" : "Azul"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9518,6 +10172,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desenfocar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desenfocar"
@@ -9617,6 +10277,12 @@
             "value" : "Tokens de bot, de usuario y de app (prefijo xox...)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens de bot, de usuario y de app (prefijo xox...)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9711,6 +10377,12 @@
             "value" : "Ambas puntuaciones se muestran juntas en cada detección para que veas exactamente qué se ha encontrado, con qué grado de certeza y qué gravedad tendría su exposición."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ambas puntuaciones se muestran juntas en cada detección para que veas exactamente qué se encontró, con qué grado de certeza y qué gravedad tendría su exposición."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9800,6 +10472,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CPF brasileño"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "CPF brasileño"
@@ -9899,6 +10577,12 @@
             "value" : "Explorar archivos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorar archivos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -9993,6 +10677,12 @@
             "value" : "Explorar archivos para seleccionar una imagen"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Explorar archivos para seleccionar una imagen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10082,6 +10772,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de California"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de California"
@@ -10181,6 +10877,12 @@
             "value" : "Las matrículas de estilo californiano se detectan por su estructura; otros formatos requieren una etiqueta de matrícula cercana"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las placas de estilo californiano se detectan por su estructura; otros formatos requieren una etiqueta de placa cercana"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10270,6 +10972,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita acceso a la cámara"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se necesita acceso a la cámara"
@@ -10367,6 +11075,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se ha denegado el acceso a la cámara. Actívalo en Ajustes."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se denegó el acceso a la cámara. Actívalo en Configuración."
           }
         },
         "fr" : {
@@ -10469,6 +11183,12 @@
             "value" : "Configuración de la cámara, fecha y hora exacta de la foto, y modelo de tu dispositivo. La marca temporal puede revelar tu rutina diaria; el modelo identifica tu teléfono o cámara."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Configuración de la cámara, fecha y hora exacta de la foto, y modelo de tu dispositivo. La marca temporal puede revelar tu rutina diaria; el modelo identifica tu celular o tu cámara."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10558,6 +11278,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIN canadiense"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SIN canadiense"
@@ -10657,6 +11383,12 @@
             "value" : "SIN canadiense, PAN/Aadhaar indio, DNI/NIE español, CPF brasileño, Steuer-ID alemán, Codice Fiscale italiano, INSEE francés y My Number japonés"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SIN canadiense, PAN/Aadhaar indio, DNI/NIE español, CPF brasileño, Steuer-ID alemán, Codice Fiscale italiano, INSEE francés y My Number japonés"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10746,6 +11478,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cancelar"
@@ -10845,6 +11583,12 @@
             "value" : "Cancelar dibujo de censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelar dibujo de censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -10939,6 +11683,12 @@
             "value" : "Cancelado por el usuario"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cancelado por el usuario"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11028,6 +11778,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se puede conservar durante la recodificación segura."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se puede conservar durante la recodificación segura."
@@ -11128,6 +11884,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ha fallado la finalización de CGImageDestination. No se ha podido codificar la imagen."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Falló la finalización de CGImageDestination. No se pudo codificar la imagen."
@@ -11233,6 +11995,12 @@
             "value" : "Gris carbón"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gris carbón"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11322,6 +12090,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comprobando texto visible antes de guardar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comprobando texto visible antes de guardar"
@@ -11421,6 +12195,12 @@
             "value" : "Documento de identidad chino"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de identidad chino"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11510,6 +12290,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tokens clásicos ghp_, gho_, ghu_, ghs_, ghr_"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tokens clásicos ghp_, gho_, ghu_, ghs_, ghr_"
@@ -11609,6 +12395,12 @@
             "value" : "Limpiar fotos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar fotos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11703,6 +12495,12 @@
             "value" : "Limpiar fotos con PicStrip"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar fotos con PicStrip"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11792,6 +12590,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos limpias. Conciencia tranquila."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fotos limpias. Conciencia tranquila."
@@ -11897,6 +12701,12 @@
             "value" : "Limpiar con PicStrip"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar con PicStrip"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -11986,6 +12796,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiando y censurando"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Limpiando y censurando"
@@ -12085,6 +12901,12 @@
             "value" : "Limpiando y guardando en Fotos…"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiando y guardando en Fotos…"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12179,6 +13001,12 @@
             "value" : "Limpia las imágenes seleccionadas en este dispositivo y guarda copias nuevas en Fotos."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia las imágenes seleccionadas en este dispositivo y guarda copias nuevas en Fotos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12268,6 +13096,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar detalles de %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cerrar detalles de %@"
@@ -12368,6 +13202,12 @@
             "value" : "Cerrar cámara"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar cámara"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12457,6 +13297,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la extensión. Abre PicStrip para editar la imagen preparada."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cierra la extensión. Abre PicStrip para editar la imagen preparada."
@@ -12556,6 +13402,12 @@
             "value" : "Cierra la extensión para compartir de PicStrip sin guardar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la extensión para compartir de PicStrip sin guardar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12645,6 +13497,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direcciones de hardware separadas por dos puntos o guiones"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Direcciones de hardware separadas por dos puntos o guiones"
@@ -12744,6 +13602,12 @@
             "value" : "Color"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Color"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -12833,6 +13697,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puntuaciones de confianza y riesgo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Puntuaciones de confianza y riesgo"
@@ -12940,6 +13810,12 @@
             "value" : "Alta"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alta"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13037,6 +13913,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baja"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Baja"
@@ -13144,6 +14026,12 @@
             "value" : "Media"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Media"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13238,6 +14126,12 @@
             "value" : "Información contextual. El riesgo de exposición depende de quién la reciba. Fechas, URL, códigos de barras."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Información contextual. El riesgo de exposición depende de quién la reciba. Fechas, URL, códigos de barras."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -13327,6 +14221,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Coordenadas, altitud, velocidad, rumbo y el momento exacto en que se disparó el obturador"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Coordenadas, altitud, velocidad, rumbo y el momento exacto en que se disparó el obturador"
@@ -13429,6 +14329,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido crear un CGImageDestination para el formato de salida solicitado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo crear un CGImageDestination para el formato de salida solicitado."
           }
         },
@@ -13527,6 +14433,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido crear un CGImageSource a partir de los datos proporcionados. Los datos pueden estar corruptos o tener un formato no compatible."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo crear un CGImageSource a partir de los datos proporcionados. Los datos pueden estar corruptos o tener un formato no compatible."
@@ -13629,6 +14541,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se han podido decodificar los datos de píxeles desde la fuente de la imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudieron decodificar los datos de píxeles desde la fuente de la imagen."
           }
         },
@@ -13727,6 +14645,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han podido decodificar los datos proporcionados en una imagen válida."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudieron decodificar los datos proporcionados en una imagen válida."
@@ -13829,6 +14753,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se han podido renderizar las censuras para esta imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudieron renderizar las censuras para esta imagen."
           }
         },
@@ -13927,6 +14857,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido reemplazar la foto: %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo reemplazar la foto: %@"
@@ -14029,6 +14965,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido guardar en Fotos: %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo guardar en Fotos: %@"
           }
         },
@@ -14121,6 +15063,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido abrir la imagen"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo abrir la imagen"
@@ -14221,6 +15169,12 @@
             "value" : "Las áreas cubiertas se censurarán. Puedes cambiarlas después de hacer la foto."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las áreas cubiertas se censurarán. Puedes cambiarlas después de tomar la foto."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14315,6 +15269,12 @@
             "value" : "Tarjeta de crédito"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14404,6 +15364,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarjeta de crédito detectada"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tarjeta de crédito detectada"
@@ -14509,6 +15475,12 @@
             "value" : "Número de tarjeta de crédito"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de tarjeta de crédito"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14603,6 +15575,12 @@
             "value" : "Crítico"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Crítico"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14692,6 +15670,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo crítico"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riesgo crítico"
@@ -14797,6 +15781,12 @@
             "value" : "Trama cruzada"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trama cruzada"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -14892,6 +15882,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección de monedero de criptomonedas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dirección de billetera de criptomonedas"
@@ -14998,6 +15994,12 @@
             "value" : "Censura personalizada"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censura personalizada"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15092,6 +16094,12 @@
             "value" : "Cadena de conexión a base de datos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cadena de conexión a base de datos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15181,6 +16189,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URI de bases de datos y colas de mensajes con credenciales incrustadas: postgres, mysql, mongodb, redis, amqp"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "URI de bases de datos y colas de mensajes con credenciales incrustadas: postgres, mysql, mongodb, redis, amqp"
@@ -15286,6 +16300,12 @@
             "value" : "Fecha de nacimiento"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha de nacimiento"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15375,6 +16395,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar el área %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar el área %@"
@@ -15480,6 +16506,12 @@
             "value" : "Eliminar censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15569,6 +16601,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar las áreas seleccionadas"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar las áreas seleccionadas"
@@ -15675,6 +16713,12 @@
             "value" : "Deseleccionar todo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deseleccionar todo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15764,6 +16808,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se detectan con el motor de texto NLP de Apple"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Se detectan con el motor de texto NLP de Apple"
@@ -15863,6 +16913,12 @@
             "value" : "Los límites de detección son intencionados. Solo marcamos patrones lo bastante específicos para que los falsos positivos sean poco frecuentes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los límites de detección son intencionados. Solo marcamos patrones lo bastante específicos para que los falsos positivos sean poco frecuentes."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -15952,6 +17008,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desarrollador"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desarrollador"
@@ -16051,6 +17113,12 @@
             "value" : "Secreto de desarrollador"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Secreto de desarrollador"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16140,6 +17208,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marca y modelo del dispositivo, software de edición, aviso de copyright, autor y hora de creación"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Marca y modelo del dispositivo, software de edición, aviso de copyright, autor y hora de creación"
@@ -16245,6 +17319,12 @@
             "value" : "Desactivar censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16334,6 +17414,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivar la censura de %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Desactivar la censura de %@"
@@ -16433,6 +17519,12 @@
             "value" : "Descartar foto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar foto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16522,6 +17614,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Listo"
@@ -16621,6 +17719,12 @@
             "value" : "Finalizar la edición de censuras"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Finalizar la edición de censuras"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16715,6 +17819,12 @@
             "value" : "Toca dos veces para añadir a la selección"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para agregar a la selección"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16804,6 +17914,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para cerrar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca dos veces para cerrar"
@@ -16903,6 +18019,12 @@
             "value" : "Toca dos veces para contraer"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para contraer"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -16992,6 +18114,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para deseleccionar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca dos veces para deseleccionar"
@@ -17091,6 +18219,12 @@
             "value" : "Toca dos veces para expandir"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para expandir"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17180,6 +18314,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para restablecer"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca dos veces para restablecer"
@@ -17279,6 +18419,12 @@
             "value" : "Toca dos veces para revisar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para revisar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17368,6 +18514,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca dos veces para seleccionar y resaltar en la imagen"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Toca dos veces para seleccionar y resaltar en la imagen"
@@ -17468,6 +18620,12 @@
             "value" : "Descargar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17558,6 +18716,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descargar la selección de objetos?"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "¿Descargar la selección de objetos?"
@@ -17657,6 +18821,12 @@
             "value" : "Arrastra los cuadros para ajustar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra los cuadros para ajustar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17746,6 +18916,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra sobre la foto para dibujar un recuadro de censura"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arrastra sobre la foto para dibujar un recuadro de censura"
@@ -17845,6 +19021,12 @@
             "value" : "Arrastra sobre la foto para dibujar un recuadro de censura o toca un objeto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra sobre la foto para dibujar un recuadro de censura o toca un objeto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -17934,6 +19116,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra para censurar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Arrastra para censurar"
@@ -18033,6 +19221,12 @@
             "value" : "Arrastra para censurar o toca un objeto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra para censurar o toca un objeto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18122,6 +19316,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dibujar una nueva área de censura"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dibujar una nueva área de censura"
@@ -18221,6 +19421,12 @@
             "value" : "Eddie Northcutt"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eddie Northcutt"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -18310,6 +19516,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir"
@@ -18406,6 +19618,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "Carné de conducir detectado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "Licencia de conducir detectada"
           }
         },
@@ -18498,6 +19716,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar en PicStrip"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar en PicStrip"
@@ -18599,6 +19823,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar censuras"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Editar censuras"
@@ -18741,6 +19971,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Editar censuras. %lld área activa."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Editar censuras. %lld áreas activas."
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -18948,6 +20196,12 @@
             "value" : "Editar censuras. Ninguna activa."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar censuras. Ninguna activa."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19043,6 +20297,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección de correo electrónico"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dirección de correo electrónico"
@@ -19148,6 +20408,12 @@
             "value" : "Activar censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19237,6 +20503,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar la censura de %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activar la censura de %@"
@@ -19336,6 +20608,12 @@
             "value" : "Código de barras codificado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código de barras codificado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19425,6 +20703,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activar el modo de selección múltiple"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activar el modo de selección múltiple"
@@ -19524,6 +20808,12 @@
             "value" : "Ethereum (0x... 40 hex) y Bitcoin Bech32 (bc1...)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ethereum (0x... 40 hex) y Bitcoin Bech32 (bc1...)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19613,6 +20903,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EXIF auxiliar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "EXIF auxiliar"
@@ -19712,6 +21008,12 @@
             "value" : "Salir del modo de selección múltiple"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Salir del modo de selección múltiple"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19801,6 +21103,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar registro de auditoría del lote (JSON)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Exportar registro de auditoría del lote (JSON)"
@@ -19900,6 +21208,12 @@
             "value" : "Exportar hallazgos (JSON)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Exportar hallazgos (JSON)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -19989,6 +21303,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formato de exportación"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formato de exportación"
@@ -20088,6 +21408,12 @@
             "value" : "FORMATO DE EXPORTACIÓN"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "FORMATO DE EXPORTACIÓN"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20177,6 +21503,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cara"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cara"
@@ -20276,6 +21608,12 @@
             "value" : "No se recopilan datos faciales"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se recopilan datos faciales"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20365,6 +21703,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cara detectada"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cara detectada"
@@ -20464,6 +21808,12 @@
             "value" : "La detección de caras solo usa rectángulos temporales en el dispositivo. PicStrip no identifica a personas ni almacena, transmite o comparte datos faciales."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La detección de caras solo usa rectángulos temporales en el dispositivo. PicStrip no identifica a personas ni almacena, transmite o comparte datos faciales."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20554,6 +21904,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando el objeto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Buscando el objeto"
@@ -20659,6 +22015,12 @@
             "value" : "Enfocado en %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enfocado en %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20748,6 +22110,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "INSEE francés"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "INSEE francés"
@@ -20847,6 +22215,12 @@
             "value" : "General"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "General"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -20936,6 +22310,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ID fiscal alemán"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ID fiscal alemán"
@@ -21041,6 +22421,12 @@
             "value" : "Token de GitHub"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token de GitHub"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21141,6 +22527,12 @@
             "value" : "Clave API de Google"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave API de Google"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21235,6 +22627,12 @@
             "value" : "Claves API de Google Cloud (prefijo AIza...)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claves API de Google Cloud (prefijo AIza...)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21324,6 +22722,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Identificación oficial"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Identificación oficial"
@@ -21429,6 +22833,12 @@
             "value" : "Verde"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verde"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21523,6 +22933,12 @@
             "value" : "HEIC"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HEIC"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21612,6 +23028,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos ocultos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Metadatos ocultos"
@@ -21717,6 +23139,12 @@
             "value" : "Alto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -21806,6 +23234,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alta eficiencia, nativo de Apple"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Alta eficiencia, nativo de Apple"
@@ -21911,6 +23345,12 @@
             "value" : "Alta eficiencia. El sistema operativo de Apple puede añadir datos de Maker Note al guardar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alta eficiencia. El sistema operativo de Apple puede agregar datos de Maker Note al guardar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22011,6 +23451,12 @@
             "value" : "JPEG de alta calidad"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPEG de alta calidad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22100,6 +23546,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo alto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riesgo alto"
@@ -22199,6 +23651,12 @@
             "value" : "Cómo funciona"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo funciona"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22293,6 +23751,12 @@
             "value" : "Cómo leerlas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo leerlas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22382,6 +23846,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Caras humanas detectadas con el modelo Face Rectangles de Apple en el dispositivo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Caras humanas detectadas con el modelo Face Rectangles de Apple en el dispositivo"
@@ -22487,6 +23957,12 @@
             "value" : "IBAN"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IBAN"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22576,6 +24052,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de identidad"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Documento de identidad"
@@ -22675,6 +24157,12 @@
             "value" : "Documento de identidad detectado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Documento de identidad detectado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22764,6 +24252,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de Illinois"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de Illinois"
@@ -22863,6 +24357,12 @@
             "value" : "La imagen ya está limpia"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La imagen ya está limpia"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -22952,6 +24452,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen preparada"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Imagen preparada"
@@ -23051,6 +24557,12 @@
             "value" : "Imágenes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imágenes"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23140,6 +24652,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo inmediato de robo de cuentas o de fraude financiero grave. SSN, números de tarjeta de crédito, claves API, claves privadas, credenciales de bases de datos."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riesgo inmediato de robo de cuentas o de fraude financiero grave. SSN, números de tarjeta de crédito, claves API, claves privadas, credenciales de bases de datos."
@@ -23239,6 +24757,12 @@
             "value" : "PAN indio"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PAN indio"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23328,6 +24852,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Números de cuenta bancaria internacionales (código de país de 2 letras + dígitos de control)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Números de cuenta bancaria internacionales (código de país de 2 letras + dígitos de control)"
@@ -23433,6 +24963,12 @@
             "value" : "Dirección IP"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección IP"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23522,6 +25058,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "IPv4 (cuatro octetos de 0 a 255) e IPv6"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "IPv4 (cuatro octetos de 0 a 255) e IPv6"
@@ -23621,6 +25163,12 @@
             "value" : "Codice Fiscale italiano"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Codice Fiscale italiano"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23710,6 +25258,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPEG"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "JPEG"
@@ -23815,6 +25369,12 @@
             "value" : "JPEG con calidad %1$@ — %2$@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPEG con calidad %1$@ — %2$@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -23904,6 +25464,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JSON Web Tokens: el doble prefijo base64url eyJ identifica el formato de forma inequívoca"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "JSON Web Tokens: el doble prefijo base64url eyJ identifica el formato de forma inequívoca"
@@ -24003,6 +25569,12 @@
             "value" : "Token JWT"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token JWT"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24092,6 +25664,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservar todo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Conservar todo"
@@ -24191,6 +25769,12 @@
             "value" : "Conservar todos los campos de %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Conservar todos los campos de %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24280,6 +25864,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene el formato original"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantiene el formato original"
@@ -24385,6 +25975,12 @@
             "value" : "Mantiene el formato original. El sistema operativo puede recodificar e insertar encabezados básicos."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene el formato original. El sistema operativo puede recodificar e insertar encabezados básicos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24480,6 +26076,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantiene el formato original del archivo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mantiene el formato original del archivo"
@@ -24585,6 +26187,12 @@
             "value" : "Detalles de la lente, estado del flash y otros datos técnicos que registra tu app de cámara. El riesgo directo para la privacidad es bajo, pero sigue siendo información innecesaria para compartir con desconocidos."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detalles de la lente, estado del flash y otros datos técnicos que registra tu app de cámara. El riesgo directo para la privacidad es bajo, pero sigue siendo información innecesaria para compartir con desconocidos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24674,6 +26282,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de serie e ID de la lente, y datos de compensación del flash"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de serie e ID de la lente, y datos de compensación del flash"
@@ -24773,6 +26387,12 @@
             "value" : "Número de matrícula"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de placa"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -24868,6 +26488,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enlace"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enlace"
@@ -24973,6 +26599,12 @@
             "value" : "PNG sin pérdida"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG sin pérdida"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25073,6 +26705,12 @@
             "value" : "Bajo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bajo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25162,6 +26800,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo bajo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riesgo bajo"
@@ -25267,6 +26911,12 @@
             "value" : "Propiedades de imagen de bajo nivel, como la versión del software, el perfil de color y las cadenas de copyright, que a veces contienen tu nombre real o el de tu organización."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Propiedades de imagen de bajo nivel, como la versión del software, el perfil de color y las cadenas de copyright, que a veces contienen tu nombre real o el de tu organización."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25367,6 +27017,12 @@
             "value" : "Dirección MAC"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dirección MAC"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25456,6 +27112,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de Massachusetts"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de Massachusetts"
@@ -25555,6 +27217,12 @@
             "value" : "Confianza de coincidencia"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Confianza de coincidencia"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25649,6 +27317,12 @@
             "value" : "Como el original"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Como el original"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25738,6 +27412,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad máxima — sin encabezados de formato"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Privacidad máxima — sin encabezados de formato"
@@ -25843,6 +27523,12 @@
             "value" : "Privacidad máxima. Evita que el sistema operativo inyecte encabezados de formato."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad máxima. Evita que el sistema operativo inyecte encabezados de formato."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -25932,6 +27618,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MBI de Medicare"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MBI de Medicare"
@@ -26037,6 +27729,12 @@
             "value" : "Medio"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Medio"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26126,6 +27824,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riesgo medio"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Riesgo medio"
@@ -26225,6 +27929,12 @@
             "value" : "Metadatos encontrados en esta foto"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos encontrados en esta foto"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26314,6 +28024,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La eliminación de metadatos es permanente. La imagen guardada perderá datos de movimiento Live Photo, ubicación GPS, modelo de cámara e historial de edición."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "La eliminación de metadatos es permanente. La imagen guardada perderá datos de movimiento Live Photo, ubicación GPS, modelo de cámara e historial de edición."
@@ -26413,6 +28129,12 @@
             "value" : "Metadatos eliminados"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos eliminados"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26502,6 +28224,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "CURP mexicana"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "CURP mexicana"
@@ -26601,6 +28329,12 @@
             "value" : "Licencia MIT"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licencia MIT"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26690,6 +28424,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formatos MM/DD/YYYY y YYYY-MM-DD"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formatos MM/DD/YYYY y YYYY-MM-DD"
@@ -26785,6 +28525,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nombre"
@@ -26890,6 +28636,12 @@
             "value" : "Número de Seguro Nacional"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de Seguro Nacional"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -26990,6 +28742,12 @@
             "value" : "Azul marino"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul marino"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27079,6 +28837,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de Nueva Jersey"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de Nueva Jersey"
@@ -27178,6 +28942,12 @@
             "value" : "Sin analíticas ni seguimiento"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin analíticas ni seguimiento"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27267,6 +29037,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado metadatos ocultos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se encontraron metadatos ocultos"
@@ -27363,6 +29139,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se han encontrado imágenes adjuntas."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se encontraron imágenes adjuntas."
           }
         },
@@ -27457,6 +29239,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido procesar ninguna imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo procesar ninguna imagen."
           }
         },
@@ -27549,6 +29337,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado elementos de entrada."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se encontraron elementos de entrada."
@@ -27648,6 +29442,12 @@
             "value" : "No se requiere Internet"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se requiere Internet"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27737,6 +29537,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha encontrado ningún objeto ahí. Arrastra para dibujar un recuadro."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se encontró ningún objeto ahí. Arrastra para dibujar un recuadro."
@@ -27836,6 +29642,12 @@
             "value" : "Sin historial de fotos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin historial de fotos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -27925,6 +29737,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado metadatos privados"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se encontraron metadatos privados"
@@ -28024,6 +29842,12 @@
             "value" : "No hay áreas de censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay áreas de censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28113,6 +29937,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado datos sensibles"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se encontraron datos sensibles"
@@ -28218,6 +30048,12 @@
             "value" : "No hay datos sensibles resaltados"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No hay datos sensibles resaltados"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28307,6 +30143,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin telemetría, sin informes de fallos, sin SDK de publicidad. No se observa ni se recopila tu actividad de ninguna forma."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sin telemetría, sin informes de fallos, sin SDK de publicidad. No se observa ni se recopila tu actividad de ninguna forma."
@@ -28406,6 +30248,12 @@
             "value" : "Ninguna"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ninguna"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28495,6 +30343,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ahora no"
@@ -28595,6 +30449,12 @@
             "value" : "Selección de objetos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selección de objetos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28684,6 +30544,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
@@ -28783,6 +30649,12 @@
             "value" : "Abre PicStrip para editarla."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre PicStrip para editarla."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28877,6 +30749,12 @@
             "value" : "Abrir Ajustes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abrir Configuración"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -28966,6 +30844,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Licencia de código abierto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de código abierto"
@@ -29071,6 +30955,12 @@
             "value" : "Clave API de OpenAI"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave API de OpenAI"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29160,6 +31050,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claves API de OpenAI (formatos sk- y sk-proj-)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claves API de OpenAI (formatos sk- y sk-proj-)"
@@ -29259,6 +31155,12 @@
             "value" : "Abre PicStrip para que puedas seleccionar las fotos que quieres limpiar. Elimina los metadatos de privacidad y, opcionalmente, censura el contenido sensible antes de guardar copias limpias en tu fototeca."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre PicStrip para que puedas seleccionar las fotos que quieres limpiar. Elimina los metadatos de privacidad y, opcionalmente, censura el contenido sensible antes de guardar copias limpias en tu fototeca."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29348,6 +31250,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre la primera imagen seleccionada en el editor de PicStrip para censurarla manualmente."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Abre la primera imagen seleccionada en el editor de PicStrip para censurarla manualmente."
@@ -29447,6 +31355,12 @@
             "value" : "Abre el editor de censuras"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre el editor de censuras"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29536,6 +31450,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "optimizado para compartir en línea"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "optimizado para compartir en línea"
@@ -29641,6 +31561,12 @@
             "value" : "Naranja"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naranja"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29730,6 +31656,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Original no encontrado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Original no encontrado"
@@ -29829,6 +31761,12 @@
             "value" : "Las fotos originales se eliminarán permanentemente tras la limpieza."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las fotos originales se eliminarán permanentemente tras la limpieza."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -29923,6 +31861,12 @@
             "value" : "Encabezados PEM: claves privadas RSA, EC, DSA y OPENSSH"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encabezados PEM: claves privadas RSA, EC, DSA y OPENSSH"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30012,6 +31956,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombres de personas detectados con el modelo de lenguaje de Apple en el dispositivo cuando Apple Intelligence está activado. Aparecen en la lista, pero no se censuran hasta que los actives"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nombres de personas detectados con el modelo de lenguaje de Apple en el dispositivo cuando Apple Intelligence está activado. Aparecen en la lista, pero no se censuran hasta que los actives"
@@ -30117,6 +32067,12 @@
             "value" : "Número de teléfono"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de teléfono"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30217,6 +32173,12 @@
             "value" : "Se ha denegado el acceso a la fototeca. Actívalo en Ajustes."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se denegó el acceso a la fototeca. Actívalo en Configuración."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30306,6 +32268,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista previa de la foto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vista previa de la foto"
@@ -30405,6 +32373,12 @@
             "value" : "Pasaporte"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasaporte"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30494,6 +32468,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasaporte detectado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pasaporte detectado"
@@ -30593,6 +32573,12 @@
             "value" : "Se necesita acceso a Fotos para guardar las imágenes limpias. Concédelo en Ajustes > Privacidad > Fotos."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se necesita acceso a Fotos para guardar las imágenes limpias. Concédelo en Configuración > Privacidad > Fotos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30682,6 +32668,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotos sin huellas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Fotos sin huellas."
@@ -30787,6 +32779,12 @@
             "value" : "Credencial física / Contraseña"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Credencial física / Contraseña"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -30876,6 +32874,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip"
@@ -30972,7 +32976,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip no pudo leer «%@». No se devolvió ninguna imagen."
+            "value" : "PicStrip no ha podido leer «%@». No se ha devuelto ninguna imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo leer “%@”. No se devolvió ninguna imagen."
           }
         },
         "fr" : {
@@ -31066,7 +33076,13 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip no pudo eliminar los metadatos de «%@». No se devolvió ninguna imagen."
+            "value" : "PicStrip no ha podido eliminar los metadatos de «%@». No se ha devuelto ninguna imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo eliminar los metadatos de “%@”. No se devolvió ninguna imagen."
           }
         },
         "fr" : {
@@ -31158,6 +33174,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no guarda historial de fotos, valores eliminados, fragmentos de OCR ni coordenadas de censuras. Nada de lo que procesas se almacena más allá de la sesión actual."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip no guarda historial de fotos, valores eliminados, fragmentos de OCR ni coordenadas de censuras. Nada de lo que procesas se almacena más allá de la sesión actual."
@@ -31257,6 +33279,12 @@
             "value" : "PicStrip se basa en un único principio: la privacidad. La app existe para ayudarte a no compartir nada que no quieras compartir."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip se basa en un único principio: la privacidad. La app existe para ayudarte a no compartir nada que no quieras compartir."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31346,6 +33374,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip funciona completamente sin conexión y nunca envía tus fotos a ningún sitio. Existe una única descarga opcional: el modelo de Apple en el que se basa la selección con un toque, que iOS descarga solo después de que des tu aprobación."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip funciona completamente sin conexión y nunca envía tus fotos a ningún sitio. Existe una única descarga opcional: el modelo de Apple en el que se basa la selección con un toque, que iOS descarga solo después de que des tu aprobación."
@@ -31445,6 +33479,12 @@
             "value" : "Pellizca para hacer zoom"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellizca para hacer zoom"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31534,6 +33574,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pellizca para hacer zoom y arrastra para desplazar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pellizca para hacer zoom y arrastra para desplazar"
@@ -31639,6 +33685,12 @@
             "value" : "Rosa"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rosa"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31739,6 +33791,12 @@
             "value" : "Pixelar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pixelar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31833,6 +33891,12 @@
             "value" : "Por favor, mantén la app abierta."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Por favor, mantén la app abierta."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -31922,6 +33986,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PNG"
@@ -32027,6 +34097,12 @@
             "value" : "PNG sin pérdida de calidad — archivo más grande"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PNG sin pérdida de calidad — archivo más grande"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32116,6 +34192,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PESEL polaco"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PESEL polaco"
@@ -32215,6 +34297,12 @@
             "value" : "Preparando para abrir en PicStrip…"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Preparando para abrir en PicStrip…"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32304,6 +34392,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Campos de agencia de prensa: pie de foto, palabras clave, crédito del autor, datos de contacto y copyright"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Campos de agencia de prensa: pie de foto, palabras clave, crédito del autor, datos de contacto y copyright"
@@ -32403,6 +34497,12 @@
             "value" : "Vista previa"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista previa"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32492,6 +34592,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vista previa con censuras"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Vista previa con censuras"
@@ -32591,6 +34697,12 @@
             "value" : "Privacidad"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Privacidad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32680,6 +34792,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los metadatos de privacidad se eliminan automáticamente antes de guardar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Los metadatos de privacidad se eliminan automáticamente antes de guardar."
@@ -32779,6 +34897,12 @@
             "value" : "POLÍTICA DE PRIVACIDAD"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "POLÍTICA DE PRIVACIDAD"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -32868,6 +34992,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos privados de Apple: datos de detección de caras, análisis HDR, clasificación de escenas e ID de cámara frontal/trasera"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Metadatos privados de Apple: datos de detección de caras, análisis HDR, clasificación de escenas e ID de cámara frontal/trasera"
@@ -32973,6 +35103,12 @@
             "value" : "Datos de diagnóstico privados que inserta la app Cámara de Apple. El contenido exacto no está documentado públicamente, pero puede incluir identificadores del dispositivo y las condiciones de la toma."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos de diagnóstico privados que inserta la app Cámara de Apple. El contenido exacto no está documentado públicamente, pero puede incluir identificadores del dispositivo y las condiciones de la toma."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33073,6 +35209,12 @@
             "value" : "Clave privada"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave privada"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33167,6 +35309,12 @@
             "value" : "Procesar y guardar en Fotos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesar y guardar en Fotos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33256,6 +35404,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesando fotos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Procesando fotos"
@@ -33361,6 +35515,12 @@
             "value" : "Procesando fotos, %1$lld de %2$lld completadas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesando fotos, %1$lld de %2$lld completadas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33450,6 +35610,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procesando…"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Procesando…"
@@ -33555,6 +35721,12 @@
             "value" : "Metadatos de publicación y edición: pies de foto, créditos, palabras clave e información de contacto. A menudo incluyen tu nombre, tu puesto o tu correo electrónico."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadatos de publicación y edición: pies de foto, créditos, palabras clave e información de contacto. A menudo incluyen tu nombre, tu puesto o tu correo electrónico."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33655,6 +35827,12 @@
             "value" : "Púrpura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Púrpura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33744,6 +35922,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código QR / Código de barras"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Código QR / Código de barras"
@@ -33843,6 +36027,12 @@
             "value" : "Códigos QR y de barras: el contenido decodificado se muestra en el fragmento (contraseñas de Wi-Fi, vCards, URL, semillas de MFA)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Códigos QR y de barras: el contenido decodificado se muestra en el fragmento (contraseñas de Wi-Fi, vCards, URL, semillas de MFA)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -33932,6 +36122,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recomendado"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Recomendado"
@@ -34037,6 +36233,12 @@
             "value" : "Rojo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rojo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34126,6 +36328,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar %@"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Censurar %@"
@@ -34232,6 +36440,12 @@
             "value" : "Censurar todo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar todo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34321,6 +36535,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar datos visuales sensibles"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Censurar datos visuales sensibles"
@@ -34420,6 +36640,12 @@
             "value" : "Consejos del editor de censuras"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Consejos del editor de censuras"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34509,6 +36735,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Áreas de censura"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Áreas de censura"
@@ -34608,6 +36840,12 @@
             "value" : "Rehacer"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rehacer"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34697,6 +36935,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de archivo reducido, compatibilidad estándar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tamaño de archivo reducido, compatibilidad estándar"
@@ -34802,6 +37046,12 @@
             "value" : "Tamaño de archivo reducido. Compatibilidad estándar."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tamaño de archivo reducido. Compatibilidad estándar."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -34891,6 +37141,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la ubicación, la cámara y otros metadatos privados de las imágenes y devuelve copias limpias. Se ejecuta en este dispositivo sin abrir PicStrip. El texto y las caras visibles no se censuran."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elimina la ubicación, la cámara y otros metadatos privados de las imágenes y devuelve copias limpias. Se ejecuta en este dispositivo sin abrir PicStrip. El texto y las caras visibles no se censuran."
@@ -34990,6 +37246,12 @@
             "value" : "Elimina la ubicación, la cámara, la edición y otros metadatos privados de la imagen."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la ubicación, la cámara, la edición y otros metadatos privados de la imagen."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35079,6 +37341,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplazar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Reemplazar"
@@ -35221,6 +37489,24 @@
           }
         },
         "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Reemplazar %lld foto original?"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "¿Reemplazar %lld fotos originales?"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
           "variations" : {
             "plural" : {
               "one" : {
@@ -35428,6 +37714,12 @@
             "value" : "Reemplazar original"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reemplazar original"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35517,6 +37809,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Restablecer zoom para ajustar la imagen"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Restablecer zoom para ajustar la imagen"
@@ -35616,6 +37914,12 @@
             "value" : "Redimensionar la censura"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar la censura"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35705,6 +38009,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar y guardar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Revisar y guardar"
@@ -35804,6 +38114,12 @@
             "value" : "Expresión regular de direcciones conforme a la RFC + NLP"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Expresión regular de direcciones conforme a la RFC + NLP"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -35893,6 +38209,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nivel de riesgo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Nivel de riesgo"
@@ -35998,6 +38320,12 @@
             "value" : "Igual que el original"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Igual que el original"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36087,6 +38415,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar como nuevo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Guardar como nuevo"
@@ -36186,6 +38520,12 @@
             "value" : "Guardar como foto nueva"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar como foto nueva"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36275,6 +38615,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Podrás guardar cuando termine el análisis visual de privacidad."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Podrás guardar cuando termine el análisis visual de privacidad."
@@ -36374,6 +38720,12 @@
             "value" : "Modo de guardado"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de guardado"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36463,6 +38815,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "MODO DE GUARDADO"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "MODO DE GUARDADO"
@@ -36562,6 +38920,12 @@
             "value" : "Guardar en Fotos"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardar en Fotos"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36656,6 +39020,12 @@
             "value" : "Guardando…"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guardando…"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36745,6 +39115,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escanear un documento con la cámara"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Escanear un documento con la cámara"
@@ -36845,6 +39221,12 @@
             "value" : "Escanear documento"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Escanear documento"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -36934,6 +39316,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analizando en busca de datos sensibles"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Analizando en busca de datos sensibles"
@@ -37033,6 +39421,12 @@
             "value" : "Analizando…"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analizando…"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37122,6 +39516,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analiza en el dispositivo el texto y las caras visibles y graba recuadros de censura sobre los datos probablemente sensibles."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Analiza en el dispositivo el texto y las caras visibles y graba recuadros de censura sobre los datos probablemente sensibles."
@@ -37221,6 +39621,12 @@
             "value" : "Imagen limpia"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imagen limpia"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37310,6 +39716,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Claves secretas y publicables (sk_/pk_ + live/test)"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Claves secretas y publicables (sk_/pk_ + live/test)"
@@ -37409,6 +39821,12 @@
             "value" : "Seleccionar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37498,6 +39916,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar una foto"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleccionar una foto"
@@ -37597,6 +40021,12 @@
             "value" : "Seleccionar una foto de tu fototeca"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar una foto de tu fototeca"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37691,6 +40121,12 @@
             "value" : "Seleccionar todo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar todo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -37780,6 +40216,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar varias fotos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Seleccionar varias fotos"
@@ -37881,6 +40323,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Datos sensibles"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Datos sensibles"
@@ -38035,6 +40483,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Se han encontrado datos sensibles. Editar censuras. %lld áreas activas."
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se encontraron datos sensibles. Editar censuras. %lld área activa."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se encontraron datos sensibles. Editar censuras. %lld áreas activas."
                 }
               }
             }
@@ -38230,6 +40696,12 @@
             "value" : "Compartir imagen"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Compartir imagen"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38319,6 +40791,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Comparte la foto. No la historia que hay detrás."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Comparte la foto. No la historia que hay detrás."
@@ -38418,6 +40896,12 @@
             "value" : "Velocidad de obturación, apertura, ISO, distancia focal, flash, balance de blancos e información de la lente"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Velocidad de obturación, apertura, ISO, distancia focal, flash, balance de blancos e información de la lente"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38507,6 +40991,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daño personal, financiero o de identidad considerable. Números de cuenta bancaria, caras y credenciales escritas en papel."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Daño personal, financiero o de identidad considerable. Números de cuenta bancaria, caras y credenciales escritas en papel."
@@ -38612,6 +41102,12 @@
             "value" : "Token de Slack"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Token de Slack"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38701,6 +41197,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "archivo pequeño, excelente detalle"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "archivo pequeño, excelente detalle"
@@ -38806,6 +41308,12 @@
             "value" : "Número de Seguro Social"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de Seguro Social"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38906,6 +41414,12 @@
             "value" : "Sólido"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sólido"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -38995,6 +41509,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han podido identificar algunos originales, así que se han guardado copias limpias en su lugar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudieron identificar algunos originales, así que se guardaron copias limpias en su lugar."
@@ -39089,6 +41609,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Algunas fotos no se han podido limpiar y no se han guardado."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Algunas fotos no se pudieron limpiar y no se guardaron."
@@ -39188,6 +41714,12 @@
             "value" : "RRN surcoreano"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "RRN surcoreano"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39277,6 +41809,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "DNI español"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "DNI español"
@@ -39376,6 +41914,12 @@
             "value" : "NIE español"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NIE español"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39465,6 +42009,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Encabezado estándar del formato de archivo, necesario para mostrar la imagen. No contiene datos personales."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Encabezado estándar del formato de archivo, necesario para mostrar la imagen. No contiene datos personales."
@@ -39564,6 +42114,12 @@
             "value" : "Iniciar proceso por lotes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Iniciar proceso por lotes"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39653,6 +42209,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Direcciones postales mediante el motor de texto NLP de Apple"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Direcciones postales mediante el motor de texto NLP de Apple"
@@ -39752,6 +42314,12 @@
             "value" : "Eliminar %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -39841,6 +42409,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar todo"
@@ -39940,6 +42514,12 @@
             "value" : "Eliminar todos los campos de %@"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar todos los campos de %@"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40029,6 +42609,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de ${images} como ${format}"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Eliminar metadatos de ${images} como ${format}"
@@ -40128,6 +42714,12 @@
             "value" : "Eliminar metadatos de las imágenes"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de las imágenes"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40222,6 +42814,12 @@
             "value" : "Eliminar metadatos de privacidad"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de privacidad"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40311,6 +42909,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina los datos. Conserva el recuerdo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Elimina los datos. Conserva el recuerdo."
@@ -40416,6 +43020,12 @@
             "value" : "Clave de Stripe"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clave de Stripe"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40505,6 +43115,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estilo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Estilo"
@@ -40659,6 +43275,24 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Se han limpiado y guardado %lld fotos."
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se limpió y se guardó %lld foto."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Se limpiaron y se guardaron %lld fotos."
                 }
               }
             }
@@ -40854,6 +43488,12 @@
             "value" : "Código SWIFT / BIC"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Código SWIFT / BIC"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -40943,6 +43583,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Códigos bancarios SWIFT/BIC: requieren una etiqueta SWIFT/BIC cercana para evitar falsos positivos"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Códigos bancarios SWIFT/BIC: requieren una etiqueta SWIFT/BIC cercana para evitar falsos positivos"
@@ -41042,6 +43688,12 @@
             "value" : "Hacer una foto con la cámara"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tomar una foto con la cámara"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41135,6 +43787,12 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hacer una foto"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tomar una foto"
           }
         },
         "fr" : {
@@ -41231,6 +43889,12 @@
             "value" : "Toca para revisar"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para revisar"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41320,6 +43984,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocar un objeto para censurarlo utiliza un modelo de Apple que iOS descarga una sola vez. Solo se descarga el modelo: tus fotos nunca salen de tu dispositivo."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tocar un objeto para censurarlo utiliza un modelo de Apple que iOS descarga una sola vez. Solo se descarga el modelo: tus fotos nunca salen de tu dispositivo."
@@ -41425,6 +44095,12 @@
             "value" : "Azul verdoso"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Azul verdoso"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41514,6 +44190,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El porcentaje de **confianza de coincidencia** indica hasta qué punto nuestros modelos en el dispositivo están seguros de que el patrón detectado es realmente lo que creemos. Se obtiene de dos factores:\n• **Especificidad del patrón**: lo inequívoca que es la regla de detección a nivel estructural. Una clave de AWS con su prefijo exacto AKIA alcanza el 98 %; una fecha se queda en el 48 %, porque las fechas aparecen en muchos contextos no sensibles.\n• **Calidad del OCR**: la confianza del OCR de Vision de Apple en esa observación de texto concreta. Una captura de pantalla nítida produce una puntuación más alta que una fotografía borrosa del mismo texto.\n\nUna confianza más alta implica menos falsos positivos, pero una detección con confianza baja también puede ser real: usa tu criterio."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "El porcentaje de **confianza de coincidencia** indica hasta qué punto nuestros modelos en el dispositivo están seguros de que el patrón detectado es realmente lo que creemos. Se obtiene de dos factores:\n• **Especificidad del patrón**: lo inequívoca que es la regla de detección a nivel estructural. Una clave de AWS con su prefijo exacto AKIA alcanza el 98 %; una fecha se queda en el 48 %, porque las fechas aparecen en muchos contextos no sensibles.\n• **Calidad del OCR**: la confianza del OCR de Vision de Apple en esa observación de texto concreta. Una captura de pantalla nítida produce una puntuación más alta que una fotografía borrosa del mismo texto.\n\nUna confianza más alta implica menos falsos positivos, pero una detección con confianza baja también puede ser real: usa tu criterio."
@@ -41613,6 +44295,12 @@
             "value" : "El **nivel de riesgo** es nuestra valoración editorial del daño que causaría compartir este tipo de datos por accidente. No cambia en función de la confianza de la detección: un elemento de riesgo crítico es crítico tanto si lo hemos detectado con un 60 % como con un 99 %."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El **nivel de riesgo** es nuestra valoración editorial del daño que causaría compartir este tipo de datos por accidente. No cambia en función de la confianza de la detección: un elemento de riesgo crítico es crítico sin importar si lo detectamos con un 60 % o con un 99 %."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -41703,6 +44391,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido escanear el documento."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo escanear el documento."
@@ -41799,6 +44493,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido descargar el modelo de selección de objetos. Aún puedes arrastrar para dibujar un recuadro."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo descargar el modelo de selección de objetos. Aún puedes arrastrar para dibujar un recuadro."
           }
         },
@@ -41893,6 +44593,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido identificar la foto original. Puede que esté almacenada en iCloud y aún no se haya descargado. ¿Quieres guardarla como una foto nueva?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo identificar la foto original. Puede que esté almacenada en iCloud y aún no se haya descargado. ¿Quieres guardarla como una foto nueva?"
           }
         },
@@ -41985,6 +44691,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las fotos originales se eliminarán permanentemente después de la limpieza. Esto no se puede deshacer."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Las fotos originales se eliminarán permanentemente después de la limpieza. Esto no se puede deshacer."
@@ -42090,6 +44802,12 @@
             "value" : "La ubicación exacta donde se tomó esta foto — latitud, longitud y altitud. Compartirla revela dónde vives, trabajas o viajas, y puede usarse para rastrear tus movimientos con el tiempo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La ubicación exacta donde se tomó esta foto — latitud, longitud y altitud. Compartirla revela dónde vives, trabajas o viajas, y puede usarse para rastrear tus movimientos con el tiempo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42187,6 +44905,12 @@
         "es" : {
           "stringUnit" : {
             "state" : "translated",
+            "value" : "No se ha podido cargar el elemento seleccionado como datos de imagen."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
             "value" : "No se pudo cargar el elemento seleccionado como datos de imagen."
           }
         },
@@ -42279,6 +45003,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido ejecutar el análisis de datos sensibles en esta imagen. Revísala manualmente antes de compartirla."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "No se pudo ejecutar el análisis de datos sensibles en esta imagen. Revísala manualmente antes de compartirla."
@@ -42384,6 +45114,12 @@
             "value" : "El formato de la imagen de origen no admite la recodificación."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El formato de la imagen de origen no admite la recodificación."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42473,6 +45209,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esta imagen no contenía EXIF, GPS u otros metadatos privados."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Esta imagen no contenía EXIF, GPS u otros metadatos privados."
@@ -42572,6 +45314,12 @@
             "value" : "Mostrar u ocultar las áreas seleccionadas"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar u ocultar las áreas seleccionadas"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42661,6 +45409,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activa al menos una opción de privacidad para empezar."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Activa al menos una opción de privacidad para empezar."
@@ -42760,6 +45514,12 @@
             "value" : "NI del Reino Unido: prefijo de dos letras, seis dígitos y sufijo de A a D"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NI del Reino Unido: prefijo de dos letras, seis dígitos y sufijo de A a D"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -42849,6 +45609,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cómo interpretar los resultados"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cómo interpretar los resultados"
@@ -42948,6 +45714,12 @@
             "value" : "Deshacer"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deshacer"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43037,6 +45809,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "URL y enlaces web"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "URL y enlaces web"
@@ -43136,6 +45914,12 @@
             "value" : "Números de ruta ABA estadounidenses de 9 dígitos: requieren una palabra clave routing/ABA cerca"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Números de ruta ABA estadounidenses de 9 dígitos: requieren una palabra clave routing/ABA cerca"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43225,6 +46009,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de EE. UU."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de EE. UU."
@@ -43324,6 +46114,12 @@
             "value" : "EIN de EE. UU."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "EIN de EE. UU."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43413,6 +46209,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ITIN de EE. UU."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "ITIN de EE. UU."
@@ -43512,6 +46314,12 @@
             "value" : "Pasaporte de EE. UU."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pasaporte de EE. UU."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43601,6 +46409,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SSN de EE. UU.: formato 3-2-4 con protección contra ceros"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "SSN de EE. UU.: formato 3-2-4 con protección contra ceros"
@@ -43700,6 +46514,12 @@
             "value" : "Útil para un atacante en combinación con otros datos. Direcciones de correo electrónico, números de teléfono, direcciones IP y matrículas."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Útil para un atacante en combinación con otros datos. Direcciones de correo electrónico, números de teléfono, direcciones IP y placas de vehículos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43789,6 +46609,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Número de identificación del vehículo"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Número de identificación del vehículo"
@@ -43894,6 +46720,12 @@
             "value" : "Versión %@ (%@)"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Versión %@ (%@)"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -43983,6 +46815,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ver código fuente en GitHub"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ver código fuente en GitHub"
@@ -44082,6 +46920,12 @@
             "value" : "Visa, Mastercard, Amex y Discover: con o sin espacios"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa, Mastercard, Amex y Discover: con o sin espacios"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44171,6 +47015,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenido visual"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Contenido visual"
@@ -44270,6 +47120,12 @@
             "value" : "Censuras visuales"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censuras visuales"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44364,6 +47220,12 @@
             "value" : "Advertencia: la eliminación de metadatos es permanente. La imagen guardada perderá datos de movimiento Live Photo, ubicación GPS, modelo de cámara e historial de edición."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Advertencia: la eliminación de metadatos es permanente. La imagen guardada perderá datos de movimiento Live Photo, ubicación GPS, modelo de cámara e historial de edición."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44453,6 +47315,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formas de importar"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Formas de importar"
@@ -44558,6 +47426,12 @@
             "value" : "JPEG compatible con web"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "JPEG compatible con web"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44647,6 +47521,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo que detecta PicStrip"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Lo que detecta PicStrip"
@@ -44752,6 +47632,12 @@
             "value" : "Blanco"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blanco"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44846,6 +47732,12 @@
             "value" : "Contraseñas escritas en pizarras o notas adhesivas, detectadas mediante una heurística de palabra clave + separador"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contraseñas escritas en pizarrones o notas adhesivas, detectadas mediante una heurística de palabra clave + separador"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -44935,6 +47827,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Carné de conducir de Wisconsin"
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Licencia de conducir de Wisconsin"
@@ -45040,6 +47938,12 @@
             "value" : "Amarillo"
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Amarillo"
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -45134,6 +48038,12 @@
             "value" : "Tu momento, sin los metadatos."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tu momento, sin los metadatos."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -45223,6 +48133,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tus fotos nunca se suben a ningún servidor. Todo el análisis, la censura y la eliminación de metadatos se realizan íntegramente en tu iPhone o iPad."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tus fotos nunca se suben a ningún servidor. Todo el análisis, la censura y la eliminación de metadatos se realizan íntegramente en tu iPhone o iPad."

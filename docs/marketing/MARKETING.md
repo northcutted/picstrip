@@ -289,6 +289,7 @@ PicStrip is localized into **16 locales**. Each locale ships:
 | `ar-SA` | Arabic | Saudi Arabia (RTL) |
 | `de-DE` | German | Germany |
 | `es-ES` | Spanish | Spain |
+| `es-MX` | Spanish | Latin America (app locale `es-419`) |
 | `fr-FR` | French | France |
 | `it` | Italian | Italy |
 | `ja` | Japanese | Japan |
@@ -310,6 +311,7 @@ App Store Connect localized text field coverage:
 | `ar-SA` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `de-DE` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `es-ES` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
+| `es-MX` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `fr-FR` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `it`    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |
 | `ja`    | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | — |

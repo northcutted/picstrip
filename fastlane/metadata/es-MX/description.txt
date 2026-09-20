@@ -6,9 +6,9 @@ Cada foto lleva GPS, marcas de tiempo, datos del dispositivo, información del o
 DETECCIÓN Y OCULTACIÓN DE INFORMACIÓN SENSIBLE
 El OCR y la visión artificial, ejecutados en el dispositivo, detectan 30 tipos de información personal sensible (PII), clasificados en cuatro niveles de riesgo:
 
-Crítico — claves de API, tarjetas de crédito, números de seguridad social, contraseñas, JWT, cadenas de conexión a bases de datos
+Crítico — claves de API, tarjetas de crédito, números de seguro social, contraseñas, JWT, cadenas de conexión a bases de datos
 Alto — rostros, IBAN, números ABA, códigos SWIFT/BIC, credenciales físicas
-Medio — correos, teléfonos, direcciones, carteras cripto, VIN, matrículas, direcciones IP y MAC
+Medio — correos, teléfonos, direcciones, billeteras cripto, VIN, placas, direcciones IP y MAC
 Bajo — fechas de nacimiento, enlaces, códigos de barras
 
 Cada detección muestra su tipo, puntuación de confianza y nivel de riesgo para ayudarte a priorizar qué ocultar.
@@ -23,19 +23,19 @@ EDITOR DE CENSURAS
 IMPORTA DESDE CUALQUIER LUGAR
 • Fototeca de Fotos
 • App Archivos — abre imágenes y capturas directamente
-• Haz una foto en la app — el original nunca llega a tu fototeca
+• Toma una foto en la app — el original nunca llega a tu fototeca
 • Escanea documentos con la cámara — el original nunca llega a tu fototeca
 • Arrastra y suelta imágenes en la app
 • Extensión de compartir — limpia desde Fotos, Safari o cualquier app sin abrir PicStrip
 
 PRIVACIDAD POR DISEÑO
-• 100% en el dispositivo — nada sale de tu teléfono
+• 100% en el dispositivo — nada sale de tu celular
 • La detección de rostros permanece en el dispositivo; PicStrip no recopila, almacena, transmite ni comparte datos faciales
 • Sin cuenta, sin inicio de sesión, sin rastreo
 • Sin anuncios, sin compras en la app, sin suscripciones
 • Código abierto — cada línea de código es auditable en GitHub
 • Procedencia de compilación SLSA Nivel 3 — cada versión se verifica criptográficamente
-• Etiqueta de privacidad: «No se recopilan datos»
+• Etiqueta de privacidad: “No se recopilan datos”
 
 ATAJOS Y AUTOMATIZACIÓN
 PicStrip incluye una acción de Atajos para eliminar metadatos y ocultar información sensible automáticamente: al importar, en lotes o dentro de tus flujos de trabajo.

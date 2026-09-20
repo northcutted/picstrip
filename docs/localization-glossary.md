@@ -82,7 +82,7 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | formality | informell (du), Apple-iOS-Stil |
 | Scan Document (camera, not PII analysis) | Dokument scannen |
 
-## Spanish (international) (`es`)
+## Spanish (Spain) (`es`)
 
 | English | Term |
 |---|---|
@@ -114,6 +114,50 @@ Platform terms (Photos, Files, Shortcuts, Save, tap…) follow Apple's localized
 | confidence badges | Baja · Media · Alta (femenino, concuerdan con «confianza») |
 | quotes | «…» |
 | formality | tú (imperativo de Apple) |
+| Scan Document (camera, not PII analysis) | Escanear documento |
+
+## Spanish (Latin America) (`es-419`)
+
+Everything not listed here is the same as Spain. The catalog carries a full `es-419` localization; the App Store listing is `es-MX`.
+
+| English | Term |
+|---|---|
+| metadata | metadatos |
+| strip | eliminar (nunca “quitar” ni “desnudar”) |
+| redact | censurar |
+| redaction | censura (recuadro de censura) |
+| region | área (jamás “región”) |
+| field | campo |
+| category | categoría |
+| instance | coincidencia |
+| type | tipo |
+| match confidence | confianza de coincidencia |
+| risk level | nivel de riesgo (Bajo · Medio · Alto · Crítico, masculino) |
+| clean (verb) | limpiar (foto limpia; “scrubbed” = limpia) |
+| original | original |
+| batch | lote |
+| on-device | en el dispositivo |
+| sensitive data | datos sensibles |
+| Photos app | Fotos (fototeca; nunca «carrete» — se dice «tus álbumes») |
+| Files app | Archivos |
+| Shortcuts | Atajos |
+| Save | Guardar |
+| tap | toca |
+| double tap | toca dos veces |
+| scan (verb/noun) | analizar / análisis |
+| Settings | Configuración (nunca “Ajustes”) |
+| add | agregar (nunca “añadir”) |
+| take a photo | tomar una foto (nunca “hacer una foto”) |
+| pinch | pellizca |
+| confidence badges | Baja · Media · Alta (femenino, concuerdan con “confianza”) |
+| driver license | licencia de conducir (en es: carné de conducir) |
+| license plate | placa (en es: matrícula) |
+| crypto wallet | billetera (en es: monedero) |
+| whiteboard | pizarrón (en es: pizarra) |
+| phone | celular (en es: móvil/teléfono) |
+| past events | pretérito simple: «No se pudo…», «No se encontraron…» (en es: «No se ha podido…») |
+| quotes | “…” (en es: «…») |
+| formality | tú (imperativo de Apple; sin voseo, sin ustedeo) |
 | Scan Document (camera, not PII analysis) | Escanear documento |
 
 ## French (France) (`fr`)

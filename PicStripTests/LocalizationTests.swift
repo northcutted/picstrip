@@ -10,7 +10,7 @@ import XCTest
 final class LocalizationTests: XCTestCase {
 
     private static let locales = [
-        "ar", "de", "es", "fr", "it", "ja", "ko", "nl", "pl", "pt-BR", "pt-PT", "sv", "tr", "zh-Hans", "zh-Hant"
+        "ar", "de", "es", "es-419", "fr", "it", "ja", "ko", "nl", "pl", "pt-BR", "pt-PT", "sv", "tr", "zh-Hans", "zh-Hant"
     ]
 
     private func table(for locale: String) throws -> Bundle {

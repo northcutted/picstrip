@@ -334,6 +334,7 @@
 				ar,
 				de,
 				es,
+				"es-419",
 				fr,
 				it,
 				ja,

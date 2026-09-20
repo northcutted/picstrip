@@ -29,6 +29,12 @@
             "value" : "PicStrip usa la cámara para capturar documentos y fotos que quieres limpiar. Las capturas se procesan en tu dispositivo."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip usa la cámara para capturar documentos y fotos que quieres limpiar. Las capturas se procesan en tu dispositivo."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -131,6 +137,12 @@
             "value" : "PicStrip guarda la imagen limpia en tu fototeca."
           }
         },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip guarda la imagen limpia en tu fototeca."
+          }
+        },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
@@ -228,6 +240,12 @@
           }
         },
         "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip necesita acceder a tu fototeca para reemplazar la imagen original cuando lo pidas."
+          }
+        },
+        "es-419" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip necesita acceder a tu fototeca para reemplazar la imagen original cuando lo pidas."
