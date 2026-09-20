@@ -425,7 +425,10 @@ nonisolated struct ImageRedactor {
     ) -> CIImage? {
         let extent = ciImage.extent
         guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
-        pixFilter.setValue(ciImage, forKey: kCIInputImageKey)
+        // A mosaic block takes its colour from its centre.  Blocks that straddle
+        // the photo's edge have their centre outside it, so without clamping they
+        // come out transparent — a see-through rim, and a blur that fades into it.
+        pixFilter.setValue(ciImage.clampedToExtent(), forKey: kCIInputImageKey)
         pixFilter.setValue(
             CIVector(cgPoint: CGPoint(x: extent.midX, y: extent.midY)),
             forKey: kCIInputCenterKey
@@ -434,10 +437,10 @@ nonisolated struct ImageRedactor {
         guard let pixellated = pixFilter.outputImage else { return nil }
         guard style == .blur else { return pixellated.cropped(to: extent) }
 
-        // Clamp first so the blur does not pull transparent pixels in at the
-        // image edges; crop back to the original extent afterwards.
+        // The mosaic is already infinite (clamped input), so the blur has real
+        // colour to pull in at the edges; crop back to the photo afterwards.
         let blur = CIFilter.gaussianBlur()
-        blur.inputImage = pixellated.clampedToExtent()
+        blur.inputImage = pixellated
         blur.radius = Float(blockSize * 1.5)
         return blur.outputImage?.cropped(to: extent)
     }

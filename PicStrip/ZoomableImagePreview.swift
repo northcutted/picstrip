@@ -409,7 +409,10 @@ struct ZoomableImagePreview: View {
                 let mask = Path { path in
                     for region in group.regions { path.addRect(displayRect(liveRect(of: region), in: size)) }
                 }
-                if let layer = obscuredLayers[group.key] {
+                // While a new block size renders (a resize just ended), keep showing
+                // the last render of this style instead of flashing a placeholder.
+                let stale = obscuredLayers.first { $0.key.style == group.key.style }?.value
+                if let layer = obscuredLayers[group.key] ?? stale {
                     Image(uiImage: layer)
                         .resizable()
                         .frame(width: size.width, height: size.height)

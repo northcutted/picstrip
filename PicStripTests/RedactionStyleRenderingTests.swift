@@ -150,6 +150,53 @@ final class RedactionStyleRenderingTests: XCTestCase {
         }
     }
 
+    /// A region dragged out to the photo's edge must be obscured right up to the
+    /// last pixel.  Mosaic blocks that straddle the edge used to come out
+    /// transparent (their sample point is outside the image), and the blur
+    /// faded into them.
+    func testPixelateAndBlurReachTheVeryEdgeOfThePhoto() async throws {
+        // 203 is prime, so whatever the block size, the edge blocks are partial.
+        let side = 203
+        let image = UIGraphicsImageRenderer(size: CGSize(width: side, height: side), format: format).image { ctx in
+            for row in 0..<side {
+                for column in 0..<side {
+                    ((row + column).isMultiple(of: 2) ? UIColor.black : UIColor.white).setFill()
+                    ctx.fill(CGRect(x: column, y: row, width: 1, height: 1))
+                }
+            }
+        }
+        let wholePhoto = CGRect(x: 0, y: 0, width: 1, height: 1)
+
+        for style in [RedactionStyle.pixelate, .blur] {
+            for strength in [0.0, 0.5, 1.0] {
+                let spec = RedactionSpec(rect: wholePhoto, style: style, color: .black, isEnabled: true, strength: strength)
+                let exported = try await render(spec, over: image)
+                let block = RedactionStrength.blockSize(
+                    forNormalizedRects: [wholePhoto], pixelSize: image.size, strength: strength
+                )
+                let layer = await ImageRedactor().previewLayer(style, blockSize: block, of: image)
+                let preview = try Bitmap(XCTUnwrap(layer))
+
+                for (name, bitmap) in [("export", exported), ("preview", preview)] {
+                    let label = "\(name) \(style) @ \(strength)"
+                    // The four outermost rows and columns of the photo.
+                    for line in [0, side - 1] {
+                        let row = (0..<side).map { bitmap.pixel($0, line) }
+                        let column = (0..<side).map { bitmap.pixel(line, $0) }
+                        for (edgeName, pixels) in [("row \(line)", row), ("column \(line)", column)] {
+                            XCTAssertTrue(pixels.allSatisfy { $0[3] == 255 }, "\(label), \(edgeName): see-through pixels.")
+                            // The source flips black/white at every pixel.  A mosaic
+                            // changes once per block at most; a blur barely at all.
+                            let flips = zip(pixels, pixels.dropFirst())
+                                .filter { abs(Int($0[0]) - Int($1[0])) > 200 }.count
+                            XCTAssertLessThan(flips, side / 8, "\(label), \(edgeName): \(flips) hard edges — the checkerboard survives.")
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     // MARK: - Live preview
 
     /// The editor masks `previewLayer` to a region.  Inside the region that has
