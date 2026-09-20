@@ -23,6 +23,7 @@ EDYTOR ZAKRYWANIA
 IMPORT ZEWSZĄD
 • Biblioteka Zdjęć
 • Aplikacja Pliki — otwórz dowolny obraz lub zrzut ekranu bezpośrednio
+• Skanuj dokumenty aparatem — oryginał nigdy nie trafia do biblioteki zdjęć
 • Przeciągnij i upuść obrazy w aplikacji
 • Rozszerzenie udostępniania — wyczyść zdjęcia bezpośrednio ze Zdjęć, Safari lub dowolnej aplikacji, bez otwierania PicStrip
 

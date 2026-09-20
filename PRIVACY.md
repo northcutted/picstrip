@@ -1,5 +1,5 @@
 # PicStrip Privacy Policy
-**Last updated: May 14, 2026**
+**Last updated: September 19, 2026**
 
 ## Overview
 PicStrip is a privacy-focused app. All photo processing happens entirely on your device. We do not collect, store, transmit, or share any of your data.
@@ -22,6 +22,11 @@ PicStrip does not collect face data. When visual redaction is enabled, PicStrip 
 PicStrip does not identify people, perform face recognition, compare faces across photos, create faceprints or biometric templates, infer identity, or use face landmarks/profiles. The only face-related result used by the app is a temporary bounding rectangle for each face detected in the photo being processed.
 
 Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared. If you save a cleaned image, the saved file is stored in your own Photos library according to your device settings; PicStrip does not store a separate copy or any separate face data.
+
+## Camera and Document Scanning
+PicStrip asks for camera access only when you tap "Scan Document". The scan is handled by Apple's system document camera and handed to PicStrip in memory, where it goes through the same on-device detection and redaction as any other image.
+
+PicStrip never saves the original, un-redacted scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
 
 ## Third-Party Services
 PicStrip does not use any third-party SDKs, analytics tools, advertising networks, or crash reporting services.

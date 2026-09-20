@@ -23,6 +23,7 @@ DÖLJ-REDIGERARE
 IMPORTERA FRÅN VAR SOM HELST
 • Foto-biblioteket
 • Filer-appen — öppna vilken bild eller skärmbild som helst direkt
+• Skanna dokument med kameran — originalet hamnar aldrig i bildbiblioteket
 • Dra och släpp bilder i appen
 • Delningstillägg — städa direkt från Foton, Safari eller vilken app som helst utan att öppna PicStrip
 

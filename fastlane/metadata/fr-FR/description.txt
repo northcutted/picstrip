@@ -23,6 +23,7 @@ Chaque détection affiche son type, son score de confiance et son niveau de risq
 IMPORTER DE N'IMPORTE OÙ
 • Bibliothèque Photos
 • App Fichiers — ouvrez directement toute image ou capture d'écran
+• Scannez des documents avec l'appareil photo — l'original n'atteint jamais votre photothèque
 • Glisser-déposer des images dans l'app
 • Extension de partage — nettoyez directement depuis Photos, Safari ou toute app, sans ouvrir PicStrip
 

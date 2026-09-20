@@ -23,6 +23,7 @@ REDACTION EDITOR
 IMPORT FROM ANYWHERE
 • Photos library
 • Files app - open any image or screenshot directly
+• Scan documents with the camera - the original never reaches your photo library
 • Drag and drop images into the app
 • Share Extension - clean directly from Photos, Safari, or any app's share sheet without opening PicStrip
 

@@ -1,4 +1,6 @@
-No login or demo credentials required. The app works entirely with photos from the device library. Select any photo to begin.
+No login or demo credentials required. Select any photo from the device library to begin.
+
+Camera: the app asks for camera access only when the reviewer taps "Scan Document", which opens Apple's system document camera (VisionKit). The scan is processed on device like any other image, is never saved to the photo library in its original form, and is discarded with the session. The camera is not used for anything else, and face handling for scans is identical to the description below.
 
 Face data information:
 

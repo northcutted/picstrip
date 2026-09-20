@@ -30,6 +30,7 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 | **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
 | **Visual PII Redaction** | Solid, blur, or pixelate redactions with 10 color options; multi-select bulk operations; 50-step undo/redo |
 | **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
+| **Document Scanning** | Scan paper with the camera straight into the editor — the un-redacted original is never saved to your photo library; multi-page scans go through batch |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
 | **Save or Replace** | Save a new cleaned asset, or replace the original in your Photos library |
 | **Flexible Export** | PNG (privacy default), JPEG, HEIC, or match original format |
@@ -58,7 +59,7 @@ PicStrip keeps full-resolution source bytes for export, but decodes bounded Imag
 Three detectors run per OCR observation: a regex rules engine (`DetectionRegistry.allRules`, compiled once at startup) fires first with higher base scores; a reused `NSDataDetector` covers phone numbers, addresses, and links; a cross-observation heuristic catches split credential labels (e.g., a "Password:" label on one line and the value on the next). Face and barcode detection run as separate Vision requests (`VNDetectFaceRectanglesRequest`, `VNDetectBarcodesRequest`). Face detection uses temporary on-device rectangles only; PicStrip does not identify people, create biometric templates, transmit face data, or retain face data after the current photo/session is cleared. Each match is scored as `baseScore × ocrConfidence`; the highest score per type wins. Every type carries a static `RiskLevel` (critical / high / medium / low) that is independent of detection confidence.
 
 **Zero runtime third-party dependencies.**
-Every framework is Apple-native: `ImageIO`, `Vision`, `Photos`, `PhotosUI`, `AppIntents`, `CoreGraphics`, `UIKit`, `SwiftUI`. No package manager dependencies appear in the final binary.
+Every framework is Apple-native: `ImageIO`, `Vision`, `VisionKit`, `AVFoundation`, `Photos`, `PhotosUI`, `AppIntents`, `CoreGraphics`, `UIKit`, `SwiftUI`. No package manager dependencies appear in the final binary.
 
 ---
 

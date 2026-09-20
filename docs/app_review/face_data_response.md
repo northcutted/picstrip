@@ -29,3 +29,7 @@ The collection, use, disclosure, sharing, storage, and retention of face data ar
 > PicStrip does not identify people, perform face recognition, compare faces across photos, create faceprints or biometric templates, infer identity, or use face landmarks/profiles. The only face-related result used by the app is a temporary bounding rectangle for each face detected in the photo being processed.
 
 > Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared.
+
+## Addendum — September 19, 2026: document scanning
+
+PicStrip can now capture a document with Apple's system document camera ("Scan Document"). A scanned page enters the same on-device flow as a photo chosen from the library, so everything above applies unchanged: face detection produces only temporary bounding rectangles for the current page, nothing is identified, compared, uploaded, or shared, and the results are discarded with the session. The original scan is never saved to the photo library by PicStrip; only the cleaned copy the user chooses to save or share persists. The camera is used for nothing else — there is no live face detection on the camera feed.

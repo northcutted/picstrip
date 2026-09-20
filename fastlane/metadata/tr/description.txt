@@ -23,6 +23,7 @@ SANSÜR EDİTÖRÜ
 HER YERDEN İÇE AKTARMA
 • Fotoğraflar kütüphanesi
 • Dosyalar uygulaması — herhangi bir görseli veya ekran görüntüsünü doğrudan açın
+• Belgeleri kamerayla tarayın — orijinali fotoğraf arşivinize hiç ulaşmaz
 • Görselleri sürükleyip uygulamaya bırakın
 • Paylaşım uzantısı — PicStrip'i açmadan Fotoğraflar, Safari veya herhangi bir uygulamadan doğrudan temizleyin
 

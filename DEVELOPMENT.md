@@ -88,6 +88,9 @@ PicStrip/
 │   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
 │   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
+│   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
+│   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
+│   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, ScannedPageEncoder
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
 │   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
 │   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
@@ -98,7 +101,7 @@ PicStrip/
 │   ├── IntentRouter.swift      # In-process hand-off from App Intents to the UI
 │   ├── Localizable.xcstrings   # All UI strings × 16 locales (shared with the share extension)
 │   ├── AppShortcuts.xcstrings  # Siri / Spotlight phrases
-│   ├── InfoPlist.xcstrings     # Localized photo-library permission prompts
+│   ├── InfoPlist.xcstrings     # Localized photo-library and camera permission prompts
 │   └── PrivacyInfo.xcprivacy  # Zero-data-collection privacy manifest
 │
 ├── PicStripShareExtension/     # Share Extension target (separate binary)
@@ -168,7 +171,8 @@ PicStrip/
 ┌─────────────────────────────────────────────────────┐
 │  Apple Frameworks                                   │
 │  ImageIO · Vision · Photos · PhotosUI · AppIntents  │
-│  CoreGraphics · UIKit · SwiftUI                     │
+│  VisionKit · AVFoundation · CoreGraphics · UIKit    │
+│  SwiftUI                                            │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -254,6 +258,22 @@ BatchSummaryView shows saved and failed counts and the downloadable audit JSON
 ```
 
 `runBatch` takes its photo sources and its saver as parameters, so unit tests drive the whole loop with in-memory data and never touch the picker or the photo library.
+
+### Document Scan Flow
+
+```
+User taps "Scan Document"
+    ↓
+DocumentScanFlow.step(for: camera permission) → present / request access / explain denial
+    ↓
+DocumentScannerView (VNDocumentCameraViewController) → ScannedDocument, held in memory
+    ↓  (acted on in the cover's onDismiss — presenting a sheet mid-dismissal can drop it)
+ScrubberViewModel.loadCaptured(CapturedPages)
+    ├─ 1 page  → ScannedPageEncoder → loadData(_:)      (the single-photo flow above)
+    └─ N pages → scannedBatchSources → BatchConfigView  (the batch flow above; no Save Mode)
+```
+
+`CapturedPages` is a count plus a `@Sendable (Int) async -> Data?` closure, so pages are encoded one at a time, tests need no camera, and a later in-app camera can feed the same path. The un-redacted capture is never written to the photo library; it is released when the batch state is cleared or the sheet is dismissed (`scannedBatchSources = []`). Captured pages have no library original, so `effectiveBatchConfig(_:)` forces `.saveAsNew`.
 
 ### Data Ownership
 
@@ -709,6 +729,7 @@ All other frameworks (Vision for OCR, Photos for saving, ImageIO for encoding) d
 |-----------|-------|------|
 | `NSPhotoLibraryAddUsageDescription` | Add-only | Saving a new cleaned asset |
 | `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" — needs read access to delete the source asset |
+| `NSCameraUsageDescription` | Camera | First tap on "Scan Document" |
 
 The app defaults to `.addOnly` authorization. Users must explicitly grant read+write if they want "Replace Original."
 
@@ -748,7 +769,7 @@ PicStrip localizes user-facing text through Apple string catalogs (English + 15 
 
 - `PicStrip/Localizable.xcstrings` — app, share extension, processing, errors, and accessibility copy
 - `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Spotlight expose
-- `PicStrip/InfoPlist.xcstrings`, `PicStripShareExtension/InfoPlist.xcstrings` — photo-library permission prompts and the share-sheet action name ("Clean with PicStrip")
+- `PicStrip/InfoPlist.xcstrings`, `PicStripShareExtension/InfoPlist.xcstrings` — photo-library and camera permission prompts and the share-sheet action name ("Clean with PicStrip")
 - `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time.
 
 **Translations are LLM-generated.** English is the canonical source; catalogs and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
@@ -769,7 +790,7 @@ A missing translation is not a build error — the app silently shows English �
 
 ### Glossary senses translators must respect
 
-*redact* = cover part of the picture (never the editorial "edit/write" family: *rédaction*, *redactar*, 編集…); *region* = an area of the image (never a territory); *strip* = remove metadata; *field* = one metadata entry. Platform terms follow Apple's localized iOS (German "Sichern", Dutch "Bewaar", Polish "Zachowaj", Simplified Chinese "存储").
+*scan* = analyse a photo for sensitive content — except in "Scan Document", which is capturing paper with the camera and takes each locale's Apple term for document scanning; *redact* = cover part of the picture (never the editorial "edit/write" family: *rédaction*, *redactar*, 編集…); *region* = an area of the image (never a territory); *strip* = remove metadata; *field* = one metadata entry. Platform terms follow Apple's localized iOS (German "Sichern", Dutch "Bewaar", Polish "Zachowaj", Simplified Chinese "存储").
 
 The term each locale uses for these concepts is recorded in [`docs/localization-glossary.md`](docs/localization-glossary.md). New and changed strings must reuse those terms.
 
@@ -904,3 +925,11 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 ### Batch Processing Must Remain Sequential
 
 Concurrent batch processing would require holding multiple decoded `UIImage` objects in memory simultaneously. On a device processing ten 12 MP photos, this exceeds available memory. The sequential loop with explicit `nil` assignments is not defensive programming overhead — it is the memory model.
+
+### Captured Pages Are Encoded Lazily
+
+A document scan is held as a `VNDocumentCameraScan` and each page is turned into bytes only when the pipeline asks for it. Extracting every page up front would hold one decoded bitmap per page (tens of megabytes each) for the life of the batch.
+
+### Scans Get No Document-Context Boost
+
+The document camera crops to the page edges, so `DetectRectanglesRequest` rarely finds a quad inside a scan and `inferDocumentContexts` does not fire. Do not "fix" this by injecting a full-frame rectangle: `applyDocumentContext` turns the context rectangle into a redaction instance, which would black out the whole page. The right fix is a scan hint that applies the boost without adding an instance.
