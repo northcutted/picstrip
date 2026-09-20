@@ -203,10 +203,7 @@ class ShareViewController: UIViewController {
             case .photos:
                 // ── Save cleaned image to Photos library ───────────────────
                 do {
-                    try await PHPhotoLibrary.shared().performChanges {
-                        let request = PHAssetCreationRequest.forAsset()
-                        request.addResource(with: .photo, data: finalData, options: nil)
-                    }
+                    try await PhotoLibraryWriter.save(finalData)
                     savedCount += 1
                 } catch {
                     // Non-fatal: continue with the remaining images.

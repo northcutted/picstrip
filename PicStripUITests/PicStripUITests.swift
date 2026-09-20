@@ -305,6 +305,52 @@ final class PicStripUITests: XCTestCase {
         )
     }
 
+    /// Saving to the photo library must complete.  PhotoKit runs the change
+    /// block on its own queue, so a main-actor-isolated block traps there —
+    /// which no unit test sees, because only a real save reaches PhotoKit.
+    @MainActor
+    func testSaveAsNewPhotoReachesThePhotoLibrary() throws {
+        let app = XCUIApplication()
+        app.resetAuthorizationStatus(for: .photos)
+
+        let tmpPath = "/tmp/picstrip_save_fixture.png"
+        if let srcURL = fixtureImageURL(),
+           let data = try? Data(contentsOf: srcURL) {
+            try? data.write(to: URL(fileURLWithPath: tmpPath))
+        }
+
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
+        app.launch()
+
+        XCTAssertTrue(
+            app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 25),
+            "Edit Redactions button should appear once the PII scan finishes."
+        )
+
+        let saveButton = app.buttons["saveButton"]
+        XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
+        saveButton.tap()
+
+        let saveAsNew = app.buttons["saveAsNewPhotoButton"]
+        XCTAssertTrue(saveAsNew.waitForExistence(timeout: 10))
+        saveAsNew.tap()
+
+        // First save on a fresh authorization: accept the add-only prompt.
+        let prompt = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.firstMatch
+        if prompt.waitForExistence(timeout: 5) {
+            let allow = prompt.buttons["Allow"]
+            (allow.exists ? allow : prompt.buttons.element(boundBy: prompt.buttons.count - 1)).tap()
+        }
+
+        // A successful save closes the review sheet; a trap kills the app.
+        let sheetClosed = NSPredicate(format: "exists == false")
+        expectation(for: sheetClosed, evaluatedWith: saveAsNew)
+        waitForExpectations(timeout: 20)
+        XCTAssertEqual(app.state, .runningForeground, "PicStrip should survive saving to Photos.")
+        XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
+    }
+
     private func makeCleanPNG() throws -> Data {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 32))
         let image = renderer.image { context in

@@ -89,7 +89,8 @@ PicStrip/
 │   ├── DetectionModels.swift   # DetectionResult / DetectedInstance / confidence and risk models
 │   ├── DetectionRule.swift     # DetectionRule + DetectionRegistry (60 regex rules)
 │   ├── PIIType.swift           # 31 types, their risk tiers, and which are redacted by default
-│   └── ExportPreset.swift      # User-facing ExportFormat and the engine-side ExportPreset
+│   ├── ExportPreset.swift      # User-facing ExportFormat and the engine-side ExportPreset
+│   └── PhotoLibraryWriter.swift # The only PhotoKit change block (must stay nonisolated)
 │
 ├── PicStrip/                   # Main app target (iOS 26+); a file-system-synchronized group
 │   ├── PicStripApp.swift       # @main entry point; drains the share extension's pending image
@@ -966,6 +967,10 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 ### Use `performAll`, Not the Variadic `perform`
 
 `ImageRequestHandler.perform(a, b, c)` throws if *any* request fails, discarding the results of the ones that succeeded — rectangle detection failing on the simulator would take OCR down with it. `performAll` reports each request separately. The `.fast` OCR retry and the default-revision face retry each create a fresh handler.
+
+### PhotoKit Change Blocks Live in `PhotoLibraryWriter` Only
+
+`PHPhotoLibrary.performChanges` runs its block on PhotoKit's own serial queue. A closure written inside a `@MainActor` type — the view model, the share extension's view controller, anything in the app target, which is `MainActor` by default — is inferred `@MainActor`, and Swift 6 asserts that at run time: the app traps the moment PhotoKit calls the block. It compiles cleanly and no unit test sees it, because only a real save reaches PhotoKit. `PicStripCore/PhotoLibraryWriter.swift` is `nonisolated`, so its block is too. A SwiftLint rule (`photo_library_change_block`) fails the build if `performChanges` appears anywhere else, and `testSaveAsNewPhotoReachesThePhotoLibrary` (UI tests) does a real save on the simulator. The same trap applies to any framework callback that is not `@Sendable` and runs off the main thread.
 
 ### Batch Processing Must Remain Sequential
 

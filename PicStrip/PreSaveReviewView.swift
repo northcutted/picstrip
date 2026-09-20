@@ -242,6 +242,7 @@ struct PreSaveReviewView: View {
                     }
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
+                    .accessibilityIdentifier("saveAsNewPhotoButton")
 
                     // Only library photos have an original to replace; images from
                     // Files, drag and drop, paste, or the Share Extension do not.

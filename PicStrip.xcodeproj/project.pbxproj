@@ -18,6 +18,8 @@
 		B0451A9EEC9A351A9DAE05C4 /* DetectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C110F60F96DA85FC4F60BA89 /* DetectionModels.swift */; };
 		B360597FAE397DC5968611D2 /* PIIScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5429861B58D7DC967E80ED5 /* PIIScanner.swift */; };
 		C0DEF0010000000000000001 /* ImageProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 279FA21610D3277B00823DAA /* ImageProcessor.swift */; };
+		C0DEF0010000000000000008 /* PhotoLibraryWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000008 /* PhotoLibraryWriter.swift */; };
+		C0DEF0030000000000000008 /* PhotoLibraryWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000008 /* PhotoLibraryWriter.swift */; };
 		C0DEF0010000000000000002 /* ExportPreset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44713883EFA9A49425AFEFDF /* ExportPreset.swift */; };
 		C0DEF0010000000000000003 /* PIIType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6758DBD560179142F8C57836 /* PIIType.swift */; };
 		C0DEF0010000000000000004 /* DetectionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C110F60F96DA85FC4F60BA89 /* DetectionModels.swift */; };
@@ -78,6 +80,7 @@
 		2C0D1E2E2FA686B80032DDDA /* PicStripUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PicStripUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2C0D20162FA6E97A0032DDDA /* PicStripShareExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = PicStripShareExtension.entitlements; sourceTree = "<group>"; };
 		431EB3CE5CD0B3735D2194EB /* AppIntents.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppIntents.framework; path = System/Library/Frameworks/AppIntents.framework; sourceTree = SDKROOT; };
+		C0DEF0020000000000000008 /* PhotoLibraryWriter.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PhotoLibraryWriter.swift; path = PicStripCore/PhotoLibraryWriter.swift; sourceTree = SOURCE_ROOT; };
 		44713883EFA9A49425AFEFDF /* ExportPreset.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExportPreset.swift; path = PicStripCore/ExportPreset.swift; sourceTree = SOURCE_ROOT; };
 		4DA6420661FE58D8EF1A57C8 /* ImageRedactor.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ImageRedactor.swift; path = PicStripCore/ImageRedactor.swift; sourceTree = SOURCE_ROOT; };
 		4E135E1B159D979239456E9F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -213,6 +216,7 @@
 				80225CB43EDF78B9490D0E5D /* DetectionRule.swift */,
 				E5429861B58D7DC967E80ED5 /* PIIScanner.swift */,
 				4DA6420661FE58D8EF1A57C8 /* ImageRedactor.swift */,
+				C0DEF0020000000000000008 /* PhotoLibraryWriter.swift */,
 				C0DEF2000000000000000001 /* Localizable.xcstrings */,
 			);
 			path = PicStripCore;
@@ -409,6 +413,7 @@
 				C0DEF0010000000000000005 /* DetectionRule.swift in Sources */,
 				C0DEF0010000000000000006 /* PIIScanner.swift in Sources */,
 				C0DEF0010000000000000007 /* ImageRedactor.swift in Sources */,
+				C0DEF0010000000000000008 /* PhotoLibraryWriter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -438,6 +443,7 @@
 				572DDA7E191B9E7AF650B417 /* DetectionRule.swift in Sources */,
 				B360597FAE397DC5968611D2 /* PIIScanner.swift in Sources */,
 				CE96047AF07FA48A7E20EB5C /* ImageRedactor.swift in Sources */,
+				C0DEF0030000000000000008 /* PhotoLibraryWriter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

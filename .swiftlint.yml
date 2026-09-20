@@ -53,3 +53,13 @@ force_cast: error
 force_try: error
 force_unwrapping: warning
 implicitly_unwrapped_optional: warning
+
+custom_rules:
+  photo_library_change_block:
+    name: "PhotoKit change block outside PhotoLibraryWriter"
+    regex: '\.performChanges(AndWait)?\b'
+    excluded: '.*PhotoLibraryWriter\.swift'
+    match_kinds:
+      - identifier
+    message: "PhotoKit runs change blocks off the main actor, so one written in a @MainActor type traps. Call PhotoLibraryWriter instead."
+    severity: error

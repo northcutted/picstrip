@@ -1244,10 +1244,7 @@ final class ScrubberViewModel {
         defer { isProcessing = false }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges {
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-            }
+            try await PhotoLibraryWriter.save(data)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
@@ -1268,11 +1265,7 @@ final class ScrubberViewModel {
         defer { isProcessing = false }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges {
-                let createRequest = PHAssetCreationRequest.forAsset()
-                createRequest.addResource(with: .photo, data: data, options: nil)
-                PHAssetChangeRequest.deleteAssets([asset] as NSArray)
-            }
+            try await PhotoLibraryWriter.save(data, deleting: asset)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")
@@ -1559,13 +1552,7 @@ final class ScrubberViewModel {
         }
 
         do {
-            try await PHPhotoLibrary.shared().performChanges { [original] in
-                let request = PHAssetCreationRequest.forAsset()
-                request.addResource(with: .photo, data: data, options: nil)
-                if let original {
-                    PHAssetChangeRequest.deleteAssets([original] as NSArray)
-                }
-            }
+            try await PhotoLibraryWriter.save(data, deleting: original)
             return originalMissing ? .savedCopyOriginalMissing : .saved
         } catch {
             return .failed
