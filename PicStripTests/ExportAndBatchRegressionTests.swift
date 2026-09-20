@@ -453,12 +453,12 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
     func testCapturedSinglePage_opensInEditorWithNoOriginalToReplace() async throws {
         let page = try Fixture.image(width: 8, height: 8)
         let scanned = ScannedBytes()
-        let viewModel = ScrubberViewModel(scanImage: { data in
-            await scanned.record(data)
+        let viewModel = ScrubberViewModel(scanImageWithHints: { data, hints in
+            await scanned.record(data, hints: hints)
             return []
         })
 
-        await viewModel.loadCaptured(CapturedPages(count: 1) { _ in page })
+        await viewModel.loadCaptured(CapturedPages(count: 1, hints: .scannedDocument) { _ in page })
         try await waitUntil { viewModel.inputImage != nil && !viewModel.isScanningPII }
 
         XCTAssertNil(viewModel.activeSheet, "One page is edited like any other image, not batched.")
@@ -466,6 +466,8 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         XCTAssertTrue(viewModel.scannedBatchSources.isEmpty)
         let seen = await scanned.all
         XCTAssertEqual(seen, [page], "The detector must see exactly the captured bytes.")
+        let hints = await scanned.hints
+        XCTAssertEqual(hints, [.scannedDocument], "A document scan must reach the detector as a whole-page document.")
     }
 
     func testCapturedSinglePage_unreadablePageIsReported() async {
@@ -479,9 +481,10 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         let viewModel = makeViewModel()
         let page = try Fixture.image(properties: [kCGImagePropertyGPSDictionary: Fixture.gps])
 
-        await viewModel.loadCaptured(CapturedPages(count: 3) { index in index == 1 ? nil : page })
+        await viewModel.loadCaptured(CapturedPages(count: 3, hints: .scannedDocument) { index in index == 1 ? nil : page })
 
         XCTAssertEqual(viewModel.activeSheet, .batch)
+        XCTAssertTrue(viewModel.scannedBatchSources.allSatisfy { $0.hints == .scannedDocument })
         XCTAssertEqual(viewModel.batchCount, 3)
         XCTAssertFalse(viewModel.batchAllowsReplaceOriginal)
 
@@ -563,7 +566,11 @@ private final class ControlledScan {
 /// Collects what the injected batch saver was asked to write.
 private actor ScannedBytes {
     private(set) var all: [Data] = []
-    func record(_ data: Data) { all.append(data) }
+    private(set) var hints: [ScanHints] = []
+    func record(_ data: Data, hints: ScanHints) {
+        all.append(data)
+        self.hints.append(hints)
+    }
 }
 
 private actor SavedCalls {

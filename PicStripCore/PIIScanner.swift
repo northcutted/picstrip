@@ -20,6 +20,23 @@ nonisolated enum PIIScannerError: Error, LocalizedError {
     }
 }
 
+// MARK: - ScanHints
+
+/// What the caller already knows about an image before it is scanned.
+nonisolated struct ScanHints: Sendable, Equatable {
+    /// The image is one document, edge to edge — a document-camera scan.
+    ///
+    /// Such an image has no rectangle for Vision to find, so without this hint
+    /// the document-context scoring never runs on exactly the images that are
+    /// most likely to be documents.  With it, the whole frame is scored as the
+    /// document; unlike a document found *inside* a photo, it is never turned
+    /// into a redaction region of its own, which would black out the whole page.
+    var wholeImageIsDocument = false
+
+    static let none = ScanHints()
+    static let scannedDocument = ScanHints(wholeImageIsDocument: true)
+}
+
 // MARK: - Scanner
 
 nonisolated struct PIIScanner {
@@ -41,7 +58,7 @@ nonisolated struct PIIScanner {
     /// `@concurrent`: always runs off the caller's actor, so invoking it from the
     /// main actor never blocks the UI on Vision or regex work.
     @concurrent
-    func scanImage(data: Data) async throws -> [DetectionResult] {
+    func scanImage(data: Data, hints: ScanHints = .none) async throws -> [DetectionResult] {
         // Stage 1: Validate — ensures a meaningful error if the caller passes
         // non-image bytes before we hand anything to Vision.
         // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
@@ -121,7 +138,11 @@ nonisolated struct PIIScanner {
         let primaryLineContexts = Self.recognizedLineContexts(from: observations)
         let faceRects = faces.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
         let barcodeContexts = Self.barcodeContexts(from: barcodes)
-        let documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
+        var documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
+        let wholeImage: WholeImageDocument? = hints.wholeImageIsDocument
+            ? WholeImageDocument(aspectRatio: Self.displayAspectRatio(of: source))
+            : nil
+        if wholeImage != nil { documentRects.append(WholeImageDocument.rect) }
 
         // Stage 3: Per-observation two-stage PII analysis with state tracking.
         var results = try Self.detectPII(in: observations)
@@ -139,7 +160,8 @@ nonisolated struct PIIScanner {
             documentRects: documentRects,
             faceRects: faceRects,
             barcodeContexts: barcodeContexts,
-            textLines: primaryLineContexts
+            textLines: primaryLineContexts,
+            wholeImage: wholeImage
         )
         results = Self.resolveCreditCardPhoneConflicts(results)
 
@@ -1135,19 +1157,31 @@ nonisolated struct PIIScanner {
         }
     }
 
+    /// The frame itself, when the caller said the image is one document
+    /// (`ScanHints.wholeImageIsDocument`).
+    nonisolated struct WholeImageDocument: Equatable {
+        /// The normalised rect that stands for the whole image.
+        static let rect = CGRect(x: 0, y: 0, width: 1, height: 1)
+        /// Long edge over short edge, in displayed pixels.  A normalised rect is
+        /// always square, so the card/page shape has to come from the image.
+        let aspectRatio: CGFloat
+    }
+
     nonisolated static func applyDocumentContext(
         results: [DetectionResult],
         documentRects: [CGRect],
         faceRects: [CGRect],
         barcodeContexts: [BarcodeContext],
-        textLines: [RecognizedLineContext]
+        textLines: [RecognizedLineContext],
+        wholeImage: WholeImageDocument? = nil
     ) -> [DetectionResult] {
         let contexts = inferDocumentContexts(
             results: results,
             documentRects: documentRects,
             faceRects: faceRects,
             barcodeContexts: barcodeContexts,
-            textLines: textLines
+            textLines: textLines,
+            wholeImage: wholeImage
         )
         guard !contexts.isEmpty else { return results }
 
@@ -1186,7 +1220,9 @@ nonisolated struct PIIScanner {
             return DetectionResult(type: result.type, score: resultScore, instances: adjustedInstances)
         }
 
-        for context in contexts {
+        // A document found inside a photo becomes a region of its own.  The whole
+        // frame never does: redacting it would leave nothing of the scan.
+        for context in contexts where !(wholeImage != nil && context.boundingBox == WholeImageDocument.rect) {
             let instance = DetectedInstance(
                 snippet: context.kind.snippet,
                 subtype: context.kind.subtype,
@@ -1247,7 +1283,8 @@ nonisolated struct PIIScanner {
         documentRects: [CGRect],
         faceRects: [CGRect],
         barcodeContexts: [BarcodeContext],
-        textLines: [RecognizedLineContext]
+        textLines: [RecognizedLineContext],
+        wholeImage: WholeImageDocument? = nil
     ) -> [DocumentContext] {
         let candidateRects = documentRects.filter { rect in
             rect.width > 0.08 && rect.height > 0.08
@@ -1267,7 +1304,9 @@ nonisolated struct PIIScanner {
             let hasBarcode = !containedBarcodes.isEmpty
             let hasPDF417 = containedBarcodes.contains(where: \.isPDF417)
 
-            let cardAspect = Self.aspectRatio(of: rect)
+            let cardAspect = (wholeImage != nil && rect == WholeImageDocument.rect)
+                ? wholeImage?.aspectRatio ?? Self.aspectRatio(of: rect)
+                : Self.aspectRatio(of: rect)
             let cardLike = (1.35...1.9).contains(cardAspect)
             let pageLike = (0.65...1.35).contains(cardAspect) || (1.9...3.0).contains(cardAspect)
 
@@ -1377,6 +1416,15 @@ nonisolated struct PIIScanner {
 
     nonisolated private static func rect(_ rect: CGRect, containsCentreOf child: CGRect) -> Bool {
         rect.contains(CGPoint(x: child.midX, y: child.midY))
+    }
+
+    /// Long edge over short edge of the image as displayed.  Orientation does not
+    /// matter for a long/short ratio, so the stored pixel size is enough.
+    nonisolated private static func displayAspectRatio(of source: CGImageSource) -> CGFloat {
+        let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any]
+        let width = (properties?[kCGImagePropertyPixelWidth] as? NSNumber)?.doubleValue ?? 1
+        let height = (properties?[kCGImagePropertyPixelHeight] as? NSNumber)?.doubleValue ?? 1
+        return aspectRatio(of: CGRect(x: 0, y: 0, width: width, height: height))
     }
 
     nonisolated private static func aspectRatio(of rect: CGRect) -> CGFloat {

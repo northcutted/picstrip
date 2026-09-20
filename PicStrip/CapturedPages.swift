@@ -13,6 +13,8 @@ import VisionKit
 /// in-memory pages, and so any later capture source can feed the same path.
 struct CapturedPages: Sendable {
     let count: Int
+    /// What is known about every page (a document scan is a document edge to edge).
+    var hints: ScanHints = .none
     /// Encoded bytes of the page at `index`; `nil` when it cannot be produced.
     let data: @Sendable (Int) async -> Data?
 }
@@ -29,7 +31,7 @@ final class ScannedDocument {
     }
 
     var pages: CapturedPages {
-        CapturedPages(count: scan.pageCount) { [self] index in
+        CapturedPages(count: scan.pageCount, hints: .scannedDocument) { [self] index in
             await pageData(at: index)
         }
     }

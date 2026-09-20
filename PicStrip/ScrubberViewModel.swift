@@ -47,6 +47,8 @@ struct BatchConfig {
 struct BatchSource {
     /// Photo library identifier of the original, when the picker supplied one.
     let assetIdentifier: String?
+    /// What is already known about the image (e.g. it is a document scan).
+    var hints: ScanHints = .none
     /// Loads the photo's raw bytes; `nil` when the item cannot be read.
     let load: @Sendable () async -> Data?
 }
@@ -408,16 +410,21 @@ final class ScrubberViewModel {
 
     // MARK: - Private
 
-    @ObservationIgnored private let scanImage: @Sendable (Data) async throws -> [DetectionResult]
+    @ObservationIgnored private let scanImage: @Sendable (Data, ScanHints) async throws -> [DetectionResult]
 
     /// Keep format/export tests independent of Vision model startup while the
     /// application continues to use the real on-device scanner by default.
     init(
-        scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult] = {
-            try await PIIScanner().scanImage(data: $0)
+        scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult] = {
+            try await PIIScanner().scanImage(data: $0, hints: $1)
         }
     ) {
-        self.scanImage = scanImage
+        self.scanImage = scanImageWithHints
+    }
+
+    /// For tests that do not care about scan hints.
+    convenience init(scanImage: @escaping @Sendable (Data) async throws -> [DetectionResult]) {
+        self.init(scanImageWithHints: { data, _ in try await scanImage(data) })
     }
 
     /// The in-flight picker load, cancelled when a newer selection supersedes it.
@@ -458,7 +465,7 @@ final class ScrubberViewModel {
     /// Used for every input that is not a Photos picker selection: Files, drag
     /// and drop, paste, the Share Extension hand-off, and UITest fixture
     /// injection (`PICSTRIP_FIXTURE` in `launchEnvironment`).
-    func loadData(_ data: Data) async {
+    func loadData(_ data: Data, hints: ScanHints = .none) async {
         loadTask?.cancel()
         loadTask = nil
         // These bytes did not come from the picker, so any previous selection no
@@ -467,7 +474,7 @@ final class ScrubberViewModel {
         selectedItem = nil
 
         let token = resetForNewImage()
-        await ingest(data, token: token)
+        await ingest(data, token: token, hints: hints)
     }
 
     /// Loads images captured inside the app.  One page opens in the editor like
@@ -479,11 +486,11 @@ final class ScrubberViewModel {
                 errorMessage = String(localized: "The document could not be scanned.")
                 return
             }
-            await loadData(data)
+            await loadData(data, hints: pages.hints)
         } else {
             batchItems = []
             scannedBatchSources = (0..<pages.count).map { index in
-                BatchSource(assetIdentifier: nil) { await pages.data(index) }
+                BatchSource(assetIdentifier: nil, hints: pages.hints) { await pages.data(index) }
             }
             activeSheet = .batch
         }
@@ -545,7 +552,7 @@ final class ScrubberViewModel {
         return token
     }
 
-    private func ingest(_ data: Data, token: UUID) async {
+    private func ingest(_ data: Data, token: UUID, hints: ScanHints = .none) async {
         let preview = await Self.makePreviewImage(from: data)
         guard loadToken == token else { return }
 
@@ -565,7 +572,7 @@ final class ScrubberViewModel {
         // so we match that coordinate space here.
         imageSize = preview.size
 
-        startPIIScan(data: data)
+        startPIIScan(data: data, hints: hints)
         await catalogSourceMetadata(from: data)
     }
 
@@ -615,7 +622,7 @@ final class ScrubberViewModel {
         }.value
     }
 
-    private func startPIIScan(data: Data) {
+    private func startPIIScan(data: Data, hints: ScanHints = .none) {
         piiScanTask?.cancel()
         let token = UUID()
         piiScanToken = token
@@ -625,7 +632,7 @@ final class ScrubberViewModel {
             let result: [DetectionResult]
             var scanError: String?
             do {
-                result = try await scanImage(data)
+                result = try await scanImage(data, hints)
             } catch {
                 // Never let a failed scan look like a clean one: tell the user so
                 // they know to check the photo themselves.
@@ -746,7 +753,7 @@ final class ScrubberViewModel {
     }
 
     /// Changes the fill colour for a specific redaction region.
-    /// Ignored if the region's current style does not support colour (e.g. `.pixelate`).
+    /// Ignored if the region's current style does not support colour (`.pixelate`, `.blur`).
     /// The mutation is undoable and clears any cached redacted image.
     func changeRedactionColor(id: String, color: RedactionColor) {
         guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
@@ -777,7 +784,7 @@ final class ScrubberViewModel {
 
     /// Applies `color` to every region whose ID is in `ids` and whose style supports colour.
     ///
-    /// Regions using `.pixelate` are silently skipped.
+    /// Regions whose style has no colour (`.pixelate`, `.blur`) are silently skipped.
     /// A single undo snapshot is pushed for the batch.
     func bulkChangeRedactionColor(ids: Set<String>, color: RedactionColor) {
         let indicesToChange = redactionRegions.indices.filter {
@@ -1278,6 +1285,7 @@ final class ScrubberViewModel {
             guard let sourceData = await source.load(),
                   let output = await Self.processBatchItem(
                       sourceData: sourceData,
+                      hints: source.hints,
                       stripMetadata: config.stripMetadata,
                       redactVisualPII: config.redactVisualPII,
                       preset: preset
@@ -1322,6 +1330,7 @@ final class ScrubberViewModel {
     @concurrent
     nonisolated private static func processBatchItem(
         sourceData: Data,
+        hints: ScanHints,
         stripMetadata: Bool,
         redactVisualPII: Bool,
         preset: ExportPreset
@@ -1331,7 +1340,7 @@ final class ScrubberViewModel {
 
         // ── Step 1: Visual PII redaction ────────────────────────────────────
         if redactVisualPII {
-            guard let scanResults = try? await PIIScanner().scanImage(data: sourceData) else {
+            guard let scanResults = try? await PIIScanner().scanImage(data: sourceData, hints: hints) else {
                 return nil
             }
             let allInstances = scanResults.flatMap(\.instances)
