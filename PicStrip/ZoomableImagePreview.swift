@@ -146,7 +146,7 @@ struct ZoomableImagePreview: View {
                 if showZoomHint {
                     Label(zoomHintText, systemImage: isAddingRedaction ? "plus.square.dashed" : "hand.draw")
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.primary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)
                         .glassEffect(in: .capsule)
@@ -386,6 +386,9 @@ struct ZoomableImagePreview: View {
             .fill(Color.red)
             .frame(width: 18, height: 18)
             .overlay(Circle().strokeBorder(Color.white, lineWidth: 2))
+            // The dot stays 18 pt; the thing you grab is a full 44 pt target.
+            .frame(width: 44, height: 44)
+            .contentShape(Circle())
             .position(
                 x: rect.maxX * size.width,
                 y: rect.maxY * size.height

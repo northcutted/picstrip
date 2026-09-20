@@ -82,6 +82,7 @@ struct BatchConfigView: View {
                 // ── Privacy Policy toggles ──────────────────────────────────
                 VStack(alignment: .leading, spacing: 6) {
                     Text("PRIVACY POLICY")
+                        .accessibilityAddTraits(.isHeader)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
@@ -106,6 +107,7 @@ struct BatchConfigView: View {
                 if viewModel.batchAllowsReplaceOriginal {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("SAVE MODE")
+                            .accessibilityAddTraits(.isHeader)
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 4)
@@ -117,10 +119,14 @@ struct BatchConfigView: View {
                         .pickerStyle(.segmented)
 
                         if config.saveMode == .replaceOriginal {
-                            Text("Original photos will be permanently deleted after cleaning.")
-                                .font(.caption)
-                                .foregroundStyle(.red)
-                                .padding(.horizontal, 4)
+                            Label {
+                                Text("Original photos will be permanently deleted after cleaning.")
+                                    .foregroundStyle(.primary)
+                            } icon: {
+                                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                            }
+                            .font(.caption)
+                            .padding(.horizontal, 4)
                         }
                     }
                 }
@@ -128,6 +134,7 @@ struct BatchConfigView: View {
                 // ── Export Format picker ────────────────────────────────────
                 VStack(alignment: .leading, spacing: 6) {
                     Text("EXPORT FORMAT")
+                        .accessibilityAddTraits(.isHeader)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 4)
@@ -178,10 +185,14 @@ struct BatchConfigView: View {
 
                 // Error banner (e.g. photo library access denied)
                 if let error = viewModel.batchErrorMessage {
-                    Label(error, systemImage: "exclamationmark.triangle.fill")
-                        .font(.footnote)
-                        .foregroundStyle(.red)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+                    // Colour on the icon only: red footnote text is not legible enough.
+                    Label {
+                        Text(error).foregroundStyle(.primary)
+                    } icon: {
+                        Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                    }
+                    .font(.footnote)
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .padding(16)

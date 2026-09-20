@@ -441,10 +441,13 @@ private struct ExtensionConfigView: View {
                 .padding(.bottom, 20)
 
             if let error = viewModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Label {
+                    Text(error).foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                }
+                .font(.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 12)
                     .transition(.opacity)

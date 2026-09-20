@@ -134,8 +134,6 @@ struct ContentView: View {
                                     showingAbout = true
                                 } label: {
                                     Image(systemName: "questionmark.circle")
-                                        .font(.system(size: 18, weight: .medium))
-                                        .foregroundStyle(.primary.opacity(0.7))
                                 }
                                 .accessibilityIdentifier("infoButton")
                                 .accessibilityLabel("About PicStrip")
@@ -345,7 +343,7 @@ struct ContentView: View {
                     .font(.system(.largeTitle, design: .rounded).weight(.bold))
                     .foregroundStyle(.primary)
 
-                // Fixed-height clip zone keeps layout stable as motto length varies.
+                // The clip zone keeps the sliding transition inside the motto's own box.
                 ZStack {
                     Text(mottos[mottoIndex])
                         .font(.subheadline)
@@ -358,7 +356,9 @@ struct ContentView: View {
                             removal: .move(edge: .top).combined(with: .opacity)
                         ))
                 }
-                .frame(height: 44)
+                // A minimum, not a fixed height: at large text sizes — and in the
+                // longer translations — a motto needs two or three lines.
+                .frame(minHeight: 44)
                 .clipped()
                 // Scoped to the motto: a global `withAnimation` would also animate
                 // any layout that happens to settle in the same transaction.
@@ -393,7 +393,10 @@ struct ContentView: View {
 
             Spacer()
 
-            // Action buttons
+            // Action buttons.  One container, so the pills share a single glass
+            // pass; its spacing is the *merge* distance and stays below the 12 pt
+            // gap so they never fuse into one shape.
+            GlassEffectContainer(spacing: 8) {
             VStack(spacing: 12) {
                 PhotosPicker(
                     selection: $viewModel.selectedItem,
@@ -453,6 +456,7 @@ struct ContentView: View {
                 .accessibilityIdentifier("browseFilesButton")
                 .accessibilityLabel("Browse files to select an image")
 
+            }
             }
             .buttonBorderShape(.capsule)
             .padding(.horizontal, 32)
@@ -704,7 +708,7 @@ struct ContentView: View {
                         }
                     } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.subheadline.weight(.semibold))
                             .frame(width: 20, height: 20)
                     }
                     .buttonStyle(.glass)
@@ -744,7 +748,9 @@ struct ContentView: View {
         VStack(spacing: 12) {
             Image(systemName: "photo.badge.plus")
                 .font(.system(size: 56, weight: .thin))
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 .foregroundStyle(.secondary)
+                .accessibilityHidden(true)
             Text("Select a Photo")
                 .font(.headline)
                 .foregroundStyle(.secondary)
@@ -761,10 +767,12 @@ struct ContentView: View {
 
     private var processingOverlay: some View {
         ZStack {
-            Color(.systemBackground).opacity(0.7)
+            // A material, not a translucent colour: it turns opaque under Reduce
+            // Transparency, which a raw `.opacity(0.7)` never does.
+            Rectangle().fill(.regularMaterial)
             ProgressView("Processing…")
                 .padding()
-                .glassEffect(in: .rect(cornerRadius: 12))
+                .glassEffect(in: .rect(cornerRadius: 16))
         }
     }
 
@@ -775,10 +783,13 @@ struct ContentView: View {
 
             // Error banner
             if let error = viewModel.errorMessage {
-                Label(error, systemImage: "exclamationmark.triangle.fill")
-                    .font(.footnote)
-                    .foregroundStyle(.red)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                Label {
+                    Text(error).foregroundStyle(.primary)
+                } icon: {
+                    Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
+                }
+                .font(.footnote)
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
 
             // ── Redaction entry — adapts to PII scan state ─────────────
@@ -815,14 +826,12 @@ struct ContentView: View {
 
                 MetadataBadgeRow(
                     metadata: metadata,
-                    onPhoto: false,
                     selectedCategory: Binding(
                         get: { isPanelOpen ? visiblePanelCategory : nil },
                         set: { newValue in
                             if let newValue { openPanel(category: newValue) } else { closePanel() }
                         }
-                    ),
-                    trailingPill: nil
+                    )
                 )
                 .padding(.horizontal, -4)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -889,10 +898,10 @@ struct ContentView: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 11)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 12))
         .overlay(
-            RoundedRectangle(cornerRadius: 14)
-                .strokeBorder(Color.primary.opacity(0.06), lineWidth: 1)
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(Color(.separator), lineWidth: 1)
         )
         .accessibilityLabel("Scanning for sensitive data")
     }
@@ -925,29 +934,30 @@ struct ContentView: View {
                 if regionCount == 0 {
                     Text("None")
                         .font(.caption)
-                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.tertiary))
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                 } else {
                     Text("^[\(regionCount) region](inflect: true)")
                         .font(.caption)
-                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.7)) : AnyShapeStyle(.secondary))
+                        .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red) : AnyShapeStyle(.secondary))
                 }
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 11, weight: .semibold))
-                    .foregroundStyle(hasPIIDetections ? AnyShapeStyle(Color.red.opacity(0.5)) : AnyShapeStyle(.tertiary))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.tertiary)
+                    .accessibilityHidden(true)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 11)
             .background(
                 hasPIIDetections
                     ? AnyShapeStyle(Color.red.opacity(0.08))
-                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
+                    : AnyShapeStyle(Color(.tertiarySystemFill)),
                 in: RoundedRectangle(cornerRadius: 12)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
                     .strokeBorder(
-                        hasPIIDetections ? Color.red.opacity(0.20) : Color.primary.opacity(0.06),
+                        hasPIIDetections ? Color.red.opacity(0.35) : Color(.separator),
                         lineWidth: 1
                     )
             )
@@ -1077,6 +1087,107 @@ nonisolated private struct PillLabel: View {
     }
 }
 
+// MARK: - Redaction style / colour pickers
+
+/// The style choices, shared by the single-region panel and the bulk panel.
+///
+/// Text follows Dynamic Type; at accessibility sizes four chips no longer fit
+/// side by side, so they wrap into two rows instead of shrinking past legibility.
+private struct RedactionStylePicker: View {
+    /// `nil` when the selected regions do not share one style.
+    let selection: RedactionStyle?
+    let isBulk: Bool
+    let onSelect: (RedactionStyle) -> Void
+
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    var body: some View {
+        let columns = dynamicTypeSize.isAccessibilitySize ? 2 : RedactionStyle.allCases.count
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: columns), spacing: 6) {
+            ForEach(RedactionStyle.allCases, id: \.self) { style in
+                let isActive = selection == style
+                Button {
+                    onSelect(style)
+                } label: {
+                    VStack(spacing: 3) {
+                        Image(systemName: style.symbolName)
+                            .font(.subheadline)
+                            .fontWeight(isActive ? .bold : .regular)
+                        Text(style.displayName)
+                            .font(.caption2)
+                            .fontWeight(isActive ? .semibold : .regular)
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
+                    }
+                    .foregroundStyle(isActive ? Color.accentColor : .primary)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                    .background(
+                        isActive ? AnyShapeStyle(Color.accentColor.opacity(0.12)) : AnyShapeStyle(Color(.tertiarySystemFill)),
+                        in: RoundedRectangle(cornerRadius: 8)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(isActive ? Color.accentColor.opacity(0.5) : Color(.separator), lineWidth: 1)
+                    )
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    isBulk ? "Apply \(style.displayName) style to selected regions" : "\(style.displayName) style"
+                )
+                .accessibilityAddTraits(isActive ? .isSelected : [])
+                .accessibilityIdentifier(isBulk ? "bulkStyleButton-\(style.rawValue)" : "styleButton-\(style.rawValue)")
+            }
+        }
+    }
+}
+
+/// The colour swatches, shared by the single-region panel and the bulk panel.
+/// The swatch art is 28 pt; its button is a full 44 pt touch target.
+private struct RedactionColorPicker: View {
+    /// `nil` when the selected regions do not share one colour.
+    let selection: RedactionColor?
+    let isBulk: Bool
+    let onSelect: (RedactionColor) -> Void
+
+    var body: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 4)], spacing: 4) {
+            ForEach(RedactionColor.allCases, id: \.self) { color in
+                let isActive = selection == color
+                Button {
+                    onSelect(color)
+                } label: {
+                    ZStack {
+                        Circle()
+                            .fill(color.color)
+                            .frame(width: 28, height: 28)
+                        if color.isLight {
+                            Circle()
+                                .strokeBorder(Color(.separator), lineWidth: 1)
+                                .frame(width: 28, height: 28)
+                        }
+                        if isActive {
+                            Circle()
+                                .strokeBorder(Color.accentColor, lineWidth: 2.5)
+                                .frame(width: 34, height: 34)
+                            Image(systemName: "checkmark")
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(color.isLight ? Color.black : Color.white)
+                        }
+                    }
+                    .frame(width: 44, height: 44)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(
+                    isBulk ? "Apply \(color.displayName) color to selected regions" : "\(color.displayName) color"
+                )
+                .accessibilityAddTraits(isActive ? .isSelected : [])
+                .accessibilityIdentifier(isBulk ? "bulkColorButton-\(color.rawValue)" : "colorButton-\(color.rawValue)")
+            }
+        }
+    }
+}
+
 // MARK: - Redaction Editor Drawer
 
 /// Bottom-panel UI that replaces `controlPanel` while the user is editing redaction regions.
@@ -1162,7 +1273,6 @@ private struct RedactionEditorDrawer: View {
                         .font(.caption.weight(.semibold))
                     }
                     .buttonStyle(.borderedProminent)
-                    .tint(isAddingRedaction ? .secondary : .accentColor)
                     .controlSize(.small)
                     .accessibilityIdentifier("addRedactionButton")
                     .accessibilityLabel(isAddingRedaction ? "Cancel drawing redaction" : "Draw a new redaction region")
@@ -1204,14 +1314,15 @@ private struct RedactionEditorDrawer: View {
             if isAddingRedaction && !isMultiSelectMode {
                 HStack(spacing: 8) {
                     Image(systemName: "hand.draw")
-                        .font(.system(size: 13, weight: .medium))
+                        .imageScale(.small)
+                        .foregroundStyle(.orange)
                         .accessibilityHidden(true)
                     Text(canSelectObjects
                          ? "Drag on the photo to draw a redaction box, or tap an object"
                          : "Drag on the photo to draw a redaction box")
                         .font(.caption)
+                        .foregroundStyle(.primary)
                 }
-                .foregroundStyle(.orange)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 8)
                 .transition(.opacity.combined(with: .move(edge: .top)))
@@ -1225,8 +1336,9 @@ private struct RedactionEditorDrawer: View {
                     Spacer()
                     VStack(spacing: 6) {
                         Image(systemName: "square.dashed")
-                            .font(.system(size: 22, weight: .light))
+                            .font(.title2.weight(.light))
                             .foregroundStyle(.tertiary)
+                            .accessibilityHidden(true)
                         Text("No redaction regions")
                             .font(.caption)
                             .foregroundStyle(.tertiary)
@@ -1393,40 +1505,8 @@ private struct RedactionEditorDrawer: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 6) {
-                    ForEach(RedactionStyle.allCases, id: \.self) { style in
-                        let isActive = region.style == style
-                        Button {
-                            onChangeStyle(region.id, style)
-                        } label: {
-                            VStack(spacing: 3) {
-                                Image(systemName: style.symbolName)
-                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
-                                Text(style.displayName)
-                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
-                            }
-                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 7)
-                            .background(
-                                isActive
-                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
-                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
-                                in: RoundedRectangle(cornerRadius: 8)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .strokeBorder(
-                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
-                                        lineWidth: 1
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("\(style.displayName) style")
-                        .accessibilityAddTraits(isActive ? .isSelected : [])
-                        .accessibilityIdentifier("styleButton-\(style.rawValue)")
-                    }
+                RedactionStylePicker(selection: region.style, isBulk: false) { style in
+                    onChangeStyle(region.id, style)
                 }
             }
 
@@ -1437,40 +1517,8 @@ private struct RedactionEditorDrawer: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
-                        spacing: 8
-                    ) {
-                        ForEach(RedactionColor.allCases, id: \.self) { color in
-                            let isActive = region.color == color
-                            Button {
-                                onChangeColor(region.id, color)
-                            } label: {
-                                ZStack {
-                                    Circle()
-                                        .fill(color.color)
-                                        .frame(width: 28, height: 28)
-                                    if color.isLight {
-                                        Circle()
-                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
-                                            .frame(width: 28, height: 28)
-                                    }
-                                    if isActive {
-                                        Circle()
-                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
-                                            .frame(width: 34, height: 34)
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
-                                    }
-                                }
-                                .frame(width: 36, height: 36)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("\(color.displayName) color")
-                            .accessibilityAddTraits(isActive ? .isSelected : [])
-                            .accessibilityIdentifier("colorButton-\(color.rawValue)")
-                        }
+                    RedactionColorPicker(selection: region.color, isBulk: false) { color in
+                        onChangeColor(region.id, color)
                     }
                 }
             }
@@ -1520,39 +1568,8 @@ private struct RedactionEditorDrawer: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.secondary)
 
-                HStack(spacing: 6) {
-                    ForEach(RedactionStyle.allCases, id: \.self) { style in
-                        let isActive = sharedStyle == style
-                        Button {
-                            onBulkChangeStyle(multiSelectedIDs, style)
-                        } label: {
-                            VStack(spacing: 3) {
-                                Image(systemName: style.symbolName)
-                                    .font(.system(size: 15, weight: isActive ? .bold : .regular))
-                                Text(style.displayName)
-                                    .font(.system(size: 9, weight: isActive ? .semibold : .regular))
-                            }
-                            .foregroundStyle(isActive ? Color.accentColor : .secondary)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 7)
-                            .background(
-                                isActive
-                                    ? AnyShapeStyle(Color.accentColor.opacity(0.12))
-                                    : AnyShapeStyle(Color(.secondarySystemGroupedBackground)),
-                                in: RoundedRectangle(cornerRadius: 8)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 8)
-                                    .strokeBorder(
-                                        isActive ? Color.accentColor.opacity(0.4) : Color.primary.opacity(0.06),
-                                        lineWidth: 1
-                                    )
-                            )
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Apply \(style.displayName) style to selected regions")
-                        .accessibilityAddTraits(isActive ? .isSelected : [])
-                    }
+                RedactionStylePicker(selection: sharedStyle, isBulk: true) { style in
+                    onBulkChangeStyle(multiSelectedIDs, style)
                 }
             }
 
@@ -1563,39 +1580,8 @@ private struct RedactionEditorDrawer: View {
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
 
-                    LazyVGrid(
-                        columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 6),
-                        spacing: 8
-                    ) {
-                        ForEach(RedactionColor.allCases, id: \.self) { color in
-                            let isActive = sharedColor == color
-                            Button {
-                                onBulkChangeColor(multiSelectedIDs, color)
-                            } label: {
-                                ZStack {
-                                    Circle()
-                                        .fill(color.color)
-                                        .frame(width: 28, height: 28)
-                                    if color.isLight {
-                                        Circle()
-                                            .strokeBorder(Color.primary.opacity(0.18), lineWidth: 1)
-                                            .frame(width: 28, height: 28)
-                                    }
-                                    if isActive {
-                                        Circle()
-                                            .strokeBorder(Color.accentColor, lineWidth: 2.5)
-                                            .frame(width: 34, height: 34)
-                                        Image(systemName: "checkmark")
-                                            .font(.system(size: 10, weight: .bold))
-                                            .foregroundStyle(color.isLight ? Color.black : Color.white)
-                                    }
-                                }
-                                .frame(width: 36, height: 36)
-                            }
-                            .buttonStyle(.plain)
-                            .accessibilityLabel("Apply \(color.displayName) color to selected regions")
-                            .accessibilityAddTraits(isActive ? .isSelected : [])
-                        }
+                    RedactionColorPicker(selection: sharedColor, isBulk: true) { color in
+                        onBulkChangeColor(multiSelectedIDs, color)
                     }
                 }
             }
@@ -1635,7 +1621,7 @@ private struct RedactionEditorDrawer: View {
                             .foregroundStyle(.accent)
                     }
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .font(.callout.weight(.semibold))
                 .frame(width: 28, height: 28)
                 .background(
                     (region.type.map { riskColor($0.riskLevel) } ?? Color.accentColor).opacity(0.12),
@@ -1678,17 +1664,17 @@ private struct RedactionEditorDrawer: View {
                     }
                 }
 
-                Spacer(minLength: 4)
+                Spacer(minLength: 8)
 
                 // ── Trailing: checkbox in multi-select; toggle+delete in normal ──
                 if isMultiSelectMode {
                     Image(systemName: isMultiChecked ? "checkmark.circle.fill" : "circle")
                         .font(.title3)
                         .foregroundStyle(isMultiChecked ? Color.accentColor : .secondary)
-                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
                         .accessibilityHidden(true)
                 } else {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 0) {
                         // Enable / disable toggle
                         Button {
                             onToggleRegion(region.id)
@@ -1696,7 +1682,7 @@ private struct RedactionEditorDrawer: View {
                             Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
                                 .font(.title3)
                                 .foregroundStyle(region.isEnabled ? .red : .secondary)
-                                .frame(width: 36, height: 36)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
@@ -1710,9 +1696,9 @@ private struct RedactionEditorDrawer: View {
                             onDeleteRegion(region.id)
                         } label: {
                             Image(systemName: "trash")
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.footnote.weight(.medium))
                                 .foregroundStyle(.red)
-                                .frame(width: 30, height: 30)
+                                .frame(width: 44, height: 44)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)

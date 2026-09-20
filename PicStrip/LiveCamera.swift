@@ -329,28 +329,32 @@ struct LiveCameraView: View {
             .accessibilityHidden(true)
 
             VStack {
-                HStack {
-                    Button {
-                        onFinish(.cancelled)
-                    } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .semibold))
-                            .frame(width: 20, height: 20)
-                    }
-                    .buttonStyle(.glass)
-                    .buttonBorderShape(.circle)
-                    .accessibilityLabel("Close camera")
-                    .accessibilityIdentifier("liveCameraCloseButton")
-                    Spacer()
-                }
+                // The two glass elements over the video share one container.
+                GlassEffectContainer(spacing: 10) {
+                    VStack(spacing: 4) {
+                        HStack {
+                            Button {
+                                onFinish(.cancelled)
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.subheadline.weight(.semibold))
+                                    .frame(width: 20, height: 20)
+                            }
+                            .buttonStyle(.glass)
+                            .buttonBorderShape(.circle)
+                            .accessibilityLabel("Close camera")
+                            .accessibilityIdentifier("liveCameraCloseButton")
+                            Spacer()
+                        }
 
-                Text("Covered areas will be redacted. You can change them after the photo is taken.")
-                    .font(.caption.weight(.semibold))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .glassEffect(in: .capsule)
-                    .padding(.top, 4)
+                        Text("Covered areas will be redacted. You can change them after the photo is taken.")
+                            .font(.caption.weight(.semibold))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .glassEffect(in: .rect(cornerRadius: 16))
+                    }
+                }
 
                 Spacer()
 

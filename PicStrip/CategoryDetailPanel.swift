@@ -24,8 +24,8 @@ struct CategoryDetailPanel: View {
         VStack(spacing: 0) {
             // Drag handle
             Capsule()
-                .fill(Color.white.opacity(0.4))
-                .frame(width: 36, height: 4)
+                .fill(.secondary)
+                .frame(width: 36, height: 5)
                 .padding(.top, 8)
                 .padding(.bottom, 4)
                 .accessibilityHidden(true)
