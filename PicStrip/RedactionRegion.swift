@@ -58,6 +58,8 @@ struct RedactionRegion: Identifiable, Hashable {
     var style: RedactionStyle = .solid
     /// Fill colour for this region. Ignored when the style obscures the source pixels (`.pixelate`, `.blur`).
     var color: RedactionColor = .black
+    /// How hard `.pixelate` / `.blur` scramble this region; see `RedactionStrength`.
+    var strength: Double = RedactionStrength.standard
 
     var displayName: String {
         subtype?.displayName ?? type?.description ?? String(localized: "Custom Redaction")
@@ -73,7 +75,7 @@ struct RedactionRegion: Identifiable, Hashable {
 
     /// Converts this region into a `RedactionSpec` suitable for the rendering pipeline.
     var spec: RedactionSpec {
-        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled)
+        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled, strength: strength)
     }
 
     static func detected(

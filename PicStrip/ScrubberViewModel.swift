@@ -916,7 +916,30 @@ final class ScrubberViewModel {
         redactedUIImage = nil
     }
 
+    /// Changes how hard a `.pixelate` / `.blur` region scrambles what is under it.
+    /// The mutation is undoable and clears any cached redacted image.
+    func changeRedactionStrength(id: String, strength: Double) {
+        bulkChangeRedactionStrength(ids: [id], strength: strength)
+    }
+
     // MARK: - Bulk Redaction Operations
+
+    /// Applies `strength` to every region in `ids` whose style uses it.
+    /// A single undo snapshot is pushed for the batch.
+    func bulkChangeRedactionStrength(ids: Set<String>, strength: Double) {
+        let strength = RedactionStrength.clamped(strength)
+        let indicesToChange = redactionRegions.indices.filter {
+            ids.contains(redactionRegions[$0].id)
+                && redactionRegions[$0].style.supportsStrength
+                && redactionRegions[$0].strength != strength
+        }
+        guard !indicesToChange.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indicesToChange {
+            redactionRegions[index].strength = strength
+        }
+        redactedUIImage = nil
+    }
 
     /// Applies `style` to every region whose ID is in `ids`.
     ///

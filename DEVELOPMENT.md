@@ -393,7 +393,7 @@ The method is `@concurrent`, so it always runs off the caller's actor. It throws
 
 **File:** `PicStripCore/ImageRedactor.swift`
 
-Burns styled redaction blocks over image regions: four styles (`RedactionStyle`: solid, crosshatch, pixelate, blur) in twelve colours (`RedactionColor`), described per region by a `RedactionSpec`. Solid and crosshatch are painted in one `UIGraphicsImageRenderer` pass. Pixelate and blur run a Core Image pre-pass — blur mosaics first and then blurs the mosaic, so it cannot be sharpened back — and fall back to a solid fill if Core Image cannot run, so a region the user asked to hide is never left readable.
+Burns styled redaction blocks over image regions: four styles (`RedactionStyle`: solid, crosshatch, pixelate, blur) in twelve colours (`RedactionColor`), described per region by a `RedactionSpec`. Solid and crosshatch are painted in one `UIGraphicsImageRenderer` pass; crosshatch is an **opaque** fill with a contrasting diagonal lattice whose spacing scales with the region and the image (a see-through fill would leave the text readable, and fixed hairlines vanish at photo resolution). Pixelate and blur run a Core Image pre-pass — blur mosaics first and then blurs the mosaic, so it cannot be sharpened back — and fall back to a solid fill if Core Image cannot run, so a region the user asked to hide is never left readable. Their `RedactionSpec.strength` (0–1 in 0.25 steps, `RedactionStrength`) sets the mosaic block size: 0 is the fixed size PicStrip used before strength existed, so no setting is weaker than that, and the default 0.5 is stronger. Regions are grouped by style and strength, one Core Image pass per group.
 
 ```swift
 struct ImageRedactor {

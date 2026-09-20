@@ -351,6 +351,49 @@ final class PicStripUITests: XCTestCase {
         XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
     }
 
+    /// Blur and pixelate offer a strength slider; solid and crosshatch do not.
+    @MainActor
+    func testStrengthSliderAppearsOnlyForBlurAndPixelate() throws {
+        let app = XCUIApplication()
+
+        let tmpPath = "/tmp/picstrip_strength_fixture.png"
+        if let srcURL = fixtureImageURL(),
+           let data = try? Data(contentsOf: srcURL) {
+            try? data.write(to: URL(fileURLWithPath: tmpPath))
+        }
+
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
+        app.launch()
+
+        let editRedactionsButton = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(editRedactionsButton.waitForExistence(timeout: 25))
+        editRedactionsButton.tap()
+
+        let firstRow = app.descendants(matching: .any)
+            .matching(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch
+        XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
+        firstRow.tap()
+
+        let slider = app.sliders["strengthSlider"]
+        XCTAssertTrue(app.buttons["styleButton-solid"].waitForExistence(timeout: 5))
+        XCTAssertFalse(slider.exists, "Solid has no strength.")
+
+        app.buttons["styleButton-blur"].tap()
+        XCTAssertTrue(slider.waitForExistence(timeout: 5), "Blur should offer a strength slider.")
+        XCTAssertFalse(app.buttons["colorButton-black"].exists, "Blur has no colour.")
+
+        slider.adjust(toNormalizedSliderPosition: 1)
+        XCTAssertTrue(app.buttons["undoRedactionButton"].isEnabled, "A strength change is undoable.")
+        if let dump = ProcessInfo.processInfo.environment["PICSTRIP_UITEST_DUMP"] {
+            try? XCUIScreen.main.screenshot().pngRepresentation.write(to: URL(fileURLWithPath: dump))
+        }
+
+        app.buttons["styleButton-crosshatch"].tap()
+        XCTAssertTrue(app.buttons["colorButton-black"].waitForExistence(timeout: 5))
+        XCTAssertFalse(slider.exists, "Crosshatch has no strength.")
+    }
+
     private func makeCleanPNG() throws -> Data {
         let renderer = UIGraphicsImageRenderer(size: CGSize(width: 32, height: 32))
         let image = renderer.image { context in

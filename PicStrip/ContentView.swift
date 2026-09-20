@@ -591,11 +591,17 @@ struct ContentView: View {
                     onChangeColor: { id, color in
                         viewModel.changeRedactionColor(id: id, color: color)
                     },
+                    onChangeStrength: { id, strength in
+                        viewModel.changeRedactionStrength(id: id, strength: strength)
+                    },
                     onBulkChangeStyle: { ids, style in
                         viewModel.bulkChangeRedactionStyle(ids: ids, style: style)
                     },
                     onBulkChangeColor: { ids, color in
                         viewModel.bulkChangeRedactionColor(ids: ids, color: color)
+                    },
+                    onBulkChangeStrength: { ids, strength in
+                        viewModel.bulkChangeRedactionStrength(ids: ids, strength: strength)
                     },
                     onBulkDelete: { ids in
                         viewModel.bulkDeleteRedactionRegions(ids: ids)
@@ -1188,6 +1194,50 @@ private struct RedactionColorPicker: View {
     }
 }
 
+/// How hard pixelate / blur scramble a region, shared by the single-region
+/// panel and the bulk panel.
+///
+/// The thumb moves freely but the change is committed once, when the drag
+/// ends, so one adjustment is one undo step.
+private struct RedactionStrengthSlider: View {
+    /// `nil` when the selected regions do not share one strength.
+    let selection: Double?
+    let isBulk: Bool
+    let onCommit: (Double) -> Void
+
+    @State private var value = RedactionStrength.standard
+
+    var body: some View {
+        Slider(
+            value: $value,
+            in: RedactionStrength.range,
+            step: RedactionStrength.step
+        ) {
+            Text("Strength")
+        } minimumValueLabel: {
+            Image(systemName: "circle.dotted")
+                .accessibilityHidden(true)
+        } maximumValueLabel: {
+            Image(systemName: "circle.fill")
+                .accessibilityHidden(true)
+        } onEditingChanged: { isEditing in
+            if !isEditing { onCommit(value) }
+        }
+        .frame(minHeight: 44)
+        .foregroundStyle(.secondary)
+        .accessibilityValue(Text(value, format: .percent.precision(.fractionLength(0))))
+        // VoiceOver's adjust actions change the value without an editing phase.
+        .accessibilityAdjustableAction { direction in
+            let delta = direction == .increment ? RedactionStrength.step : -RedactionStrength.step
+            value = RedactionStrength.clamped(value + delta)
+            onCommit(value)
+        }
+        .accessibilityIdentifier(isBulk ? "bulkStrengthSlider" : "strengthSlider")
+        .onAppear { value = selection ?? RedactionStrength.standard }
+        .onChange(of: selection) { _, new in value = new ?? RedactionStrength.standard }
+    }
+}
+
 // MARK: - Redaction Editor Drawer
 
 /// Bottom-panel UI that replaces `controlPanel` while the user is editing redaction regions.
@@ -1217,10 +1267,12 @@ private struct RedactionEditorDrawer: View {
     let onDeleteRegion: (String) -> Void
     let onChangeStyle: (String, RedactionStyle) -> Void
     let onChangeColor: (String, RedactionColor) -> Void
+    let onChangeStrength: (String, Double) -> Void
 
     // Bulk callbacks
     let onBulkChangeStyle: (Set<String>, RedactionStyle) -> Void
     let onBulkChangeColor: (Set<String>, RedactionColor) -> Void
+    let onBulkChangeStrength: (Set<String>, Double) -> Void
     let onBulkDelete: (Set<String>) -> Void
     let onBulkToggle: (Set<String>) -> Void
 
@@ -1522,6 +1574,21 @@ private struct RedactionEditorDrawer: View {
                     }
                 }
             }
+
+            // ── Strength row (pixelate / blur only) ───────────────────────
+            if region.style.supportsStrength {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Strength")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    RedactionStrengthSlider(selection: region.strength, isBulk: false) { strength in
+                        onChangeStrength(region.id, strength)
+                    }
+                    // A new region gets a new slider, not the last one's thumb.
+                    .id(region.id)
+                }
+            }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -1555,6 +1622,13 @@ private struct RedactionEditorDrawer: View {
         // Show colour row unless NONE of the selected regions can take a colour
         let showColorRow = selectedRegions.contains { $0.style.supportsColor }
 
+        // Strength applies to pixelate / blur regions only
+        let strengthRegions = selectedRegions.filter(\.style.supportsStrength)
+        let sharedStrength: Double? = {
+            let strengths = Set(strengthRegions.map(\.strength))
+            return strengths.count == 1 ? strengths.first : nil
+        }()
+
         VStack(alignment: .leading, spacing: 10) {
 
             // Context label
@@ -1582,6 +1656,19 @@ private struct RedactionEditorDrawer: View {
 
                     RedactionColorPicker(selection: sharedColor, isBulk: true) { color in
                         onBulkChangeColor(multiSelectedIDs, color)
+                    }
+                }
+            }
+
+            // ── Strength row ──────────────────────────────────────────────
+            if !strengthRegions.isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Strength")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+
+                    RedactionStrengthSlider(selection: sharedStrength, isBulk: true) { strength in
+                        onBulkChangeStrength(multiSelectedIDs, strength)
                     }
                 }
             }

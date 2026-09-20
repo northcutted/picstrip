@@ -12,7 +12,7 @@ import UIKit
 nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Codable {
     /// Flat opaque fill — the classic government-document redaction bar.
     case solid
-    /// Dense diagonal crosshatch lines over a semi-transparent base fill.
+    /// Opaque fill with a contrasting diagonal lattice drawn over it.
     case crosshatch
     /// Pixellates (mosaics) the underlying image region. The `color` property is ignored.
     case pixelate
@@ -43,6 +43,37 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
     /// `true` for styles that scramble the pixels underneath (Core Image pass)
     /// instead of painting over them.
     var obscuresSourcePixels: Bool { self == .pixelate || self == .blur }
+
+    /// Whether `RedactionSpec.strength` changes the rendered output.
+    var supportsStrength: Bool { obscuresSourcePixels }
+}
+
+// MARK: - RedactionStrength
+
+/// How hard `.pixelate` and `.blur` scramble a region, from 0 (lightest) to 1.
+///
+/// The lightest setting is what PicStrip shipped before strength existed, so no
+/// setting is weaker than that; the default is deliberately stronger.
+nonisolated enum RedactionStrength {
+    static let range: ClosedRange<Double> = 0...1
+    /// The UI moves in these steps, which also bounds how many Core Image
+    /// passes one export can need (one per style and distinct strength).
+    static let step = 0.25
+    static let standard = 0.5
+
+    static func clamped(_ value: Double) -> Double {
+        let snapped = (value / step).rounded() * step
+        return min(range.upperBound, max(range.lowerBound, snapped))
+    }
+
+    /// Mosaic block edge, in pixels, for a region whose short side is `shortSide`.
+    /// Blur uses the same blocks and then smooths them, so it scales with this too.
+    static func blockSize(shortSide: CGFloat, strength: Double) -> CGFloat {
+        let t = CGFloat(clamped(strength))
+        let fraction = 0.12 + (0.45 - 0.12) * t
+        let cap = 40 + (160 - 40) * t
+        return min(cap, max(10, shortSide * fraction))
+    }
 }
 
 // MARK: - RedactionColor
@@ -102,6 +133,16 @@ nonisolated enum RedactionColor: String, CaseIterable, Equatable, Hashable, Coda
     }
 }
 
+nonisolated extension RedactionColor {
+    /// The crosshatch lattice: light lines on dark fills, dark lines on light ones.
+    var latticeColor: UIColor {
+        var red: CGFloat = 0, green: CGFloat = 0, blue: CGFloat = 0
+        uiColor.getRed(&red, green: &green, blue: &blue, alpha: nil)
+        let luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+        return luminance > 0.5 ? UIColor(white: 0, alpha: 0.55) : UIColor(white: 1, alpha: 0.6)
+    }
+}
+
 // MARK: - RedactionSpec
 
 /// A lightweight rendering descriptor that is available in both the main app
@@ -117,6 +158,8 @@ nonisolated struct RedactionSpec {
     let color: RedactionColor
     /// When `false` this spec is skipped by the renderer.
     let isEnabled: Bool
+    /// See `RedactionStrength`.  Ignored unless the style `supportsStrength`.
+    var strength: Double = RedactionStrength.standard
 }
 
 // MARK: - ImageRedactor
@@ -156,11 +199,14 @@ nonisolated struct ImageRedactor {
         var paintedSolidInstead: [RedactionSpec] = []
         for style in [RedactionStyle.pixelate, .blur] {
             let styled = enabled.filter { $0.style == style }
-            guard !styled.isEmpty else { continue }
-            if let obscured = Self.applyObscuring(style, to: workingImage, specs: styled) {
-                workingImage = obscured
-            } else {
-                paintedSolidInstead += styled
+            // One pass per strength in use: a pass has a single block size.
+            for strength in Set(styled.map { RedactionStrength.clamped($0.strength) }).sorted() {
+                let group = styled.filter { RedactionStrength.clamped($0.strength) == strength }
+                if let obscured = Self.applyObscuring(style, strength: strength, to: workingImage, specs: group) {
+                    workingImage = obscured
+                } else {
+                    paintedSolidInstead += group
+                }
             }
         }
 
@@ -186,7 +232,7 @@ nonisolated struct ImageRedactor {
                 case .solid:
                     Self.renderSolid(color: spec.color.uiColor, rect: rect)
                 case .crosshatch:
-                    Self.renderCrosshatch(color: spec.color.uiColor, rect: rect, in: ctx)
+                    Self.renderCrosshatch(color: spec.color, rect: rect, imageSize: size, in: ctx)
                 case .pixelate, .blur:
                     // Only reached when the Core Image pass failed.
                     Self.renderSolid(color: RedactionColor.black.uiColor, rect: rect)
@@ -215,26 +261,31 @@ nonisolated struct ImageRedactor {
 
     // MARK: - Crosshatch
 
-    /// Dense diagonal crosshatch — a 35 % base fill plus forward- and backward-
-    /// diagonal lines spaced 7 pt apart, clipped to the region rect.
+    /// An opaque block with a diagonal lattice in a contrasting tone.
+    ///
+    /// The base is fully opaque on purpose: a see-through fill leaves the text
+    /// underneath readable, which is not a redaction.  The lattice scales with
+    /// the region and the image, so it is still a visible pattern on a 48 MP
+    /// photo instead of hairlines that average out to a flat tint.
     private static func renderCrosshatch(
-        color: UIColor,
+        color: RedactionColor,
         rect: CGRect,
+        imageSize: CGSize,
         in ctx: UIGraphicsImageRendererContext
     ) {
         let cgCtx = ctx.cgContext
         cgCtx.saveGState()
 
-        // Semi-transparent base
-        color.withAlphaComponent(0.35).setFill()
+        color.uiColor.setFill()
         UIRectFill(rect)
 
-        // Clip diagonal lines to the region rect
-        cgCtx.clip(to: rect)
-        color.withAlphaComponent(0.80).setStroke()
-        cgCtx.setLineWidth(1.0)
+        let shortSide = min(rect.width, rect.height)
+        let floor = max(6, max(imageSize.width, imageSize.height) / 160)
+        let spacing = max(floor, shortSide / 3.5)
 
-        let spacing: CGFloat = 7.0
+        cgCtx.clip(to: rect)
+        color.latticeColor.setStroke()
+        cgCtx.setLineWidth(max(1.5, spacing * 0.16))
 
         // Forward diagonals (↘)
         var startX = rect.minX - rect.height
@@ -273,6 +324,7 @@ nonisolated struct ImageRedactor {
     /// against a single union-of-rects mask.
     nonisolated private static func applyObscuring(
         _ style: RedactionStyle,
+        strength: Double,
         to image: UIImage,
         specs: [RedactionSpec]
     ) -> UIImage? {
@@ -298,7 +350,7 @@ nonisolated struct ImageRedactor {
         let smallestDim = ciRects
             .map { min($0.width, $0.height) }
             .min() ?? 100
-        let blockSize = Float(min(40, max(10, smallestDim * 0.12)))
+        let blockSize = Float(RedactionStrength.blockSize(shortSide: smallestDim, strength: strength))
 
         // ── 3. Run CIPixellate ONCE over the whole image ─────────────────────
         guard let pixFilter = CIFilter(name: "CIPixellate") else { return nil }
