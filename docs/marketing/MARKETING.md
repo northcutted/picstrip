@@ -144,7 +144,7 @@ Every detection is now labelled Critical, High, Medium, or Low so you know exact
 MULTI-SELECT REDACTION EDITOR
 Select multiple regions at once and apply style, color, enable/disable, or delete — all in bulk.
 
-3 REDACTION STYLES, 10 COLORS
+4 REDACTION STYLES, 12 COLORS
 Solid, crosshatch, pixelate, or blur. Solid and crosshatch blocks support 12 color options per-region or bulk-applied.
 
 50-STEP UNDO/REDO
@@ -209,7 +209,7 @@ Source: [`fastlane/metadata/review_information/`](../../fastlane/metadata/review
 |------|------|
 | **First name** | Eddie |
 | **Last name** | Northcutt |
-| **Phone number** | +1 618-541-8770 |
+| **Phone number** | _(kept in App Store Connect — not in this repository)_ |
 | **Email** | northcutted@gmail.com |
 | **Demo account user** | _(none — leave blank)_ |
 | **Demo account password** | _(none — leave blank)_ |
@@ -226,10 +226,10 @@ No login or demo credentials required. The app works entirely with photos from t
 1. Launch PicStrip and grant Photos read access when prompted.
 2. Tap "Choose Photo" and pick any image from the simulator's photo library (the bundled Photos library samples include images with GPS metadata).
 3. Confirm the metadata panel shows GPS, EXIF, and TIFF fields with values populated.
-4. Tap "Save Cleaned Copy". The cleaned image is saved back to the simulator photo library — no network request is made.
+4. Tap "Save Cleaned Copy". The cleaned image is saved back to the simulator photo library — the app makes no network request.
 5. Optional: open the iOS Share Sheet from Photos, choose PicStrip, and confirm the share extension processes a photo without opening the main app.
 
-The app uses no remote services. Network Inspector in Xcode confirms zero outbound connections at any point in the flow.
+The app uses no remote services and has no server. On iOS 27, the optional tap-to-redact feature asks iOS to download Apple's object-selection model, and only after the user taps Download in an in-app consent alert; that model is the only thing ever transferred, and no photo or photo-derived data is sent anywhere at any point.
 ```
 
 ---
@@ -252,12 +252,13 @@ PicStrip does not collect face data. Face detection uses Apple's on-device Visio
 
 | Key | Copy |
 |-----|------|
-| `NSPhotoLibraryAddUsageDescription` | "PicStrip saves the cleaned copy back to your photo library." (add-only) |
-| `NSPhotoLibraryUsageDescription` | "Replace Original requires read access so PicStrip can delete the source after saving the cleaned copy." (read + write) |
+| `NSPhotoLibraryAddUsageDescription` | "PicStrip saves the scrubbed image to your photo library." (add-only) |
+| `NSPhotoLibraryUsageDescription` | "PicStrip needs access to your photo library to replace the original image when requested." (read + write) |
+| `NSCameraUsageDescription` | "PicStrip uses the camera to capture documents and photos you want to clean. Captures are processed on your device." |
 
-These strings ship in [`PicStrip/Localizable.xcstrings`](../../PicStrip/Localizable.xcstrings) and are localized to all 16 supported locales.
+These strings ship in [`PicStrip/InfoPlist.xcstrings`](../../PicStrip/InfoPlist.xcstrings) and are localized for every supported locale.
 
-**Accessibility Nutrition Label:** declared in [`fastlane/accessibility_declarations.json`](../../fastlane/accessibility_declarations.json) and synced via `bundle exec fastlane accessibility` (also chained from the `submit` lane).
+**Accessibility Nutrition Label:** declared in [`fastlane/accessibility_declarations.json`](../../fastlane/accessibility_declarations.json) and uploaded by the verified deployment workflow; the local `accessibility` lane is deliberately fail-closed.
 
 ---
 
@@ -340,8 +341,8 @@ All 16 supported locales ship localized ASC text. Translations are LLM-generated
 | **Subscriptions** | None |
 | **Availability** | All territories |
 | **Pre-order** | Not used |
-| **Phased release** | Enabled (7-day staged rollout — `phased_release: true` in `submit` lane) |
-| **Automatic release on approval** | Enabled (`automatic_release: true` in `submit` lane) |
+| **Phased release** | Enabled (7-day staged rollout — `phased_release` in `.github/ios-release.json`) |
+| **Automatic release on approval** | Enabled (`"release_type": "AFTER_APPROVAL"` in `.github/ios-release.json`) |
 
 ---
 
@@ -363,16 +364,13 @@ All 16 supported locales ship localized ASC text. Translations are LLM-generated
 ## Workflow: how to refresh screenshots after a UI change
 
 ```bash
-# Local one-shot (re-uses the API key from your keychain).
-make upload-screenshots                  # process + upload from raw captures
-
-# CI path (preferred — keeps API keys off your workstation).
+# CI path — keeps API keys off your workstation.
 gh workflow run screenshots.yml \
   -f generate_new=true \
   -f languages=en-US,de-DE,ja            # optional locale subset
 ```
 
-The CI path commits the regenerated marketing PNGs back to `main` via Git LFS with `[skip ci]`, then uploads them to App Store Connect. Subsequent runs of the same workflow with `generate_new=false` (the default) will reuse those committed PNGs.
+The workflow opens a reviewed PR against `main` with the regenerated marketing PNGs. Merge it, then ship them through the verified deployment path; App Store uploads never happen straight from a capture run. A new locale (such as `es-MX`) needs one capture run before its first release.
 
 ---
 

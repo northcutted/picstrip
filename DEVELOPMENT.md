@@ -18,7 +18,7 @@ Architecture details, data flows, service reference, CI/CD documentation, and co
 10. [Privacy & Security](#privacy--security)
 11. [CI/CD Pipeline](#cicd-pipeline)
 12. [SLSA Build Provenance Level 3](#slsa-build-provenance-level-3)
-13. [Localization Automation](#localization-automation)
+13. [Localization](#localization)
 14. [Contributing: Adding a New PII Type](#contributing-adding-a-new-pii-type)
 15. [Known Constraints](#known-constraints)
 
@@ -29,103 +29,112 @@ Architecture details, data flows, service reference, CI/CD documentation, and co
 ```
 PicStrip/
 ├── PicStrip.xcodeproj/
-├── README.md
+├── README.md                   # landing page
 ├── DEVELOPMENT.md              # this file
-├── PRIVACY.md
-├── CHANGELOG.md
-├── LICENSE
-├── .swiftlint.yml
+├── PRIVACY.md                  # the privacy policy users see
+├── CHANGELOG.md                # generated from Conventional Commits
+├── Makefile                    # `make help` lists the local commands
+├── PicStrip-Info.plist         # app Info.plist (usage descriptions, URL scheme)
 ├── .releaserc.json             # semantic-release config
 ├── .ruby-version               # Ruby version pin for rbenv
-├── Gemfile                     # gem "fastlane", "~> 2.233"
-├── Gemfile.lock
-├── package.json                # semantic-release + plugins
-├── package-lock.json
+├── Gemfile / Gemfile.lock      # gem "fastlane", "~> 2.240"
+├── package.json / package-lock.json  # semantic-release + workflow policy tests
 │
-├── .github/workflows/
-│   ├── pr.yml                  # PR checks: lint, analyze, test
-│   ├── main.yml                # Release prep: QA, build, attest, TestFlight, tag/release
-│   ├── app-store-deploy.yml    # Tag-triggered App Store staging + manual review request
-│   └── screenshots.yml         # Manual: App Store screenshot capture/refresh
+├── .github/
+│   ├── ios-release.json        # The release config everything reads: Xcode pins, devices, locales
+│   ├── ios-release-platform.json  # Pin of the public release platform
+│   └── workflows/
+│       ├── pr.yml                       # PR gate: policy, lint, analysis, tests
+│       ├── main.yml                     # Release candidate: QA, archive, packaging
+│       ├── promote.yml                  # Manual promotion of a verified candidate
+│       ├── observe.yml                  # Waits for Apple processing
+│       ├── app-store-deploy.yml         # Verified App Store staging + review request
+│       ├── metadata-only.yml            # Metadata changes through the same gate
+│       ├── screenshots.yml              # Manual screenshot capture → reviewed PR
+│       └── inspect-release-controls.yml # Audits repository controls
 │
 ├── fastlane/
-│   ├── Fastfile                # Lane definitions
-│   ├── Snapfile                # Screenshot capture config (devices + 16 locales)
-│   ├── MarketingHeadlines.xcstrings  # Localized headline copy used by the marketing compositor
-│   ├── accessibility_declarations.json  # App Store Accessibility Nutrition Label config
+│   ├── Fastfile                # Lane definitions (release lanes are fail-closed locally)
+│   ├── Snapfile                # Screenshot capture; devices + locales come from ios-release.json
+│   ├── MarketingHeadlines.xcstrings  # Screenshot headline copy (5 keys)
+│   ├── accessibility_declarations.json  # Verified against App Store Connect in CI
 │   ├── screenshots/
-│   │   ├── manifest.json       # Expected raw-capture filename inventory
 │   │   ├── <locale>/           # Raw captures, one folder per locale
-│   │   └── processed/          # Final marketing PNGs (Git LFS) — uploaded to App Store Connect
-│   └── metadata/               # App Store metadata (title, description, keywords, release notes)
+│   │   └── processed/          # Final marketing PNGs — uploaded to App Store Connect
+│   └── metadata/<locale>/      # App Store name, subtitle, keywords, description, release notes
 │
-├── scripts/                    # Utility scripts (release metadata, localization, screenshot compositor)
-│   ├── process_screenshots.py  # Marketing screenshot compositor (custom frame + brand bg + headline)
+├── scripts/
+│   ├── process_screenshots.py  # Marketing screenshot compositor (frame + brand background + headline)
 │   ├── make_fixture.py         # Regenerates the OCR test fixture (PicStripUITests/test_list.png)
-│   ├── requirements.txt        # Pillow, arabic-reshaper, python-bidi
-│   ├── semantic_dry_run.mjs    # Read-only Conventional Commit version/notes analysis
-│   ├── render_app_store_metadata.sh  # Copies metadata and applies generated release notes
-│   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
 │   ├── audit_localization_strings.sh  # Flags string-returning literals that should be localized
-│   ├── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms
-│   └── write_release_notes.sh  # Utility for local/manual release-note generation
+│   ├── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms, dead keys
+│   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
+│   ├── semantic_dry_run.mjs    # Read-only Conventional Commit version/notes analysis
+│   ├── render_app_store_metadata.sh / write_release_notes.sh  # Release-note rendering helpers
+│   ├── update_release_platform.py  # Bumps the release platform pin
+│   └── ci/                     # benchmark.py, configure_repository.py, toolchain.py, workflow_policy.mjs
 │
 ├── docs/
-│   ├── icons/                  # Generated app icon variants (Default, Dark, Tinted)
+│   ├── release-pipeline.md     # Release operations guide (setup, SLSA scope, verification)
+│   ├── localization-glossary.md  # Per-locale term decisions — new strings must reuse them
+│   ├── release-advisories.md, release-rehearsal-2026-09-19.md, evidence/  # Dated release records
+│   ├── app_review/             # App Review correspondence (face data)
+│   ├── icons/                  # Exported app icon variants
 │   └── marketing/              # App Store marketing copy + index
 │
-├── PicStripCore/               # Shared pure processing/domain source files
+├── PicStripCore/               # Compiled into BOTH the app and the share extension (not a module)
 │   ├── ImageProcessor.swift    # Stateless enum; two-pass ImageIO metadata stripping
-│   ├── PIIScanner.swift        # Stateless struct; async Vision OCR + rule matching
-│   ├── ImageRedactor.swift     # Stateless struct; UIGraphicsImageRenderer redaction
-│   ├── DetectionModels.swift   # DetectionResult / DetectedInstance / confidence models
-│   ├── DetectionRule.swift     # DetectionRule struct + DetectionRegistry enum
-│   ├── PIIType.swift           # 20-case enum (Contact, Web, Identity, Financial, Developer Secrets, Unstructured)
-│   └── ExportPreset.swift      # ExportPreset enum (losslessPNG, jpeg, heic, matchSource)
+│   ├── PIIScanner.swift        # Vision + pattern scan; ScanHints, ScanOutput, liveBoxes
+│   ├── ImageRedactor.swift     # Redaction rendering; RedactionStyle, RedactionColor, RedactionSpec
+│   ├── DetectionModels.swift   # DetectionResult / DetectedInstance / confidence and risk models
+│   ├── DetectionRule.swift     # DetectionRule + DetectionRegistry (60 regex rules)
+│   ├── PIIType.swift           # 31 types, their risk tiers, and which are redacted by default
+│   └── ExportPreset.swift      # User-facing ExportFormat and the engine-side ExportPreset
 │
-├── PicStrip/                   # Main app target (iOS 26+)
-│   ├── PicStripApp.swift       # @main entry point
-│   ├── ContentView.swift       # Root SwiftUI view; owns PhotosPicker + batch sheet
-│   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the full data-flow pipeline
+├── PicStrip/                   # Main app target (iOS 26+); a file-system-synchronized group
+│   ├── PicStripApp.swift       # @main entry point; drains the share extension's pending image
+│   ├── ContentView.swift       # Home screen, photo layout, control panel, redaction editor drawer
+│   ├── ScrubberViewModel.swift # @Observable @MainActor; owns the whole data-flow pipeline
+│   ├── ZoomableImagePreview.swift  # Zoom/pan preview, region overlays, draw / move / resize gestures
+│   ├── RedactionRegion.swift   # Editable region model (app-only colour bridging)
+│   ├── PreSaveReviewView.swift # Final review: what was removed, save / replace / share / audit
+│   ├── AdvancedOptionsView.swift   # Export format picker
+│   ├── BatchConfigView.swift, BatchSummaryView.swift  # Batch policy sheet and its result
+│   ├── MetadataSummaryView.swift, CategoryDetailPanel.swift  # Metadata badges and the per-category panel
+│   ├── AboutView.swift         # PII catalogue, import methods, privacy statements
+│   ├── ScannerHeroView.swift   # Decorative home-screen animation
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
-│   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
 │   ├── LiveCamera.swift        # Live-preview camera: CameraSession (AVCaptureSession), throttle, overlay geometry, view
 │   ├── CameraCaptureView.swift # System photo camera (fallback) + CameraHardware (is there a real camera?)
-│   ├── SemanticPII.swift       # On-device language-model pass for people's names + the merge that distrusts it
-│   ├── ObjectSegmenter.swift   # Tap-an-object selection (iOS 27 Vision segmentation) behind ObjectSelection closures
+│   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
 │   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, CapturedImageEncoder
+│   ├── ObjectSegmenter.swift   # Tap to redact (iOS 27 Vision segmentation) behind ObjectSelection closures
+│   ├── SemanticPII.swift       # On-device language-model pass for people's names + the merge that distrusts it
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
-│   ├── ExportFormat.swift      # ExportFormat enum (user-facing)
-│   ├── ExportFormat+AppEnum.swift  # AppIntents conformance — main app only
-│   ├── AboutView.swift         # PII catalogue + metadata category entries
-│   ├── PreSaveReviewView.swift # Final review screen; permanent-removal warning
-│   ├── StripImageIntent.swift  # Foreground AppIntent: opens the multi-photo picker
-│   ├── StripMetadataIntent.swift  # Background AppIntent: files in → metadata-free files out
-│   ├── IntentRouter.swift      # In-process hand-off from App Intents to the UI
-│   ├── Localizable.xcstrings   # All UI strings × 16 locales (shared with the share extension)
+│   ├── StripImageIntent.swift, StripMetadataIntent.swift, IntentRouter.swift, ExportFormat+AppEnum.swift  # App Intents
+│   ├── Localizable.xcstrings   # All UI strings × 17 localizations (shared with the share extension)
 │   ├── AppShortcuts.xcstrings  # Siri / Spotlight phrases
 │   ├── InfoPlist.xcstrings     # Localized photo-library and camera permission prompts
-│   └── PrivacyInfo.xcprivacy  # Zero-data-collection privacy manifest
+│   ├── PrivacyInfo.xcprivacy   # Zero-data-collection privacy manifest
+│   ├── Assets.xcassets/, PicStrip.icon/, PicStrip.entitlements
 │
-├── PicStripShareExtension/     # Share Extension target (separate binary)
+├── PicStripShareExtension/     # Share Extension target (separate binary, ~120 MB memory ceiling)
 │   ├── ShareViewController.swift    # UIKit host; embeds ExtensionConfigView via UIHostingController
-│   ├── InfoPlist.xcstrings         # Localized share-sheet action name + permission prompt
+│   ├── Info.plist, InfoPlist.xcstrings, PicStripShareExtension.entitlements
 │   └── PrivacyInfo.xcprivacy       # Independent privacy manifest
 │
-├── PicStripTests/              # Unit tests
-│   ├── PIIScannerTests.swift
-│   ├── ImageProcessorTests.swift
-│   ├── ExportAndBatchRegressionTests.swift  # keep-path round trips, format/preset, batch fail-closed
-│   ├── AppIntentTests.swift
-│   ├── LocalizationTests.swift # Compiled string tables: coverage, plural forms, InfoPlist strings
-│   ├── RedactionFeatureTests.swift
-│   ├── ScrubberViewModelPreviewTests.swift
-│   └── DetectionRegistryTests.swift
+├── PicStripTests/              # Unit tests (XCTest) + fixtures test_pii.png, test_list.png, test_whiteboard.jpg
+│   ├── PIIScannerTests.swift, DetectionRegistryTests.swift, SemanticPIITests.swift   # detection
+│   ├── ImageProcessorTests.swift, ExportAndBatchRegressionTests.swift               # stripping, export, batch, captured pages
+│   ├── RedactionFeatureTests.swift, ObjectSelectionTests.swift, ScrubberViewModelPreviewTests.swift  # redaction + editor
+│   ├── DocumentScannerTests.swift, LiveCameraTests.swift, PasteboardMonitorTests.swift             # inputs
+│   └── AppIntentTests.swift, LocalizationTests.swift
 │
-└── PicStripUITests/            # UI / screenshot tests
-    ├── PicStripUITests.swift   # Single testAllScreenshots() method
-    └── SnapshotHelper.swift    # Fastlane snapshot helpers (@MainActor)
+└── PicStripUITests/            # UI tests, in the PicStripScreenshots scheme
+    ├── PicStripUITests.swift   # Screenshot capture + home-screen, paste and editor behaviour tests
+    ├── PicStripUITestsLaunchTests.swift
+    └── SnapshotHelper.swift    # Fastlane snapshot helpers (vendored)
 ```
 
 **Key notes:**
@@ -365,7 +374,13 @@ A **stateless struct** that runs async Vision OCR followed by layered rule match
 
 ```swift
 struct PIIScanner {
-    func scanImage(data: Data) async throws -> [DetectionResult]
+    func scanImage(data: Data, hints: ScanHints = .none) async throws -> [DetectionResult]
+    /// scanImage plus the recognised lines, for the on-device name pass.
+    func scan(data: Data, hints: ScanHints = .none) async throws -> ScanOutput
+    /// Advisory boxes for one camera frame — viewfinder only, never stored.
+    static func liveBoxes(in pixelBuffer: CVPixelBuffer,
+                          orientation: CGImagePropertyOrientation = .up,
+                          textLevel: RecognizeTextRequest.RecognitionLevel = .accurate) async -> [CGRect]
 }
 ```
 
@@ -377,12 +392,12 @@ The method is `@concurrent`, so it always runs off the caller's actor. It throws
 
 **File:** `PicStripCore/ImageRedactor.swift`
 
-Burns opaque black rectangles over detected PII instances using `UIGraphicsImageRenderer`.
+Burns styled redaction blocks over image regions: four styles (`RedactionStyle`: solid, crosshatch, pixelate, blur) in twelve colours (`RedactionColor`), described per region by a `RedactionSpec`. Solid and crosshatch are painted in one `UIGraphicsImageRenderer` pass. Pixelate and blur run a Core Image pre-pass — blur mosaics first and then blurs the mosaic, so it cannot be sharpened back — and fall back to a solid fill if Core Image cannot run, so a region the user asked to hide is never left readable.
 
 ```swift
 struct ImageRedactor {
     func redact(image: UIImage, specs: [RedactionSpec]) async -> UIImage?          // @concurrent
-    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage?  // solid black convenience
+    func redact(image: UIImage, instances: [DetectedInstance]) async -> UIImage?  // solid black: batch + share extension
 }
 ```
 
@@ -537,31 +552,53 @@ result-level score: upgraded when a later match for the same type is stronger
 
 ### PII Type Catalog
 
-| Category | Type | Detection | Base score |
-|----------|------|-----------|------------|
-| Contact | Phone Number | `NSDataDetector` | 0.72 |
-| Contact | Email Address | Regex + `NSDataDetector` | 0.93 / 0.75 |
-| Web | Link / URL | `NSDataDetector` | 0.52 |
-| Web | IP Address (IPv4) | Regex | 0.90 |
-| Web | IP Address (IPv6) | Regex | 0.76 |
-| Web | MAC Address | Regex | 0.72 |
-| Identity | Address | `NSDataDetector` | 0.68 |
-| Identity | Social Security Number | Regex | 0.94 |
-| Identity | Date of Birth | Regex | 0.48 |
-| Identity | National Insurance Number | Regex | 0.91 |
-| Financial | Credit Card (compact) | Regex | 0.94 |
-| Financial | Credit Card (spaced/dashed) | Regex | 0.80 |
-| Financial | IBAN | Regex | 0.93 |
-| Financial | Crypto Wallet (Ethereum) | Regex | 0.87 |
-| Financial | Crypto Wallet (Bitcoin Bech32) | Regex | 0.88 |
-| Developer Secrets | AWS Access Key | Regex | 0.98 |
-| Developer Secrets | GitHub Token | Regex | 0.97 |
-| Developer Secrets | Google API Key | Regex | 0.98 |
-| Developer Secrets | OpenAI API Key | Regex | 0.97 |
-| Developer Secrets | Slack Token | Regex | 0.97 |
-| Developer Secrets | Stripe Key | Regex | 0.97 |
-| Developer Secrets | Private Key (PEM) | Regex | 0.96 |
-| Unstructured | Physical Credential / Password | Cross-observation heuristic | 0.68 |
+All 31 types, by risk tier. Risk is an editorial property of the type and never changes with confidence.
+
+| Risk | Type | Detection |
+|------|------|-----------|
+| **Critical** | Social Security Number | Regex (`XXX-XX-XXXX`) |
+| **Critical** | National Insurance Number | Regex |
+| **Critical** | Government ID | Regex (CA SIN, IN PAN/Aadhaar, ES DNI/NIE, BR CPF, DE Steuer-ID, IT Codice Fiscale, FR INSEE, JP My Number, KR RRN, CN Resident ID, PL PESEL, MX CURP, US ITIN/EIN/MBI, US passport, state driver-licence formats) |
+| **Critical** | Credit Card Number | Regex + Luhn check |
+| **Critical** | AWS Access Key, GitHub Token, Google API Key, OpenAI API Key, Slack Token, Stripe Key | Regex (one type each) |
+| **Critical** | Private Key | Regex (PEM header) |
+| **Critical** | JWT Token | Regex (double `eyJ` header) |
+| **Critical** | Developer Secret | Regex (Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord) |
+| **Critical** | Database Connection String | Regex (inline credentials in a URI) |
+| **High** | Face | Vision `DetectFaceRectanglesRequest` |
+| **High** | IBAN | Regex + mod-97 check |
+| **High** | ABA Routing Number, SWIFT / BIC Code | Regex, keyword-anchored |
+| **High** | Physical Credential / Password | Regex (label + value) and a cross-line heuristic |
+| **Medium** | Email Address | Regex + `NSDataDetector` |
+| **Medium** | Phone Number, Address | `NSDataDetector` |
+| **Medium** | Crypto Wallet Address | Regex |
+| **Medium** | Vehicle Identification Number | Regex (17 characters, no I/O/Q) + check digit |
+| **Medium** | License Plate Number | Regex (structural + keyword-anchored) |
+| **Medium** | MAC Address, IP Address | Regex |
+| **Low** | Date of Birth | Regex, keyword-anchored (DOB / Born / Birthday) |
+| **Low** | Link / URL | `NSDataDetector` |
+| **Low** | QR Code / Barcode | Vision `DetectBarcodesRequest` |
+| **Low** | Name | Apple's on-device language model (app only, Apple Intelligence; listed but not redacted by default) |
+
+The full rule set is `DetectionRegistry.build()` (60 rules). Representative base scores, to show the calibration bands:
+
+| Type | Detection | Base score |
+|------|-----------|------------|
+| AWS Access Key / Google API Key | Regex | 0.98 |
+| GitHub, OpenAI, Slack, Stripe keys | Regex | 0.97 |
+| Private Key (PEM) | Regex | 0.96 |
+| Social Security Number, Credit Card (compact) | Regex | 0.94 |
+| Email Address, IBAN | Regex | 0.93 |
+| IP Address (IPv4) | Regex | 0.90 |
+| Date of Birth (keyword-anchored) | Regex | 0.85 |
+| Credit Card (spaced/dashed) | Regex | 0.80 |
+| Email via `mailto:` link | `NSDataDetector` | 0.75 |
+| Phone Number | `NSDataDetector` | 0.72 |
+| Address | `NSDataDetector` | 0.68 |
+| Physical Credential (label + value on one line) | Regex | 0.68 |
+| Physical Credential (value on the next line) | Cross-line heuristic | 0.65 |
+| Name | On-device language model | 0.62 |
+| Link / URL | `NSDataDetector` | 0.52 |
 
 **Why `usesLanguageCorrection = false`:** Vision's language correction normalises "AIzaSy..." into dictionary words. Disabled to preserve raw credential characters.
 
@@ -735,7 +772,7 @@ All other frameworks (Vision for OCR, Photos for saving, ImageIO for encoding) d
 |-----------|-------|------|
 | `NSPhotoLibraryAddUsageDescription` | Add-only | Saving a new cleaned asset |
 | `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" — needs read access to delete the source asset |
-| `NSCameraUsageDescription` | Camera | First tap on "Scan Document" |
+| `NSCameraUsageDescription` | Camera | First tap on "Take Photo" or "Scan Document" |
 
 The app defaults to `.addOnly` authorization. Users must explicitly grant read+write if they want "Replace Original."
 
@@ -745,13 +782,15 @@ The app defaults to `.addOnly` authorization. Users must explicitly grant read+w
 UIImage(data:)          native iOS — no network
 CGImageSourceCreateWithData  ImageIO — native iOS
 RecognizeTextRequest    Vision — on-device model, no network
+PIIScanner.liveBoxes    Vision on camera frames — in memory, never stored
+SystemLanguageModel     FoundationModels — on-device only; never Private Cloud Compute
 NSRegularExpression     Foundation — native iOS
 UIGraphicsImageRenderer CoreGraphics — native iOS
 CGImageDestinationCopyImageSource  ImageIO — native iOS
 PHPhotoLibrary.performChanges       Photos — native iOS
 ```
 
-Network Inspector in Xcode will show zero outbound connections from the app.
+PicStrip has no server and makes no network request of its own. The single exception is iOS downloading Apple's object-selection model on request (`ObjectSegmenter.downloadModel()`), which only `downloadObjectModelAndContinue()` — the consent alert's Download button — can trigger. Nothing about a photo is ever transmitted.
 
 ---
 
@@ -759,7 +798,7 @@ Network Inspector in Xcode will show zero outbound connections from the app.
 
 The [release operations guide](docs/release-pipeline.md) describes the job graph, exact Xcode/Ruby pins, environment and repository controls, evidence format, deployment retries, screenshot PR workflow, and rollout commands.
 
-`pr.yml` reports the always-running **CI Gate**. `qa.yml` shares SwiftLint (plus the string catalog audit), analysis, and iOS 27/iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
+`pr.yml` reports the always-running **CI Gate**. The release platform's reusable `ci.yml` (the `qa` job in `pr.yml` and `main.yml`) shares SwiftLint (plus the string catalog audit), analysis, and the iOS 27 / iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
 
 ## SLSA Build Provenance Level 3
 
@@ -771,12 +810,12 @@ See the [control coverage, trust limits, and verification commands](docs/release
 
 ## Localization
 
-PicStrip localizes user-facing text through Apple string catalogs (English + 15 locales):
+PicStrip localizes user-facing text through Apple string catalogs (English + 16 localizations; Spanish ships as `es` for Spain and `es-419` for Latin America):
 
 - `PicStrip/Localizable.xcstrings` — app, share extension, processing, errors, and accessibility copy
 - `PicStrip/AppShortcuts.xcstrings` — App Shortcut phrases that Siri and Spotlight expose
 - `PicStrip/InfoPlist.xcstrings`, `PicStripShareExtension/InfoPlist.xcstrings` — photo-library and camera permission prompts and the share-sheet action name ("Clean with PicStrip")
-- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (7 keys × 16 locales). Read by `scripts/process_screenshots.py` at compose time.
+- `fastlane/MarketingHeadlines.xcstrings` — App Store screenshot headline copy (5 keys × 16 locales; `es-MX` falls back to `es`). Read by `scripts/process_screenshots.py` at compose time.
 
 **Translations are LLM-generated.** English is the canonical source; catalogs and `fastlane/metadata/<locale>/` entries are filled in from there. If a translation reads off, edit it inline in the matching catalog or `.txt` file — every locale is editable directly without round-tripping through a translator.
 
@@ -948,6 +987,6 @@ Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model 
 
 A document scan is held as a `VNDocumentCameraScan` and each page is turned into bytes only when the pipeline asks for it. Extracting every page up front would hold one decoded bitmap per page (tens of megabytes each) for the life of the batch.
 
-### Scans Get No Document-Context Boost
+### Scans Get the Document Boost From a Hint, Not a Rectangle
 
-The document camera crops to the page edges, so `DetectRectanglesRequest` rarely finds a quad inside a scan and `inferDocumentContexts` does not fire. Do not "fix" this by injecting a full-frame rectangle: `applyDocumentContext` turns the context rectangle into a redaction instance, which would black out the whole page. The right fix is a scan hint that applies the boost without adding an instance.
+The document camera crops to the page edges, so `DetectRectanglesRequest` rarely finds a quad inside a scan. `ScanHints.scannedDocument` supplies the boost instead: `ScannedDocument.pages` sets it, and `scan(data:hints:)` scores the whole frame as the document — using the image's real aspect ratio — without turning it into a redaction instance. Do not "fix" a missing rectangle by injecting a full-frame one: `applyDocumentContext` would turn it into a region and black out the whole page.
