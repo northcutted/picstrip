@@ -12347,6 +12347,101 @@
         }
       }
     },
+    "Close camera" : {
+      "comment" : "VoiceOver label for the X button on the in-app camera.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إغلاق الكاميرا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera schließen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cerrar cámara"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer l’appareil photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiudi la fotocamera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラを閉じる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라 닫기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Camera sluiten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamknij aparat"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fechar câmera"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fechar câmara"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stäng kameran"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerayı kapat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭相机"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉相機"
+          }
+        }
+      }
+    },
     "Closes the extension. Open PicStrip to edit your prepared image." : {
       "localizations" : {
         "ar" : {
@@ -14101,6 +14196,101 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法打開影像"
+          }
+        }
+      }
+    },
+    "Covered areas will be redacted. You can change them after the photo is taken." : {
+      "comment" : "Caption in the live camera viewfinder, where black boxes cover detected faces and text in real time.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سيتم حجب المناطق المغطاة. يمكنك تغييرها بعد التقاط الصورة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abgedeckte Bereiche werden geschwärzt. Du kannst sie nach der Aufnahme ändern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las áreas cubiertas se censurarán. Puedes cambiarlas después de hacer la foto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les zones couvertes seront masquées. Vous pourrez les modifier après la prise de la photo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le aree coperte verranno oscurate. Puoi modificarle dopo aver scattato la foto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "覆われた領域はマスクされます。写真を撮ったあとに変更できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "덮인 영역은 가림 처리됩니다. 사진을 촬영한 후에 변경할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze gebieden worden afgedekt. Je kunt ze aanpassen nadat de foto is gemaakt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zasłonięte obszary zostaną zamazane. Możesz je zmienić po zrobieniu zdjęcia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As áreas cobertas serão ocultadas. Você pode alterá-las depois de tirar a foto."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As áreas tapadas serão ocultadas. Pode alterá-las depois de tirar a fotografia."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Täckta områden maskeras. Du kan ändra dem efter att bilden har tagits."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapatılan bölgeler karartılacak. Fotoğraf çekildikten sonra bunları değiştirebilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被覆盖的区域将被遮盖。拍照后你可以更改。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被覆蓋的區域將被遮蓋。拍照後你可以更改。"
           }
         }
       }
@@ -26579,6 +26769,101 @@
         }
       }
     },
+    "Name" : {
+      "comment" : "A kind of detected sensitive data: a person's name found in the photo's text (listed beside Email Address, Phone Number, Face).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الاسم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Name"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombre"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nom"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "名前"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이름"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Naam"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imię i nazwisko"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nome"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namn"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İsim"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "姓名"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "姓名"
+          }
+        }
+      }
+    },
     "National Insurance Number" : {
       "localizations" : {
         "ar" : {
@@ -29708,6 +29993,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PEM 標頭：RSA、EC、DSA、OPENSSH 私密金鑰"
+          }
+        }
+      }
+    },
+    "People's names, found by Apple's on-device language model where Apple Intelligence is on. Listed, but not redacted until you switch them on" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أسماء الأشخاص، يتم كشفها عبر النموذج اللغوي من Apple الذي يعمل على الجهاز عندما يكون Apple Intelligence مُفعّلًا. تظهر في القائمة، لكن لا تُحجب حتى تقوم بتشغيلها"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen von Personen, erkannt über Apples Sprachmodell auf dem Gerät, wenn Apple Intelligence aktiviert ist. Werden aufgelistet, aber erst geschwärzt, wenn du sie aktivierst"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nombres de personas detectados con el modelo de lenguaje de Apple en el dispositivo cuando Apple Intelligence está activado. Aparecen en la lista, pero no se censuran hasta que los actives"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Noms de personnes détectés par le modèle de langage d’Apple, exécuté sur l’appareil lorsque Apple Intelligence est activé. Ils sont listés, mais pas masqués tant que vous ne les activez pas"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomi di persone rilevati sul dispositivo con il modello linguistico di Apple quando Apple Intelligence è attivo. Vengono elencati, ma non oscurati finché non li attivi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple IntelligenceがオンのときにAppleのオンデバイス言語モデルで検出した人の名前。リストに表示されますが、オンにするまでマスクされません"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence가 켜져 있을 때 Apple의 기기 내 언어 모델로 감지한 사람 이름. 목록에 표시되지만, 켜기 전까지는 가림 처리되지 않습니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Namen van personen, gedetecteerd met Apple’s taalmodel op het apparaat wanneer Apple Intelligence is ingeschakeld. Ze worden vermeld, maar niet afgedekt totdat je ze inschakelt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Imiona i nazwiska osób wykrywane na urządzeniu modelem językowym firmy Apple, gdy funkcja Apple Intelligence jest włączona. Są wymieniane na liście, ale nie są zamazywane, dopóki ich nie włączysz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomes de pessoas detectados pelo modelo de linguagem da Apple, no dispositivo, quando a Apple Intelligence está ativada. São listados, mas não ocultados até você ativá-los"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nomes de pessoas detetados no dispositivo pelo modelo de linguagem da Apple, quando a Apple Intelligence está ativada. São listados, mas não são ocultados até os ativar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Personers namn hittas med Apples språkmodell på enheten när Apple Intelligence är på. De listas men maskeras inte förrän du slår på dem"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apple Intelligence açıkken Apple’ın cihazdaki dil modeliyle algılanan kişi adları. Listelenir ancak siz açana kadar karartılmaz"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Apple Intelligence 开启时，通过 Apple 的设备端语言模型检测人名。会列出，但在你开启前不会遮盖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 Apple Intelligence 開啟時，透過 Apple 裝置端的語言模型偵測到的人名。會列出，但在你開啟前不會遮蓋"
           }
         }
       }
