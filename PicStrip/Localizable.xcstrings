@@ -17162,6 +17162,196 @@
         }
       }
     },
+    "Download" : {
+      "comment" : "Alert button (verb): agree to the one-time model download.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنزيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descargar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ダウンロード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다운로드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Download"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobierz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İndir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載"
+          }
+        }
+      }
+    },
+    "Download Object Selection?" : {
+      "comment" : "Consent prompt before iOS downloads Apple's object-selection model. \"Object Selection\" is the feature name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنزيل تحديد الكائنات؟"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektauswahl laden?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descargar la selección de objetos?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Télécharger la sélection d’objet ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scaricare la selezione oggetti?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体の選択をダウンロードしますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피사체 선택을 다운로드하시겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objectselectie downloaden?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pobrać zaznaczanie obiektów?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Baixar Seleção de Objeto?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Transferir seleção de objeto?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hämta objektmarkering?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne Seçimi indirilsin mi?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下载“物体选择”？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下載「物體選取」？"
+          }
+        }
+      }
+    },
     "Drag boxes to adjust" : {
       "localizations" : {
         "ar" : {
@@ -17350,6 +17540,100 @@
         }
       }
     },
+    "Drag on the photo to draw a redaction box, or tap an object" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب على الصورة لرسم مربع حجب، أو اضغط على كائن"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zieh auf dem Foto, um einen Schwärzungsbereich zu zeichnen, oder tippe auf ein Objekt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra sobre la foto para dibujar un recuadro de censura o toca un objeto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser sur la photo pour dessiner une zone de masquage ou touchez un objet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina sulla foto per disegnare un riquadro di oscuramento o tocca un oggetto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真の上をドラッグしてマスク枠を描くか、被写体をタップします"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 위를 드래그하여 가림 상자 그리기 또는 피사체 탭하기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep op de foto om een afdekvak te tekenen of tik op een object"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij po zdjęciu, aby narysować obszar zamazania, lub stuknij obiekt"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste na foto para desenhar uma caixa de ocultação ou toque em um objeto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste na fotografia para desenhar uma caixa de ocultação ou toque num objeto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra på bilden för att rita en maskeringsruta eller tryck på ett objekt"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartma kutusu çizmek için fotoğraf üzerinde sürükleyin veya bir nesneye dokunun"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在照片上拖移以绘制遮盖框，或轻点物体"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在照片上拖移以繪製遮蓋框，或點一下物體"
+          }
+        }
+      }
+    },
     "Drag to redact" : {
       "localizations" : {
         "ar" : {
@@ -17440,6 +17724,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "拖移以遮蓋"
+          }
+        }
+      }
+    },
+    "Drag to redact, or tap an object" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب للحجب، أو اضغط على كائن"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Schwärzen ziehen oder auf ein Objekt tippen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra para censurar o toca un objeto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser pour masquer ou touchez un objet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina per oscurare o tocca un oggetto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグしてマスク、または被写体をタップ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "드래그하여 가리기 또는 피사체 탭하기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep om af te dekken of tik op een object"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij, aby zamazać, lub stuknij obiekt"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste para ocultar ou toque em um objeto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste para ocultar ou toque num objeto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra för att maskera eller tryck på ett objekt"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartmak için sürükleyin veya bir nesneye dokunun"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖移以遮盖，或轻点物体"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖移以遮蓋，或點一下物體"
           }
         }
       }
@@ -19871,6 +20249,101 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "人臉偵測只會在裝置上暫時產生方框。PicStrip 不會辨識任何人的身分，也不會儲存、傳輸或分享人臉資料。"
+          }
+        }
+      }
+    },
+    "Finding the object" : {
+      "comment" : "VoiceOver label for the spinner shown while an object is being outlined.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ البحث عن الكائن"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt wird gesucht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando el objeto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche de l’objet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca dell’oggetto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体を検出中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피사체 찾는 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object zoeken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyszukiwanie obiektu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando o objeto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A procurar o objeto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Söker efter objektet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne bulunuyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查找物体"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在尋找物體"
           }
         }
       }
@@ -26869,6 +27342,100 @@
         }
       }
     },
+    "No object was found there. Drag to draw a box instead." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يُعثر على أي كائن هناك. اسحب لرسم مربع بدلًا من ذلك."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dort wurde kein Objekt gefunden. Zieh stattdessen, um einen Bereich zu zeichnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontró ningún objeto ahí. Arrastra para dibujar un recuadro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun objet n’a été trouvé à cet endroit. Faites plutôt glisser pour dessiner une zone."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessun oggetto trovato in quel punto. In alternativa, trascina per disegnare un riquadro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "その場所に被写体が見つかりませんでした。代わりにドラッグしてマスク枠を描いてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해당 위치에서 피사체를 찾을 수 없습니다. 대신 드래그하여 가림 상자를 그리세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daar is geen object gevonden. Sleep in plaats daarvan om een vak te tekenen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono tam żadnego obiektu. Przeciągnij, aby narysować obszar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhum objeto foi encontrado ali. Arraste para desenhar uma caixa."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi encontrado nenhum objeto aí. Em alternativa, arraste para desenhar uma caixa."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inget objekt hittades där. Dra för att rita en ruta i stället."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Orada nesne bulunamadı. Bunun yerine kutu çizmek için sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此处未找到物体。请改为拖移以绘制遮盖框。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "該處找不到物體。請改用拖移來繪製遮蓋框。"
+          }
+        }
+      }
+    },
     "No Photo History" : {
       "localizations" : {
         "ar" : {
@@ -27529,6 +28096,195 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無"
+          }
+        }
+      }
+    },
+    "Not Now" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ليس الآن"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jetzt nicht"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ahora no"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas maintenant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non ora"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今はしない"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "나중에"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet nu"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie teraz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora Não"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agora não"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inte nu"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şimdi Değil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "以后"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "稍後"
+          }
+        }
+      }
+    },
+    "Object Selection" : {
+      "comment" : "Feature name: tap an object in the photo to redact it.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تحديد الكائنات"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektauswahl"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selección de objetos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélection d’objet"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selezione oggetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体の選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피사체 선택"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objectselectie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaznaczanie obiektów"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleção de Objeto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleção de objeto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektmarkering"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne Seçimi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物体选择"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物體選取"
           }
         }
       }
@@ -30101,96 +30857,96 @@
         }
       }
     },
-    "PicStrip works completely offline. It makes zero network requests. Ever." : {
+    "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يعمل PicStrip بشكل كامل في وضع عدم الاتصال. لا يُجري أي طلبات شبكة. أبدًا."
+            "value" : "يعمل PicStrip بشكل كامل في وضع عدم الاتصال ولا يرسل صورك إلى أي مكان أبدًا. هناك تنزيل اختياري واحد: نموذج Apple الذي يعتمد عليه التحديد بالضغط، ولا يجلبه iOS إلا بعد موافقتك."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip funktioniert komplett offline. Es werden keine Netzwerkverbindungen aufgebaut. Niemals."
+            "value" : "PicStrip funktioniert komplett offline und sendet deine Fotos niemals irgendwohin. Es gibt genau einen optionalen Download: das Apple-Modell hinter der Auswahl per Tippen, das iOS erst lädt, nachdem du zugestimmt hast."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip funciona completamente sin conexión. No realiza ninguna solicitud de red. Nunca."
+            "value" : "PicStrip funciona completamente sin conexión y nunca envía tus fotos a ningún sitio. Existe una única descarga opcional: el modelo de Apple en el que se basa la selección con un toque, que iOS descarga solo después de que des tu aprobación."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip fonctionne entièrement hors ligne. Il ne fait aucune requête réseau. Jamais."
+            "value" : "PicStrip fonctionne entièrement hors ligne et n’envoie jamais vos photos où que ce soit. Un seul téléchargement facultatif existe : le modèle Apple sur lequel repose la sélection par toucher, qu’iOS récupère uniquement après votre accord."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip funziona completamente offline. Non effettua alcuna richiesta di rete. Mai."
+            "value" : "PicStrip funziona completamente offline e non invia mai le tue foto da nessuna parte. Esiste un unico download facoltativo: il modello Apple alla base della selezione con un tocco, che iOS scarica solo dopo il tuo consenso."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStripは完全にオフラインで動作します。ネットワークへのリクエストは一切行いません。絶対に。"
+            "value" : "PicStripは完全にオフラインで動作し、写真がどこかに送信されることは一切ありません。オプションのダウンロードが1つだけあります。タップして選択する機能を支えるAppleのモデルで、同意した場合にのみiOSが取得します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip은 완전히 오프라인으로 작동합니다. 네트워크 요청은 단 한 번도 하지 않습니다."
+            "value" : "PicStrip은 완전히 오프라인으로 작동하며 사진을 어디로도 전송하지 않습니다. 선택 사항인 다운로드가 하나 있습니다. 탭하여 선택하는 기능에 사용되는 Apple 모델로, 동의한 경우에만 iOS가 가져옵니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip werkt volledig offline. Het doet geen enkel netwerkverzoek. Nooit."
+            "value" : "PicStrip werkt volledig offline en stuurt je foto’s nooit ergens naartoe. Er is één optionele download: het Apple-model achter selecteren met een tik, dat iOS alleen ophaalt nadat je akkoord bent gegaan."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip działa całkowicie offline. Nie wysyła żadnych zapytań sieciowych. Nigdy."
+            "value" : "PicStrip działa całkowicie offline i nigdy nigdzie nie wysyła Twoich zdjęć. Jest jedno opcjonalne pobieranie: model firmy Apple obsługujący zaznaczanie stuknięciem, który iOS pobiera dopiero po wyrażeniu przez Ciebie zgody."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip funciona completamente offline. Não faz nenhuma solicitação de rede. Nunca."
+            "value" : "PicStrip funciona completamente offline e nunca envia suas fotos para lugar nenhum. Existe um único download opcional: o modelo da Apple por trás da seleção por toque, que o iOS busca apenas depois que você concorda."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip funciona totalmente offline. Não faz nenhum pedido de rede. Nunca."
+            "value" : "O PicStrip funciona totalmente offline e nunca envia as suas fotografias para lado nenhum. Existe uma única transferência opcional: o modelo da Apple por trás da seleção por toque, que o iOS obtém apenas depois de dar o seu consentimento."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip fungerar helt offline. Den gör inga nätverksförfrågningar. Aldrig."
+            "value" : "PicStrip fungerar helt offline och skickar aldrig dina bilder någonstans. Det finns en enda valfri hämtning: Apple-modellen bakom markering med ett tryck, som iOS hämtar först när du har godkänt det."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip tamamen çevrimdışıdır. Ağ isteği yapmaz. Asla."
+            "value" : "PicStrip tamamen çevrimdışıdır ve fotoğraflarınızı hiçbir yere göndermez. Yalnızca bir isteğe bağlı indirme vardır: dokunarak seçme özelliğinin arkasındaki Apple modeli; iOS bunu yalnızca siz onayladıktan sonra indirir."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 完全离线运行。它不进行任何网络请求。永远不会。"
+            "value" : "PicStrip 完全离线运行，绝不会将你的照片发送到任何地方。仅有一项可选下载：轻点选择功能所依赖的 Apple 模型，iOS 只会在你同意后获取。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 完全離線運作。它從不發送任何網路請求。永遠不會。"
+            "value" : "PicStrip 完全離線運作，絕不會將你的照片傳送到任何地方。只有一項選用的下載：點一下選取功能背後的 Apple 模型，iOS 只會在你同意後取得。"
           }
         }
       }
@@ -39886,6 +40642,100 @@
         }
       }
     },
+    "Tapping an object to redact it uses an Apple model that iOS downloads once. Only the model is downloaded — your photos never leave your device." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم الضغط على كائن لحجبه نموذجًا من Apple يُنزّله iOS مرة واحدة. لا يتم تنزيل سوى النموذج — ولا تغادر صورك جهازك أبدًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wenn du ein Objekt antippst, um es zu schwärzen, wird ein Modell von Apple verwendet, das iOS einmalig lädt. Geladen wird nur das Modell – deine Fotos verlassen dein Gerät nie."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocar un objeto para censurarlo utiliza un modelo de Apple que iOS descarga una sola vez. Solo se descarga el modelo: tus fotos nunca salen de tu dispositivo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toucher un objet pour le masquer fait appel à un modèle Apple qu’iOS télécharge une seule fois. Seul le modèle est téléchargé : vos photos ne quittent jamais votre appareil."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toccare un oggetto per oscurarlo utilizza un modello Apple che iOS scarica una sola volta. Viene scaricato solo il modello: le tue foto non lasciano mai il dispositivo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体をタップしてマスクする機能では、iOSが一度だけダウンロードするAppleのモデルを使用します。ダウンロードされるのはモデルだけで、写真がデバイスから外に出ることはありません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피사체를 탭하여 가리는 기능은 iOS가 한 번만 다운로드하는 Apple 모델을 사용합니다. 다운로드되는 것은 모델뿐이며, 사진은 절대 기기를 벗어나지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als je op een object tikt om het af te dekken, wordt een Apple-model gebruikt dat iOS één keer downloadt. Alleen het model wordt gedownload: je foto’s verlaten je apparaat nooit."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknięcie obiektu, aby go zamazać, korzysta z modelu firmy Apple, który iOS pobiera jeden raz. Pobierany jest wyłącznie model – Twoje zdjęcia nigdy nie opuszczają urządzenia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocar em um objeto para ocultá-lo usa um modelo da Apple que o iOS baixa uma única vez. Apenas o modelo é baixado — suas fotos nunca saem do seu dispositivo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocar num objeto para o ocultar utiliza um modelo da Apple que o iOS transfere uma única vez. Apenas o modelo é transferido — as suas fotografias nunca saem do seu dispositivo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Att trycka på ett objekt för att maskera det använder en Apple-modell som iOS hämtar en gång. Endast modellen hämtas – dina bilder lämnar aldrig enheten."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir nesneye dokunarak karartma, iOS’un bir kez indirdiği bir Apple modelini kullanır. Yalnızca model indirilir; fotoğraflarınız cihazınızdan asla çıkmaz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点物体将其遮盖会使用一个 Apple 模型，iOS 只会下载一次。下载的只有模型，你的照片绝不会离开你的设备。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下物體來遮蓋會使用一個 Apple 模型，iOS 只會下載一次。下載的只有模型，你的照片絕不會離開你的裝置。"
+          }
+        }
+      }
+    },
     "Teal" : {
       "localizations" : {
         "ar" : {
@@ -40265,6 +41115,100 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法掃描此文件。"
+          }
+        }
+      }
+    },
+    "The object selection model could not be downloaded. You can still drag to draw a box." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر تنزيل نموذج تحديد الكائنات. لا يزال بإمكانك السحب لرسم مربع."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Modell für die Objektauswahl konnte nicht geladen werden. Du kannst weiterhin ziehen, um einen Bereich zu zeichnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo descargar el modelo de selección de objetos. Aún puedes arrastrar para dibujar un recuadro."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le modèle de sélection d’objet n’a pas pu être téléchargé. Vous pouvez toujours faire glisser pour dessiner une zone."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile scaricare il modello di selezione oggetti. Puoi comunque trascinare per disegnare un riquadro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "被写体の選択モデルをダウンロードできませんでした。ドラッグしてマスク枠を描くことはできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "피사체 선택 모델을 다운로드할 수 없습니다. 드래그하여 가림 상자를 그릴 수는 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het model voor objectselectie kon niet worden gedownload. Je kunt nog steeds slepen om een vak te tekenen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można pobrać modelu zaznaczania obiektów. Nadal możesz przeciągnąć, aby narysować obszar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível baixar o modelo de seleção de objeto. Você ainda pode arrastar para desenhar uma caixa."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível transferir o modelo de seleção de objeto. Pode continuar a arrastar para desenhar uma caixa."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modellen för objektmarkering kunde inte hämtas. Du kan fortfarande dra för att rita en ruta."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne seçimi modeli indirilemedi. Kutu çizmek için sürüklemeyi yine de kullanabilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法下载物体选择模型。你仍可拖移以绘制遮盖框。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法下載物體選取模型。你仍可拖移來繪製遮蓋框。"
           }
         }
       }
