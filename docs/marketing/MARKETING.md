@@ -97,7 +97,9 @@ REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
 • 4 redaction styles: solid, crosshatch, pixelate, or blur
-• 12 colors for solid redactions
+• Adjustable blur and pixelate strength
+• See exactly how every redaction will look before you save
+• 12 colors for solid and crosshatch redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE
@@ -144,8 +146,11 @@ Every detection is now labelled Critical, High, Medium, or Low so you know exact
 MULTI-SELECT REDACTION EDITOR
 Select multiple regions at once and apply style, color, enable/disable, or delete — all in bulk.
 
-4 REDACTION STYLES, 12 COLORS
-Solid, crosshatch, pixelate, or blur. Solid and crosshatch blocks support 12 color options per-region or bulk-applied.
+4 REDACTION STYLES, 12 COLORS, ADJUSTABLE STRENGTH
+Solid, crosshatch, pixelate, or blur. Solid and crosshatch blocks support 12 color options per-region or bulk-applied; blur and pixelate have an adjustable strength.
+
+LIVE REDACTION PREVIEW
+Every redaction is drawn in its real style on the photo while you edit, so what you see in the editor is what gets saved.
 
 50-STEP UNDO/REDO
 Every edit is now undoable up to 50 steps.

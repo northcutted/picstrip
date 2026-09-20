@@ -17,7 +17,9 @@ EDITOR DI OSCURAMENTO
 • Disegna ovunque per coprire manualmente ciò che lo scanner ha mancato
 • Selezione multipla e modifiche in blocco
 • 4 stili: pieno, tratteggiato, pixelato o sfocato
-• 12 colori per i blocchi pieni
+• Intensità regolabile per sfocato e pixelato
+• Guarda come apparirà ogni stile sulla foto prima di salvare
+• 12 colori per i blocchi pieni e tratteggiati
 • 50 livelli di annullamento/ripristino
 
 IMPORTA DA QUALSIASI POSTO

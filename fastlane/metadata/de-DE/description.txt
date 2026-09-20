@@ -17,7 +17,9 @@ SCHWÄRZUNGSEDITOR
 • Zeichne überall, um manuell abzudecken, was der Scanner übersehen hat
 • Mehrfachauswahl und Massenaktionen für Bereiche
 • 4 Stile: Vollton, Kreuzschraffur, Pixelierung oder Weichzeichner
-• 12 Farben für Volltonschwärzungen
+• Stärke von Weichzeichner und Pixelierung einstellbar
+• Vor dem Speichern sehen, wie jede Schwärzung wirklich aussieht
+• 12 Farben für Vollton- und Kreuzschraffur-Schwärzungen
 • 50-Schritte Rückgängig/Wiederherstellen
 
 IMPORT VON ÜBERALL

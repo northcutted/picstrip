@@ -17,7 +17,9 @@ Chaque détection affiche son type, son score de confiance et son niveau de risq
 • Dessinez n'importe où pour couvrir manuellement ce que le scanner a manqué
 • Sélection multiple et modifications en masse
 • 4 styles : plein, hachures croisées, pixelisé ou flou
-• 12 couleurs pour les blocs pleins
+• Intensité réglable du flou et de la pixelisation
+• Voyez le rendu exact de chaque style sur la photo avant d'enregistrer
+• 12 couleurs pour les blocs pleins et à hachures croisées
 • 50 niveaux d'annulation/rétablissement
 
 IMPORTER DE N'IMPORTE OÙ

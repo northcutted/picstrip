@@ -17,7 +17,9 @@ EDYTOR ZAKRYWANIA
 • Rysuj w dowolnym miejscu, aby ręcznie zakryć to, co skaner przeoczył
 • Zaznaczanie wielokrotne i wprowadzanie zmian zbiorczo
 • 4 style: pełny kolor, kreskowanie, pikselizacja lub rozmycie
-• 12 kolorów dla pełnych zakryć
+• Regulowana siła rozmycia i pikselizacji
+• Zobacz dokładnie, jak będzie wyglądać każde zakrycie przed zapisem
+• 12 kolorów dla pełnych zakryć i kreskowania
 • 50 kroków cofania/ponawiania
 
 IMPORT ZEWSZĄD

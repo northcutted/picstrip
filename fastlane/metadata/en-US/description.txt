@@ -17,7 +17,9 @@ REDACTION EDITOR
 • Draw anywhere to cover anything the scanner missed
 • Multi-select regions and bulk-apply changes at once
 • 4 redaction styles: solid, crosshatch, pixelate, or blur
-• 12 colors for solid redactions
+• Adjustable blur and pixelate strength
+• See exactly how every redaction will look before you save
+• 12 colors for solid and crosshatch redactions
 • 50-step undo/redo
 
 IMPORT FROM ANYWHERE

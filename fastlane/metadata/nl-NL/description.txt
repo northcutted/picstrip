@@ -17,7 +17,9 @@ BEDEKKINGSEDITOR
 • Teken overal om handmatig af te dekken wat de scanner miste
 • Selecteer meerdere gebieden tegelijk en pas wijzigingen in bulk toe
 • 4 stijlen: effen, kruisarcering, pixelvorming of vervaging
-• 12 kleuren voor effen vlakken
+• Instelbare sterkte voor vervaging en pixelvorming
+• Zie precies hoe elke stijl eruitziet voordat je opslaat
+• 12 kleuren voor effen vlakken en kruisarcering
 • 50 stappen ongedaan maken/opnieuw
 
 OVERAL VANDAAN IMPORTEREN

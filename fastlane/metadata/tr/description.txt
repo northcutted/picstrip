@@ -17,7 +17,9 @@ SANSÜR EDİTÖRÜ
 • Tarayıcının kaçırdığını manuel olarak örtmek için istediğiniz yere çizin
 • Çoklu seçim ve toplu değişiklik
 • 4 stil: dolu renk, çapraz tarama, pikselleştirme veya bulanıklık
-• Dolu renk için 12 renk seçeneği
+• Bulanıklık ve pikselleştirme yoğunluğu ayarlanabilir
+• Kaydetmeden önce her stilin nasıl görüneceğini tam olarak görün
+• Dolu renk ve çapraz tarama için 12 renk seçeneği
 • 50 adım geri al/yinele
 
 HER YERDEN İÇE AKTARMA

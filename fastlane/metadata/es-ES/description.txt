@@ -17,7 +17,9 @@ EDITOR DE CENSURAS
 • Dibuja en cualquier zona para cubrir manualmente lo que el escáner no detectó
 • Selección múltiple y cambios masivos
 • 4 estilos: sólido, trama cruzada, pixelado o desenfoque
-• 12 colores para bloques sólidos
+• Intensidad ajustable del desenfoque y el pixelado
+• Comprueba exactamente cómo quedará cada estilo sobre la foto antes de guardar
+• 12 colores para bloques sólidos y de trama cruzada
 • 50 pasos de deshacer/rehacer
 
 IMPORTA DESDE CUALQUIER LUGAR
