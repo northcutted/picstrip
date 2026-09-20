@@ -136,9 +136,11 @@ nonisolated enum OnDeviceNameFinder {
                 try? await Task.sleep(for: timeout)
                 return nil
             }
-            let first = await group.next() ?? nil
+            // Whichever finishes first: the model's answer, or the timeout's `nil`.
+            var names: [SemanticPII.Name] = []
+            if let first = await group.next(), let answered = first { names = answered }
             group.cancelAll()
-            return first ?? []
+            return names
         }
     }
 

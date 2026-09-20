@@ -33,7 +33,10 @@ struct ContentView: View {
     /// What the document camera returned; acted on once its cover has gone,
     /// because presenting the batch sheet mid-dismissal can drop the sheet.
     @State private var scanOutcome: DocumentScannerView.Outcome?
-    /// Drives the photo camera; handled like the document camera above.
+    /// Drives the live-preview camera; handled like the document camera above.
+    @State private var isShowingLiveCamera = false
+    @State private var liveCameraOutcome: LiveCameraView.Outcome?
+    /// The system camera, used when the live-preview camera cannot be set up.
     @State private var isShowingCamera = false
     @State private var cameraOutcome: CameraCaptureView.Outcome?
     /// Shown when the camera permission has been refused.
@@ -204,6 +207,12 @@ struct ContentView: View {
                 isShowingScanner = false
             }
             .ignoresSafeArea()
+        }
+        .fullScreenCover(isPresented: $isShowingLiveCamera, onDismiss: handleLiveCameraOutcome) {
+            LiveCameraView { outcome in
+                liveCameraOutcome = outcome
+                isShowingLiveCamera = false
+            }
         }
         .fullScreenCover(isPresented: $isShowingCamera, onDismiss: handleCameraOutcome) {
             CameraCaptureView { outcome in
@@ -392,7 +401,7 @@ struct ContentView: View {
                 if CameraCaptureView.isAvailable {
                     Button {
                         haptic(.light)
-                        openCamera { isShowingCamera = true }
+                        openCamera { isShowingLiveCamera = true }
                     } label: {
                         PillLabel(icon: "camera", text: "Take Photo")
                     }
@@ -488,6 +497,19 @@ struct ContentView: View {
             }
         case .explainDenied:
             isShowingCameraDenied = true
+        }
+    }
+
+    private func handleLiveCameraOutcome() {
+        defer { liveCameraOutcome = nil }
+        switch liveCameraOutcome {
+        case .captured(let data):
+            // The camera's own bytes: metadata intact, exactly like a library photo.
+            Task { await viewModel.loadCaptured(CapturedPages(count: 1) { _ in data }) }
+        case .unavailable:
+            isShowingCamera = true
+        case .cancelled, nil:
+            break
         }
     }
 

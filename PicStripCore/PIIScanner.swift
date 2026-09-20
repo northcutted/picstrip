@@ -1,3 +1,4 @@
+import CoreVideo
 import Foundation
 import ImageIO
 import Vision
@@ -221,6 +222,52 @@ nonisolated struct PIIScanner {
         results = Self.resolveCreditCardPhoneConflicts(results)
 
         return ScanOutput(results: Self.sorted(results), lines: Self.scannedLines(from: observations))
+    }
+
+    // MARK: - Live preview
+
+    /// A fast, approximate pass over one camera frame, for the viewfinder's
+    /// advisory boxes: what PicStrip would redact if the shutter were pressed now.
+    ///
+    /// OCR, default faces, barcodes, and the same pattern rules — but none of the
+    /// document scoring, and no retries.  It is only a preview: the captured photo
+    /// goes through `scan(data:hints:)` like any other image.  Nothing about a
+    /// frame is kept; the boxes are the only thing that leaves this function.
+    ///
+    /// Accurate OCR by default: the pattern rules need the digits right, and the
+    /// fast model garbles them (and reads nothing at all on the simulator).  The
+    /// caller's throttle, not the model, is what keeps the frame rate sane.
+    @concurrent
+    static func liveBoxes(
+        in pixelBuffer: CVPixelBuffer,
+        orientation: CGImagePropertyOrientation = .up,
+        textLevel: RecognizeTextRequest.RecognitionLevel = .accurate
+    ) async -> [CGRect] {
+        let requests: [any VisionRequest] = [
+            makeTextRequest(level: textLevel),
+            DetectFaceRectanglesRequest(),
+            DetectBarcodesRequest()
+        ]
+        var observations: [RecognizedTextObservation] = []
+        var boxes: [CGRect] = []
+        for await result in ImageRequestHandler(pixelBuffer, orientation: orientation).performAll(requests) {
+            switch result {
+            case .recognizeText(_, let found):
+                observations = found
+            case .detectFaceRectangles(_, let found):
+                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+            case .detectBarcodes(_, let found):
+                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+            default:
+                break
+            }
+        }
+        let textFindings = (try? detectPII(in: observations)) ?? []
+        boxes += textFindings
+            .filter(\.type.isRedactedByDefault)
+            .flatMap(\.instances)
+            .map(\.boundingBox)
+        return boxes
     }
 
     /// Highest score first, alphabetical tiebreak.
