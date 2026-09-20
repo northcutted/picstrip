@@ -57,6 +57,9 @@ final class PicStripUITests: XCTestCase {
         // ─────────────────────────────────────────────────────────────────────
         // LAUNCH 1: No fixture — home + About
         // ─────────────────────────────────────────────────────────────────────
+        // The simulator has no camera, so it would hide "Take Photo" and "Scan
+        // Document".  Show the home screen the way a real iPhone shows it.
+        app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
         app.launch()
 
         // 01 — Home: hero animation has started, wait for it to settle.
@@ -85,6 +88,7 @@ final class PicStripUITests: XCTestCase {
             try? data.write(to: URL(fileURLWithPath: tmpPath))
         }
 
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 
@@ -203,6 +207,7 @@ final class PicStripUITests: XCTestCase {
         let cleanPath = "/tmp/picstrip_clean_fixture.png"
         try makeCleanPNG().write(to: URL(fileURLWithPath: cleanPath))
 
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launchEnvironment["PICSTRIP_FIXTURE"] = cleanPath
         app.launch()
 
@@ -227,14 +232,17 @@ final class PicStripUITests: XCTestCase {
             try? data.write(to: URL(fileURLWithPath: tmpPath))
         }
 
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 
         let preview = app.descendants(matching: .any)["metadataPhotoPreview"]
         XCTAssertTrue(preview.waitForExistence(timeout: 20))
 
+        // The button appears once the scan is complete, and the scan now ends
+        // with the on-device name pass — seconds, not an instant, on a cold model.
         let editButton = app.descendants(matching: .any)["editRedactionsButton"]
-        XCTAssertTrue(editButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(editButton.waitForExistence(timeout: 25))
         editButton.tap()
 
         let addButton = app.descendants(matching: .any)["addRedactionButton"]
@@ -267,6 +275,7 @@ final class PicStripUITests: XCTestCase {
             try? data.write(to: URL(fileURLWithPath: tmpPath))
         }
 
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
         app.launch()
 

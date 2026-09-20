@@ -235,8 +235,15 @@ final class ScrubberViewModel {
     /// stay in sync without requiring callers to call
     /// `replaceDetectedRedactionRegions` separately.
     var detectedPII: [DetectionResult] = [] {
-        didSet { replaceDetectedRedactionRegions(from: detectedPII) }
+        didSet {
+            guard !isAppendingDetections else { return }
+            replaceDetectedRedactionRegions(from: detectedPII)
+        }
     }
+
+    /// Set while late findings are added, so the regions the user may already
+    /// have moved, restyled or deleted are not rebuilt from scratch.
+    @ObservationIgnored private var isAppendingDetections = false
 
     /// Pixel dimensions of the currently loaded image.
     /// Used by ContentView to compute the exact rendered frame of a .scaledToFit()
@@ -410,33 +417,34 @@ final class ScrubberViewModel {
 
     // MARK: - Private
 
-    @ObservationIgnored private let scanImage: @Sendable (Data, ScanHints) async throws -> [DetectionResult]
+    @ObservationIgnored private let scan: @Sendable (Data, ScanHints) async throws -> ScanOutput
+    @ObservationIgnored private let semantic: SemanticPII
     @ObservationIgnored private let objectSelection: ObjectSelection
 
-    /// Keep format/export tests independent of Vision model startup while the
-    /// application continues to use the real on-device scanner by default.
+    /// The application uses the real on-device scanner, language model and
+    /// segmentation; tests inject their own so they never boot Vision or a model.
     init(
-        scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult] = {
-            try await ScrubberViewModel.liveScan(data: $0, hints: $1)
+        scan: @escaping @Sendable (Data, ScanHints) async throws -> ScanOutput = {
+            try await PIIScanner().scan(data: $0, hints: $1)
         },
+        semantic: SemanticPII = .live,
         objectSelection: ObjectSelection = .live
     ) {
-        self.scanImage = scanImageWithHints
+        self.scan = scan
+        self.semantic = semantic
         self.objectSelection = objectSelection
     }
 
-    /// The editor's scan: Vision and the pattern rules, then the on-device
-    /// language model over the recognised text for what patterns cannot find.
-    /// Batch and the share extension use the pattern scan alone.
-    @concurrent
-    nonisolated static func liveScan(
-        data: Data,
-        hints: ScanHints,
-        semantic: SemanticPII = .live
-    ) async throws -> [DetectionResult] {
-        let output = try await PIIScanner().scan(data: data, hints: hints)
-        let names = await semantic.findNames(output.lines.map(\.text))
-        return SemanticPIIMerger.merge(names: names, lines: output.lines, into: output.results)
+    /// For tests that supply findings directly: no recognised text, so no name pass.
+    convenience init(
+        scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult],
+        objectSelection: ObjectSelection = .unsupported
+    ) {
+        self.init(
+            scan: { ScanOutput(results: try await scanImageWithHints($0, $1), lines: []) },
+            semantic: .unavailable,
+            objectSelection: objectSelection
+        )
     }
 
     /// For tests that do not care about scan hints.
@@ -455,6 +463,9 @@ final class ScrubberViewModel {
     private var loadToken = UUID()
 
     private var piiScanTask: Task<Void, Never>?
+    /// The on-device name pass.  It runs after the scan has been published, so
+    /// neither the editor nor a save ever waits for the language model.
+    private var nameScanTask: Task<Void, Never>?
     private var piiScanToken = UUID()
     private(set) var piiFocusTask: Task<Void, Never>?
 
@@ -557,6 +568,8 @@ final class ScrubberViewModel {
         rawSourceProps = nil
         piiScanTask?.cancel()
         piiScanTask = nil
+        nameScanTask?.cancel()
+        nameScanTask = nil
         piiFocusTask?.cancel()
         piiFocusTask = nil
         piiScanToken = UUID()
@@ -645,11 +658,17 @@ final class ScrubberViewModel {
         piiScanToken = token
         isScanningPII = true
 
-        piiScanTask = Task { [scanImage] in
+        nameScanTask?.cancel()
+        nameScanTask = nil
+
+        piiScanTask = Task { [scan] in
             let result: [DetectionResult]
+            var lines: [ScannedLine] = []
             var scanError: String?
             do {
-                result = try await scanImage(data, hints)
+                let output = try await scan(data, hints)
+                result = output.results
+                lines = output.lines
             } catch {
                 // Never let a failed scan look like a clean one: tell the user so
                 // they know to check the photo themselves.
@@ -668,8 +687,53 @@ final class ScrubberViewModel {
                 self.typesToRedact = Set(result.map(\.type).filter(\.isRedactedByDefault))
                 self.isScanningPII = false
                 self.piiScanTask = nil
+                self.startNameScan(lines: lines, token: token)
             }
         }
+    }
+
+    /// Asks the on-device language model for people's names in the recognised
+    /// text and adds what it finds to the already-published scan.
+    private func startNameScan(lines: [ScannedLine], token: UUID) {
+        guard !lines.isEmpty else { return }
+        nameScanTask = Task { [semantic] in
+            let names = await semantic.findNames(lines.map(\.text))
+            // The photo may have been replaced while the model was thinking.
+            guard !Task.isCancelled, self.piiScanToken == token else { return }
+            self.appendDetections(SemanticPIIMerger.merge(names: names, lines: lines, into: []))
+            self.nameScanTask = nil
+        }
+    }
+
+    /// Adds findings that arrived after the scan was published.  Unlike setting
+    /// `detectedPII`, this leaves every existing region exactly as the user has
+    /// it — moved, restyled, disabled or deleted — and adds the new ones to the
+    /// undo history too, so an undo cannot make them vanish.
+    private func appendDetections(_ results: [DetectionResult]) {
+        guard !results.isEmpty else { return }
+        isAppendingDetections = true
+        detectedPII = PIIScanner.sorted(detectedPII + results)
+        isAppendingDetections = false
+
+        let regions = results.flatMap { result in
+            result.instances.enumerated().map { index, instance in
+                RedactionRegion.detected(
+                    result: result, instance: instance, index: index,
+                    isEnabled: typesToRedact.contains(result.type)
+                )
+            }
+        }
+        // Detected regions come before custom ones, as in `replaceDetectedRedactionRegions`.
+        func adding(to existing: [RedactionRegion]) -> [RedactionRegion] {
+            let firstCustom = existing.firstIndex { $0.source == .custom } ?? existing.endIndex
+            var updated = existing
+            updated.insert(contentsOf: regions, at: firstCustom)
+            return updated
+        }
+        redactionRegions = adding(to: redactionRegions)
+        undoStack = undoStack.map(adding)
+        redoStack = redoStack.map(adding)
+        if regions.contains(where: \.isEnabled) { redactedUIImage = nil }
     }
 
     private func waitForCurrentPIIScan() async {

@@ -60,7 +60,7 @@ PicStrip/
 │   ├── accessibility_declarations.json  # Verified against App Store Connect in CI
 │   ├── screenshots/
 │   │   ├── <locale>/           # Raw captures, one folder per locale
-│   │   └── processed/          # Final marketing PNGs — uploaded to App Store Connect
+│   │   └── processed/          # Final marketing PNGs (Git LFS) — uploaded to App Store Connect
 │   └── metadata/<locale>/      # App Store name, subtitle, keywords, description, release notes
 │
 ├── scripts/
@@ -973,7 +973,7 @@ Concurrent batch processing would require holding multiple decoded `UIImage` obj
 
 ### The Language Model Is On-Device Only, and Not Trusted
 
-`SemanticPII` uses `SystemLanguageModel` and nothing else. `PrivateCloudComputeLanguageModel` exists in the iOS 27 SDK and must never be used here: it would send recognised text off the device and void every on-device claim the app makes. The model's output is treated as a hint — `SemanticPIIMerger` keeps a name only if the line index exists and the line really contains that text, and takes the box from Vision's character geometry, so a hallucination cannot put a box on the image. Names are `isRedactedByDefault == false`; batch burns only default-redacted types, and batch and the share extension do not run the model at all. The pass is capped at 12 s and the model is prewarmed at launch (≈2 s warm, ≈6 s cold on the simulator).
+`SemanticPII` uses `SystemLanguageModel` and nothing else. `PrivateCloudComputeLanguageModel` exists in the iOS 27 SDK and must never be used here: it would send recognised text off the device and void every on-device claim the app makes. The model's output is treated as a hint — `SemanticPIIMerger` keeps a name only if the line index exists and the line really contains that text, and takes the box from Vision's character geometry, so a hallucination cannot put a box on the image. Names are `isRedactedByDefault == false`; batch burns only default-redacted types, and batch and the share extension do not run the model at all. The pass runs *after* the scan has been published (`startNameScan`), so neither the editor nor a save ever waits for the model; its findings are added with `appendDetections`, which leaves every existing region — and the undo history — as the user has it. It is capped at 12 s and the model is prewarmed at launch (≈2 s warm, ≈6 s cold on the simulator). `PICSTRIP_DISABLE_NAME_DETECTION=1` switches it off for UI tests and screenshots, which must be deterministic.
 
 ### The Live Viewfinder Is Advisory
 
@@ -982,6 +982,10 @@ Concurrent batch processing would require holding multiple decoded `UIImage` obj
 ### The Object-Selection Model Is Never Downloaded Unasked
 
 Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model is an asset the OS downloads from Apple on request (`assetStatus` / `downloadAssets()`); it cannot be bundled. It is the only thing in the app that can cause a network transfer, so `ScrubberViewModel.selectObject(at:)` never calls `downloadModel` itself: a `.needsDownload` status raises the consent alert, and only `downloadObjectModelAndContinue()` — the alert's "Download" button — fetches it. Keep that property when touching this code; `ObjectSelectionFlowTests` pins it. Regions are rectangles, so the mask is reduced to its bounding box (`SegmentationMask.boundingBox`), and a mask covering almost the whole image is rejected as "the background".
+
+### Marketing Screenshots Live in Git LFS
+
+`fastlane/screenshots/processed/**/*.png` is tracked by Git LFS (`.gitattributes`). Run `git lfs install` once per clone — without it git stores the PNGs as ordinary blobs and the attribute does nothing, which is how the repository's pack grew to a gigabyte before September 2026. Building and testing the app never needs these files, so a clone without LFS still works. The release platform's packaging job checks out with `lfs: true` and rejects LFS pointer files, so any new workflow that reads the screenshots must do the same. Commits from before the conversion still carry the PNGs as blobs; shrinking that history would mean rewriting `main`.
 
 ### Captured Pages Are Encoded Lazily
 

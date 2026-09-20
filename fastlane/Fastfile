@@ -168,6 +168,12 @@ platform :ios do
 
     selected_languages = screenshot_options[:languages] || CI_CONFIG.fetch("locales")
     UI.user_error!("Unknown screenshot locale") unless (selected_languages - CI_CONFIG.fetch("locales")).empty?
+    # The scheme also holds the behaviour UI tests. They need to run once — the
+    # en-US smoke capture on PRs does that — not once per locale and device, where
+    # they triple the capture time and one flake discards every screenshot.
+    unless selected_languages == ["en-US"]
+      screenshot_options[:only_testing] = ["PicStripUITests/PicStripUITests/testAllScreenshots"]
+    end
     screenshot_options[:ios_version] = ENV.fetch("SIMULATOR_RUNTIME", CI_CONFIG.fetch("xcode").fetch("runtime"))
     unless ENV["SIMULATOR_UDIDS"]
       ENV["DEVELOPER_DIR"] = CI_CONFIG.fetch("xcode").fetch("path")

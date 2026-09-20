@@ -3,7 +3,13 @@
 
 # Device, runtime, and locale choices are shared with CI validation.
 require "json"
-ci_config = JSON.parse(File.read(File.expand_path("../.github/ios-release.json", __dir__)))
+# `__dir__` inside this eval'd file is nil on some Ruby versions, which makes the
+# path depend on the working directory; accept either the fastlane/ or repo root.
+ci_config_path = [
+  File.expand_path("../.github/ios-release.json", __dir__ || Dir.pwd),
+  File.expand_path(".github/ios-release.json", Dir.pwd)
+].find { |path| File.exist?(path) }
+ci_config = JSON.parse(File.read(ci_config_path))
 devices(ci_config.fetch("screenshot_devices"))
 ios_version(ENV.fetch("SIMULATOR_RUNTIME", ci_config.fetch("xcode").fetch("runtime")))
 languages(ci_config.fetch("locales"))

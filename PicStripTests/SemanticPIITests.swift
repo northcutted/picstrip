@@ -97,34 +97,123 @@ final class PersonNameDefaultsTests: XCTestCase {
     }
 }
 
-// MARK: - Composition
+// MARK: - Names arrive after the scan, and add to it
 
-final class LiveScanCompositionTests: XCTestCase {
+@MainActor
+final class LateNameDetectionTests: XCTestCase {
 
-    /// The model only ever sees recognised text, and an unavailable model
-    /// changes nothing about the pattern scan.
-    func testLiveScan_withoutTheModel_equalsThePatternScan() async throws {
-        let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "test_pii", withExtension: "png"))
-        let data = try Data(contentsOf: url)
+    private let lines = [
+        ScannedLine(text: "Call bob: 6185551234", boundingBox: CGRect(x: 0.1, y: 0.3, width: 0.4, height: 0.05), confidence: 1)
+    ]
+    private let phone = DetectionResult(
+        type: .phoneNumber, score: 0.7,
+        instances: [DetectedInstance(snippet: "6185551234", boundingBox: CGRect(x: 0.2, y: 0.3, width: 0.3, height: 0.05), score: 0.7)]
+    )
 
-        let plain = try await PIIScanner().scanImage(data: data)
-        let composed = try await ScrubberViewModel.liveScan(data: data, hints: .none, semantic: .unavailable)
-
-        XCTAssertEqual(composed.map(\.type), plain.map(\.type))
+    private func imageData() throws -> Data {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 8, height: 8), format: format).image { _ in }
+        return try XCTUnwrap(image.pngData())
     }
 
-    func testLiveScan_feedsRecognisedLinesToTheModel_andBoxesItsNames() async throws {
+    private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
+        for _ in 0..<300 where !condition() { try await Task.sleep(for: .milliseconds(10)) }
+        XCTAssertTrue(condition(), "Timed out waiting for the view model.")
+    }
+
+    /// The scan is published — and editable, and saveable — before the language
+    /// model has answered; its names are then added without rebuilding anything.
+    func testNamesAreAddedLater_withoutDisturbingTheUsersEdits() async throws {
+        let gate = NameGate()
+        let phone = phone, lines = lines
+        let viewModel = ScrubberViewModel(
+            scan: { _, _ in ScanOutput(results: [phone], lines: lines) },
+            semantic: SemanticPII(findNames: { _ in
+                await gate.wait()
+                return [SemanticPII.Name(line: 0, text: "bob")]
+            }),
+            objectSelection: .unsupported
+        )
+
+        await viewModel.loadData(try imageData())
+        try await waitUntil { !viewModel.isScanningPII }
+        XCTAssertEqual(viewModel.detectedPII.map(\.type), [.phoneNumber], "The scan must not wait for the model.")
+
+        // The user edits while the model is still thinking.
+        let phoneID = try XCTUnwrap(viewModel.redactionRegions.first?.id)
+        viewModel.changeRedactionStyle(id: phoneID, style: .blur)
+        viewModel.addCustomRedaction(rect: CGRect(x: 0.5, y: 0.5, width: 0.2, height: 0.2))
+
+        await gate.open()
+        try await waitUntil { viewModel.detectedPII.contains { $0.type == .personName } }
+
+        XCTAssertEqual(viewModel.redactionRegions.map(\.type), [.phoneNumber, .personName, nil],
+                       "Names join the detected regions, ahead of the custom ones.")
+        XCTAssertEqual(viewModel.redactionRegions.first?.style, .blur, "The user's restyle must survive.")
+        let name = try XCTUnwrap(viewModel.redactionRegions.first { $0.type == .personName })
+        XCTAssertFalse(name.isEnabled, "Names are offered, not redacted unasked.")
+        XCTAssertEqual(viewModel.typesToRedact, [.phoneNumber])
+
+        // Undoing the user's own edits must not make the name region vanish.
+        viewModel.undoRedaction()
+        viewModel.undoRedaction()
+        XCTAssertNotNil(viewModel.redactionRegions.first { $0.type == .personName })
+    }
+
+    func testNamesForAReplacedPhotoAreDropped() async throws {
+        let gate = NameGate()
+        let phone = phone, lines = lines
+        let viewModel = ScrubberViewModel(
+            scan: { _, _ in ScanOutput(results: [phone], lines: lines) },
+            semantic: SemanticPII(findNames: { _ in
+                await gate.wait()
+                return [SemanticPII.Name(line: 0, text: "bob")]
+            }),
+            objectSelection: .unsupported
+        )
+        await viewModel.loadData(try imageData())
+        try await waitUntil { !viewModel.isScanningPII }
+
+        viewModel.clearState()
+        await gate.open()
+        try await Task.sleep(for: .milliseconds(100))
+
+        XCTAssertTrue(viewModel.detectedPII.isEmpty)
+        XCTAssertTrue(viewModel.redactionRegions.isEmpty)
+    }
+}
+
+/// Holds the fake model's answer back until the test lets it through.
+private actor NameGate {
+    private var isOpen = false
+    private var waiters: [CheckedContinuation<Void, Never>] = []
+
+    func wait() async {
+        guard !isOpen else { return }
+        await withCheckedContinuation { waiters.append($0) }
+    }
+
+    func open() {
+        isOpen = true
+        waiters.forEach { $0.resume() }
+        waiters.removeAll()
+    }
+}
+
+// MARK: - Recognised lines
+
+final class ScanOutputTests: XCTestCase {
+
+    /// The name pass works from the lines the scan returns, so they must carry
+    /// the text, and a box that hugs a substring rather than the whole line.
+    func testScanReturnsRecognisedLinesWithSubstringGeometry() async throws {
         let url = try XCTUnwrap(Bundle(for: Self.self).url(forResource: "test_pii", withExtension: "png"))
-        let data = try Data(contentsOf: url)
-        let semantic = SemanticPII(findNames: { lines in
-            guard let index = lines.firstIndex(where: { $0.localizedCaseInsensitiveContains("bob") }) else { return [] }
-            return [SemanticPII.Name(line: index, text: "bob")]
-        })
+        let output = try await PIIScanner().scan(data: try Data(contentsOf: url))
 
-        let results = try await ScrubberViewModel.liveScan(data: data, hints: .none, semantic: semantic)
-
-        let names = try XCTUnwrap(results.first { $0.type == .personName }, "OCR should have read the line with \u{201C}bob\u{201D}.")
-        let box = try XCTUnwrap(names.instances.first?.boundingBox)
-        XCTAssertTrue(box.width > 0 && box.width < 0.3, "The box should hug the name, not the line: \(box)")
+        let line = try XCTUnwrap(output.lines.first { $0.text.localizedCaseInsensitiveContains("bob") })
+        let box = try XCTUnwrap(line.boundingBox(of: "bob"))
+        XCTAssertTrue(box.width > 0 && box.width < line.boundingBox.width, "\(box) should be narrower than its line.")
+        XCTAssertFalse(output.results.contains { $0.type == .personName }, "The pattern scan never produces names itself.")
     }
 }

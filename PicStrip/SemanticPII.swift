@@ -117,7 +117,10 @@ nonisolated enum OnDeviceNameFinder {
         job titles, or labels of the user interface. If there are no people's names, return an empty list.
         """
 
+    /// `PICSTRIP_DISABLE_NAME_DETECTION` keeps UI tests and App Store screenshots
+    /// deterministic: what a language model finds, and when, is neither.
     static var isAvailable: Bool {
+        guard ProcessInfo.processInfo.environment["PICSTRIP_DISABLE_NAME_DETECTION"] != "1" else { return false }
         let model = SystemLanguageModel.default
         return model.availability == .available && model.supportsLocale()
     }
