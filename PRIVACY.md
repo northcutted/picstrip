@@ -28,6 +28,11 @@ PicStrip asks for camera access only when you tap "Take Photo" or "Scan Document
 
 PicStrip never saves the original, un-redacted photo or scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
 
+While the "Take Photo" viewfinder is open, PicStrip analyses camera frames on your device to show, live, which areas it would redact. Each frame is examined in memory and discarded at once; no frame and no result of that analysis is stored.
+
+## Names and Apple Intelligence
+Where you have turned Apple Intelligence on, PicStrip asks Apple's on-device language model to find people's names in the text it recognised in your photo. This runs entirely on your device. PicStrip never uses Apple's Private Cloud Compute or any other server for it, and downloads nothing for it. Where Apple Intelligence is off or unavailable, names are simply not detected.
+
 ## Optional Object Selection Model
 On iOS 27 you can tap an object to redact it. That uses an Apple on-device model which iOS downloads from Apple the first time — and only after PicStrip has asked and you have agreed. Only the model is downloaded. Your photo is analysed on your device like everything else; nothing about it is sent anywhere. If you decline, nothing is downloaded and you can still draw redaction boxes by hand.
 

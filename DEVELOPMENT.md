@@ -90,7 +90,9 @@ PicStrip/
 │   ├── IncomingImage.swift     # Transferable for paste / drag-and-drop (original bytes, never re-encoded)
 │   ├── PasteboardMonitor.swift # Whether the pasteboard holds an image (never reads it); shows/hides Paste
 │   ├── DocumentScannerView.swift  # System document camera + DocumentScanFlow (camera-permission mapping)
-│   ├── CameraCaptureView.swift # System photo camera + CameraHardware (is there a real camera?)
+│   ├── LiveCamera.swift        # Live-preview camera: CameraSession (AVCaptureSession), throttle, overlay geometry, view
+│   ├── CameraCaptureView.swift # System photo camera (fallback) + CameraHardware (is there a real camera?)
+│   ├── SemanticPII.swift       # On-device language-model pass for people's names + the merge that distrusts it
 │   ├── ObjectSegmenter.swift   # Tap-an-object selection (iOS 27 Vision segmentation) behind ObjectSelection closures
 │   ├── CapturedPages.swift     # In-app capture seam: lazy per-page bytes, ScannedDocument, CapturedImageEncoder
 │   ├── AuditReport.swift       # Codable structs: AuditReport, BatchAuditReport, RedactionReport
@@ -269,7 +271,8 @@ User taps "Scan Document"
 DocumentScanFlow.step(for: camera permission) → present / request access / explain denial
     ↓
 DocumentScannerView (VNDocumentCameraViewController) → ScannedDocument, held in memory
-   ("Take Photo" is the same flow with CameraCaptureView → CapturedPages(photo:), without the document hint)
+   ("Take Photo" is the same flow with LiveCameraView → the camera's own bytes, without the document hint;
+    CameraCaptureView → CapturedPages(photo:) is the fallback)
     ↓  (acted on in the cover's onDismiss — presenting a sheet mid-dismissal can drop it)
 ScrubberViewModel.loadCaptured(CapturedPages)
     ├─ 1 page  → CapturedImageEncoder → loadData(_:)      (the single-photo flow above)
@@ -928,6 +931,14 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 ### Batch Processing Must Remain Sequential
 
 Concurrent batch processing would require holding multiple decoded `UIImage` objects in memory simultaneously. On a device processing ten 12 MP photos, this exceeds available memory. The sequential loop with explicit `nil` assignments is not defensive programming overhead — it is the memory model.
+
+### The Language Model Is On-Device Only, and Not Trusted
+
+`SemanticPII` uses `SystemLanguageModel` and nothing else. `PrivateCloudComputeLanguageModel` exists in the iOS 27 SDK and must never be used here: it would send recognised text off the device and void every on-device claim the app makes. The model's output is treated as a hint — `SemanticPIIMerger` keeps a name only if the line index exists and the line really contains that text, and takes the box from Vision's character geometry, so a hallucination cannot put a box on the image. Names are `isRedactedByDefault == false`; batch burns only default-redacted types, and batch and the share extension do not run the model at all. The pass is capped at 12 s and the model is prewarmed at launch (≈2 s warm, ≈6 s cold on the simulator).
+
+### The Live Viewfinder Is Advisory
+
+`PIIScanner.liveBoxes(in:)` runs on camera frames for the viewfinder's boxes only: one frame at a time, at most every 0.35 s (`AnalysisThrottle`), paused while the thermal state is serious or critical. The captured photo is scanned again by the full pipeline, so nothing in the editor depends on what the viewfinder showed. Frames are never stored. It uses accurate OCR — the fast model garbles the digits the pattern rules need (and reads nothing on the simulator) — so tune the interval, not the level, if a device runs hot. If the capture session cannot be configured, `LiveCameraView` reports `.unavailable` and the system camera (`CameraCaptureView`) is presented instead.
 
 ### The Object-Selection Model Is Never Downloaded Unasked
 

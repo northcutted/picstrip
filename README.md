@@ -30,7 +30,8 @@ The App Store carousel and the marketing PNGs uploaded to App Store Connect live
 | **Visual PII Detection** | On-device OCR and Vision scan image content for 30 sensitive data types across 4 risk tiers (Critical, High, Medium, Low) |
 | **Visual PII Redaction** | Solid, crosshatch, pixelate, or blur redactions with 12 color options; multi-select bulk operations; 50-step undo/redo |
 | **Files, Paste & Drag-and-Drop** | Import from Photos library or the Files app, paste from the clipboard, or drag and drop directly into the app — always the original bytes, metadata intact |
-| **In-App Camera** | Take a photo straight into the editor — the original never reaches your photo library |
+| **In-App Camera** | A viewfinder that shows, live, what will be redacted; the photo goes straight into the editor and the original never reaches your photo library |
+| **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names in the recognised text (listed, off by default; never Private Cloud Compute) |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model iOS downloads once, only after you agree) |
 | **Document Scanning** | Scan paper with the camera straight into the editor — the un-redacted original is never saved to your photo library; multi-page scans go through batch |
 | **Batch Processing** | Clean multiple photos at once with a uniform privacy policy |
