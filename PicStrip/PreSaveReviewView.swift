@@ -84,6 +84,12 @@ struct PreSaveReviewView: View {
                 }
             }
             .listStyle(.insetGrouped)
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                primaryShareAction
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(.bar)
+            }
             .sensoryFeedback(.success, trigger: viewModel.canExport) { _, ready in ready && !reduceMotion }
             .navigationTitle("Review & Share")
             .navigationBarTitleDisplayMode(.inline)
@@ -218,6 +224,27 @@ struct PreSaveReviewView: View {
     }
 
     @ViewBuilder
+    private var primaryShareAction: some View {
+        if let processed = viewModel.shareImage {
+            ShareLink(
+                item: processed,
+                preview: SharePreview(
+                    "Scrubbed Image",
+                    image: previewImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo")
+                )
+            ) {
+                Label("Share cleaned image", systemImage: "square.and.arrow.up")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityIdentifier("shareCleanedImageButton")
+            .disabled(!viewModel.canExport)
+        }
+    }
+
+    @ViewBuilder
     private var sharingActions: some View {
         VStack(spacing: 12) {
             if viewModel.isProcessing {
@@ -252,25 +279,6 @@ struct PreSaveReviewView: View {
                     .buttonStyle(.plain)
 
                     Divider()
-
-                    if let processed = viewModel.shareImage {
-                        ShareLink(
-                            item: processed,
-                            preview: SharePreview(
-                                "Scrubbed Image",
-                                image: previewImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo")
-                            )
-                        ) {
-                            Label("Share cleaned image", systemImage: "square.and.arrow.up")
-                                .font(.body.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .controlSize(.large)
-                        .accessibilityIdentifier("shareCleanedImageButton")
-                        .disabled(!viewModel.canExport)
-                    }
 
                     Button {
                         Task { await viewModel.saveToPhotos(replacing: false) }

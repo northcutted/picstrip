@@ -576,9 +576,9 @@ final class ScrubberViewModel {
         let token = resetForNewImage()
 
         do {
-            let data = try await item.loadTransferable(type: Data.self)
+            let incoming = try await item.loadTransferable(type: IncomingImage.self)
             guard loadToken == token else { return }
-            guard let data else {
+            guard let data = incoming?.data else {
                 errorMessage = String(localized: "The selected item could not be loaded as image data.")
                 isProcessing = false
                 return
@@ -1546,7 +1546,7 @@ final class ScrubberViewModel {
         guard scannedBatchSources.isEmpty else { return scannedBatchSources }
         return batchItems.map { item in
             BatchSource(assetIdentifier: item.itemIdentifier) {
-                try? await item.loadTransferable(type: Data.self)
+                try? await item.loadTransferable(type: IncomingImage.self)?.data
             }
         }
     }

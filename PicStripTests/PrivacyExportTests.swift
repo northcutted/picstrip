@@ -93,6 +93,34 @@ final class PrivacyExportTests: XCTestCase {
         }
     }
 
+    func testIncomingTransferPreservesOriginalBytesAndMetadata() async throws {
+        let original = try image()
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("Incoming-\(UUID().uuidString).jpg")
+        try original.write(to: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+
+        for fileBacked in [true, false] {
+            let provider = NSItemProvider()
+            if fileBacked {
+                provider.registerFileRepresentation(forTypeIdentifier: UTType.jpeg.identifier, fileOptions: [], visibility: .all) { completion in
+                    completion(url, false, nil)
+                    return nil
+                }
+            } else {
+                provider.registerDataRepresentation(forTypeIdentifier: UTType.jpeg.identifier, visibility: .all) { completion in
+                    completion(original, nil)
+                    return nil
+                }
+            }
+            let received = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<IncomingImage, Error>) in
+                _ = provider.loadTransferable(type: IncomingImage.self) { continuation.resume(with: $0) }
+            }
+            XCTAssertEqual(received.data, original)
+            XCTAssertTrue(ImageProcessor.readAllFields(from: received.data).contains { $0.category == "GPS" },
+                          "Import must preserve metadata until the user reviews the original")
+        }
+    }
+
     func testUnattendedExportRejectsPartialCoverage() async throws {
         var incomplete = ScanCoverage.complete
         incomplete[.barcodes] = .failed

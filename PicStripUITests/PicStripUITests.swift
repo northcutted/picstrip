@@ -159,6 +159,8 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["savePreviewLabel"].exists,
             "Review sheet should label the visual save preview."
         )
+        XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable,
+                      "The primary share action must remain visible while reviewing the photo")
         snapshot("01_ReviewAndShare")
         attachScreen("01_ReviewAndShare")
         app.buttons["inspectFullImageButton"].tap()

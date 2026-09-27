@@ -20,7 +20,10 @@ nonisolated struct IncomingImage: Transferable, Sendable {
         }
         // Safari, Messages, and the pasteboard hand over the bytes directly.
         DataRepresentation(importedContentType: .image) { data in
-            IncomingImage(data: data)
+            guard data.count <= ImageResourceBudget.editor.maximumBytes else {
+                throw ImageResourceBudget.AdmissionError.fileTooLarge
+            }
+            return IncomingImage(data: data)
         }
     }
 
