@@ -337,6 +337,8 @@ struct LiveCameraView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                 }
+                // Vision/video rectangles use pixel coordinates, not reading order.
+                .environment(\.layoutDirection, .leftToRight)
                 .animation(reduceMotion ? nil : .linear(duration: 0.12), value: model.boxes)
             }
             .ignoresSafeArea()

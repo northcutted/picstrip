@@ -147,6 +147,9 @@ struct ZoomableImagePreview: View {
                         onTap?()
                     }
                 })
+                // Image, overlay and gesture coordinates start at the left edge
+                // regardless of the surrounding controls' reading direction.
+                .environment(\.layoutDirection, .leftToRight)
 
                 if showZoomHint {
                     Label(zoomHintText, systemImage: isAddingRedaction ? "plus.square.dashed" : "hand.draw")

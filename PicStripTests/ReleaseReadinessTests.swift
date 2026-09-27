@@ -1,5 +1,6 @@
 import AppIntents
 import ImageIO
+import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 import XCTest
@@ -12,6 +13,42 @@ final class ReleaseReadinessTests: XCTestCase {
     private func settle(_ condition: @MainActor () -> Bool) async throws {
         for _ in 0..<500 where !condition() { try await Task.sleep(for: .milliseconds(10)) }
         XCTAssertTrue(condition())
+    }
+
+    func testImagePixelGeometryDoesNotMirrorInRightToLeftLayout() throws {
+        let size = CGSize(width: 240, height: 160)
+        let source = UIGraphicsImageRenderer(size: size).image { context in
+            UIColor.white.setFill()
+            context.fill(CGRect(origin: .zero, size: size))
+            UIColor.blue.setFill()
+            context.fill(CGRect(x: 4, y: 4, width: 16, height: 16))
+        }
+        func render(_ direction: LayoutDirection, regions: [RedactionRegion], editing: Bool) throws -> Data {
+            let view = ZoomableImagePreview(
+                image: source, redactionRegions: regions,
+                selectedRedactionRegionID: .constant(editing ? regions.first?.id : nil),
+                isRedactionEditing: editing, showZoomHint: false
+            )
+            .frame(width: size.width, height: size.height)
+            .environment(\.layoutDirection, direction)
+            .environment(\.colorScheme, .light)
+            .tint(.green)
+            let renderer = ImageRenderer(content: view)
+            renderer.scale = 1
+            return try XCTUnwrap(renderer.uiImage?.pngData())
+        }
+        let plain = try render(.leftToRight, regions: [], editing: false)
+        for enabled in [false, true] {
+            for editing in [false, true] {
+                var region = RedactionRegion.custom(rect: CGRect(x: 0.12, y: 0.3, width: 0.24, height: 0.22))
+                region.isEnabled = enabled
+                let leftToRight = try render(.leftToRight, regions: [region], editing: editing)
+                let rightToLeft = try render(.rightToLeft, regions: [region], editing: editing)
+                XCTAssertNotEqual(leftToRight, plain, "The renderer must include the region overlay")
+                XCTAssertEqual(leftToRight, rightToLeft,
+                               "Pixels, selection borders and resize handles must share physical image coordinates")
+            }
+        }
     }
 
     func testAdmissionRejectsPixelsAndBytesBeforeProcessing() throws {
