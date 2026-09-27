@@ -120,7 +120,7 @@ jobs:
           name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             fastlane/screenshots/
-            !fastlane/screenshots/test_output/
+            !fastlane/screenshots/test_output/**
           retention-days: 14
           compression-level: 0
           if-no-files-found: error

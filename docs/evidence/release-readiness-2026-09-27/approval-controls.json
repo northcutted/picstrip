@@ -1,0 +1,22 @@
+{
+  "observed_at": "2026-09-27T21:57:22.244867+00:00",
+  "repository": "northcutted/picstrip",
+  "read_only": true,
+  "release_distribution_enabled": true,
+  "testflight_canary_enabled": true,
+  "signing_refs": [
+    {
+      "type": "branch",
+      "name": "main"
+    }
+  ],
+  "production_refs": [
+    {
+      "type": "tag",
+      "name": "v*"
+    }
+  ],
+  "production_required_reviewer": "northcutted",
+  "production_admin_bypass": false,
+  "apple_mutation_performed": false
+}

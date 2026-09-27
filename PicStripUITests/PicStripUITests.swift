@@ -361,15 +361,12 @@ final class PicStripUITests: XCTestCase {
 
         let saveAsNew = app.buttons["saveAsNewPhotoButton"]
         XCTAssertTrue(app.buttons["inspectFullImageButton"].waitForExistence(timeout: 10))
-        var acknowledged = false
-        for _ in 0..<6 {
-            let acknowledgement = app.descendants(matching: .any)["manualReviewAcknowledgement"].firstMatch
-            if !acknowledged, acknowledgement.isHittable {
-                acknowledgement.tap()
-                acknowledged = true
-            }
-            if saveAsNew.isHittable { break }
-            app.swipeUp()
+        reveal(saveAsNew, in: app)
+        let acknowledgement = app.descendants(matching: .any)["manualReviewAcknowledgement"].firstMatch
+        if acknowledgement.exists {
+            reveal(acknowledgement, in: app)
+            acknowledgement.tap()
+            reveal(saveAsNew, in: app)
         }
         XCTAssertTrue(saveAsNew.exists, "The review must expose save actions after its coverage summary")
         XCTAssertTrue(saveAsNew.isEnabled)
@@ -504,17 +501,34 @@ final class PicStripUITests: XCTestCase {
         return app
     }
 
-    private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
-        for _ in 0..<6 where !element.isHittable {
-            // Start inside the scrolling content, above any fixed Share footer.
-            // Keep to the edge so the zoomable image does not consume the pan.
-            let share = app.buttons["shareCleanedImageButton"]
-            let startY = share.exists
-                ? min(0.8, (share.frame.minY - 24) / app.frame.height)
-                : 0.8
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: startY))
-                .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.3)))
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let list = app.collectionViews.containing(.any, identifier: element.identifier).firstMatch
+        let scroll = app.scrollViews.containing(.any, identifier: element.identifier).firstMatch
+        let container = list.exists ? list : (scroll.exists ? scroll : app)
+        let containerFrame = container.frame.intersection(app.frame)
+        let navigationBottom = app.navigationBars.allElementsBoundByIndex
+            .map(\.frame).filter { $0.intersects(containerFrame) }.map(\.maxY).max() ?? containerFrame.minY
+        let share = app.buttons["shareCleanedImageButton"]
+        let top = max(containerFrame.minY, navigationBottom) + 4
+        let bottom = min(containerFrame.maxY, share.exists ? share.frame.minY - 12 : containerFrame.maxY) - 4
+        let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
+        XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
+
+        for _ in 0..<8 {
+            // XCTest can report a control behind the fixed footer as hittable.
+            // Require its actual frame to fit above the footer before tapping.
+            if element.exists, viewport.contains(element.frame.insetBy(dx: 1, dy: 1)), element.isHittable { return }
+            let upwards = !element.exists || element.frame.maxY > viewport.maxY
+            let upper = viewport.minY + viewport.height * 0.25
+            let lower = viewport.maxY - 24
+            // Use the enclosing list's edge: iPad sheets do not fill the screen,
+            // and dragging through the preview image would pan that image.
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
+            let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+            start.press(forDuration: 0.05, thenDragTo: end)
         }
+        XCTFail("Could not reveal \(element.identifier) inside the unobscured viewport", file: file, line: line)
     }
 
     private func attachScreen(_ name: String) {
