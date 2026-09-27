@@ -109,3 +109,4 @@ __pycache__/
 
 # Raw xcodebuild logs from screenshot runs (local paths, simulator IDs)
 fastlane/screenshot_logs/
+fastlane/screenshots/test_output/
