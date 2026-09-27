@@ -1,0 +1,33 @@
+{
+  "xcode": "27.0 / 27A266a",
+  "runtime": "iOS 27.0 / 24A434",
+  "verified_interactions": [
+    {
+      "device": "iPad Pro 13-inch (M5)",
+      "test": "testSampleReviewAtLargestTextSize",
+      "result": "passed"
+    },
+    {
+      "device": "iPad Pro 13-inch (M5)",
+      "test": "testSaveAsNewPhotoReachesThePhotoLibrary",
+      "result": "passed"
+    },
+    {
+      "device": "iPhone 18 Pro Max",
+      "test": "testSampleReviewAtLargestTextSize",
+      "result": "passed"
+    },
+    {
+      "device": "iPhone 18 Pro Max",
+      "test": "testSaveAsNewPhotoReachesThePhotoLibrary",
+      "result": "passed after lazy-list lookup correction"
+    }
+  ],
+  "result_bundles": [
+    "ReviewViewport-1.xcresult",
+    "PhotosViewport-2.xcresult"
+  ],
+  "history": "The first run passed 3 of 4 device/test combinations. iPhone Save initially failed before tapping because its lazy List row was not yet created. Its focused rerun passed after correcting the scroll helper. Hosted CI will run the full UI suite on the final PR revision.",
+  "assertions": "Full-image preview opens; a real simulator Photos save is authorized and closes review; the app stays running without an error alert.",
+  "final_retry_test_source_sha256": "4bb373b47cae70f4829f5e713fe6c4e70eced40408eb700644532c31e78f7a4a"
+}

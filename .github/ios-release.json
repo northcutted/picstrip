@@ -49,10 +49,10 @@
     }
   },
   "screens": [
-    "01_ReviewAndShare",
+    "01_FullPreview",
     "02_RedactionEditor",
     "03_Metadata",
-    "04_FullPreview",
+    "04_ReviewAndShare",
     "05_Sample"
   ],
   "locales": [

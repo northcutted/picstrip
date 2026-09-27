@@ -1,0 +1,48 @@
+{
+  "purpose": "Unsigned optimized compilation and packaging check; not an App Store candidate",
+  "source_commit": "b4d85f80be202704be7102a82ff656b7ce3f58b4",
+  "xcode_version": "27.0",
+  "xcode_build": "27A266a",
+  "archive_succeeded": true,
+  "signed": false,
+  "uploaded": false,
+  "bundles": [
+    {
+      "identifier": "com.northcutt.PicStrip",
+      "version": "1.7.0",
+      "build": "0",
+      "minimum_os": "26.0",
+      "device_families": [
+        1,
+        2
+      ],
+      "privacy_manifest_sha256": "d036969706b71539e20e755dd7eef45be700d627c3ef1431a75152d04b6bfa2f",
+      "required_reason_apis": {
+        "NSPrivacyAccessedAPICategoryFileTimestamp": [
+          "C617.1",
+          "3B52.1"
+        ],
+        "NSPrivacyAccessedAPICategorySystemBootTime": [
+          "35F9.1"
+        ]
+      }
+    },
+    {
+      "identifier": "com.northcutt.PicStrip.ShareExtension",
+      "version": "1.7.0",
+      "build": "0",
+      "minimum_os": "26.0",
+      "device_families": [
+        1,
+        2
+      ],
+      "privacy_manifest_sha256": "cac45373ef8b4af884231853570024a8f0bdf3ccd5c1dddc3b5639a05a6c1335",
+      "required_reason_apis": {
+        "NSPrivacyAccessedAPICategoryFileTimestamp": [
+          "C617.1",
+          "3B52.1"
+        ]
+      }
+    }
+  ]
+}

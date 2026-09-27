@@ -1,3 +1,4 @@
+import Synchronization
 import UIKit
 import XCTest
 
@@ -10,32 +11,37 @@ import XCTest
 /// headless CI.
 ///
 /// Screens captured:
-///   01_ReviewAndShare — cleaned result and removal summary
+///   01_FullPreview — full-resolution output inspection
 ///   02_RedactionEditor — custom redaction edit mode
 ///   03_Metadata — metadata and detected regions
-///   04_FullPreview — full-resolution output inspection
+///   04_ReviewAndShare — cleaned result and removal summary
 ///   05_Sample — fictional sample without photo-library access
 @MainActor
 final class PicStripUITests: XCTestCase {
-    private var isRecordingIssue = false
+    private nonisolated let recordingIssue = Mutex(false)
 
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
 
     override func record(_ issue: XCTIssue) {
-        guard !isRecordingIssue else {
-            super.record(issue)
-            return
+        // XCTest can report worker-queue failures. Never block that queue on
+        // the UI executor just to collect diagnostics, or replace its issue.
+        let captureTree = Thread.isMainThread && recordingIssue.withLock { recording in
+            guard !recording else { return false }
+            recording = true
+            return true
         }
-        isRecordingIssue = true
-        defer { isRecordingIssue = false }
-        // XCTest already captures failure screenshots. Requesting another one
-        // here can replace the original failure with a screenshot timeout.
-        let tree = XCTAttachment(string: XCUIApplication().debugDescription)
-        tree.name = "Accessibility tree"
-        tree.lifetime = .keepAlways
-        add(tree)
+        if captureTree {
+            defer { recordingIssue.withLock { $0 = false } }
+            // Capture only the Sendable string on the UI executor. XCTestCase
+            // itself stays on the queue that is recording the original issue.
+            let description = MainActor.assumeIsolated { XCUIApplication().debugDescription }
+            let tree = XCTAttachment(string: description)
+            tree.name = "Accessibility tree"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
         super.record(issue)
     }
 
@@ -71,7 +77,7 @@ final class PicStripUITests: XCTestCase {
         setupSnapshot(app)
 
         // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 1: No fixture — home + About
+        // LAUNCH 1: No fixture — home and fictional sample
         // ─────────────────────────────────────────────────────────────────────
         // The simulator has no camera, so it would hide "Take Photo" and "Scan
         // Document".  Show the home screen the way a real iPhone shows it.
@@ -79,7 +85,7 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launch()
 
-        // 01 — Home: hero animation has started, wait for it to settle.
+        // Home: hero animation has started, wait for it to settle.
         Thread.sleep(forTimeInterval: 1.5)
         attachScreen("Home")
 
@@ -110,7 +116,8 @@ final class PicStripUITests: XCTestCase {
 
         // 03 — Photo loaded: wait for the dismiss button (photo fully loaded), then
         // wait for editRedactionsButton which only appears once the PII scan is
-        // complete — guarantees the badge row is stable and saveButton is enabled.
+        // complete — guarantees the badge row is stable. Incomplete checks still
+        // require a separate acknowledgement before saving or sharing.
         let dismissButton = app.buttons["dismissPhotoButton"]
         XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
                       "Dismiss button should appear after fixture image loads")
@@ -168,12 +175,12 @@ final class PicStripUITests: XCTestCase {
         )
         XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable,
                       "The primary share action must remain visible while reviewing the photo")
-        snapshot("01_ReviewAndShare")
-        attachScreen("01_ReviewAndShare")
+        snapshot("04_ReviewAndShare")
+        attachScreen("04_ReviewAndShare")
         app.buttons["inspectFullImageButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
-        snapshot("04_FullPreview")
-        attachScreen("04_FullPreview")
+        snapshot("01_FullPreview")
+        attachScreen("01_FullPreview")
     }
 
     /// The simulator has no camera, so by default the home screen must not offer a scan.
@@ -502,8 +509,13 @@ final class PicStripUITests: XCTestCase {
     }
 
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
-        let list = app.collectionViews.containing(.any, identifier: element.identifier).firstMatch
-        let scroll = app.scrollViews.containing(.any, identifier: element.identifier).firstMatch
+        // A lazy List may not create the target until we scroll toward it.
+        // Reading its identifier before it exists would fail before any gesture.
+        let identifier = element.exists ? element.identifier : ""
+        let list = identifier.isEmpty ? app.collectionViews.firstMatch
+            : app.collectionViews.containing(.any, identifier: identifier).firstMatch
+        let scroll = identifier.isEmpty ? app.scrollViews.firstMatch
+            : app.scrollViews.containing(.any, identifier: identifier).firstMatch
         let container = list.exists ? list : (scroll.exists ? scroll : app)
         let containerFrame = container.frame.intersection(app.frame)
         let navigationBottom = app.navigationBars.allElementsBoundByIndex
@@ -517,7 +529,10 @@ final class PicStripUITests: XCTestCase {
         for _ in 0..<8 {
             // XCTest can report a control behind the fixed footer as hittable.
             // Require its actual frame to fit above the footer before tapping.
-            if element.exists, viewport.contains(element.frame.insetBy(dx: 1, dy: 1)), element.isHittable { return }
+            if element.exists, viewport.contains(element.frame.insetBy(dx: 1, dy: 1)), element.isHittable || !element.isEnabled {
+                // A visible disabled Save still needs the manual-review acknowledgement.
+                return
+            }
             let upwards = !element.exists || element.frame.maxY > viewport.maxY
             let upper = viewport.minY + viewport.height * 0.25
             let lower = viewport.maxY - 24
@@ -528,7 +543,7 @@ final class PicStripUITests: XCTestCase {
             let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
             start.press(forDuration: 0.05, thenDragTo: end)
         }
-        XCTFail("Could not reveal \(element.identifier) inside the unobscured viewport", file: file, line: line)
+        XCTFail("Could not reveal \(identifier.isEmpty ? "the off-screen control" : identifier) inside the unobscured viewport", file: file, line: line)
     }
 
     private func attachScreen(_ name: String) {

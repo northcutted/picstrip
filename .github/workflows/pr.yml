@@ -118,9 +118,7 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            fastlane/screenshots/
-            !fastlane/screenshots/test_output/**
+          path: fastlane/screenshots/en-US/
           retention-days: 14
           compression-level: 0
           if-no-files-found: error

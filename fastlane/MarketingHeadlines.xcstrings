@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "01_ReviewAndShare" : {
+    "04_ReviewAndShare" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -319,7 +319,7 @@
         }
       }
     },
-    "04_FullPreview" : {
+    "01_FullPreview" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
