@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Controlla e condividi
+
+• Prova un esempio. Una foto inventata. Nessun accesso alla libreria necessario.
+• Esamina l’intera immagine. Mostra originale.
+• Condividi immagine pulita. Preset di condivisione. Dimensione attuale del file.
+• Aggiungi area centrata. Posizione e dimensioni.
+• Alcuni controlli non sono terminati. Forza della corrispondenza.
+• Salvataggio in Foto più affidabile, migliore copertura dei blocchi di chiavi private e file temporanei protetti.
+• L’azione Comandi Rapidi in background rimuove solo i metadati. Apri PicStrip per controllare e oscurare il contenuto visibile.
+
+Controlla la foto prima di condividerla. Il rilevamento automatico può perdere dettagli.

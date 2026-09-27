@@ -1,0 +1,96 @@
+import CoreTransferable
+import ImageIO
+import UIKit
+import UniformTypeIdentifiers
+import XCTest
+@testable import PicStrip
+
+/// Temporary release-review probes. Assertions describe the privacy contract;
+/// failures are evidence for the review, not fixes to production code.
+@MainActor
+final class ReleaseReviewProbes: XCTestCase {
+    private func image(properties: [CFString: Any] = [:]) throws -> Data {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let image = UIGraphicsImageRenderer(size: CGSize(width: 128, height: 128), format: format).image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 128, height: 128))
+        }
+        let output = NSMutableData()
+        let dest = try XCTUnwrap(CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil))
+        CGImageDestinationAddImage(dest, try XCTUnwrap(image.cgImage), properties as CFDictionary)
+        XCTAssertTrue(CGImageDestinationFinalize(dest))
+        return output as Data
+    }
+
+    private func waitUntil(_ condition: @MainActor () -> Bool) async throws {
+        for _ in 0..<500 where !condition() { try await Task.sleep(for: .milliseconds(10)) }
+        XCTAssertTrue(condition(), "Review probe timed out")
+    }
+
+    func testFailedScanWarningSurvivesOpeningExportReview() async throws {
+        let model = ScrubberViewModel(scanImage: { _ in throw PIIScannerError.textRecognitionFailed })
+        await model.loadData(try image())
+        try await waitUntil { !model.isScanningPII }
+        XCTAssertNotNil(model.errorMessage, "Precondition: scan failure is initially visible")
+        model.requestSave()
+        try await waitUntil { model.activeSheet == .preSave && !model.isProcessing }
+        XCTAssertNotNil(model.errorMessage, "A failed scan must remain disclosed during final review")
+    }
+
+    func testDefaultAuditDoesNotReintroduceRemovedGPS() async throws {
+        let model = ScrubberViewModel(scanImage: { _ in [] })
+        let gps: [CFString: Any] = [
+            kCGImagePropertyGPSLatitude: 37.3317, kCGImagePropertyGPSLatitudeRef: "N",
+            kCGImagePropertyGPSLongitude: 122.0307, kCGImagePropertyGPSLongitudeRef: "W"
+        ]
+        await model.loadData(try image(properties: [kCGImagePropertyGPSDictionary: gps]))
+        try await waitUntil { !model.isScanningPII }
+        model.requestSave()
+        try await waitUntil { model.activeSheet == .preSave && !model.isProcessing }
+        let url = try XCTUnwrap(model.generateAuditJSON())
+        defer { try? FileManager.default.removeItem(at: url) }
+        let json = try String(contentsOf: url, encoding: .utf8)
+        XCTAssertFalse(json.contains("37.3317"), "Default shareable audit exposes the removed latitude")
+        XCTAssertFalse(json.contains("122.0307"), "Default shareable audit exposes the removed longitude")
+    }
+
+    func testSharedProcessedBytesAdvertiseAnImageType() throws {
+        let processed = try ImageProcessor.process(data: image(), preset: .losslessPNG).data
+        let provider = NSItemProvider()
+        provider.register(processed)
+        XCTAssertTrue(
+            provider.registeredContentTypes.contains { $0.conforms(to: .image) },
+            "ShareLink uses this Data representation: \(provider.registeredTypeIdentifiers)"
+        )
+    }
+
+    func testPrivateKeyRedactionCoversThePayloadNotJustItsHeader() async throws {
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        let lines = [
+            "-----BEGIN PRIVATE KEY-----",
+            "MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQ",
+            "QWxwaGFCZXRhR2FtbWFEZWx0YUVwc2lsb25aZXRhRXRhVGhldGE=",
+            "S2FwcGFMYW1iZGFPbWljcm9uUGlSaG9TaWdtYVRhdVBzaU9tZWdh",
+            "-----END PRIVATE KEY-----"
+        ]
+        let source = UIGraphicsImageRenderer(size: CGSize(width: 1500, height: 450), format: format).image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 1500, height: 450))
+            for (i, line) in lines.enumerated() {
+                (line as NSString).draw(at: CGPoint(x: 40, y: 35 + i * 75), withAttributes: [
+                    .font: UIFont.monospacedSystemFont(ofSize: 34, weight: .regular),
+                    .foregroundColor: UIColor.black
+                ])
+            }
+        }
+        let output = try await PIIScanner().scan(data: XCTUnwrap(source.pngData()))
+        XCTAssertTrue(output.results.contains { $0.type == .genericPrivateKey }, "Precondition: scanner recognizes the PEM header")
+        let instances = output.results.flatMap(\.instances)
+        let payload = try XCTUnwrap(output.lines.first { $0.text.contains("MIIEv") || $0.text.contains("MIlEv") })
+        let center = CGPoint(x: payload.boundingBox.midX, y: payload.boundingBox.midY)
+        XCTAssertTrue(instances.contains { $0.boundingBox.contains(center) },
+                      "Detected private-key header leaves the key payload unredacted")
+    }
+}

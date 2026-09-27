@@ -30,7 +30,7 @@ final class StripMetadataIntentTests: XCTestCase {
         return CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as? [CFString: Any] ?? [:]
     }
 
-    func testClean_removesGPSAndKeepsSourceFormatAndName() async throws {
+    func testClean_removesGPSAndKeepsSourceFormatWithNeutralName() async throws {
         let input = IntentFile(data: try jpegWithGPS(), filename: "IMG_0042.JPG", type: .jpeg)
         XCTAssertNotNil(properties(of: input.data)[kCGImagePropertyGPSDictionary], "Fixture must carry GPS.")
 
@@ -38,9 +38,10 @@ final class StripMetadataIntentTests: XCTestCase {
 
         let output = try XCTUnwrap(cleaned.first)
         XCTAssertEqual(cleaned.count, 1)
-        XCTAssertNil(properties(of: output.data)[kCGImagePropertyGPSDictionary])
+        XCTAssertNotNil(output.fileURL, "Results must be backed by files, not retained encoded Data.")
+        XCTAssertNil(properties(of: try Data(contentsOf: XCTUnwrap(output.fileURL)))[kCGImagePropertyGPSDictionary])
         XCTAssertEqual(output.type, .jpeg)
-        XCTAssertEqual(output.filename, "IMG_0042.jpeg")
+        XCTAssertEqual(output.filename, "PicStrip.jpeg")
     }
 
     func testClean_usesRequestedFormatForNameAndType() async throws {
@@ -49,7 +50,7 @@ final class StripMetadataIntentTests: XCTestCase {
 
         let output = try XCTUnwrap(cleaned.first)
         XCTAssertEqual(output.type, .png)
-        XCTAssertEqual(output.filename, "holiday.png")
+        XCTAssertEqual(output.filename, "PicStrip.png")
     }
 
     func testClean_reportsProgress() async throws {
@@ -89,9 +90,9 @@ final class StripMetadataIntentTests: XCTestCase {
     }
 
     func testOutputFilename() {
-        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "IMG_1.HEIC", type: .png), "IMG_1.png")
-        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "scan.final.tiff", type: .jpeg), "scan.final.jpeg")
-        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "", type: .heic), "Image.heic")
+        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "IMG_1.HEIC", type: .png), "PicStrip.png")
+        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "scan.final.tiff", type: .jpeg), "PicStrip.jpeg")
+        XCTAssertEqual(StripMetadataIntent.outputFilename(for: "", type: .heic), "PicStrip.heic")
     }
 
     // MARK: - Shortcuts wiring

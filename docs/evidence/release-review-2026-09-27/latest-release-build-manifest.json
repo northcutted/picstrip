@@ -1,0 +1,120 @@
+{
+  "app": {
+    "bundle_id": "com.northcutt.PicStrip",
+    "team_id": "BDQ47H73HH"
+  },
+  "artifacts": [
+    {
+      "bytes": 815,
+      "name": "accessibility.json",
+      "sha256": "da21679e384c5bc256b0fdf5d017b7fb353d894acc56b0d9320a5cacf94b602a"
+    },
+    {
+      "bytes": 4375,
+      "name": "app-config.json",
+      "sha256": "0f504431aea072d15236b00b6804f0ae1208a6df04d0cc0d7243c3a1e0bd4424"
+    },
+    {
+      "bytes": 28086,
+      "name": "app-store-metadata.tar.zst",
+      "sha256": "9d1cee46d9a786a35a20bdbe800d41a40d2a6b063aeeba4b2043aae70dda000c"
+    },
+    {
+      "bytes": 129030926,
+      "name": "app-store-screenshots.tar.zst",
+      "sha256": "680e8504bf2d5f5e5e70123e00077ff8c3113a2a1edc1e8fd4c115c45904ebf8"
+    },
+    {
+      "bytes": 8297714,
+      "name": "application.ipa",
+      "sha256": "bb760280e1d500e3794467ac859eddc9ceeaecb319399fe7597533b91d8cede5"
+    },
+    {
+      "bytes": 567,
+      "name": "build-checksums.json",
+      "sha256": "a089c54176aa0bb76a23654b2a9825c7ff1f6c5d3a176abb54d6a8885aae9935"
+    },
+    {
+      "bytes": 452,
+      "name": "build-env.json",
+      "sha256": "cb80fd9610b7e2598b8efb5d8aa474e05405596d39a0e1389761ccd39a6ec692"
+    },
+    {
+      "bytes": 1662,
+      "name": "ipa-inventory.json",
+      "sha256": "f422171ed52a254ba5ea42d1e766aa0855ee5ff03ca50144a95daffb67c4c99a"
+    },
+    {
+      "bytes": 3471,
+      "name": "ipa.spdx.json",
+      "sha256": "70220c0af74ebef0b04d63d01d2ee8da84aa2637c9f67a47900501d97a3d06ec"
+    },
+    {
+      "bytes": 1040,
+      "name": "package-checksums.json",
+      "sha256": "a43d95d6d956ecc985691ecde90393d8357c902e663dc6817d1c72d5bc3cf233"
+    },
+    {
+      "bytes": 287,
+      "name": "qa-checksums.json",
+      "sha256": "7339e6aa5ea239c4fd800b94a80b1d5e783cbc33f51c25c26980437353ab43d7"
+    },
+    {
+      "bytes": 1044,
+      "name": "qa-manifest.json",
+      "sha256": "0beedb506681c6d3f86397832d782f7ed10be04bcc091a023abd1c193e3231ec"
+    },
+    {
+      "bytes": 27176,
+      "name": "qa-results.tar.gz",
+      "sha256": "e851b37293238805d99b0eb78f406e990ea7d8d61326dac81def0a86c11f4606"
+    },
+    {
+      "bytes": 7340,
+      "name": "release-notes.md",
+      "sha256": "967ba845faf662c715f46fdd84b601d467691e5ddca9d09156c67d94cd0a982a"
+    },
+    {
+      "bytes": 142513737,
+      "name": "release-source.tar.zst",
+      "sha256": "8f188bf3dfc04ba3c0d38f621f62c08cc349d5b5a44c92baf8dc48f007973ea1"
+    },
+    {
+      "bytes": 284,
+      "name": "sbom-checksums.json",
+      "sha256": "ef585f2c04559b5a0afef78be65e7f1d43f6c51a08acdd51e8e423c9361d23aa"
+    },
+    {
+      "bytes": 30452,
+      "name": "screenshots-manifest.json",
+      "sha256": "1fb1ffe441170668d694d0f5026e580ced3b0feccc608abd5ed26054e2674b7b"
+    },
+    {
+      "bytes": 726,
+      "name": "signing-env.json",
+      "sha256": "5fd3c4baa6e278ce7f097db9032268bfc899edd7d5ed8bd6ec3cf4ff05555b2d"
+    },
+    {
+      "bytes": 303875,
+      "name": "source.spdx.json",
+      "sha256": "8d5c5ac06b64970f9e596d636907f08c42bc7b8fde19a0523465e484371fe581"
+    }
+  ],
+  "build_number": "85.1",
+  "candidate_id": "northcutted/picstrip:35539347082:1:bb760280e1d500e3794467ac859eddc9ceeaecb319399fe7597533b91d8cede5",
+  "config_sha256": "0f504431aea072d15236b00b6804f0ae1208a6df04d0cc0d7243c3a1e0bd4424",
+  "ipa_sha256": "bb760280e1d500e3794467ac859eddc9ceeaecb319399fe7597533b91d8cede5",
+  "producer": {
+    "repository": "northcutted/ios-release-workflows",
+    "revision": "9795586bfb7d3ea3e737647a7309dc2ba00adacb",
+    "workflow": ".github/workflows/prepare.yml"
+  },
+  "repository": "northcutted/picstrip",
+  "run_attempt": "1",
+  "run_id": "35539347082",
+  "schema_version": 3,
+  "source_ref": "refs/heads/main",
+  "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+  "tag": "v1.8.0",
+  "version": "1.8.0"
+}

@@ -18,6 +18,11 @@ import FoundationModels
 /// A struct of closures so the merge logic is testable without the model.
 nonisolated struct SemanticPII: Sendable {
 
+    struct Outcome: Sendable {
+        let names: [Name]
+        let status: ScanCoverage.Status
+    }
+
     struct Name: Equatable, Sendable {
         /// Index into the lines that were passed in.
         let line: Int
@@ -33,13 +38,20 @@ nonisolated struct SemanticPII: Sendable {
     /// Whether a name pass can find anything at all right now.  The UI only says
     /// it is looking for names when this is true.
     var isAvailable: @Sendable () -> Bool = { true }
+    var scanNames: (@Sendable ([String]) async -> Outcome)?
+
+    func scan(_ lines: [String]) async -> Outcome {
+        if let scanNames { return await scanNames(lines) }
+        return Outcome(names: await findNames(lines), status: .complete)
+    }
 
     static let unavailable = SemanticPII(findNames: { _ in [] }, isAvailable: { false })
 
     static let live = SemanticPII(
-        findNames: { await OnDeviceNameFinder.findNames(in: $0) },
+        findNames: { await OnDeviceNameFinder.findNames(in: $0).names },
         prewarm: { OnDeviceNameFinder.prewarm() },
-        isAvailable: { OnDeviceNameFinder.isAvailable }
+        isAvailable: { OnDeviceNameFinder.isAvailable },
+        scanNames: { await OnDeviceNameFinder.findNames(in: $0) }
     )
 }
 
@@ -134,32 +146,37 @@ nonisolated enum OnDeviceNameFinder {
         LanguageModelSession(instructions: instructions).prewarm()
     }
 
-    static func findNames(in lines: [String]) async -> [SemanticPII.Name] {
-        guard isAvailable, !lines.isEmpty else { return [] }
+    static func findNames(in lines: [String]) async -> SemanticPII.Outcome {
+        guard isAvailable else { return SemanticPII.Outcome(names: [], status: .unavailable) }
+        guard !lines.isEmpty else { return SemanticPII.Outcome(names: [], status: .complete) }
 
-        return await withTaskGroup(of: [SemanticPII.Name]?.self) { group in
+        return await withTaskGroup(of: SemanticPII.Outcome?.self) { group in
             group.addTask { await queryModel(lines: lines) }
             group.addTask {
                 try? await Task.sleep(for: timeout)
                 return nil
             }
             // Whichever finishes first: the model's answer, or the timeout's `nil`.
-            var names: [SemanticPII.Name] = []
-            if let first = await group.next(), let answered = first { names = answered }
+            var outcome = SemanticPII.Outcome(names: [], status: .failed)
+            if let first = await group.next(), let answered = first { outcome = answered }
             group.cancelAll()
-            return names
+            return outcome
         }
     }
 
-    private static func queryModel(lines: [String]) async -> [SemanticPII.Name] {
+    private static func queryModel(lines: [String]) async -> SemanticPII.Outcome {
         var found: [SemanticPII.Name] = []
+        var incomplete = lines.count > linesPerRequest * maximumRequests
         let numbered = lines.enumerated().map { (index: $0.offset, text: $0.element) }
         let chunks = stride(from: 0, to: numbered.count, by: linesPerRequest)
             .prefix(maximumRequests)
             .map { Array(numbered[$0..<min($0 + linesPerRequest, numbered.count)]) }
 
         for chunk in chunks {
-            guard !Task.isCancelled else { break }
+            guard !Task.isCancelled else {
+                incomplete = true
+                break
+            }
             let prompt = chunk.map { "\($0.index): \($0.text)" }.joined(separator: "\n")
             // A fresh session per chunk: no transcript is carried over, so the
             // context never grows and nothing about one chunk lingers into the next.
@@ -168,10 +185,13 @@ nonisolated enum OnDeviceNameFinder {
             // context all mean the same thing here: no names from this chunk.
             guard let response = try? await session.respond(
                 to: prompt, generating: FoundNames.self, options: options
-            ) else { continue }
+            ) else {
+                incomplete = true
+                continue
+            }
             found += response.content.names.map { SemanticPII.Name(line: $0.line, text: $0.name) }
         }
-        return found
+        return SemanticPII.Outcome(names: found, status: incomplete ? (found.isEmpty ? .failed : .partial) : .complete)
     }
 
     /// Greedy sampling: the same image should give the same names every time.

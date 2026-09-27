@@ -121,3 +121,11 @@ The protected `trusted_producer_revisions` configuration explicitly approves the
 For promotion from newer main tooling, publication creates a separate protected `vVERSION-deploy-FULL_COMMIT` tag after publishing the immutable evidence. Its create event starts the corrected deployment caller. The platform checks the exact commit suffix and protected-main ancestry, then authenticates the original release and processed Apple build. The original app tag, IPA and assets stay immutable. An original release-event run can reject a newer signer; use the deployment-tag run for this recovery. Manual retries select this exact deployment tag and the original release tag input. Production still requires its existing human approval.
 
 Use the main-only **Inspect release controls** workflow to inspect the publisher token’s read-only REST/GraphQL response. It uses the existing release-publishing environment, reports no credentials, and makes no repository or App Store changes.
+
+## Replacement 1.7.0 build
+
+The reviewed `replacement_release` configuration records the existing `v1.7.0`, build `77.1`, and its exact Apple build ID. Preparation keeps marketing version 1.7.0, requires a higher build number and creates a unique `v1.7.0-build-N.ATTEMPT` evidence tag. The old tag, binary and assets remain immutable. The signed manifest binds the replacement configuration, tag, build and source.
+
+Staging may replace only the recorded old build while the version is `PREPARE_FOR_SUBMISSION` and no review submission is active. It reads the relationship back after mutation. A different selected build or review state stops deployment. Remove the one-time replacement configuration in a later reviewed PR when normal version advancement should resume.
+
+Approval sequence for this remediation: review the app PR and the companion platform PR, merge only after the required checks and screenshot review, inspect the resulting main-only signed candidate, then approve the exact artifact for upload. `publish=false` still uploads to Apple; it is not a read-only rehearsal. Publication and production submission retain their separate approval boundaries. See the [acceptance record](reviews/1.7.0-implementation-status.md) for hardware and artifact evidence still required before submission.

@@ -8,20 +8,6 @@
 import AppIntents
 import SwiftUI
 
-// MARK: - App Group constants (shared with PicStripShareExtension)
-
-enum PicStripAppGroup {
-    static let identifier = "group.com.northcutt.PicStrip"
-    static let pendingEditFilename = "pending-edit.data"
-
-    /// File URL for the image written by the Share Extension's "Edit in PicStrip" action.
-    static var pendingEditURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: identifier)?
-            .appendingPathComponent(pendingEditFilename)
-    }
-}
-
 // MARK: - PicStripApp
 
 @main
@@ -29,6 +15,8 @@ struct PicStripApp: App {
 
     /// Shared view model threaded into ContentView and used by the URL handler.
     @State private var viewModel = ScrubberViewModel()
+    @State private var isDrainingHandoff = false
+    @State private var privacyShield = AppPrivacyShield()
 
     /// Receives requests from App Intents; see `IntentRouter`.
     @State private var intentRouter: IntentRouter
@@ -39,16 +27,45 @@ struct PicStripApp: App {
         let router = IntentRouter()
         AppDependencyManager.shared.add(dependency: router)
         _intentRouter = State(initialValue: router)
+        Task.detached {
+            PrivateFileStore.exports.removeExpired()
+            PrivateFileStore.removeLegacyReports()
+            PrivateFileStore.handoffs?.removeExpired()
+        }
     }
 
     /// Aggregate scene phase — used to drain the app-group pending file when the
     /// app comes to the foreground regardless of how it was activated.
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some Scene {
         WindowGroup {
             ContentView(viewModel: viewModel)
                 .environment(intentRouter)
+                .transaction { transaction in
+                    if reduceMotion {
+                        transaction.animation = nil
+                        transaction.disablesAnimations = true
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                    privacyShield.conceal()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                    privacyShield.reveal()
+                }
+                .task {
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: .seconds(60))
+                        guard !Task.isCancelled else { return }
+                        PrivateFileStore.exports.removeExpired()
+                        PrivateFileStore.handoffs?.removeExpired()
+                    }
+                }
+                .onChange(of: viewModel.sourceUIImage == nil) { _, empty in
+                    if empty { drainPendingEdit() }
+                }
                 .onOpenURL { url in
                     handleIncomingURL(url)
                 }
@@ -84,15 +101,13 @@ struct PicStripApp: App {
     ///
     /// Safe to call multiple times — the `fileExists` guard makes it idempotent.
     private func drainPendingEdit() {
-        guard let fileURL = PicStripAppGroup.pendingEditURL,
-              FileManager.default.fileExists(atPath: fileURL.path),
-              let data = try? Data(contentsOf: fileURL)
-        else { return }
-
-        // Delete before loading so a crash during load doesn't replay the file.
-        try? FileManager.default.removeItem(at: fileURL)
-
+        // Never replace an in-progress edit with another queued handoff.
+        guard !isDrainingHandoff, viewModel.sourceUIImage == nil,
+              !viewModel.isProcessing, !viewModel.showResizeOffer,
+              let data = PrivateFileStore.handoffs?.consume() else { return }
+        isDrainingHandoff = true
         Task { @MainActor in
+            defer { isDrainingHandoff = false }
             await viewModel.loadData(data)
         }
     }

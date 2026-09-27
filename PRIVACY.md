@@ -1,49 +1,46 @@
 # PicStrip Privacy Policy
-**Last updated: September 19, 2026**
+**Last updated: September 27, 2026**
 
 ## Overview
-PicStrip is a privacy-focused app. All photo processing happens entirely on your device, and no network connection is required to use it. We do not collect, store, transmit, or share any of your data. The only thing PicStrip can ever cause to be transferred is an Apple on-device model, downloaded by iOS after you explicitly agree — described under "Optional Object Selection Model" below.
+PicStrip processes photos on your iPhone or iPad. We operate no photo-processing server and collect no photos, metadata, location, face data, recognised text, usage analytics, or advertising identifiers. No account is required.
 
-## What We Do Not Collect
-- Photos or image files
-- Metadata stripped from photos
-- Location data
-- Face data
-- Usage data or analytics
-- Device identifiers
-- Any personal information
+You decide what to save or share. Sending an image or report through the system share sheet gives it to the destination you select. Saving to Photos or Files may sync it through services enabled in your device settings, such as iCloud. Images you choose from a cloud photo library or file provider may need to download first. Those services follow their own privacy policies.
 
 ## On-Device Processing Only
-When you use PicStrip to remove metadata from a photo or redact sensitive visual content, all processing occurs locally on your iPhone or iPad. No photo, metadata, OCR text, recognised name, barcode payload, face detection result, or redaction coordinate ever leaves your device through PicStrip.
+Metadata inspection, text recognition, pattern matching, face and barcode detection, and image redaction run locally. PicStrip does not upload your images or scan results for processing. Core editing works offline once the image is available on your device.
+
+Automatic detection can miss sensitive details. Review the entire image before sharing. Name suggestions are not covered automatically. Metadata you explicitly choose to keep, and visible content you leave uncovered, can remain in your exported image. The review screen shows incomplete checks and retained information; it is not a guarantee that every private detail has been found.
 
 ## Face Data
-PicStrip does not collect face data. When PicStrip scans a photo, it uses Apple's on-device Vision face-rectangle detector to find where faces appear in that photo so the app can show redaction boxes and, if you choose, burn those redactions into the cleaned copy.
+PicStrip uses Apple's on-device Vision face-rectangle detector to locate faces in the current image or camera frame. It uses temporary bounding rectangles to display editable boxes and apply the redactions you select.
 
-PicStrip does not identify people, perform face recognition, compare faces across photos, create faceprints or biometric templates, infer identity, or use face landmarks/profiles. The only face-related result used by the app is a temporary bounding rectangle for each face detected in the photo being processed.
+PicStrip does not identify people, compare faces, create faceprints, biometric templates, embeddings, landmarks or recognition profiles, or use face data for authentication, analytics, advertising or model training. Face presence may contribute to the local assessment of document-like content.
 
-Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared. If you save a cleaned image, the saved file is stored in your own Photos library according to your device settings; PicStrip does not store a separate copy or any separate face data.
+Detection rectangles and recognised text are held in memory for the current editing session and discarded when that session is cleared. PicStrip keeps no history of scan results or separate face records. Your saved or shared image can still contain a face if it was missed or you chose not to cover it.
 
 ## Camera and Document Scanning
-PicStrip asks for camera access only when you tap "Take Photo" or "Scan Document". "Scan Document" uses Apple's system document scanner. "Take Photo" uses PicStrip's own viewfinder, which runs on your device; if it cannot start, the system camera is used instead. Either way the capture is handed to PicStrip in memory, where it goes through the same on-device detection and redaction as any other image.
+PicStrip requests camera access when you choose Take Photo or Scan Document. Take Photo uses an on-device viewfinder, with Apple's camera as a fallback; Scan Document uses Apple's document scanner. Captures enter the current editing session without being saved as originals to your photo library.
 
-PicStrip never saves the original, un-redacted photo or scan to your photo library and keeps no copy of it: it is discarded when you finish or cancel the session. Only the cleaned copy you explicitly choose to save or share leaves the editor. Nothing from the camera is uploaded, transmitted, or shared.
-
-While the "Take Photo" viewfinder is open, PicStrip analyses camera frames on your device to show, live, which areas it would redact. Each frame is examined in memory and discarded at once; no frame and no result of that analysis is stored.
+Live camera analysis is a guide. Frames and their detections are not recorded. After capture, the full still image is scanned for review. PicStrip saves or shares a copy only when you ask it to. Clearing the session discards the in-memory original.
 
 ## Names and Apple Intelligence
-Where you have turned Apple Intelligence on, PicStrip asks Apple's on-device language model to find people's names in the text it recognised in your photo. This runs entirely on your device. PicStrip never uses Apple's Private Cloud Compute or any other server for it, and downloads nothing for it. Where Apple Intelligence is off or unavailable, names are simply not detected.
+On supported devices with Apple Intelligence available, PicStrip uses Apple's on-device language model to suggest people's names found in recognised text. These suggestions are optional to cover. PicStrip does not use Private Cloud Compute for this feature or upload the recognised text. The scan status distinguishes unavailable or incomplete name checks from completed checks.
 
 ## Optional Object Selection Model
-On iOS 27 you can tap an object to redact it. That uses an Apple on-device model which iOS downloads from Apple the first time — and only after PicStrip has asked and you have agreed. Only the model is downloaded. Your photo is analysed on your device like everything else; nothing about it is sent anywhere. If you decline, nothing is downloaded and you can still draw redaction boxes by hand.
+On iOS 27, tapping an object to select it may require an Apple Vision model. PicStrip asks before requesting its download from Apple. The downloaded model runs on device; your photo is not uploaded for object selection. You can decline and draw or position boxes manually.
+
+## Temporary Files and Share Extension
+The Share Extension can save cleaned copies or prepare the first original image for manual editing in PicStrip. An editing handoff contains that original image, including its original metadata. It is stored in a protected local app-group directory, excluded from backups, and removed when imported or explicitly discarded. Handoffs become ineligible for import after 15 minutes; expired files are deleted on the next cleanup or access. Preparing another image does not overwrite an existing handoff.
+
+Temporary export files and reports use neutral filenames, iOS complete file protection, and directories excluded from backups. Shared reports contain field names, counts and scan status, not removed metadata values, recognised text or redaction coordinates. Report files are deleted when their share activity ends. Background Shortcuts return file-backed images that request deletion when the Shortcut finishes. A cleanup pass also removes export files older than one hour when the app is running or those files are next accessed. iOS may suspend or terminate the app, so cleanup is not guaranteed at the exact expiry time.
+
+Copies saved to Photos, Files, or another app are controlled by you and that destination. PicStrip's temporary-file cleanup does not delete those copies.
+
+## Shortcuts
+The background “Strip Metadata from Images” action removes metadata and returns cleaned files. It does not detect or redact visible text or faces. The action that opens PicStrip lets you review visible content in the app.
 
 ## Third-Party Services
-PicStrip does not use any third-party SDKs, analytics tools, advertising networks, or crash reporting services.
+PicStrip includes no third-party analytics, advertising or crash-reporting SDKs. Opening support or source-code links uses your browser. System photo/file providers, Apple model downloads, and destinations you select for sharing may use the network; PicStrip does not send your images to a developer-operated service.
 
-## Share Extension
-The PicStrip Share Extension processes photos shared from other apps entirely on-device. No data is sent anywhere.
-
-## Open Source
-PicStrip is open source. You can inspect exactly how your photos are handled.
-
-## Contact
-Questions? [Open an Issue](https://github.com/northcutted/picstrip/issues/new)
+## Open Source and Contact
+You can inspect the source on [GitHub](https://github.com/northcutted/picstrip). For questions, [open an issue](https://github.com/northcutted/picstrip/issues/new). Avoid attaching private photos or personal information to public issues.

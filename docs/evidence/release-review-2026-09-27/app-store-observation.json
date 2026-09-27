@@ -1,0 +1,42 @@
+{
+  "candidate_id": "northcutted/picstrip:35466614779:1:2bcfa818a384cb129e346eab7cfb9948be0e8533db62006cd0ea64e16f57cef6",
+  "build": {
+    "id": "043d3495-15f2-4955-9a20-5dbf97f072d1",
+    "attributes": {
+      "version": "77.1",
+      "uploadedDate": "2026-09-19T14:57:40-07:00",
+      "expirationDate": "2026-12-18T13:57:40-08:00",
+      "expired": false,
+      "minOsVersion": "26.0",
+      "lsMinimumSystemVersion": null,
+      "computedMinMacOsVersion": "26.0",
+      "computedMinVisionOsVersion": "26.0",
+      "iconAssetToken": {
+        "templateUrl": "https://is1-ssl.mzstatic.com/image/thumb/Purple221/v4/1b/80/4a/1b804a1c-ff8b-a2c9-473d-c4ec1bb4beba/PicStrip76x76@2x_U007eipad.png/{w}x{h}bb.{f}",
+        "width": 152,
+        "height": 152
+      },
+      "processingState": "VALID",
+      "buildAudienceType": "APP_STORE_ELIGIBLE",
+      "usesNonExemptEncryption": false
+    }
+  },
+  "version": {
+    "id": "1991ed36-c4a8-48ef-8303-3c61e26b024e",
+    "attributes": {
+      "platform": "IOS",
+      "versionString": "1.7.0",
+      "appStoreState": "PREPARE_FOR_SUBMISSION",
+      "appVersionState": "PREPARE_FOR_SUBMISSION",
+      "copyright": "Copyright 2025 Eddie Northcutt",
+      "reviewType": "APP_STORE",
+      "releaseType": "MANUAL",
+      "earliestReleaseDate": null,
+      "usesIdfa": null,
+      "downloadable": true,
+      "createdDate": "2026-09-19T15:29:05-07:00"
+    }
+  },
+  "phased_release": null,
+  "observed_at": "2026-09-27T19:24:52Z"
+}

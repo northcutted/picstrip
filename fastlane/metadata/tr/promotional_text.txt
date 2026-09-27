@@ -1,1 +1,1 @@
-PicStrip üst verileri kaldırır ve yüzler dahil hassas bilgileri cihazda sansürler. Yüz verisi toplanmaz, yükleme yok.
+Fotoğrafları paylaşmadan önce özel bilgileri bulun ve örtün. Aygıtınızda işlenir. Bir örnek dene.

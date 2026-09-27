@@ -1,1 +1,1 @@
-PicStrip elimina metadatos y oculta datos sensibles, incluidos rostros, en el dispositivo. Sin recopilar datos faciales ni subidas.
+Encuentra y oculta detalles privados antes de compartir fotos. Procesado en tu dispositivo. Probar un ejemplo.

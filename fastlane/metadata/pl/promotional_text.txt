@@ -1,1 +1,1 @@
-PicStrip usuwa metadane i zakrywa wrażliwe dane, także twarze, na urządzeniu. Nie zbiera danych twarzy, bez przesyłania.
+Znajdź i zasłoń prywatne informacje przed udostępnieniem zdjęć. Przetwarzane na urządzeniu. Wypróbuj przykład.

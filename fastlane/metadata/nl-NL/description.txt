@@ -1,43 +1,19 @@
-Deel foto's zonder je locatie, identiteit of onzichtbare geheimen mee te delen. PicStrip verwijdert onzichtbare metadata en bedekt gevoelige informatie — volledig op je toestel, zonder account, zonder uploads en zonder dat een netwerkverbinding nodig is.
+Vind en bedek privégegevens voordat je foto’s deelt. Scannen, afdekken en metadata verwijderen gebeurt op je apparaat. Foto’s gaan alleen naar een andere app of dienst via de import-, bewaar- en deelacties die je kiest.
 
-METADATA VERWIJDEREN
-Elke foto bevat ongezien GPS-coördinaten, tijdstempels, camera- en lensgegevens, serienummers en Apple-fabrikantnotities. PicStrip verwijdert alles vóór het delen — met één tik.
+Probeer een voorbeeld
+Een fictieve foto. Geen toegang tot je bibliotheek nodig.
 
-DETECTIE EN BEDEKKING VAN GEVOELIGE INFO
-OCR en computer vision op het toestel zelf scannen je foto op 30 soorten gevoelige persoonsgegevens (PII), gerangschikt in vier risiconiveaus:
+Controleer detecties in de editor. Elk resultaat toont de matchsterkte en een risiconiveau om te bepalen wat je wilt afdekken. Controleer de foto voordat je deelt. Automatische detectie kan details missen. Naamsuggesties vereisen Apple Intelligence en worden niet automatisch afgedekt. Een optioneel model voor objectselectie kan met jouw toestemming van Apple worden gedownload.
 
-Kritiek — API-sleutels, creditcards, BSN-nummers, wachtwoorden, JWT's, databaseverbindingen
-Hoog — gezichten, IBAN's, ABA-routingnummers, SWIFT/BIC-codes, fysieke inloggegevens
-Middel — e-mails, telefoonnummers, adressen, crypto-wallets, VIN's, kentekens, IP- en MAC-adressen
-Laag — geboortedata, links, barcodes
+Pas afdekkingen aan door te slepen of via Positie en grootte. Voeg zonder tekenen een gecentreerd gebied toe. Gebruik Selecteer om meerdere gebieden te wijzigen. Vervaging en pixelvorming kunnen details herkenbaar laten. Gebruik een effen vlak voor geheimen en identificerende tekst.
 
-Elke detectie toont het type, een betrouwbaarheidsscore en het risiconiveau, zodat je weet wat je als eerste moet afdekken.
+Controleer verborgen metadata, zoals locatie, cameragegevens en datums. Kies wat je verwijdert en controleer de opgeschoonde uitvoer.
+PNG: Kwaliteit zonder verlies voor schermafbeeldingen en tekst. Grotere bestanden.
+JPEG: Kleinere bestanden voor alledaagse foto’s. Breed ondersteund.
+HEIC: Compacte foto’s met hoge kwaliteit. Controleer of de ontvanger dit ondersteunt.
 
-BEDEKKINGSEDITOR
-• Teken overal om handmatig af te dekken wat de scanner miste
-• Selecteer meerdere gebieden tegelijk en pas wijzigingen in bulk toe
-• 4 stijlen: effen, kruisarcering, pixelvorming of vervaging
-• Instelbare sterkte voor vervaging en pixelvorming
-• Zie precies hoe elke stijl eruitziet voordat je opslaat
-• 12 kleuren voor effen vlakken en kruisarcering
-• 50 stappen ongedaan maken/opnieuw
+Controleer en deel de opgeschoonde afbeelding, of bewaar een kopie in Foto’s. De deelextensie biedt ook direct opschonen of een beveiligde overdracht voor bewerking. Bewerken opent de eerste originele afbeelding ter controle. Een beveiligde lokale kopie verloopt na 15 minuten. Grote foto’s vereisen kleinere kopieën in de extensie: tot 6 megapixel voor afdekking, of 12 voor alleen metadata. Bewerk in PicStrip voor een volledige controle.
 
-OVERAL VANDAAN IMPORTEREN
-• Foto's-bibliotheek
-• Bestanden-app — open elke afbeelding of schermafbeelding direct
-• Maak een foto in de app — het origineel komt nooit in je fotobibliotheek
-• Scan documenten met de camera — het origineel komt nooit in je fotobibliotheek
-• Sleep afbeeldingen in de app
-• Deel-extensie — opschonen vanuit Foto's, Safari of welke app dan ook, zonder PicStrip te openen
+De achtergrondactie in Opdrachten verwijdert alleen metadata. Open PicStrip om zichtbare inhoud te controleren en af te dekken.
 
-PRIVACY BY DESIGN
-• 100% op het toestel — niets verlaat je telefoon
-• Gezichtsdetectie blijft op het toestel; PicStrip verzamelt, bewaart, verzendt of deelt geen gezichtsgegevens
-• Geen account, geen login, geen tracking
-• Geen advertenties, geen in-app-aankopen, geen abonnementen
-• Open source — elke regel code is auditeerbaar op GitHub
-• SLSA niveau 3 build-provenance — elke release is cryptografisch geverifieerd
-• Privacylabel: "Geen gegevens verzameld"
-
-OPDRACHTEN EN AUTOMATISERING
-PicStrip bevat een Opdrachten-actie waarmee je metadata verwijdert en gevoelige informatie automatisch afdekt: bij het importeren, in bulk of als onderdeel van je workflow.
+Dit rapport bevat veldnamen en aantallen, nooit de originele metadatawaarden of herkende tekst.

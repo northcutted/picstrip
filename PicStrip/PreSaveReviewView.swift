@@ -9,6 +9,8 @@ struct PreSaveReviewView: View {
     /// Tracks which categories are expanded — all start collapsed.
     @State private var expandedCategories: Set<String> = []
     @State private var showAdvanced: Bool = false
+    @State private var showFullPreview = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var auditURL: URL?
 
     // MARK: - Derived counts (source of truth: original image only)
@@ -48,8 +50,7 @@ struct PreSaveReviewView: View {
 
     var body: some View {
         NavigationStack {
-            // ── Single scrollable List — full card (preview + save) at
-            //    top, collapsible breakdown below. ──────────────────────
+            // Separate rows keep review controls reachable at every text size.
             List {
                 // Full summary + save card
                 Section {
@@ -58,6 +59,9 @@ struct PreSaveReviewView: View {
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                 }
+
+                Section { ScanCoverageView(viewModel: viewModel) }
+                Section { sharingActions }
 
                 // Collapsible breakdown
                 if !redactedRegions.isEmpty {
@@ -80,7 +84,8 @@ struct PreSaveReviewView: View {
                 }
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Review & Save")
+            .sensoryFeedback(.success, trigger: viewModel.canExport) { _, ready in ready && !reduceMotion }
+            .navigationTitle("Review & Share")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -101,6 +106,11 @@ struct PreSaveReviewView: View {
             .onChange(of: viewModel.activeSheet) { _, newValue in
                 if newValue != .preSave { dismiss() }
             }
+            .fullScreenCover(isPresented: $showFullPreview) {
+                if let data = viewModel.processedData {
+                    ReviewPreviewView(data: data, original: viewModel.sourceUIImage)
+                }
+            }
             .sheet(isPresented: $showAdvanced) {
                 NavigationStack {
                     ScrollView {
@@ -116,15 +126,15 @@ struct PreSaveReviewView: View {
                         }
                     }
                 }
-                .presentationDetents([.medium])
+                .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
             }
             .sheet(isPresented: Binding(
                 get: { auditURL != nil },
-                set: { if !$0 { auditURL = nil } }
+                set: { if !$0 { clearAudit() } }
             )) {
                 if let url = auditURL {
-                    ActivityView(activityItems: [url])
+                    ActivityView(activityItems: [url], onCompletion: { _ in clearAudit() })
                         .ignoresSafeArea()
                 }
             }
@@ -145,11 +155,11 @@ struct PreSaveReviewView: View {
                     .accessibilityHidden(true)
 
                 if totalRemovalCount == 0 {
-                    Text("No sensitive data found")
+                    Text("No changes selected")
                         .font(.subheadline.weight(.semibold))
                 } else {
                     VStack(alignment: .leading, spacing: 5) {
-                        Text("Cleaning & Redacting")
+                        Text("Your sharing summary")
                             .font(.subheadline.weight(.semibold))
 
                         if originalMetadataCount > 0 {
@@ -177,28 +187,39 @@ struct PreSaveReviewView: View {
 
             if let previewImage {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(visualRedactionCount > 0 ? "Preview with redactions" : "Preview")
+                    Text("Final preview")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityIdentifier("savePreviewLabel")
 
-                    ZoomableImagePreview(
-                        image: previewImage,
-                        showZoomHint: false,
-                        accessibilityIdentifier: "savePreviewImage"
-                    )
-                    .frame(height: 150)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 10)
-                            .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-                    )
+                    Image(uiImage: previewImage)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 290)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                        .accessibilityLabel("Final preview")
+                        .accessibilityIdentifier("savePreviewImage")
+                    Button {
+                        showFullPreview = true
+                    } label: {
+                        Label("Inspect full image", systemImage: "arrow.up.left.and.arrow.down.right")
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                    }
+                    .buttonStyle(.bordered)
+                    .accessibilityIdentifier("inspectFullImageButton")
                 }
             }
 
-            Divider()
+        }
+        .padding(16)
+        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
 
+    @ViewBuilder
+    private var sharingActions: some View {
+        VStack(spacing: 12) {
             if viewModel.isProcessing {
                 HStack {
                     Spacer()
@@ -232,6 +253,25 @@ struct PreSaveReviewView: View {
 
                     Divider()
 
+                    if let processed = viewModel.shareImage {
+                        ShareLink(
+                            item: processed,
+                            preview: SharePreview(
+                                "Scrubbed Image",
+                                image: previewImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo")
+                            )
+                        ) {
+                            Label("Share cleaned image", systemImage: "square.and.arrow.up")
+                                .font(.body.weight(.semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 4)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .accessibilityIdentifier("shareCleanedImageButton")
+                        .disabled(!viewModel.canExport)
+                    }
+
                     Button {
                         Task { await viewModel.saveToPhotos(replacing: false) }
                     } label: {
@@ -240,9 +280,10 @@ struct PreSaveReviewView: View {
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 4)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.bordered)
                     .controlSize(.large)
                     .accessibilityIdentifier("saveAsNewPhotoButton")
+                    .disabled(!viewModel.canExport)
 
                     // Only library photos have an original to replace; images from
                     // Files, drag and drop, paste, or the Share Extension do not.
@@ -258,35 +299,19 @@ struct PreSaveReviewView: View {
                         .buttonStyle(.bordered)
                         .controlSize(.large)
                         .tint(.red)
+                        .disabled(!viewModel.canExport)
                     }
 
-                    if let processed = viewModel.processedData {
-                        ShareLink(
-                            item: processed,
-                            preview: SharePreview(
-                                "Scrubbed Image",
-                                image: previewImage.map { Image(uiImage: $0) } ?? Image(systemName: "photo")
-                            )
-                        ) {
-                            Label("Share Image", systemImage: "square.and.arrow.up")
-                                .font(.body.weight(.semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 4)
+                    DisclosureGroup("Report details") {
+                        Text("This report contains field names and counts, never the original metadata values or detected text.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                        Button("Export Findings (JSON)") {
+                            auditURL = viewModel.generateAuditJSON()
                         }
-                        .buttonStyle(.bordered)
-                        .controlSize(.large)
+                        .frame(minHeight: 44)
                     }
-
-                    Button {
-                        auditURL = viewModel.generateAuditJSON()
-                    } label: {
-                        Label("Export Findings (JSON)", systemImage: "doc.text.magnifyingglass")
-                            .font(.body.weight(.semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
+                    .font(.footnote)
 
                     if originalMetadataCount > 0 {
                         HStack(alignment: .top, spacing: 6) {
@@ -294,14 +319,14 @@ struct PreSaveReviewView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .padding(.top, 1)
-                            Text("Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history.")
+                            Text("The cleaned copy is a still image. Keep your original if you need Live Photo motion or editing history.")
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                                 .fixedSize(horizontal: false, vertical: true)
                         }
                         .padding(.top, 2)
                         .accessibilityElement(children: .ignore)
-                        .accessibilityLabel("Warning: Metadata removal is permanent. The saved image will lose Live Photo motion data, GPS location, camera model, and editing history.")
+                        .accessibilityLabel("The cleaned copy is a still image. Keep your original if you need Live Photo motion or editing history.")
                     }
                 }
             }
@@ -420,8 +445,8 @@ struct PreSaveReviewView: View {
                     Text(summary.name)
                         .foregroundStyle(.primary)
                     Spacer()
-                    if let confidence = summary.confidence, let score = summary.score {
-                        Text(score, format: .percent.precision(.fractionLength(0)))
+                    if let confidence = summary.confidence {
+                        Text(confidence.matchLabel)
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(confidenceColor(confidence))
                             .padding(.horizontal, 7)
@@ -463,10 +488,15 @@ struct PreSaveReviewView: View {
             Image(systemName: "checkmark.seal.fill")
                 .font(.system(size: 40))
                 .foregroundStyle(.green)
-            Text("Image is already clean")
+            Text("Check the photo before sharing. Automatic detection can miss details.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
         }
+    }
+
+    private func clearAudit() {
+        PrivateFileStore.exports.remove(auditURL)
+        auditURL = nil
     }
 }
 
@@ -475,9 +505,12 @@ struct PreSaveReviewView: View {
 /// Thin wrapper around `UIActivityViewController` for presenting the iOS share sheet.
 struct ActivityView: UIViewControllerRepresentable {
     let activityItems: [Any]
+    var onCompletion: (Bool) -> Void = { _ in }
 
     func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        let controller = UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+        controller.completionWithItemsHandler = { _, completed, _, _ in onCompletion(completed) }
+        return controller
     }
 
     func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}

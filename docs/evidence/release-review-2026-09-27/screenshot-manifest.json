@@ -1,0 +1,32 @@
+[
+  {
+    "file": "01-Home.png",
+    "captured_at_unix": 1790537695.73,
+    "device": "iPhone 17"
+  },
+  {
+    "file": "02-About.png",
+    "captured_at_unix": 1790537697.209,
+    "device": "iPhone 17"
+  },
+  {
+    "file": "03-PhotoLoaded.png",
+    "captured_at_unix": 1790537704.329,
+    "device": "iPhone 17"
+  },
+  {
+    "file": "04-RedactionEditor.png",
+    "captured_at_unix": 1790537711.519,
+    "device": "iPhone 17"
+  },
+  {
+    "file": "04a-RedactionEditorIdle.png",
+    "captured_at_unix": 1790537707.971,
+    "device": "iPhone 17"
+  },
+  {
+    "file": "05-ReviewAndSave.png",
+    "captured_at_unix": 1790537714.315,
+    "device": "iPhone 17"
+  }
+]

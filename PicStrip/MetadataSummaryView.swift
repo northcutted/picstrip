@@ -34,10 +34,13 @@ func metadataIconColor(for category: String) -> Color {
 /// names made of ordinary words are translated.
 func metadataCategoryDisplayName(for category: String) -> String {
     switch category {
-    case "EXIF Auxiliary":    return String(localized: "EXIF Auxiliary")
-    case "Apple Maker Note":  return String(localized: "Apple Maker Note")
-    case "General":           return String(localized: "General")
-    default:                  return category
+    case "GPS": return String(localized: "Location")
+    case "EXIF": return String(localized: "Camera & date")
+    case "EXIF Auxiliary": return String(localized: "Lens details")
+    case "TIFF": return String(localized: "Image details")
+    case "IPTC": return String(localized: "Captions & credits")
+    case "Apple Maker Note": return String(localized: "Device details")
+    default: return String(localized: "Other details")
     }
 }
 

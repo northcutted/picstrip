@@ -1,1 +1,1 @@
-PicStrip entfernt Metadaten und schwärzt sensible Daten, auch Gesichter, auf dem Gerät. Keine Gesichtsdaten, keine Uploads.
+Finde und verdecke private Details, bevor du Fotos teilst. Auf deinem Gerät verarbeitet. Beispiel ausprobieren.

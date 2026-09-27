@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 makes the final review clearer and sharing easier.
+
+• Try a fictional sample without opening your photo library.
+• Inspect a full-size cleaned preview and reveal the original for comparison.
+• Share directly, choose a photo, screenshot or document preset, and see the output file size.
+• Place, move and resize redaction boxes with accessible controls.
+• See incomplete scan warnings, uncovered findings and clearer match-strength labels.
+• Improved multiline private-key coverage, protected temporary files and large-image handling.
+• More reliable Photos saving and file-backed metadata-only Shortcuts.
+
+Automatic detection can miss details. Please review the entire image before sharing.

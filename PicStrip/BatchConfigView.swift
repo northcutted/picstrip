@@ -230,6 +230,9 @@ struct BatchConfigView: View {
             .animation(.easeInOut(duration: 0.4), value: viewModel.batchProgress.current)
             .accessibilityLabel("Processing photos, \(viewModel.batchProgress.current) of \(viewModel.batchProgress.total) complete")
 
+            Button("Stop batch") { viewModel.cancelBatch() }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier("stopBatchButton")
             Text("Please keep the app open.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)

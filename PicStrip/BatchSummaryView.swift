@@ -104,13 +104,18 @@ struct BatchSummaryView: View {
         }
         .sheet(isPresented: Binding(
             get: { auditURL != nil },
-            set: { if !$0 { auditURL = nil } }
+            set: { if !$0 { clearAudit() } }
         )) {
             if let url = auditURL {
-                ActivityView(activityItems: [url])
+                ActivityView(activityItems: [url], onCompletion: { _ in clearAudit() })
                     .ignoresSafeArea()
             }
         }
+    }
+
+    private func clearAudit() {
+        PrivateFileStore.exports.remove(auditURL)
+        auditURL = nil
     }
 
     // MARK: - Stats card

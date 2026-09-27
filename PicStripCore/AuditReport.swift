@@ -3,12 +3,15 @@ import Foundation
 // MARK: - AuditReport
 
 /// Top-level Codable model representing the complete scan findings for one image.
-/// Serialised to JSON via `ScrubberViewModel.generateAuditJSON()`.
+/// Shared export receipt. No original metadata values or detected snippets.
 nonisolated struct AuditReport: Codable, Sendable {
     let scanDate: Date
     let formatSelected: String
     let visualRedactions: [RedactionReport]
     let metadataStripped: [MetadataCategoryReport]
+    var scanCoverage: ScanCoverage = ScanCoverage()
+    var findingsLeftVisible: Int = 0
+    var manualReviewAcknowledged: Bool = false
 }
 
 // MARK: - RedactionReport
@@ -24,8 +27,8 @@ nonisolated struct RedactionReport: Codable, Sendable {
 /// All non-structural fields stripped from a single metadata category (e.g. "GPS", "EXIF").
 nonisolated struct MetadataCategoryReport: Codable, Sendable {
     let category: String
-    /// Key-value pairs of the fields that were removed (field key → raw string value).
-    let strippedFields: [String: String]
+    /// Field names only. Original values must never enter a shareable report.
+    let strippedFields: [String]
 }
 
 // MARK: - BatchAuditReport

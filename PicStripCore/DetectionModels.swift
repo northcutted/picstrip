@@ -48,6 +48,15 @@ nonisolated enum ConfidenceLevel: Int, Comparable, CaseIterable {
             return String(localized: "ConfidenceLevel.high", defaultValue: "High", comment: "Match confidence band")
         }
     }
+
+    /// A heuristic match strength, never a calibrated probability of safety.
+    var matchLabel: String {
+        switch self {
+        case .high: return String(localized: "Strong match")
+        case .medium: return String(localized: "Possible match")
+        case .low: return String(localized: "Tentative match")
+        }
+    }
 }
 
 // MARK: - RiskLevel
@@ -227,9 +236,8 @@ nonisolated struct DetectedInstance: Identifiable, Hashable {
 ///   whenever a subsequent detection achieves a higher score, so the reported
 ///   certainty always reflects the strongest evidence available.
 ///
-/// `confidence` — named band derived from `score` for icon/colour rendering.
-///   A separate numeric percentage (`Int(round(score * 100))`) is shown in the
-///   UI instead of the legacy "High / Medium / Low Confidence" text.
+/// `confidence` — named match-strength band derived from the heuristic score.
+/// It is never a calibrated probability or a guarantee of safety.
 ///
 /// `Identifiable` — safe for `ForEach` in SwiftUI.
 /// `Hashable`     — can be stored in Sets and used as dictionary keys.

@@ -3,27 +3,15 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-// MARK: - App Group constants
-
-private enum AppGroup {
-    static let identifier = "group.com.northcutt.PicStrip"
-    static let pendingEditFilename = "pending-edit.data"
-
-    static var pendingEditURL: URL? {
-        FileManager.default
-            .containerURL(forSecurityApplicationGroupIdentifier: identifier)?
-            .appendingPathComponent(pendingEditFilename)
-    }
-}
-
 // MARK: - ExtensionViewModel
 
 @Observable
 @MainActor
 final class ExtensionViewModel {
-    enum Phase: Equatable { case configuring, processing, ready }
+    enum Phase: Equatable { case configuring, processing, ready, finished }
     var phase: Phase = .configuring
     var errorMessage: String?
+    var resultMessage = ""
     /// Human-readable description of the active processing operation.
     /// Set just before `phase` transitions to `.processing` so the spinner
     /// always reflects the actual destination (Photos vs. main app editor).
@@ -38,7 +26,7 @@ final class ExtensionViewModel {
 //   1. iOS presents this view controller as a share sheet card.
 //   2. We embed ExtensionConfigView — two toggles and two action buttons.
 //   3. On "Process & Save" the pipeline saves a cleaned copy directly to Photos.
-//   4. On "Edit in PicStrip" the pipeline writes processed data to the shared
+//   4. On "Edit in PicStrip" the pipeline writes the first original image to the shared
 //      app group container, shows a "Image Prepared" confirmation, then dismisses.
 //      iOS Share Extensions cannot programmatically switch apps (NSExtensionContext
 //      .open() is not supported from Share Extensions), so the user opens PicStrip
@@ -46,13 +34,15 @@ final class ExtensionViewModel {
 //      next foreground transition.
 //
 // Memory discipline: each image's UIImage and Data are released between
-// iterations.  Extensions are killed without warning above ~120 MB.
+// iterations. Admission limits keep large photos out of the decode pipeline.
 
 class ShareViewController: UIViewController {
 
     // MARK: - State
 
     private let viewModel = ExtensionViewModel()
+    private var pendingHandoffURL: URL?
+    private var processingTask: Task<Void, Never>?
 
     // MARK: - Lifecycle
 
@@ -61,6 +51,7 @@ class ShareViewController: UIViewController {
         view.backgroundColor = UIColor.systemBackground
         view.layer.cornerRadius = 20
         view.clipsToBounds = true
+        PrivateFileStore.handoffs?.removeExpired()
         embedConfigView()
     }
 
@@ -70,8 +61,8 @@ class ShareViewController: UIViewController {
         let configView = ExtensionConfigView(
             itemCount: inputItemCount(),
             viewModel: viewModel,
-            onProcess: { [weak self] stripMetadata, redactPII in
-                self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, destination: .photos)
+            onProcess: { [weak self] stripMetadata, redactPII, reduceLargeImages in
+                self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, reduceLargeImages: reduceLargeImages, destination: .photos)
             },
             onEdit: { [weak self] stripMetadata, redactPII in
                 self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, destination: .mainApp)
@@ -81,6 +72,9 @@ class ShareViewController: UIViewController {
                 self?.extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
             },
             onCancel: { [weak self] in
+                self?.processingTask?.cancel()
+                PrivateFileStore.handoffs?.remove(self?.pendingHandoffURL)
+                self?.pendingHandoffURL = nil
                 self?.extensionContext?.cancelRequest(withError: NSError(
                     domain: "northcutt.PicStrip.ShareExtension",
                     code: 0,
@@ -126,10 +120,11 @@ class ShareViewController: UIViewController {
     private func runProcessingPipeline(
         stripMetadata: Bool,
         redactPII: Bool,
+        reduceLargeImages: Bool = false,
         destination: ProcessingDestination
     ) {
         guard let items = extensionContext?.inputItems as? [NSExtensionItem] else {
-            showErrorThenCancel(String(localized: "No input items found."))
+            showError(String(localized: "No input items found."))
             return
         }
 
@@ -138,7 +133,7 @@ class ShareViewController: UIViewController {
             .filter { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }
 
         guard !providers.isEmpty else {
-            showErrorThenCancel(String(localized: "No image attachments found."))
+            showError(String(localized: "No image attachments found."))
             return
         }
 
@@ -153,11 +148,13 @@ class ShareViewController: UIViewController {
             : String(localized: "Cleaning and saving to Photos…")
         viewModel.phase = .processing
 
-        Task { [weak self] in
+        processingTask?.cancel()
+        processingTask = Task { [weak self] in
             await self?.process(
                 targetProviders,
                 stripMetadata: stripMetadata,
                 redactPII: redactPII,
+                reduceLargeImages: reduceLargeImages,
                 destination: destination
             )
         }
@@ -169,22 +166,24 @@ class ShareViewController: UIViewController {
         _ providers: [NSItemProvider],
         stripMetadata: Bool,
         redactPII: Bool,
+        reduceLargeImages: Bool,
         destination: ProcessingDestination
     ) async {
         // ── Request Photos authorization (save path only) ──────────────────
         if destination == .photos {
             let authStatus = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
             guard authStatus == .authorized || authStatus == .limited else {
-                showErrorThenCancel(String(localized: "Photos access is needed to save cleaned images. Grant access in Settings > Privacy > Photos."))
+                showError(String(localized: "Photos access is needed to save cleaned images. Grant access in Settings > Privacy > Photos."))
                 return
             }
         }
 
         var savedCount = 0
         var failedCount = 0
+        var firstFailure: String?
 
         // Sequential on purpose: one decoded image at a time keeps the extension
-        // under its ~120 MB ceiling.
+        // within the conservative extension budget. Large images must open in the app.
         for provider in providers {
 
             // ── Resolve best concrete type + load raw Data ────────────────
@@ -192,32 +191,37 @@ class ShareViewController: UIViewController {
             // Fail closed: if a step the user asked for cannot run, skip the
             // image instead of saving the untouched original as "cleaned".
             guard let typeID = Self.bestTypeIdentifier(for: provider),
-                  let rawData = await loadData(from: provider, typeIdentifier: typeID),
-                  let finalData = await Self.clean(rawData, stripMetadata: stripMetadata, redactPII: redactPII)
+                  let rawData = await loadData(from: provider, typeIdentifier: typeID)
             else {
                 failedCount += 1
                 continue
             }
 
+            guard !Task.isCancelled else { return }
             switch destination {
             case .photos:
-                // ── Save cleaned image to Photos library ───────────────────
                 do {
+                    let finalData = try await Self.clean(rawData, stripMetadata: stripMetadata,
+                                                         redactPII: redactPII, reduceLargeImages: reduceLargeImages)
+                    try Task.checkCancellation()
                     try await PhotoLibraryWriter.save(finalData)
                     savedCount += 1
                 } catch {
-                    // Non-fatal: continue with the remaining images.
+                    if Task.isCancelled { return }
+                    firstFailure = firstFailure ?? error.localizedDescription
                     failedCount += 1
                 }
 
             case .mainApp:
                 // ── Write to app group container ───────────────────────────
-                guard let destURL = AppGroup.pendingEditURL else {
+                guard let store = PrivateFileStore.handoffs else {
                     failedCount += 1
                     continue
                 }
                 do {
-                    try finalData.write(to: destURL, options: [.atomic, .completeFileProtection])
+                    // Preserve original pixels for an editable review. This protected
+                    // handoff expires after 15 minutes and is consumed on import.
+                    pendingHandoffURL = try store.write(rawData, extension: "data")
                     savedCount += 1
                 } catch {
                     failedCount += 1
@@ -226,13 +230,11 @@ class ShareViewController: UIViewController {
         }
 
         if savedCount == 0 {
-            showErrorThenCancel(String(localized: "No images could be processed."))
+            showError(firstFailure ?? String(localized: "No images could be processed."))
         } else if failedCount > 0, destination == .photos {
-            // Partial success: tell the user before dismissing so skipped
-            // photos are never mistaken for cleaned ones.
-            showNoticeThenComplete(
-                String(localized: "Some photos could not be cleaned and were not saved.")
-            )
+            viewModel.resultMessage = String(localized: "Saved: \(savedCount). Not saved: \(failedCount).")
+            viewModel.errorMessage = firstFailure
+            viewModel.phase = .finished
         } else if destination == .mainApp {
             // Transition to the "ready" state so the user sees confirmation
             // that their image has been prepared before they dismiss and open
@@ -256,43 +258,23 @@ class ShareViewController: UIViewController {
     nonisolated private static func clean(
         _ rawData: Data,
         stripMetadata: Bool,
-        redactPII: Bool
-    ) async -> Data? {
-        // ── Optional PII scan + redaction ─────────────────────────────────
-        var redactedImage: UIImage?
-        if redactPII {
-            guard let results = try? await PIIScanner().scanImage(data: rawData) else { return nil }
-            let instances = results.flatMap(\.instances)
-            if !instances.isEmpty {
-                guard let uiImage = UIImage(data: rawData),
-                      let redacted = await ImageRedactor().redact(image: uiImage, instances: instances)
-                else { return nil }
-                redactedImage = redacted
-            }
+        redactPII: Bool,
+        reduceLargeImages: Bool
+    ) async throws -> Data {
+        let metadata = stripMetadata ? StripConfig.allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])
+        let budget: ImageResourceBudget = redactPII ? .shareExtension : .background
+        var input = rawData
+        do { try budget.validate(input) } catch ImageResourceBudget.AdmissionError.resolutionTooLarge {
+            guard reduceLargeImages else { throw ImageResourceBudget.AdmissionError.resolutionTooLarge }
+            input = try ImageResourceBudget.smallerCopy(input, maximumPixels: budget.maximumPixels)
         }
-
-        // ── Re-encode only when stripping or redaction requires it ─────────
-        let stripConfig: StripConfig = stripMetadata ? .allEnabled : StripConfig(
-            categoryEnabled: [:], fieldOverrides: [:]
+        let result = try await ExportPipeline.clean(
+            input,
+            plan: ExportPlan(preset: stripMetadata ? .losslessPNG : .matchSource, metadata: metadata),
+            redact: redactPII,
+            budget: budget
         )
-        let finalData: Data
-        if let redactedImage {
-            let preset: ExportPreset = stripMetadata ? .losslessPNG : .matchSource
-            guard let result = try? ImageProcessor.process(
-                image: redactedImage, sourceData: rawData, preset: preset, config: stripConfig
-            ) else { return nil }
-            finalData = result.data
-        } else if stripMetadata {
-            guard let result = try? ImageProcessor.process(
-                data: rawData, preset: .losslessPNG, config: stripConfig
-            ) else { return nil }
-            finalData = result.data
-        } else {
-            finalData = rawData
-        }
-
-        guard UIImage(data: finalData) != nil else { return nil }
-        return finalData
+        return result.export.processed.data
     }
 
     // MARK: - UTI resolution
@@ -318,46 +300,26 @@ class ShareViewController: UIViewController {
     // MARK: - Load helper (continuation bridge)
 
     private func loadData(from provider: NSItemProvider, typeIdentifier: String) async -> Data? {
-        await withCheckedContinuation { continuation in
+        let fileData: Data? = await withCheckedContinuation { continuation in
+            provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, _ in
+                continuation.resume(returning: url.flatMap { try? ImageResourceBudget.shareExtension.read($0) })
+            }
+        }
+        if let fileData { return fileData }
+        return await withCheckedContinuation { continuation in
             provider.loadDataRepresentation(forTypeIdentifier: typeIdentifier) { data, _ in
-                continuation.resume(returning: data)
+                continuation.resume(returning: data.flatMap { $0.count <= ImageResourceBudget.shareExtension.maximumBytes ? $0 : nil })
             }
         }
     }
 
-    // MARK: - Partial-success path
-
-    /// Shows `message` for 2 s, then completes the request normally.  Used when
-    /// some — but not all — images were saved.
+    /// Keep the failure visible so the user can choose manual editing or cancel.
     @MainActor
-    private func showNoticeThenComplete(_ message: String) {
+    private func showError(_ message: String) {
         viewModel.phase = .configuring
         viewModel.errorMessage = message
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(2))
-            self?.viewModel.errorMessage = nil
-            self?.extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
-        }
     }
 
-    // MARK: - Error path
-
-    /// Flips back to `.configuring`, shows a red error banner for 2 s,
-    /// then cancels the extension.  The user sees the reason before dismissal.
-    @MainActor
-    private func showErrorThenCancel(_ message: String) {
-        viewModel.phase = .configuring
-        viewModel.errorMessage = message
-        Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(2))
-            self?.viewModel.errorMessage = nil
-            self?.extensionContext?.cancelRequest(withError: NSError(
-                domain: "northcutt.PicStrip.ShareExtension",
-                code: 1,
-                userInfo: [NSLocalizedDescriptionKey: message]
-            ))
-        }
-    }
 }
 
 // MARK: - ExtensionConfigView
@@ -366,13 +328,14 @@ private struct ExtensionConfigView: View {
 
     let itemCount: Int
     let viewModel: ExtensionViewModel
-    let onProcess: (Bool, Bool) -> Void
+    let onProcess: (Bool, Bool, Bool) -> Void
     let onEdit: (Bool, Bool) -> Void
     let onComplete: () -> Void
     let onCancel: () -> Void
 
     @State private var stripMetadata: Bool = true
     @State private var redactPII: Bool = true
+    @State private var reduceLargeImages = false
 
     private var isProcessing: Bool { viewModel.phase == .processing }
 
@@ -388,7 +351,13 @@ private struct ExtensionConfigView: View {
             switch viewModel.phase {
             case .processing: processingBody
             case .ready:      readyBody
-            case .configuring: configBody
+            case .configuring: ScrollView { configBody }
+            case .finished:
+                VStack(spacing: 16) {
+                    Text(viewModel.resultMessage).font(.headline)
+                    if let error = viewModel.errorMessage { Text(error).font(.footnote) }
+                    Button("Done", action: onComplete).buttonStyle(.borderedProminent)
+                }.padding(20)
             }
         }
         .background(Color(.systemBackground))
@@ -431,6 +400,15 @@ private struct ExtensionConfigView: View {
                     .padding(.horizontal, 20)
                     .padding(.vertical, 14)
                     .accessibilityHint("Scans visible text and faces on device and burns redaction boxes over likely sensitive data.")
+                Divider().padding(.leading, 20)
+                Toggle("Allow smaller copies", isOn: $reduceLargeImages)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 14)
+                Text("Large photos need smaller copies in the extension: up to 6 megapixels for redaction, or 12 for metadata only. Edit in PicStrip for full review.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 14)
             }
 
             Divider()
@@ -451,7 +429,7 @@ private struct ExtensionConfigView: View {
 
             VStack(spacing: 10) {
                 Button {
-                    onProcess(stripMetadata, redactPII)
+                    onProcess(stripMetadata, redactPII, reduceLargeImages)
                 } label: {
                     Label("Process & Save to Photos", systemImage: "checkmark.shield.fill")
                         .font(.body.weight(.semibold))
@@ -461,6 +439,7 @@ private struct ExtensionConfigView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .accessibilityHint("Cleans selected images on this device and saves new copies to Photos.")
+                .disabled(!stripMetadata && !redactPII)
 
                 // "Edit in PicStrip" — only available for a single image since
                 // the full editor is single-image.  When multiple images were
@@ -476,6 +455,10 @@ private struct ExtensionConfigView: View {
                 .buttonStyle(.bordered)
                 .controlSize(.large)
                 .accessibilityHint("Opens the first selected image in the PicStrip editor for manual redaction.")
+
+                Text("Edit opens the first original image for review. A protected local copy expires after 15 minutes.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
 
                 Button(role: .cancel) {
                     onCancel()
@@ -507,7 +490,7 @@ private struct ExtensionConfigView: View {
             VStack(spacing: 6) {
                 Text("Image Prepared")
                     .font(.title2.weight(.semibold))
-                Text("Open PicStrip to edit it.")
+                Text("Open PicStrip within 15 minutes to review the original and choose what to cover.")
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .multilineTextAlignment(.center)
@@ -528,6 +511,9 @@ private struct ExtensionConfigView: View {
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
             .accessibilityHint("Closes the extension. Open PicStrip to edit your prepared image.")
+
+            Button("Discard prepared image", role: .destructive, action: onCancel)
+                .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)

@@ -1,0 +1,15 @@
+{
+  "version": "27.0",
+  "build": "27A266a",
+  "path": "/Applications/Xcode_27.0.app/Contents/Developer",
+  "runtime": "27.0",
+  "sdk": "27.0",
+  "swift": "Apple Swift version 6.4 (swiftlang-6.4.0.34.1 clang-2100.3.34.1)\nTarget: arm64-apple-macosx27.0.0",
+  "macos": "27.0",
+  "architecture": "arm64",
+  "runner_image": "20260912.0186.1",
+  "runner_image_os": "macos27",
+  "simulators": {
+    "iPhone 17": "2E8C7D0D-FFCE-4627-AB65-FD15D11FCD73"
+  }
+}

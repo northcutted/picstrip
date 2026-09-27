@@ -103,6 +103,7 @@ nonisolated struct ScanOutput: Sendable {
     let results: [DetectionResult]
     /// Recognised lines in reading order.
     let lines: [ScannedLine]
+    var coverage: ScanCoverage = .complete
 }
 
 // MARK: - Scanner
@@ -137,16 +138,16 @@ nonisolated struct PIIScanner {
         hints: ScanHints = .none,
         progress: ScanProgressHandler? = nil
     ) async throws -> ScanOutput {
-        // Stage 1: Validate — ensures a meaningful error if the caller passes
-        // non-image bytes before we hand anything to Vision.
-        // CGImageSourceCreateWithData succeeds even for arbitrary byte sequences
-        // (it creates a source with zero images), so we additionally verify that
-        // at least one image frame is decodable. The decoded CGImage is discarded
-        // immediately; the actual OCR uses ImageRequestHandler(data) below.
-        guard
-            let source = CGImageSourceCreateWithData(data as CFData, nil),
-            CGImageSourceCreateImageAtIndex(source, 0, nil) != nil
-        else {
+        // Validate headers before Vision allocates a full bitmap. Do not decode
+        // a second full-resolution image merely to validate the input.
+        do { try ImageResourceBudget.editor.validate(data) } catch {
+            if case ImageResourceBudget.AdmissionError.invalidImage = error {
+                throw PIIScannerError.invalidImageData
+            }
+            throw error
+        }
+
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else {
             throw PIIScannerError.invalidImageData
         }
 
@@ -169,6 +170,7 @@ nonisolated struct PIIScanner {
         var rectangles: [RectangleObservation] = []
         var textRecognitionRan = false
         var faceDetectionFailed = false
+        var coverage = ScanCoverage()
 
         // Vision can deliver more than one result for a request; a step is
         // reported the first time only.
@@ -186,19 +188,27 @@ nonisolated struct PIIScanner {
             case .recognizeText(_, let found):
                 observations = found
                 textRecognitionRan = true
+                coverage[.text] = .complete
                 report(.text)
             case .detectFaceRectangles(_, let found):
                 faces = found
+                coverage[.faces] = .complete
                 report(.faces)
             case .detectBarcodes(_, let found):
                 barcodes = found
+                coverage[.barcodes] = .complete
                 report(.barcodes)
             case .detectRectangles(_, let found):
                 rectangles = found
+                coverage[.documentContext] = .complete
                 report(.documentEdges)
             case .error(let request, _):
                 // An error for one request must not discard the others' results.
                 if request is DetectFaceRectanglesRequest { faceDetectionFailed = true }
+                if request is RecognizeTextRequest { coverage[.text] = .failed }
+                if request is DetectFaceRectanglesRequest { coverage[.faces] = .failed }
+                if request is DetectBarcodesRequest { coverage[.barcodes] = .failed }
+                if request is DetectRectanglesRequest { coverage[.documentContext] = .failed }
                 if let subject = Self.subject(of: request) { report(subject) }
             default:
                 break
@@ -214,13 +224,17 @@ nonisolated struct PIIScanner {
             if let found = try? await ImageRequestHandler(data).perform(fastRequest) {
                 observations = found
                 textRecognitionRan = true
+                coverage[.text] = .complete
             }
         }
 
         // The pinned iOS 27 face revision may be unavailable on some hardware.  A
         // missed face is a privacy miss, so retry with the OS default revision.
         if faceDetectionFailed {
-            faces = (try? await ImageRequestHandler(data).perform(DetectFaceRectanglesRequest())) ?? []
+            if let found = try? await ImageRequestHandler(data).perform(DetectFaceRectanglesRequest()) {
+                faces = found
+                coverage[.faces] = .complete
+            }
         }
 
         // "Found no text" is a valid answer; "could not look" is not.  When neither
@@ -259,7 +273,7 @@ nonisolated struct PIIScanner {
         )
         results = Self.resolveCreditCardPhoneConflicts(results)
 
-        return ScanOutput(results: Self.sorted(results), lines: Self.scannedLines(from: observations))
+        return ScanOutput(results: Self.sorted(results), lines: Self.scannedLines(from: observations), coverage: coverage)
     }
 
     // MARK: - Live preview
@@ -881,6 +895,21 @@ nonisolated struct PIIScanner {
                        ),
                        instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
             }
+        }
+
+        var keyInstances: [DetectedInstance] = []
+        for rank in 0..<5 {
+            let lines = candidateLines.filter { $0.rank == rank }.map {
+                ScannedLine(text: $0.text, boundingBox: $0.lineBounds, confidence: $0.confidence)
+            }
+            for instance in PrivateKeyDetector.results(in: lines).flatMap(\.instances)
+            where !keyInstances.contains(where: { $0.boundingBox == instance.boundingBox }) {
+                keyInstances.append(instance)
+            }
+        }
+        if !keyInstances.isEmpty {
+            resultsDict[.genericPrivateKey] = DetectionResult(type: .genericPrivateKey,
+                score: keyInstances.map(\.score).max() ?? 0.8, instances: keyInstances)
         }
 
         // Sort: highest score first, alphabetical description as tiebreaker.

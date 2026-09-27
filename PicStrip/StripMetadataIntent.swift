@@ -77,58 +77,66 @@ struct StripMetadataIntent: AppIntent, ProgressReportingIntent {
     nonisolated static func clean(
         _ files: [IntentFile],
         preset: ExportPreset,
-        progress: Progress? = nil
+        progress: Progress? = nil,
+        store: PrivateFileStore = .exports
     ) async throws -> [IntentFile] {
         var cleaned: [IntentFile] = []
+        var written: [URL] = []
+        var completed = false
+        defer {
+            if !completed { written.forEach { store.remove($0) } }
+        }
         cleaned.reserveCapacity(files.count)
-
         for file in files {
             try Task.checkCancellation()
-
-            let source = try readData(of: file)
-            guard let result = try? ImageProcessor.process(data: source, preset: preset, config: .allEnabled) else {
-                throw StripMetadataIntentError.couldNotClean(filename: file.filename)
+            let output: (URL, UTType) = try autoreleasepool {
+                let source = try readData(of: file)
+                do { try ImageResourceBudget.background.validate(source) } catch {
+                    if case ImageResourceBudget.AdmissionError.invalidImage = error {
+                        throw StripMetadataIntentError.couldNotClean(filename: file.filename)
+                    }
+                    throw error
+                }
+                let result: VerifiedExport
+                do {
+                    result = try ExportPipeline.encode(source, plan: ExportPlan(preset: preset, metadata: .allEnabled))
+                } catch {
+                    throw StripMetadataIntentError.couldNotClean(filename: file.filename)
+                }
+                let url = try store.write(result.processed.data, extension: result.type.preferredFilenameExtension ?? "data")
+                return (url, result.type)
             }
-
-            let outputType = imageType(of: result.data) ?? preset.utType ?? result.sourceType
-            cleaned.append(IntentFile(
-                data: result.data,
-                filename: outputFilename(for: file.filename, type: outputType),
-                type: outputType
-            ))
+            written.append(output.0)
+            // File-backed results keep prior outputs out of memory while the next
+            // image is processed. Expiring protected files outlive the receiving shortcut.
+            var resultFile = IntentFile(fileURL: output.0, filename: outputFilename(for: file.filename, type: output.1), type: output.1)
+            resultFile.removedOnCompletion = true
+            cleaned.append(resultFile)
             progress?.completedUnitCount += 1
         }
+        try Task.checkCancellation()
+        completed = true
         return cleaned
     }
 
     /// `IntentFile.data` is empty for some providers (notably Photos-backed
     /// files), so fall back to reading the security-scoped URL directly.
     nonisolated private static func readData(of file: IntentFile) throws -> Data {
-        let inline = file.data
-        if !inline.isEmpty { return inline }
-
         if let url = file.fileURL {
             let scoped = url.startAccessingSecurityScopedResource()
             defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-            if let data = try? Data(contentsOf: url), !data.isEmpty { return data }
+            return try ImageResourceBudget.background.read(url)
         }
-        throw StripMetadataIntentError.couldNotRead(filename: file.filename)
+        let inline = file.data
+        guard !inline.isEmpty else { throw StripMetadataIntentError.couldNotRead(filename: file.filename) }
+        return inline
     }
 
-    nonisolated private static func imageType(of data: Data) -> UTType? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil),
-              let identifier = CGImageSourceGetType(source) else { return nil }
-        return UTType(identifier as String)
+    /// A neutral name avoids disclosing a source filename in downstream shares.
+    nonisolated static func outputFilename(for _: String, type: UTType) -> String {
+        "PicStrip.\(type.preferredFilenameExtension ?? "data")"
     }
 
-    /// Keeps the original base name and swaps in the extension of the type that
-    /// was actually written ("IMG_0042.HEIC" → "IMG_0042.png").
-    nonisolated static func outputFilename(for original: String, type: UTType) -> String {
-        let base = (original as NSString).deletingPathExtension
-        let name = base.isEmpty ? "Image" : base
-        guard let ext = type.preferredFilenameExtension else { return name }
-        return "\(name).\(ext)"
-    }
 }
 
 #if compiler(>=6.4)

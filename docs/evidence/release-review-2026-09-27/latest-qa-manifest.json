@@ -1,0 +1,41 @@
+{
+  "checks": {
+    "analyze": {
+      "check": "analyze",
+      "run_id": "35539347082",
+      "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+      "status": 0
+    },
+    "lint": {
+      "check": "lint",
+      "run_id": "35539347082",
+      "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+      "status": 0
+    },
+    "localization": {
+      "check": "localization",
+      "run_id": "35539347082",
+      "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+      "status": 0
+    },
+    "test": {
+      "check": "test",
+      "executed": 207,
+      "failures": 0,
+      "run_id": "35539347082",
+      "skipped": 0,
+      "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+      "status": 0
+    },
+    "test-compatibility": {
+      "check": "test-compatibility",
+      "executed": 207,
+      "failures": 0,
+      "run_id": "35539347082",
+      "skipped": 0,
+      "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+      "status": 0
+    }
+  },
+  "source_sha": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f"
+}

@@ -29,7 +29,8 @@ final class LocalizationTests: XCTestCase {
     /// Strings that were English-only in every locale before the catalog audit existed.
     func testPreviouslyUntranslatedStringsAreTranslatedEverywhere() throws {
         for locale in Self.locales {
-            for key in ["Save to Photos", "Select All", "Scanning…", "Strip All", "Risk Level"] {
+            for key in ["Review & Share", "Save as New Photo", "Select All", "Scanning…", "Strip All", "Risk Level",
+                        "I reviewed this photo manually", "Add centered region", "Position & size"] {
                 let value = try table(for: locale).localizedString(forKey: key, value: nil, table: nil)
                 XCTAssertNotEqual(value, key, "\(locale) still shows English for “\(key)”.")
             }
