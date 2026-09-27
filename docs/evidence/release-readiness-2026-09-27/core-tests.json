@@ -4,13 +4,13 @@
       "device": {
         "architecture": "arm64",
         "modelName": "iPhone 17",
-        "osBuildNumber": "24A5355p",
+        "osBuildNumber": "24A434",
         "osVersion": "27.0",
         "platform": "iOS Simulator"
       },
       "expectedFailures": 0,
       "failedTests": 0,
-      "passedTests": 232,
+      "passedTests": 234,
       "skippedTests": 0,
       "testPlanConfiguration": {
         "configurationId": "1",
@@ -21,12 +21,12 @@
   "environmentDescription": "PicStrip \u00b7 Built with macOS 27.0",
   "expectedFailures": 0,
   "failedTests": 0,
-  "finishTime": 1790542468.31,
-  "passedTests": 232,
+  "finishTime": 1790544245.75,
+  "passedTests": 234,
   "result": "Passed",
   "runtimeWarnings": [],
   "skippedTests": 0,
-  "startTime": 1790542332.696,
+  "startTime": 1790544129.402,
   "statistics": [
     {
       "subtitle": "2 test runs",
@@ -38,15 +38,15 @@
   "topInsights": [
     {
       "category": "Longest Test Runs",
-      "impact": "54% of duration",
-      "text": "4 longest test runs with outlier durations exceeding 1.95s (three standard deviations)"
+      "impact": "46% of duration",
+      "text": "4 longest test runs with outlier durations exceeding 1.62s (three standard deviations)"
     }
   ],
-  "totalTestCount": 232,
+  "totalTestCount": 234,
   "evidence_scope": {
     "configuration": "Debug",
-    "xcode": "27.0 beta 27A5194q",
-    "purpose": "Full app unit and integration suite on the implementation source",
-    "limitations": "Simulator Vision barcode support is unavailable; failed checks require explicit manual review. Physical-device acceptance is recorded separately."
+    "xcode": "27.0 release 27A266a",
+    "purpose": "Full app unit and integration suite including file-first transfer and nominal camera-resolution admission regressions",
+    "limitations": "Simulator Vision barcode support is unavailable; failed checks require explicit manual review. The subsequent large-text-only presentation adjustment is verified in the separate UI run. Physical-device acceptance is recorded separately."
   }
 }

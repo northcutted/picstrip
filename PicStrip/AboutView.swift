@@ -92,7 +92,7 @@ private func riskIcon(_ level: RiskLevel) -> String {
 
 // MARK: - About view
 
-/// Native iOS "About" sheet — instructions, privacy guarantee, scoring system explanation,
+/// Native iOS "About" sheet — instructions, privacy behavior, match-strength explanation,
 /// and detection catalogue.
 struct AboutView: View {
 
@@ -373,7 +373,7 @@ struct AboutView: View {
                     .padding(.vertical, 6)
                 }
 
-                // ── Section 7: Privacy Guarantee ───────────────────────────
+                // ── Section 7: Privacy ───────────────────────────
                 Section(header: Text("Privacy")) {
                     privacyRow(
                         icon: "lock.fill",
@@ -385,25 +385,25 @@ struct AboutView: View {
                         icon: "face.dashed",
                         color: .pink,
                         title: "Face Data Is Not Collected",
-                        detail: "Face detection uses temporary on-device rectangles only. PicStrip does not identify people or store, transmit, or share face data."
+                        detail: "Face rectangles stay in the editing session. PicStrip does not identify people. Images you save or share can contain faces you leave uncovered."
                     )
                     privacyRow(
                         icon: "wifi.slash",
                         color: .orange,
-                        title: "No Internet Required",
-                        detail: "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree."
+                        title: "Offline Editing",
+                        detail: "Editing works offline after your image is available locally. Cloud imports, optional Apple model downloads, and services you choose for saving or sharing may use the network."
                     )
                     privacyRow(
                         icon: "chart.bar.xaxis",
                         color: .red,
                         title: "No Analytics or Tracking",
-                        detail: "No telemetry, no crash reporters, no ad SDKs. Your usage is not observed or collected in any way."
+                        detail: "No ads, usage analytics, or third-party crash reporting. PicStrip does not send your activity to a developer-operated service."
                     )
                     privacyRow(
                         icon: "clock.badge.xmark",
                         color: .purple,
                         title: "No Photo History",
-                        detail: "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session."
+                        detail: "PicStrip keeps no photo history. Protected edit copies expire after 15 minutes and temporary exports after one hour. Cleanup runs when the app or extension can access them."
                     )
                 }
 

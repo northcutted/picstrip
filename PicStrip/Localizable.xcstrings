@@ -17072,6 +17072,106 @@
         }
       }
     },
+    "Editing works offline after your image is available locally. Cloud imports, optional Apple model downloads, and services you choose for saving or sharing may use the network." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يعمل التحرير دون اتصال بعد توفر الصورة محليًا. قد تستخدم عمليات الاستيراد من السحابة وتنزيل نماذج Apple الاختيارية والخدمات التي تختارها للحفظ أو المشاركة الشبكة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Bearbeitung funktioniert offline, sobald dein Bild lokal verfügbar ist. Cloud-Importe, optionale Apple-Modelldownloads und Dienste, die du zum Speichern oder Teilen auswählst, können das Netzwerk nutzen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes editar sin conexión cuando la imagen esté disponible localmente. Las importaciones desde la nube, las descargas opcionales de modelos de Apple y los servicios que elijas para guardar o compartir pueden usar la red."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puedes editar sin conexión cuando la imagen esté disponible localmente. Las importaciones desde la nube, las descargas opcionales de modelos de Apple y los servicios que elijas para guardar o compartir pueden usar la red."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La retouche fonctionne hors ligne une fois l’image disponible localement. Les imports depuis le cloud, les téléchargements facultatifs de modèles Apple et les services choisis pour enregistrer ou partager peuvent utiliser le réseau."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La modifica funziona offline quando l’immagine è disponibile localmente. Le importazioni dal cloud, i download facoltativi dei modelli Apple e i servizi scelti per salvare o condividere possono usare la rete."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像が端末内にあれば、オフラインで編集できます。クラウドからの読み込み、任意のAppleモデルのダウンロード、保存・共有先に選んだサービスでは通信が発生することがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이미지가 기기에 저장되어 있으면 오프라인으로 편집할 수 있습니다. 클라우드 가져오기, 선택적 Apple 모델 다운로드, 저장 또는 공유 대상으로 선택한 서비스는 네트워크를 사용할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerken werkt offline zodra de afbeelding lokaal beschikbaar is. Importeren uit de cloud, optionele Apple-modeldownloads en diensten die je kiest voor bewaren of delen kunnen het netwerk gebruiken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edycja działa offline, gdy obraz jest dostępny lokalnie. Import z chmury, opcjonalne pobieranie modeli Apple oraz wybrane usługi zapisu i udostępniania mogą korzystać z sieci."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A edição funciona offline quando a imagem está disponível localmente. Importações da nuvem, downloads opcionais de modelos da Apple e os serviços escolhidos para salvar ou compartilhar podem usar a rede."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A edição funciona offline quando a imagem está disponível localmente. As importações da nuvem, as descargas opcionais de modelos da Apple e os serviços escolhidos para guardar ou partilhar podem utilizar a rede."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigering fungerar offline när bilden finns lokalt. Molnimport, valfria hämtningar av Apple-modeller och tjänster som du väljer för att spara eller dela kan använda nätverket."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görüntü yerel olarak kullanılabilir olduğunda düzenleme çevrimdışı çalışır. Buluttan içe aktarma, isteğe bağlı Apple modeli indirmeleri ve kaydetmek veya paylaşmak için seçtiğiniz hizmetler ağı kullanabilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "图像在本地可用后即可离线编辑。云端导入、可选的Apple模型下载，以及你选择的保存或分享服务可能会使用网络。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影像在本機可用後即可離線編輯。雲端輸入、選用的Apple模型下載，以及你選擇的儲存或分享服務可能會使用網路。"
+          }
+        }
+      }
+    },
     "Email Address" : {
       "localizations" : {
         "ar" : {
@@ -18584,102 +18684,102 @@
         }
       }
     },
-    "Face detection uses temporary on-device rectangles only. PicStrip does not identify people or store, transmit, or share face data." : {
+    "Face rectangles stay in the editing session. PicStrip does not identify people. Images you save or share can contain faces you leave uncovered." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يستخدم كشف الوجوه مستطيلات مؤقتة على الجهاز فقط. لا يتعرّف PicStrip على الأشخاص ولا يخزّن بيانات الوجوه أو ينقلها أو يشاركها."
+            "value" : "تبقى مستطيلات الوجوه ضمن جلسة التحرير. لا يتعرّف PicStrip على هوية الأشخاص. قد تحتوي الصور التي تحفظها أو تشاركها على وجوه تتركها دون حجب."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Die Gesichtserkennung nutzt nur temporäre Rechtecke auf dem Gerät. PicStrip identifiziert keine Personen und speichert, überträgt oder teilt keine Gesichtsdaten."
+            "value" : "Gesichtsrechtecke bleiben in der aktuellen Bearbeitungssitzung. PicStrip identifiziert keine Personen. Gespeicherte oder geteilte Bilder können Gesichter enthalten, die du nicht abdeckst."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La detección de caras solo usa rectángulos temporales en el dispositivo. PicStrip no identifica a personas ni almacena, transmite o comparte datos faciales."
+            "value" : "Los rectángulos de los rostros permanecen en la sesión de edición. PicStrip no identifica personas. Las imágenes que guardes o compartas pueden contener rostros que dejes sin cubrir."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La detección de caras solo usa rectángulos temporales en el dispositivo. PicStrip no identifica a personas ni almacena, transmite o comparte datos faciales."
+            "value" : "Los rectángulos de los rostros permanecen en la sesión de edición. PicStrip no identifica personas. Las imágenes que guardes o compartas pueden contener rostros que dejes sin cubrir."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "La détection de visages se limite à des rectangles temporaires calculés sur l’appareil. PicStrip n’identifie personne et ne stocke, ne transmet ni ne partage aucune donnée de visage."
+            "value" : "Les rectangles des visages restent dans la session de retouche. PicStrip n’identifie personne. Les images enregistrées ou partagées peuvent contenir des visages que vous laissez visibles."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Il rilevamento dei volti usa solo rettangoli temporanei sul dispositivo. PicStrip non identifica le persone e non archivia, trasmette o condivide dati sui volti."
+            "value" : "I rettangoli dei volti restano nella sessione di modifica. PicStrip non identifica le persone. Le immagini che salvi o condividi possono contenere volti che lasci scoperti."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔検出はデバイス上で一時的な矩形を使うだけです。PicStripは人物を特定せず、顔データの保存・送信・共有も行いません。"
+            "value" : "顔の領域は編集中のセッション内に保持されます。PicStripは人物を識別しません。保存・共有する画像には、覆わずに残した顔が含まれることがあります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴 감지는 기기 안에서 임시 사각형만 사용합니다. PicStrip은 사람을 식별하지 않으며 얼굴 데이터를 저장하거나 전송하거나 공유하지 않습니다."
+            "value" : "얼굴 영역은 편집 세션에만 유지됩니다. PicStrip은 사람의 신원을 식별하지 않습니다. 저장하거나 공유하는 이미지에는 가리지 않은 얼굴이 포함될 수 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gezichtsdetectie gebruikt alleen tijdelijke rechthoeken op het apparaat. PicStrip identificeert geen personen en bewaart, verzendt of deelt geen gezichtsgegevens."
+            "value" : "Gezichtskaders blijven in de bewerkingssessie. PicStrip identificeert geen personen. Afbeeldingen die je bewaart of deelt, kunnen gezichten bevatten die je zichtbaar laat."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wykrywanie twarzy korzysta wyłącznie z tymczasowych prostokątów tworzonych na urządzeniu. PicStrip nie identyfikuje osób ani nie przechowuje, nie przesyła i nie udostępnia danych o twarzach."
+            "value" : "Prostokąty twarzy pozostają w sesji edycji. PicStrip nie identyfikuje osób. Zapisane lub udostępnione obrazy mogą zawierać twarze, które pozostawisz odsłonięte."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A detecção de rostos usa apenas retângulos temporários no dispositivo. O PicStrip não identifica pessoas nem armazena, transmite ou compartilha dados de rostos."
+            "value" : "Os retângulos dos rostos ficam na sessão de edição. O PicStrip não identifica pessoas. As imagens salvas ou compartilhadas podem conter rostos que você deixar descobertos."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A deteção de rostos utiliza apenas retângulos temporários no dispositivo. O PicStrip não identifica pessoas nem armazena, transmite ou partilha dados de rostos."
+            "value" : "Os retângulos dos rostos permanecem na sessão de edição. O PicStrip não identifica pessoas. As imagens guardadas ou partilhadas podem conter rostos que deixar descobertos."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ansiktsdetekteringen använder bara tillfälliga rektanglar på enheten. PicStrip identifierar inga personer och lagrar, skickar eller delar ingen ansiktsdata."
+            "value" : "Ansiktsrektanglar finns kvar i redigeringssessionen. PicStrip identifierar inte personer. Bilder som du sparar eller delar kan innehålla ansikten som du lämnar synliga."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüz algılama yalnızca cihazda geçici dikdörtgenler kullanır. PicStrip kişileri tanımlamaz; yüz verilerini saklamaz, iletmez veya paylaşmaz."
+            "value" : "Yüz dikdörtgenleri düzenleme oturumunda kalır. PicStrip kişilerin kimliğini belirlemez. Kaydettiğiniz veya paylaştığınız görüntülerde kapatmadığınız yüzler bulunabilir."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "人脸检测仅在设备端使用临时矩形框。PicStrip 不会识别人物身份，也不会存储、传输或共享人脸数据。"
+            "value" : "人脸矩形仅保留在编辑会话中。PicStrip不会识别人物身份。你保存或分享的图像可能包含未遮盖的人脸。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "人臉偵測只會在裝置上暫時產生方框。PicStrip 不會辨識任何人的身分，也不會儲存、傳輸或分享人臉資料。"
+            "value" : "臉部矩形僅保留在編輯階段中。PicStrip不會識別人物身分。你儲存或分享的影像可能包含未遮蓋的臉部。"
           }
         }
       }
@@ -26777,106 +26877,6 @@
         }
       }
     },
-    "No Internet Required" : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "لا يتطلب الاتصال بالإنترنت"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kein Internet erforderlich"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se requiere Internet"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se requiere Internet"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas besoin d’Internet"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna connessione a Internet richiesta"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "インターネット接続は不要です"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "인터넷 필요 없음"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen internet vereist"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie wymaga internetu"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não requer internet"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não requer Internet"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ingen internetanslutning krävs"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "İnternet Gerekmez"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无需联网"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無需網際網路連線"
-          }
-        }
-      }
-    },
     "No Photo History" : {
       "localizations" : {
         "ar" : {
@@ -26973,6 +26973,106 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "不保留照片記錄"
+          }
+        }
+      }
+    },
+    "No ads, usage analytics, or third-party crash reporting. PicStrip does not send your activity to a developer-operated service." : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا إعلانات أو تحليلات استخدام أو تقارير أعطال من جهات خارجية. لا يرسل PicStrip نشاطك إلى خدمة يشغّلها المطوّر."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Werbung, Nutzungsanalyse oder Absturzberichte durch Drittanbieter. PicStrip sendet deine Aktivitäten nicht an einen vom Entwickler betriebenen Dienst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin anuncios, análisis de uso ni informes de fallos de terceros. PicStrip no envía tu actividad a un servicio del desarrollador."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin anuncios, análisis de uso ni informes de fallas de terceros. PicStrip no envía tu actividad a un servicio del desarrollador."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans publicité, analyse d’utilisation ni rapport de plantage tiers. PicStrip n’envoie pas votre activité à un service exploité par le développeur."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nessuna pubblicità, analisi dell’utilizzo o segnalazione degli arresti anomali di terze parti. PicStrip non invia la tua attività a un servizio gestito dallo sviluppatore."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "広告、利用状況の分析、第三者によるクラッシュ報告はありません。PicStripは利用状況を開発者のサービスに送信しません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "광고, 사용 분석, 타사 충돌 보고가 없습니다. PicStrip은 사용 활동을 개발자가 운영하는 서비스로 보내지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen advertenties, gebruiksanalyses of crashrapportage van derden. PicStrip stuurt je activiteit niet naar een dienst van de ontwikkelaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez reklam, analizy użycia i raportowania awarii przez firmy trzecie. PicStrip nie wysyła Twojej aktywności do usługi prowadzonej przez dewelopera."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem anúncios, análise de uso ou relatórios de falhas de terceiros. O PicStrip não envia sua atividade a um serviço operado pelo desenvolvedor."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem anúncios, análise de utilização ou relatórios de falhas de terceiros. O PicStrip não envia a sua atividade para um serviço operado pelo programador."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingen reklam, användningsanalys eller kraschrapportering från tredje part. PicStrip skickar inte din aktivitet till en tjänst som drivs av utvecklaren."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reklam, kullanım analizi veya üçüncü taraf kilitlenme raporlaması yoktur. PicStrip etkinliğinizi geliştirici tarafından işletilen bir hizmete göndermez."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "没有广告、使用情况分析或第三方崩溃报告。PicStrip不会将你的活动发送到开发者运营的服务。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有廣告、使用情況分析或第三方當機回報。PicStrip不會將你的活動傳送至開發者營運的服務。"
           }
         }
       }
@@ -27783,106 +27883,6 @@
         }
       }
     },
-    "No telemetry, no crash reporters, no ad SDKs. Your usage is not observed or collected in any way." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "لا توجد تتبعات، ولا مُبلّغات عن الأعطال، ولا حِزم SDK إعلانية. لا تتم مراقبة استخدامك أو جمعه بأي شكل من الأشكال."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Telemetrie, keine Absturzberichte, keine Werbe-SDKs. Deine Nutzung wird in keiner Weise beobachtet oder gesammelt."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin telemetría, sin informes de fallos, sin SDK de publicidad. No se observa ni se recopila tu actividad de ninguna forma."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sin telemetría, sin informes de fallos, sin SDK de publicidad. No se observa ni se recopila tu actividad de ninguna forma."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pas de télémétrie, pas de rapports de plantage, pas de SDK publicitaires. Votre utilisation n’est ni observée ni collectée de quelque manière que ce soit."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna telemetria, nessun report di crash, nessun SDK pubblicitario. L’uso non è osservato né raccolto in alcun modo."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "テレメトリなし、クラッシュレポートなし、広告SDKなし。利用状況は一切観察・収集されません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "텔레메트리, 충돌 보고, 광고 SDK가 없습니다. 사용 내역은 어떤 방식으로도 관찰되거나 수집되지 않습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen telemetrie, geen crashrapporten, geen advertentie-SDK’s. Je gebruik wordt op geen enkele manier geobserveerd of verzameld."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Brak telemetrii, brak raportów o awariach, brak reklamowych SDK. Nikt nie obserwuje ani nie zbiera informacji o tym, jak korzystasz z aplikacji."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sem telemetria, sem relatórios de falhas, sem SDKs de anúncios. Seu uso não é observado nem coletado de forma alguma."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sem telemetria, sem relatórios de falhas, sem SDKs de anúncios. A sua utilização não é observada nem recolhida de forma alguma."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ingen telemetri, inga kraschrapporter, inga annons-SDK:er. Din användning bevakas inte och samlas inte in på något sätt."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telemetri yok, çökme raporu yok, reklam SDK’sı yok. Kullanımınız hiçbir şekilde gözlemlenmez veya toplanmaz."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无遥测，无崩溃报告，无广告 SDK。你的使用情况不会以任何方式被观察或收集。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "沒有遙測、沒有當機報告、沒有廣告 SDK。你的使用情況不會以任何方式被記錄或收集。"
-          }
-        }
-      }
-    },
     "None" : {
       "localizations" : {
         "ar" : {
@@ -28380,6 +28380,106 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "物體選取"
+          }
+        }
+      }
+    },
+    "Offline Editing" : {
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التحرير دون اتصال"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edición sin conexión"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edición sin conexión"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retouche hors ligne"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica offline"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフラインで編集"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오프라인 편집"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Offline bewerken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edycja offline"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edição offline"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edição offline"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigera offline"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çevrimdışı düzenleme"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "离线编辑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "離線編輯"
           }
         }
       }
@@ -31514,102 +31614,102 @@
         }
       }
     },
-    "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session." : {
+    "PicStrip keeps no photo history. Protected edit copies expire after 15 minutes and temporary exports after one hour. Cleanup runs when the app or extension can access them." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "لا يحفظ PicStrip سجل الصور ولا القيم المُزالة ولا مقتطفات OCR ولا إحداثيات الحجب. لا يُخزَّن أي شيء عمّا تعالجه بعد انتهاء الجلسة الحالية."
+            "value" : "لا يحتفظ PicStrip بسجل للصور. تنتهي صلاحية نسخ التحرير المحمية بعد 15 دقيقة، وعمليات التصدير المؤقتة بعد ساعة. يجري الحذف عندما يتمكن التطبيق أو الامتداد من الوصول إليها."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip behält keinen Fotoverlauf, keine entfernten Werte, keine OCR-Auszüge und keine Schwärzungskoordinaten. Nichts über das, was du verarbeitest, wird über die aktuelle Sitzung hinaus gespeichert."
+            "value" : "PicStrip speichert keinen Fotoverlauf. Geschützte Bearbeitungskopien laufen nach 15 Minuten ab, temporäre Exporte nach einer Stunde. Sie werden bereinigt, sobald die App oder Erweiterung darauf zugreifen kann."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip no guarda historial de fotos, valores eliminados, fragmentos de OCR ni coordenadas de censuras. Nada de lo que procesas se almacena más allá de la sesión actual."
+            "value" : "PicStrip no conserva un historial de fotos. Las copias protegidas para editar caducan a los 15 minutos y las exportaciones temporales a la hora. Se eliminan cuando la app o la extensión puede acceder a ellas."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip no guarda historial de fotos, valores eliminados, fragmentos de OCR ni coordenadas de censuras. Nada de lo que procesas se almacena más allá de la sesión actual."
+            "value" : "PicStrip no conserva un historial de fotos. Las copias protegidas para editar vencen a los 15 minutos y las exportaciones temporales a la hora. Se eliminan cuando la app o la extensión puede acceder a ellas."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip ne conserve ni historique de photos, ni valeurs supprimées, ni extraits OCR, ni coordonnées de masquage. Rien de ce que vous traitez n’est conservé au-delà de la session en cours."
+            "value" : "PicStrip ne conserve aucun historique de photos. Les copies protégées pour la retouche expirent après 15 minutes et les exports temporaires après une heure. Leur suppression a lieu lorsque l’app ou l’extension peut y accéder."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip non conserva la cronologia delle foto, i valori rimossi, i frammenti di testo OCR o le coordinate degli oscuramenti. Nulla di ciò che elabori viene memorizzato oltre la sessione corrente."
+            "value" : "PicStrip non conserva una cronologia delle foto. Le copie protette per la modifica scadono dopo 15 minuti e le esportazioni temporanee dopo un’ora. Vengono eliminate quando l’app o l’estensione può accedervi."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStripは写真の履歴、削除した値、OCRの抜粋、マスクの座標を保持しません。処理した内容が現在のセッションを超えて保存されることはありません。"
+            "value" : "PicStripは写真の履歴を保存しません。保護された編集用コピーは15分後、一時的な書き出しは1時間後に期限が切れます。アプリまたは機能拡張がアクセスできるときに削除されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip은 사진 기록, 제거된 값, OCR 발췌, 가림 좌표를 보관하지 않습니다. 처리한 내용은 현재 세션이 끝나면 아무것도 남지 않습니다."
+            "value" : "PicStrip은 사진 기록을 보관하지 않습니다. 보호된 편집용 복사본은 15분 후, 임시 내보내기 파일은 1시간 후 만료됩니다. 앱이나 확장 프로그램이 접근할 수 있을 때 삭제됩니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip bewaart geen fotogeschiedenis, verwijderde waarden, OCR-fragmenten of coördinaten van afdekkingen. Er wordt niets over wat je verwerkt bewaard buiten de huidige sessie."
+            "value" : "PicStrip bewaart geen fotogeschiedenis. Beveiligde bewerkingskopieën verlopen na 15 minuten en tijdelijke exports na één uur. Ze worden verwijderd zodra de app of extensie erbij kan."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip nie przechowuje historii zdjęć, usuniętych wartości, fragmentów tekstu z OCR ani współrzędnych zamazań. Nic z tego, co przetwarzasz, nie jest zapamiętywane po zakończeniu sesji."
+            "value" : "PicStrip nie przechowuje historii zdjęć. Chronione kopie do edycji wygasają po 15 minutach, a tymczasowe eksporty po godzinie. Są usuwane, gdy aplikacja lub rozszerzenie może uzyskać do nich dostęp."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip não guarda histórico de fotos, valores removidos, trechos de OCR nem coordenadas de ocultação. Nada sobre o que você processa é armazenado além da sessão atual."
+            "value" : "O PicStrip não mantém um histórico de fotos. Cópias protegidas para edição expiram após 15 minutos e exportações temporárias após uma hora. A limpeza ocorre quando o app ou a extensão pode acessá-las."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip não guarda o histórico de fotografias, os valores removidos, os fragmentos de OCR nem as coordenadas das ocultações. Nada do que processa é armazenado além da sessão atual."
+            "value" : "O PicStrip não mantém um histórico de fotografias. As cópias protegidas para edição expiram após 15 minutos e as exportações temporárias após uma hora. A limpeza ocorre quando a aplicação ou extensão lhes pode aceder."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip sparar ingen bildhistorik, inga borttagna värden, inga OCR-utdrag och inga maskeringskoordinater. Inget om det du bearbetar lagras längre än den aktuella sessionen."
+            "value" : "PicStrip sparar ingen fotohistorik. Skyddade redigeringskopior upphör efter 15 minuter och tillfälliga exporter efter en timme. De rensas när appen eller tillägget kan komma åt dem."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip fotoğraf geçmişi, kaldırılan değerler, OCR alıntıları veya karartma koordinatları tutmaz. İşlediğiniz hiçbir şey geçerli oturumun ötesinde saklanmaz."
+            "value" : "PicStrip fotoğraf geçmişi tutmaz. Korumalı düzenleme kopyalarının süresi 15 dakika, geçici dışa aktarımların süresi bir saattir. Uygulama veya uzantı bunlara erişebildiğinde temizlenirler."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 不会保留照片记录、已移除的值、OCR 文本片段或遮盖坐标。你处理过的一切都不会在本次会话之后留存。"
+            "value" : "PicStrip不保留照片历史。受保护的编辑副本在15分钟后到期，临时导出文件在一小时后到期。当App或扩展能够访问这些文件时，会进行清理。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 不會保留照片記錄、已移除的數值、OCR 片段或遮蓋座標。你處理過的內容，都不會留存到本次工作階段之後。"
+            "value" : "PicStrip不保留照片記錄。受保護的編輯副本會在15分鐘後到期，暫存的輸出檔案會在一小時後到期。當App或延伸功能能存取這些檔案時，便會進行清理。"
           }
         }
       }
@@ -31710,106 +31810,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip 只為一個原則而打造：隱私。這個 App 的存在，就是為了幫你避免分享不想分享的內容。"
-          }
-        }
-      }
-    },
-    "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يعمل PicStrip بشكل كامل في وضع عدم الاتصال ولا يرسل صورك إلى أي مكان أبدًا. هناك تنزيل اختياري واحد: نموذج Apple الذي يعتمد عليه التحديد بالضغط، ولا يجلبه iOS إلا بعد موافقتك."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip funktioniert komplett offline und sendet deine Fotos niemals irgendwohin. Es gibt genau einen optionalen Download: das Apple-Modell hinter der Auswahl per Tippen, das iOS erst lädt, nachdem du zugestimmt hast."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip funciona completamente sin conexión y nunca envía tus fotos a ningún sitio. Existe una única descarga opcional: el modelo de Apple en el que se basa la selección con un toque, que iOS descarga solo después de que des tu aprobación."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip funciona completamente sin conexión y nunca envía tus fotos a ningún sitio. Existe una única descarga opcional: el modelo de Apple en el que se basa la selección con un toque, que iOS descarga solo después de que des tu aprobación."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip fonctionne entièrement hors ligne et n’envoie jamais vos photos où que ce soit. Un seul téléchargement facultatif existe : le modèle Apple sur lequel repose la sélection par toucher, qu’iOS récupère uniquement après votre accord."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip funziona completamente offline e non invia mai le tue foto da nessuna parte. Esiste un unico download facoltativo: il modello Apple alla base della selezione con un tocco, che iOS scarica solo dopo il tuo consenso."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStripは完全にオフラインで動作し、写真がどこかに送信されることは一切ありません。オプションのダウンロードが1つだけあります。タップして選択する機能を支えるAppleのモデルで、同意した場合にのみiOSが取得します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip은 완전히 오프라인으로 작동하며 사진을 어디로도 전송하지 않습니다. 선택 사항인 다운로드가 하나 있습니다. 탭하여 선택하는 기능에 사용되는 Apple 모델로, 동의한 경우에만 iOS가 가져옵니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip werkt volledig offline en stuurt je foto’s nooit ergens naartoe. Er is één optionele download: het Apple-model achter selecteren met een tik, dat iOS alleen ophaalt nadat je akkoord bent gegaan."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip działa całkowicie offline i nigdy nigdzie nie wysyła Twoich zdjęć. Jest jedno opcjonalne pobieranie: model firmy Apple obsługujący zaznaczanie stuknięciem, który iOS pobiera dopiero po wyrażeniu przez Ciebie zgody."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip funciona completamente offline e nunca envia suas fotos para lugar nenhum. Existe um único download opcional: o modelo da Apple por trás da seleção por toque, que o iOS busca apenas depois que você concorda."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "O PicStrip funciona totalmente offline e nunca envia as suas fotografias para lado nenhum. Existe uma única transferência opcional: o modelo da Apple por trás da seleção por toque, que o iOS obtém apenas depois de dar o seu consentimento."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip fungerar helt offline och skickar aldrig dina bilder någonstans. Det finns en enda valfri hämtning: Apple-modellen bakom markering med ett tryck, som iOS hämtar först när du har godkänt det."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip tamamen çevrimdışıdır ve fotoğraflarınızı hiçbir yere göndermez. Yalnızca bir isteğe bağlı indirme vardır: dokunarak seçme özelliğinin arkasındaki Apple modeli; iOS bunu yalnızca siz onayladıktan sonra indirir."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip 完全离线运行，绝不会将你的照片发送到任何地方。仅有一项可选下载：轻点选择功能所依赖的 Apple 模型，iOS 只会在你同意后获取。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "PicStrip 完全離線運作，絕不會將你的照片傳送到任何地方。只有一項選用的下載：點一下選取功能背後的 Apple 模型，iOS 只會在你同意後取得。"
           }
         }
       }
@@ -43300,102 +43300,102 @@
         }
       }
     },
-    "Tapping an object to redact it uses an Apple model that iOS downloads once. Only the model is downloaded — your photos never leave your device." : {
+    "Tap-to-select uses an Apple model downloaded with your permission. The model analyzes your photo on this device." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يستخدم الضغط على كائن لحجبه نموذجًا من Apple يُنزّله iOS مرة واحدة. لا يتم تنزيل سوى النموذج — ولا تغادر صورك جهازك أبدًا."
+            "value" : "يستخدم التحديد بالنقر نموذجًا من Apple يُنزَّل بإذنك. يحلل النموذج صورتك على هذا الجهاز."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wenn du ein Objekt antippst, um es zu schwärzen, wird ein Modell von Apple verwendet, das iOS einmalig lädt. Geladen wird nur das Modell – deine Fotos verlassen dein Gerät nie."
+            "value" : "Die Objektauswahl per Tippen verwendet ein Apple-Modell, das mit deiner Zustimmung heruntergeladen wird. Es analysiert dein Foto auf diesem Gerät."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tocar un objeto para censurarlo utiliza un modelo de Apple que iOS descarga una sola vez. Solo se descarga el modelo: tus fotos nunca salen de tu dispositivo."
+            "value" : "La selección mediante un toque utiliza un modelo de Apple que se descarga con tu permiso. El modelo analiza la foto en este dispositivo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tocar un objeto para censurarlo utiliza un modelo de Apple que iOS descarga una sola vez. Solo se descarga el modelo: tus fotos nunca salen de tu dispositivo."
+            "value" : "La selección mediante un toque utiliza un modelo de Apple que se descarga con tu permiso. El modelo analiza la foto en este dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toucher un objet pour le masquer fait appel à un modèle Apple qu’iOS télécharge une seule fois. Seul le modèle est téléchargé : vos photos ne quittent jamais votre appareil."
+            "value" : "La sélection par toucher utilise un modèle Apple téléchargé avec votre accord. Il analyse votre photo sur cet appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Toccare un oggetto per oscurarlo utilizza un modello Apple che iOS scarica una sola volta. Viene scaricato solo il modello: le tue foto non lasciano mai il dispositivo."
+            "value" : "La selezione con un tocco usa un modello Apple scaricato con il tuo consenso. Il modello analizza la foto su questo dispositivo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "被写体をタップしてマスクする機能では、iOSが一度だけダウンロードするAppleのモデルを使用します。ダウンロードされるのはモデルだけで、写真がデバイスから外に出ることはありません。"
+            "value" : "タップによる選択には、許可を得てダウンロードするAppleのモデルを使います。写真の解析はこの端末上で行われます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "피사체를 탭하여 가리는 기능은 iOS가 한 번만 다운로드하는 Apple 모델을 사용합니다. 다운로드되는 것은 모델뿐이며, 사진은 절대 기기를 벗어나지 않습니다."
+            "value" : "탭하여 선택하기는 사용자의 허락을 받아 다운로드한 Apple 모델을 사용합니다. 모델은 이 기기에서 사진을 분석합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Als je op een object tikt om het af te dekken, wordt een Apple-model gebruikt dat iOS één keer downloadt. Alleen het model wordt gedownload: je foto’s verlaten je apparaat nooit."
+            "value" : "Selecteren door te tikken gebruikt een Apple-model dat met jouw toestemming wordt gedownload. Het model analyseert je foto op dit apparaat."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Stuknięcie obiektu, aby go zamazać, korzysta z modelu firmy Apple, który iOS pobiera jeden raz. Pobierany jest wyłącznie model – Twoje zdjęcia nigdy nie opuszczają urządzenia."
+            "value" : "Zaznaczanie dotknięciem korzysta z modelu Apple pobieranego za Twoją zgodą. Model analizuje zdjęcie na tym urządzeniu."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tocar em um objeto para ocultá-lo usa um modelo da Apple que o iOS baixa uma única vez. Apenas o modelo é baixado — suas fotos nunca saem do seu dispositivo."
+            "value" : "A seleção por toque usa um modelo da Apple baixado com sua permissão. O modelo analisa a foto neste dispositivo."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tocar num objeto para o ocultar utiliza um modelo da Apple que o iOS transfere uma única vez. Apenas o modelo é transferido — as suas fotografias nunca saem do seu dispositivo."
+            "value" : "A seleção por toque utiliza um modelo da Apple descarregado com a sua permissão. O modelo analisa a fotografia neste dispositivo."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Att trycka på ett objekt för att maskera det använder en Apple-modell som iOS hämtar en gång. Endast modellen hämtas – dina bilder lämnar aldrig enheten."
+            "value" : "Val genom tryck använder en Apple-modell som hämtas med ditt tillstånd. Modellen analyserar fotot på den här enheten."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bir nesneye dokunarak karartma, iOS’un bir kez indirdiği bir Apple modelini kullanır. Yalnızca model indirilir; fotoğraflarınız cihazınızdan asla çıkmaz."
+            "value" : "Dokunarak seçme, izninizle indirilen bir Apple modeli kullanır. Model fotoğrafınızı bu aygıtta analiz eder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "轻点物体将其遮盖会使用一个 Apple 模型，iOS 只会下载一次。下载的只有模型，你的照片绝不会离开你的设备。"
+            "value" : "轻点选择使用经你允许下载的Apple模型。该模型在此设备上分析照片。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "點一下物體來遮蓋會使用一個 Apple 模型，iOS 只會下載一次。下載的只有模型，你的照片絕不會離開你的裝置。"
+            "value" : "點一下選取使用經你允許下載的Apple模型。該模型會在此裝置上分析照片。"
           }
         }
       }
@@ -44619,102 +44619,102 @@
         }
       }
     },
-    "This image exceeds the editor's 24 megapixel limit. Make a copy up to 12 megapixels to review and share. Your original stays unchanged." : {
+    "This image exceeds the editor's 25 megapixel limit. Make a copy up to 12 megapixels to review and share. Your original stays unchanged." : {
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تتجاوز هذه الصورة حد المحرر البالغ 24 ميغابكسل. أنشئ نسخة حتى 12 ميغابكسل للمراجعة والمشاركة. يبقى الأصل دون تغيير."
+            "value" : "تتجاوز هذه الصورة حد المحرر البالغ 25 ميغابكسل. أنشئ نسخة حتى 12 ميغابكسل للمراجعة والمشاركة. يبقى الأصل دون تغيير."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses Bild überschreitet die 24-Megapixel-Grenze des Editors. Erstelle eine Kopie mit bis zu 12 Megapixeln zum Prüfen und Teilen. Das Original bleibt unverändert."
+            "value" : "Dieses Bild überschreitet die 25-Megapixel-Grenze des Editors. Erstelle eine Kopie mit bis zu 12 Megapixeln zum Prüfen und Teilen. Das Original bleibt unverändert."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta imagen supera el límite de 24 megapíxeles del editor. Crea una copia de hasta 12 megapíxeles para revisar y compartir. El original no cambia."
+            "value" : "Esta imagen supera el límite de 25 megapíxeles del editor. Crea una copia de hasta 12 megapíxeles para revisar y compartir. El original no cambia."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta imagen supera el límite de 24 megapíxeles del editor. Crea una copia de hasta 12 megapíxeles para revisar y compartir. El original no cambia."
+            "value" : "Esta imagen supera el límite de 25 megapíxeles del editor. Crea una copia de hasta 12 megapíxeles para revisar y compartir. El original no cambia."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette image dépasse la limite de 24 mégapixels de l’éditeur. Créez une copie jusqu’à 12 mégapixels pour la vérifier et la partager. L’original reste inchangé."
+            "value" : "Cette image dépasse la limite de 25 mégapixels de l’éditeur. Créez une copie jusqu’à 12 mégapixels pour la vérifier et la partager. L’original reste inchangé."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questa immagine supera il limite di 24 megapixel dell’editor. Crea una copia fino a 12 megapixel da controllare e condividere. L’originale resta invariato."
+            "value" : "Questa immagine supera il limite di 25 megapixel dell’editor. Crea una copia fino a 12 megapixel da controllare e condividere. L’originale resta invariato."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "この画像は編集画面の上限2400万画素を超えています。確認と共有のため、最大1200万画素のコピーを作成してください。元画像は変更されません。"
+            "value" : "この画像は編集画面の上限2500万画素を超えています。確認と共有のため、最大1200万画素のコピーを作成してください。元画像は変更されません。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 이미지는 편집기의 2400만 화소 한도를 초과합니다. 검토 및 공유를 위해 최대 1200만 화소 사본을 만드세요. 원본은 변경되지 않습니다."
+            "value" : "이 이미지는 편집기의 2500만 화소 한도를 초과합니다. 검토 및 공유를 위해 최대 1200만 화소 사본을 만드세요. 원본은 변경되지 않습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deze afbeelding overschrijdt de editorlimiet van 24 megapixel. Maak een kopie tot 12 megapixel om te controleren en te delen. Het origineel blijft ongewijzigd."
+            "value" : "Deze afbeelding overschrijdt de editorlimiet van 25 megapixel. Maak een kopie tot 12 megapixel om te controleren en te delen. Het origineel blijft ongewijzigd."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Obraz przekracza limit edytora wynoszący 24 megapiksele. Utwórz kopię do 12 megapikseli do sprawdzenia i udostępnienia. Oryginał pozostanie bez zmian."
+            "value" : "Obraz przekracza limit edytora wynoszący 25 megapiksele. Utwórz kopię do 12 megapikseli do sprawdzenia i udostępnienia. Oryginał pozostanie bez zmian."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta imagem excede o limite de 24 megapixels do editor. Crie uma cópia de até 12 megapixels para revisar e compartilhar. O original permanece inalterado."
+            "value" : "Esta imagem excede o limite de 25 megapixels do editor. Crie uma cópia de até 12 megapixels para revisar e compartilhar. O original permanece inalterado."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Esta imagem excede o limite de 24 megapixels do editor. Crie uma cópia de até 12 megapixels para revisar e partilhar. O original permanece inalterado."
+            "value" : "Esta imagem excede o limite de 25 megapixels do editor. Crie uma cópia de até 12 megapixels para revisar e partilhar. O original permanece inalterado."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bilden överskrider redigerarens gräns på 24 megapixlar. Skapa en kopia på upp till 12 megapixlar för att granska och dela. Originalet förblir oförändrat."
+            "value" : "Bilden överskrider redigerarens gräns på 25 megapixlar. Skapa en kopia på upp till 12 megapixlar för att granska och dela. Originalet förblir oförändrat."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bu görüntü düzenleyicinin 24 megapiksel sınırını aşıyor. İncelemek ve paylaşmak için en fazla 12 megapiksellik bir kopya oluşturun. Özgün görüntü değişmez."
+            "value" : "Bu görüntü düzenleyicinin 25 megapiksel sınırını aşıyor. İncelemek ve paylaşmak için en fazla 12 megapiksellik bir kopya oluşturun. Özgün görüntü değişmez."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这张图像超过编辑器的2400万像素上限。请创建最高1200万像素的副本以供检查和分享。原图不会改变。"
+            "value" : "这张图像超过编辑器的2500万像素上限。请创建最高1200万像素的副本以供检查和分享。原图不会改变。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這張影像超過編輯器的2400萬像素上限。請製作最高1200萬像素的拷貝以供檢查和分享。原始影像不會改變。"
+            "value" : "這張影像超過編輯器的2500萬像素上限。請製作最高1200萬像素的拷貝以供檢查和分享。原始影像不會改變。"
           }
         }
       }

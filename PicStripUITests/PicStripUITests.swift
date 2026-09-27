@@ -506,8 +506,13 @@ final class PicStripUITests: XCTestCase {
 
     private func reveal(_ element: XCUIElement, in app: XCUIApplication) {
         for _ in 0..<6 where !element.isHittable {
-            // Scroll at the edge so the zoomable image does not consume the pan.
-            app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.8))
+            // Start inside the scrolling content, above any fixed Share footer.
+            // Keep to the edge so the zoomable image does not consume the pan.
+            let share = app.buttons["shareCleanedImageButton"]
+            let startY = share.exists
+                ? min(0.8, (share.frame.minY - 24) / app.frame.height)
+                : 0.8
+            app.coordinate(withNormalizedOffset: CGVector(dx: 0.94, dy: startY))
                 .press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.3)))
         }
     }

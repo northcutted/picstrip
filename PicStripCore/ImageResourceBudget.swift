@@ -7,9 +7,11 @@ nonisolated struct ImageResourceBudget: Sendable {
     let maximumPixels: Double
     let maximumBytes: Int
 
-    static let editor = ImageResourceBudget(maximumPixels: 24_000_000, maximumBytes: 128 * 1_024 * 1_024)
-    static let background = ImageResourceBudget(maximumPixels: 12_000_000, maximumBytes: 64 * 1_024 * 1_024)
-    static let shareExtension = ImageResourceBudget(maximumPixels: 6_000_000, maximumBytes: 48 * 1_024 * 1_024)
+    // Nominal camera resolutions are rounded: 5712×4284 is 24.47 MP and
+    // 4032×3024 is 12.19 MP. Admit those without forcing a smaller copy.
+    static let editor = ImageResourceBudget(maximumPixels: 25_000_000, maximumBytes: 128 * 1_024 * 1_024)
+    static let background = ImageResourceBudget(maximumPixels: 13_000_000, maximumBytes: 64 * 1_024 * 1_024)
+    static let shareExtension = ImageResourceBudget(maximumPixels: 6_500_000, maximumBytes: 48 * 1_024 * 1_024)
 
     enum AdmissionError: LocalizedError {
         case invalidImage, fileTooLarge, resolutionTooLarge
@@ -38,11 +40,12 @@ nonisolated struct ImageResourceBudget: Sendable {
     }
 
     /// Only called after an explicit user choice. Metadata is preserved for review.
-    static func smallerCopy(_ data: Data, maximumPixels: Double = background.maximumPixels) throws -> Data {
+    static func smallerCopy(_ data: Data, maximumPixels: Double = 12_000_000) throws -> Data {
         guard let size = ImageProcessor.pixelSize(of: data), size.width > 0, size.height > 0 else {
             throw AdmissionError.invalidImage
         }
-        let factor = min(1, sqrt(maximumPixels / (size.width * size.height)))
+        // Leave a small margin for ImageIO's integer rounding of both edges.
+        let factor = min(1, sqrt(maximumPixels * 0.995 / (size.width * size.height)))
         let edge = floor(max(size.width, size.height) * factor)
         guard let image = ImageProcessor.downsampledUIImage(from: data, maxPixelDimension: edge) else {
             throw AdmissionError.invalidImage

@@ -212,7 +212,7 @@ struct ContentView: View {
             Button("Use smaller copy") { Task { await viewModel.useSmallerCopy() } }
             Button("Cancel", role: .cancel) { viewModel.discardLargeImage() }
         } message: {
-            Text("This image exceeds the editor's 24 megapixel limit. Make a copy up to 12 megapixels to review and share. Your original stays unchanged.")
+            Text("This image exceeds the editor's 25 megapixel limit. Make a copy up to 12 megapixels to review and share. Your original stays unchanged.")
         }
         // ── Files app picker ──────────────────────────────────────────────
         .fileImporter(
@@ -286,7 +286,7 @@ struct ContentView: View {
             }
             Button("Not Now", role: .cancel) { viewModel.declineObjectModelDownload() }
         } message: {
-            Text("Tapping an object to redact it uses an Apple model that iOS downloads once. Only the model is downloaded — your photos never leave your device.")
+            Text("Tap-to-select uses an Apple model downloaded with your permission. The model analyzes your photo on this device.")
         }
         .alert(
             "Object Selection",

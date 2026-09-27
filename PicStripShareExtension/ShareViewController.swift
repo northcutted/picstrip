@@ -266,7 +266,7 @@ class ShareViewController: UIViewController {
         var input = rawData
         do { try budget.validate(input) } catch ImageResourceBudget.AdmissionError.resolutionTooLarge {
             guard reduceLargeImages else { throw ImageResourceBudget.AdmissionError.resolutionTooLarge }
-            input = try ImageResourceBudget.smallerCopy(input, maximumPixels: budget.maximumPixels)
+            input = try ImageResourceBudget.smallerCopy(input, maximumPixels: redactPII ? 6_000_000 : 12_000_000)
         }
         let result = try await ExportPipeline.clean(
             input,

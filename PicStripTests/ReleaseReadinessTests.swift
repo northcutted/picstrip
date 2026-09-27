@@ -32,6 +32,28 @@ final class ReleaseReadinessTests: XCTestCase {
         XCTAssertTrue(ImageProcessor.readAllFields(from: data).contains { $0.category == "GPS" })
     }
 
+    func testNominalCameraResolutionsFitTheirAdmissionBudgets() throws {
+        let cases: [(ImageResourceBudget, Int, Int)] = [
+            (.editor, 5712, 4284), (.background, 4032, 3024), (.shareExtension, 2880, 2160)
+        ]
+        for (budget, width, height) in cases {
+            try autoreleasepool {
+                let pixels = Data(repeating: 127, count: width * height)
+                let provider = try XCTUnwrap(CGDataProvider(data: pixels as CFData))
+                let image = try XCTUnwrap(CGImage(
+                    width: width, height: height, bitsPerComponent: 8, bitsPerPixel: 8, bytesPerRow: width,
+                    space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGBitmapInfo(rawValue: 0),
+                    provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent
+                ))
+                let bytes = NSMutableData()
+                let encoder = try XCTUnwrap(CGImageDestinationCreateWithData(bytes, UTType.png.identifier as CFString, 1, nil))
+                CGImageDestinationAddImage(encoder, image, nil)
+                XCTAssertTrue(CGImageDestinationFinalize(encoder))
+                XCTAssertNoThrow(try budget.validate(bytes as Data), "Nominal camera dimensions \(width)×\(height) must fit")
+            }
+        }
+    }
+
     func testSampleCanBeReviewedAfterManualRegionEdit() async throws {
         let model = ScrubberViewModel(scanImage: { _ in [] })
         await model.loadDemo()

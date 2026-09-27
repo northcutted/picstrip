@@ -11,6 +11,7 @@ struct PreSaveReviewView: View {
     @State private var showAdvanced: Bool = false
     @State private var showFullPreview = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var auditURL: URL?
 
     // MARK: - Derived counts (source of truth: original image only)
@@ -154,11 +155,13 @@ struct PreSaveReviewView: View {
         VStack(spacing: 12) {
 
             HStack(alignment: .top, spacing: 10) {
-                Image(systemName: "shield.fill")
-                    .font(.title3)
-                    .foregroundStyle(.green)
-                    .padding(.top, 1)
-                    .accessibilityHidden(true)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    Image(systemName: "shield.fill")
+                        .font(.title3)
+                        .foregroundStyle(.green)
+                        .padding(.top, 1)
+                        .accessibilityHidden(true)
+                }
 
                 if totalRemovalCount == 0 {
                     Text("No changes selected")
@@ -175,6 +178,7 @@ struct PreSaveReviewView: View {
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .labelStyle(ReviewLabelStyle())
                         }
 
                         if visualRedactionCount > 0 {
@@ -184,6 +188,7 @@ struct PreSaveReviewView: View {
                             )
                             .font(.caption)
                             .foregroundStyle(.secondary)
+                            .labelStyle(ReviewLabelStyle())
                         }
                     }
                 }
@@ -211,6 +216,7 @@ struct PreSaveReviewView: View {
                         showFullPreview = true
                     } label: {
                         Label("Inspect full image", systemImage: "arrow.up.left.and.arrow.down.right")
+                            .labelStyle(ReviewLabelStyle())
                             .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
@@ -234,6 +240,7 @@ struct PreSaveReviewView: View {
                 )
             ) {
                 Label("Share cleaned image", systemImage: "square.and.arrow.up")
+                    .labelStyle(ReviewLabelStyle())
                     .font(.body.weight(.semibold))
                     .frame(maxWidth: .infinity, minHeight: 44)
             }
@@ -522,6 +529,21 @@ struct ActivityView: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uvc: UIActivityViewController, context: Context) {}
+}
+
+/// At accessibility sizes, decorative icons should not consume the text column.
+private struct ReviewLabelStyle: LabelStyle {
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
+    func makeBody(configuration: Configuration) -> some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            configuration.title
+                .lineLimit(nil)
+                .fixedSize(horizontal: false, vertical: true)
+        } else {
+            Label(configuration).labelStyle(.titleAndIcon)
+        }
+    }
 }
 
 private struct RedactionSummary {
