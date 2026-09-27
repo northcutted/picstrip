@@ -17,12 +17,19 @@ import XCTest
 ///   05_Sample — fictional sample without photo-library access
 @MainActor
 final class PicStripUITests: XCTestCase {
+    private var isRecordingIssue = false
 
     override func setUpWithError() throws {
         continueAfterFailure = false
     }
 
     override func record(_ issue: XCTIssue) {
+        guard !isRecordingIssue else {
+            super.record(issue)
+            return
+        }
+        isRecordingIssue = true
+        defer { isRecordingIssue = false }
         // XCTest already captures failure screenshots. Requesting another one
         // here can replace the original failure with a screenshot timeout.
         let tree = XCTAttachment(string: XCUIApplication().debugDescription)
@@ -465,6 +472,30 @@ final class PicStripUITests: XCTestCase {
         revealOriginal.tap()
         XCTAssertTrue(app.navigationBars["Final preview"].exists)
         attachScreen("09_FullPreview")
+    }
+
+    func testSampleReviewAtLargestTextSize() throws {
+        let app = englishApp()
+        app.launchArguments += ["-UIPreferredContentSizeCategoryName", UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launch()
+        let sample = app.buttons["tryDemoButton"]
+        XCTAssertTrue(sample.waitForExistence(timeout: 15))
+        reveal(sample, in: app)
+        sample.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 30))
+        let review = app.buttons["saveButton"]
+        reveal(review, in: app)
+        XCTAssertTrue(review.isHittable)
+        review.tap()
+        let inspect = app.buttons["inspectFullImageButton"]
+        XCTAssertTrue(inspect.waitForExistence(timeout: 15))
+        reveal(inspect, in: app)
+        XCTAssertTrue(inspect.isHittable)
+        XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable)
+        attachScreen("10_LargestTextReview")
+        inspect.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
     }
 
     private func englishApp() -> XCUIApplication {

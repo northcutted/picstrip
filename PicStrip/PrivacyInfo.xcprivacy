@@ -5,11 +5,11 @@
     <!--
         PicStrip Privacy Manifest
         ─────────────────────────
-        PicStrip processes images entirely on-device. It does not transmit any
-        data to external servers, does not use advertising or analytics SDKs,
-        and does not track users in any way. Face detection uses temporary
-        on-device face rectangles only; no face data is collected, stored,
-        transmitted, or shared.
+        PicStrip performs image analysis and redaction on-device, without an
+        app-operated upload service, advertising SDKs or analytics SDKs.
+        Face-detection rectangles remain in the current editing session.
+        Users can save or share images with destinations of their choice.
+        Protected temporary export and extension-handoff files expire.
 
         Required reason API usage is documented below per Apple's mandate.
     -->
@@ -18,7 +18,7 @@
     <key>NSPrivacyTracking</key>
     <false/>
 
-    <!-- No data is collected and sent off-device. -->
+    <!-- No developer or third-party SDK data collection. -->
     <key>NSPrivacyCollectedDataTypes</key>
     <array/>
 
@@ -29,13 +29,13 @@
     <!--
         Required-reason APIs used by PicStrip:
 
-        File timestamp APIs (POSIX / Foundation) — used by ImageIO internally
-        when encoding image files. Reason: C617.1 (file creation/modification
-        date is written as part of standard image encoding; not used to derive
-        a fingerprint or identify the user).
+        C617.1: timestamps and file sizes inside the app/app-group containers
+        support protected-file expiry, bounded reads and image encoding.
+        3B52.1: file sizes of images explicitly chosen through system pickers
+        are checked before reading. File metadata is not used to fingerprint.
 
-        PicStrip does not read or write UserDefaults: nothing about processed
-        photos is persisted, and App Shortcuts reach the UI in-process.
+        PicStrip does not read or write UserDefaults. Editing sessions have no
+        persistent history; private handoff/export files have bounded lifetimes.
     -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>
@@ -45,6 +45,7 @@
             <key>NSPrivacyAccessedAPITypeReasons</key>
             <array>
                 <string>C617.1</string>
+                <string>3B52.1</string>
             </array>
         </dict>
     </array>

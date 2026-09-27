@@ -3,9 +3,12 @@
 <plist version="1.0">
 <dict>
     <!--
-        The share extension processes images entirely on-device. Optional
-        face detection uses temporary on-device face rectangles only; no face
-        data is collected, stored, transmitted, or shared.
+        The extension processes images on-device. Face-detection rectangles
+        exist only during processing. Users choose whether to save a cleaned
+        image or hand the original to PicStrip for editing. The protected
+        app-group handoff expires after 15 minutes. No developer/SDK collection.
+        C617.1 covers private-file expiry and size admission; 3B52.1 covers
+        size admission for files explicitly shared by the user.
     -->
 
     <key>NSPrivacyTracking</key>
@@ -25,6 +28,7 @@
             <key>NSPrivacyAccessedAPITypeReasons</key>
             <array>
                 <string>C617.1</string>
+                <string>3B52.1</string>
             </array>
         </dict>
     </array>
