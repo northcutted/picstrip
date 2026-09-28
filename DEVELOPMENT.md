@@ -35,10 +35,10 @@ PicStrip/
 ├── CHANGELOG.md                # generated from Conventional Commits
 ├── Makefile                    # `make help` lists the local commands
 ├── PicStrip-Info.plist         # app Info.plist (usage descriptions, URL scheme)
-├── .releaserc.json             # semantic-release config
+├── .releaserc.json             # App version policy read by the pinned platform
 ├── .ruby-version               # Ruby version pin for rbenv
 ├── Gemfile / Gemfile.lock      # gem "fastlane", "~> 2.240"
-├── package.json / package-lock.json  # semantic-release + workflow policy tests
+├── package.json / package-lock.json  # Workflow policy and change-classification checks
 │
 ├── .github/
 │   ├── ios-release.json        # The release config everything reads: Xcode pins, devices, locales
