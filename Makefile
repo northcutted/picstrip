@@ -18,7 +18,7 @@ help:
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
 	@echo "  make build                        Build and export build/PicStrip.ipa"
-	@echo "  make metadata-only RELEASE_TAG=vX.Y.Z METADATA_COMMIT=<sha>  Run the verified metadata workflow"
+	@echo "  make metadata-only RELEASE_TAG=vX.Y.Z METADATA_COMMIT=<sha>  Stage metadata through Release"
 	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
 	@echo "  make localization-pseudo LANGUAGES=\"es fr\""
@@ -58,8 +58,13 @@ build:
 metadata-only:
 	@test -n "$(RELEASE_TAG)" || (echo "Set RELEASE_TAG to an immutable release"; exit 1)
 	@test -n "$(METADATA_COMMIT)" || (echo "Set METADATA_COMMIT to the reviewed full commit SHA"; exit 1)
-	gh workflow run metadata-only.yml --ref "$(RELEASE_TAG)" \
-		-f release_tag="$(RELEASE_TAG)" -f metadata_commit="$(METADATA_COMMIT)" -f submit_for_review="$(SUBMIT_FOR_REVIEW)"
+	@case "$(SUBMIT_FOR_REVIEW)" in \
+		false) release_action='Update store metadata' ;; \
+		true) release_action='Update metadata and request review' ;; \
+		*) echo "SUBMIT_FOR_REVIEW must be true or false"; exit 1 ;; \
+	esac; \
+	gh workflow run promote.yml --ref main \
+		-f action="$$release_action" -f source="$(RELEASE_TAG)" -f metadata_commit="$(METADATA_COMMIT)"
 
 audit-localization:
 	scripts/audit_localization_strings.sh

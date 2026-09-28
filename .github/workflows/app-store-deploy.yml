@@ -1,4 +1,4 @@
-name: App Store Deploy
+name: App Store Deploy (internal)
 on:
   create:
   release:
@@ -14,6 +14,10 @@ on:
         type: boolean
         default: true
         description: Request production approval after staging
+      metadata_commit:
+        type: string
+        default: ""
+        description: Recovery only; exact reviewed metadata commit
 permissions:
   contents: read
 concurrency:
@@ -26,6 +30,8 @@ jobs:
     timeout-minutes: 5
     outputs:
       release_tag: ${{ steps.release.outputs.release_tag }}
+      metadata_commit: ${{ steps.release.outputs.metadata_commit }}
+      submit: ${{ steps.release.outputs.submit }}
     steps:
       - name: Checkout protected configuration
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -33,24 +39,27 @@ jobs:
           ref: main
           persist-credentials: false
       - name: Load pinned deployment tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+        uses: northcutted/ios-release-workflows/actions/bootstrap@060db3e9c163ece5eb2836ac06344828b728bfe8
         with:
           config: .github/ios-release.json
-          revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+          revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
       - name: Resolve immutable release from protected ref
         id: release
         run: python3 "$IOS_RELEASE_ROOT/scripts/ci/deployment_ref.py" verify
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+          METADATA_COMMIT: ${{ inputs.metadata_commit }}
+          REQUEST_SUBMISSION: ${{ github.event_name != 'workflow_dispatch' || inputs.submit }}
   deploy:
     needs: resolve
-    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+    uses: northcutted/ios-release-workflows/.github/workflows/deploy.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
     with:
       config: .github/ios-release.json
-      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
       release_tag: ${{ needs.resolve.outputs.release_tag }}
-      submit: ${{ github.event_name != 'workflow_dispatch' || inputs.submit }}
+      metadata_commit: ${{ needs.resolve.outputs.metadata_commit }}
+      submit: ${{ needs.resolve.outputs.submit == 'true' }}
     permissions:
       contents: read
       actions: read

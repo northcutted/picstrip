@@ -8,8 +8,6 @@ on:
       - synchronize
       - reopened
       - ready_for_review
-      - labeled
-      - unlabeled
   workflow_dispatch:
     inputs:
       test_workers:
@@ -25,7 +23,26 @@ concurrency:
 permissions:
   contents: read
 jobs:
+  changes:
+    name: Select required checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      qa: ${{ steps.changes.outputs.qa }}
+      gems: ${{ steps.changes.outputs.gems }}
+      screenshots: ${{ steps.changes.outputs.screenshots }}
+      store: ${{ steps.changes.outputs.store }}
+    steps:
+      - name: Checkout comparison history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Classify changes conservatively
+        id: changes
+        run: node scripts/ci/changes.mjs
   policy:
+    needs: changes
     name: Workflow policy and release regression tests
     runs-on: ubuntu-24.04
     timeout-minutes: 30
@@ -35,11 +52,12 @@ jobs:
         with:
           persist-credentials: false
           fetch-depth: 1
+          lfs: ${{ needs.changes.outputs.store == 'true' }}
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+        uses: northcutted/ios-release-workflows/actions/bootstrap@060db3e9c163ece5eb2836ac06344828b728bfe8
         with:
           config: .github/ios-release.json
-          revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+          revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -55,17 +73,24 @@ jobs:
           npm run check:workflows
           npm run test:ci
           actionlint
+      - name: Validate changed store asset inventory
+        if: needs.changes.outputs.store == 'true'
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/evidence.py" screenshots fastlane/screenshots/processed --output "$RUNNER_TEMP/screenshots-manifest.json"
   qa:
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+    needs: changes
+    if: needs.changes.outputs.qa == 'true'
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
     with:
       config: .github/ios-release.json
-      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
     permissions:
       contents: read
   gems-macos:
+    needs: changes
+    if: needs.changes.outputs.gems == 'true'
     name: Locked gems on macOS
     runs-on: xcode-27
     timeout-minutes: 30
@@ -87,7 +112,8 @@ jobs:
       - name: Load locked developer Fastlane
         run: bundle exec ruby -e 'require "fastlane"'
   screenshots:
-    name: Optional screenshot smoke test
+    needs: changes
+    name: UI and screenshot smoke test
     runs-on: xcode-27
     timeout-minutes: 60
     steps:
@@ -97,10 +123,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+        uses: northcutted/ios-release-workflows/actions/bootstrap@060db3e9c163ece5eb2836ac06344828b728bfe8
         with:
           config: .github/ios-release.json
-          revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+          revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
       - name: Resolve screenshot simulators
         run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
       - name: Set up Ruby
@@ -136,25 +162,26 @@ jobs:
           compression-level: 0
           if-no-files-found: ignore
         if: failure()
-    if: contains(github.event.pull_request.labels.*.name, 'screenshots')
+    if: needs.changes.outputs.screenshots == 'true'
   gate:
     name: CI Gate
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     needs:
+      - changes
       - policy
       - qa
       - gems-macos
       - screenshots
     steps:
-      - name: Require every mandatory job to pass
-        run: |-
-          python3 - <<'PYCODE'
-          import json, os
-          jobs=json.loads(os.environ['JOBS'])
-          assert all(jobs[name]['result']=='success' for name in ['policy','qa','gems-macos']), jobs
-          assert jobs['screenshots']['result'] in ('success','skipped'), jobs
-          PYCODE
+      - name: Checkout gate policy
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Require selected checks and validate every skip
+        run: node scripts/ci/changes.mjs gate
         env:
           JOBS: ${{ toJSON(needs) }}
+          SELECTION: ${{ toJSON(needs.changes.outputs) }}
     if: always()

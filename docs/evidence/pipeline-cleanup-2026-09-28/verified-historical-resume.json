@@ -1,0 +1,17 @@
+{
+  "artifact_id": "10592175080",
+  "build_number": "77.1",
+  "candidate_id": "northcutted/picstrip:35466614779:1:2bcfa818a384cb129e346eab7cfb9948be0e8533db62006cd0ea64e16f57cef6",
+  "ipa_sha256": "2bcfa818a384cb129e346eab7cfb9948be0e8533db62006cd0ea64e16f57cef6",
+  "kind": "candidate",
+  "metadata_commit": "",
+  "operation": "app-store",
+  "processed_artifact_id": "10593360031",
+  "processed_sha256": "27f96c2044403db85de06ec588bbbcd8db3c9a1586d9e6442c6cfbd3528f9b0b",
+  "release_tag": "v1.7.0",
+  "resume_source": "https://github.com/northcutted/picstrip/actions/runs/35471442447",
+  "sha256": "2e2ad3b2a50dfb47d394f76d4d404ed6310fa797378176b0ae119e0c4f36778f",
+  "source_sha": "c042d27c17cb359c815dc0744f312c6edc00d2df",
+  "upload_adapter": "transporter",
+  "version": "1.7.0"
+}

@@ -6,11 +6,6 @@ updates:
       interval: weekly
   - package-ecosystem: npm
     directory: /
-    groups:
-      release-analysis:
-        patterns:
-          - "@semantic-release/*"
-          - "conventional-*"
     schedule:
       interval: weekly
   - package-ecosystem: bundler

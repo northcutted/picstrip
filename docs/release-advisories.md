@@ -2,6 +2,8 @@
 
 Reviewed 2026-09-19. The initial inventories contained 18 alerts in PicStrip and 18 in the workflow platform, covering the same locked release-tool dependency graph. These packages run in CI/developer tooling and are not embedded iOS libraries. Affected locked versions were confirmed; exploitability of each advisory against a supported release path was not established. No alerts were dismissed as false positives.
 
+The 2026-09-28 pipeline cleanup removed PicStrip's duplicate release-analysis implementation and npm dependency tree. Release-analysis dependencies, their grouped updates, and tests now belong to the pinned platform; PicStrip retains `.releaserc.json` as app-specific version policy. The inventories and remediation results below describe the earlier review.
+
 The remediation updates Fastlane to 2.240.1, Excon to 1.7.1, Faraday to 2.14.4, JWT to 3.3.0, JSON to 2.21.2, YAML to 2.9.1, and compatible npm transitive dependencies. `npm audit` reports zero vulnerabilities after resolution. The platform's Linux/macOS release contract tests and PicStrip's [signed preparation](https://github.com/northcutted/picstrip/actions/runs/35457372446) passed with these locks. The updated Ruby client also authenticated a read-only App Store Connect request.
 
 | Advisory | Package | PicStrip / platform alert | Assessment |
