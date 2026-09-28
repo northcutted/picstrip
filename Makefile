@@ -8,11 +8,13 @@ SUBMIT_FOR_REVIEW ?= false
 RELEASE_TAG ?=
 METADATA_COMMIT ?=
 
-.PHONY: help lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
+.PHONY: help docs check-docs lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
 	@echo ""
+	@echo "  make docs                         Regenerate the CI/CD reference (Node; no network)"
+	@echo "  make check-docs                   Check reference drift and CI/CD documentation links"
 	@echo "  make lint                         Run SwiftLint"
 	@echo "  make analyze                      Run xcodebuild static analysis"
 	@echo "  make test                         Run PicStripTests on the simulator"
@@ -32,6 +34,12 @@ help:
 	@echo "                                    Generate a comma-separated device subset"
 	@echo "  make process-screenshots          Frame + compose marketing PNGs from existing captures"
 	@echo "  make clean-screenshots            Remove generated screenshots and logs"
+
+docs:
+	npm run docs
+
+check-docs:
+	npm run check:docs
 
 lint:
 	$(FASTLANE) lint

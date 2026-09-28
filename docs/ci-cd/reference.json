@@ -1,0 +1,610 @@
+{
+  "schema_version": 1,
+  "scope": "Checked-in consumer configuration; excludes live service state and reusable workflow internals.",
+  "sources": [
+    ".github/ios-release.json",
+    ".github/ios-release-platform.json",
+    ".ruby-version",
+    "scripts/ci/changes.mjs",
+    ".github/workflows/app-store-deploy.yml",
+    ".github/workflows/main.yml",
+    ".github/workflows/observe.yml",
+    ".github/workflows/pr.yml",
+    ".github/workflows/promote.yml",
+    ".github/workflows/screenshots.yml"
+  ],
+  "platform": {
+    "repository": "northcutted/ios-release-workflows",
+    "revision": "060db3e9c163ece5eb2836ac06344828b728bfe8"
+  },
+  "configuration": {
+    "repository": "northcutted/picstrip",
+    "default_branch": "main",
+    "project": "PicStrip.xcodeproj",
+    "scheme": "PicStrip",
+    "xcode": {
+      "version": "27.0",
+      "build": "27A266a",
+      "path": "/Applications/Xcode_27.0.app/Contents/Developer",
+      "runtime": "27.0",
+      "sdk": "27.0"
+    },
+    "compatibility": {
+      "version": "26.6",
+      "build": "17F113",
+      "path": "/Applications/Xcode_26.6.app/Contents/Developer",
+      "runtime": "26.5",
+      "sdk": "26.5"
+    },
+    "test_device": "iPhone 17",
+    "test_targets": [
+      "PicStripTests"
+    ],
+    "qa_checks": [
+      "lint",
+      "localization",
+      "analyze",
+      "test",
+      "test-compatibility"
+    ],
+    "upload_adapter": "transporter",
+    "metadata_path": "fastlane/metadata",
+    "screenshots_path": "fastlane/screenshots/processed",
+    "locales": [
+      "en-US",
+      "ar-SA",
+      "de-DE",
+      "es-ES",
+      "es-MX",
+      "fr-FR",
+      "it",
+      "ja",
+      "ko",
+      "nl-NL",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "sv",
+      "tr",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "localization_locales": [
+      "ar",
+      "de",
+      "es",
+      "es-419",
+      "fr",
+      "it",
+      "ja",
+      "ko",
+      "nl",
+      "pl",
+      "pt-BR",
+      "pt-PT",
+      "sv",
+      "tr",
+      "zh-Hans",
+      "zh-Hant"
+    ],
+    "screenshot_devices": [
+      "iPhone 18 Pro Max",
+      "iPad Pro 13-inch (M5)"
+    ],
+    "screens": [
+      "01_FullPreview",
+      "02_RedactionEditor",
+      "03_Metadata",
+      "04_ReviewAndShare",
+      "05_Sample"
+    ],
+    "replacement_release": {
+      "version": "1.7.0",
+      "source_tag": "v1.7.0",
+      "build_number": "77.1",
+      "app_store_build_id": "043d3495-15f2-4955-9a20-5dbf97f072d1"
+    },
+    "app_store": {
+      "release_type": "AFTER_APPROVAL",
+      "phased_release": true,
+      "testflight_groups": []
+    },
+    "developer_ruby": "3.4.10",
+    "expected_screenshots": 170
+  },
+  "change_examples": [
+    {
+      "path": "docs/release-pipeline.md",
+      "qa": false,
+      "gems": false,
+      "screenshots": false,
+      "prepare": false,
+      "store": false
+    },
+    {
+      "path": "fastlane/metadata/en-US/description.txt",
+      "qa": false,
+      "gems": false,
+      "screenshots": false,
+      "prepare": true,
+      "store": true
+    },
+    {
+      "path": "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+      "qa": false,
+      "gems": false,
+      "screenshots": false,
+      "prepare": true,
+      "store": true
+    },
+    {
+      "path": "PicStrip/ContentView.swift",
+      "qa": true,
+      "gems": false,
+      "screenshots": true,
+      "prepare": true,
+      "store": false
+    },
+    {
+      "path": "PicStripTests/ImageProcessorTests.swift",
+      "qa": true,
+      "gems": false,
+      "screenshots": false,
+      "prepare": true,
+      "store": false
+    },
+    {
+      "path": ".github/workflows/pr.yml",
+      "qa": true,
+      "gems": true,
+      "screenshots": true,
+      "prepare": true,
+      "store": true
+    },
+    {
+      "path": "unknown/new-file",
+      "qa": true,
+      "gems": true,
+      "screenshots": true,
+      "prepare": true,
+      "store": true
+    }
+  ],
+  "workflows": [
+    {
+      "file": ".github/workflows/app-store-deploy.yml",
+      "name": "App Store Deploy (internal)",
+      "triggers": {
+        "create": null,
+        "release": {
+          "types": [
+            "published"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "inputs": {
+        "release_tag": {
+          "type": "string",
+          "required": true,
+          "description": "Immutable release tag; run on its release or protected deployment tag"
+        },
+        "submit": {
+          "type": "boolean",
+          "default": true,
+          "description": "Request production approval after staging"
+        },
+        "metadata_commit": {
+          "type": "string",
+          "default": "",
+          "description": "Recovery only; exact reviewed metadata commit"
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "app-store-deploy-${{ github.ref }}",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "resolve",
+          "name": "resolve",
+          "needs": [],
+          "condition": "github.event_name != 'create' || (github.event.ref_type == 'tag' && contains(github.ref_name, '-deploy-'))",
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 5,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "deploy",
+          "name": "deploy",
+          "needs": [
+            "resolve"
+          ],
+          "condition": null,
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/deploy.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "environment": null,
+          "timeout_minutes": null,
+          "permissions": {
+            "contents": "read",
+            "actions": "read",
+            "id-token": "write",
+            "attestations": "write",
+            "artifact-metadata": "write"
+          },
+          "secret_names": [
+            "APP_STORE_CONNECT_API_KEY_CONTENT",
+            "APP_STORE_CONNECT_API_KEY_ID",
+            "APP_STORE_CONNECT_API_KEY_ISSUER_ID"
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/main.yml",
+      "name": "Release Prep",
+      "triggers": {
+        "push": {
+          "branches": [
+            "main"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "inputs": {},
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "release-prep-main",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "changes",
+          "name": "Select release inputs",
+          "needs": [],
+          "condition": null,
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 5,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "prepare",
+          "name": "prepare",
+          "needs": [
+            "changes"
+          ],
+          "condition": "needs.changes.outputs.prepare == 'true'",
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/prepare.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "environment": null,
+          "timeout_minutes": null,
+          "permissions": {
+            "contents": "write",
+            "actions": "read",
+            "id-token": "write",
+            "attestations": "write",
+            "artifact-metadata": "write"
+          },
+          "secret_names": [
+            "MATCH_PASSWORD",
+            "MATCH_SSH_PRIVATE_KEY"
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/observe.yml",
+      "name": "Release Maintenance",
+      "triggers": {
+        "schedule": [
+          {
+            "cron": "17 */6 * * *"
+          }
+        ],
+        "workflow_dispatch": {}
+      },
+      "inputs": {
+        "action": {
+          "description": "Maintenance action",
+          "type": "choice",
+          "options": [
+            "App Store status",
+            "Inspect release controls"
+          ],
+          "default": "App Store status"
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "app-store-observe",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "observe",
+          "name": "observe",
+          "needs": [],
+          "condition": "vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && (github.event_name == 'schedule' || inputs.action == 'App Store status')",
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/observe.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "environment": null,
+          "timeout_minutes": null,
+          "permissions": {
+            "contents": "read",
+            "actions": "read",
+            "attestations": "read"
+          },
+          "secret_names": [
+            "APP_STORE_CONNECT_API_KEY_CONTENT",
+            "APP_STORE_CONNECT_API_KEY_ID",
+            "APP_STORE_CONNECT_API_KEY_ISSUER_ID"
+          ]
+        },
+        {
+          "id": "inspect",
+          "name": "inspect",
+          "needs": [],
+          "condition": "github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'Inspect release controls'",
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": "release-publishing",
+          "timeout_minutes": 5,
+          "permissions": null,
+          "secret_names": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/pr.yml",
+      "name": "PR Checks",
+      "triggers": {
+        "pull_request": {
+          "branches": [
+            "main"
+          ],
+          "types": [
+            "opened",
+            "synchronize",
+            "reopened",
+            "ready_for_review"
+          ]
+        },
+        "workflow_dispatch": {}
+      },
+      "inputs": {
+        "test_workers": {
+          "type": "choice",
+          "options": [
+            "1",
+            "2"
+          ],
+          "default": "1",
+          "description": "Benchmark only; production remains serial until five-run acceptance"
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "pr-${{ github.event.pull_request.number || github.ref }}",
+        "cancel-in-progress": true
+      },
+      "jobs": [
+        {
+          "id": "changes",
+          "name": "Select required checks",
+          "needs": [],
+          "condition": null,
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 5,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "policy",
+          "name": "Workflow policy and release regression tests",
+          "needs": [
+            "changes"
+          ],
+          "condition": null,
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 30,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "qa",
+          "name": "qa",
+          "needs": [
+            "changes"
+          ],
+          "condition": "needs.changes.outputs.qa == 'true'",
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/ci.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "environment": null,
+          "timeout_minutes": null,
+          "permissions": {
+            "contents": "read"
+          },
+          "secret_names": []
+        },
+        {
+          "id": "gems-macos",
+          "name": "Locked gems on macOS",
+          "needs": [
+            "changes"
+          ],
+          "condition": "needs.changes.outputs.gems == 'true'",
+          "runner": "xcode-27",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 30,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "screenshots",
+          "name": "UI and screenshot smoke test",
+          "needs": [
+            "changes"
+          ],
+          "condition": "needs.changes.outputs.screenshots == 'true'",
+          "runner": "xcode-27",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 60,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "gate",
+          "name": "CI Gate",
+          "needs": [
+            "changes",
+            "policy",
+            "qa",
+            "gems-macos",
+            "screenshots"
+          ],
+          "condition": "always()",
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 30,
+          "permissions": null,
+          "secret_names": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/promote.yml",
+      "name": "Release",
+      "triggers": {
+        "workflow_dispatch": {}
+      },
+      "inputs": {
+        "action": {
+          "description": "Release action",
+          "type": "choice",
+          "options": [
+            "Upload to TestFlight",
+            "Prepare App Store submission",
+            "Update store metadata",
+            "Update metadata and request review"
+          ],
+          "default": "Upload to TestFlight",
+          "required": true
+        },
+        "source": {
+          "description": "Preparation or previous TestFlight run URL/ID; immutable release tag for metadata",
+          "type": "string",
+          "required": true
+        },
+        "metadata_commit": {
+          "description": "Metadata actions only; exact reviewed commit, or blank for this main revision",
+          "type": "string",
+          "default": ""
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "promote-main",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "promote",
+          "name": "promote",
+          "needs": [],
+          "condition": null,
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/release.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "environment": null,
+          "timeout_minutes": null,
+          "permissions": {
+            "contents": "read",
+            "actions": "read",
+            "id-token": "write",
+            "attestations": "write",
+            "artifact-metadata": "write"
+          },
+          "secret_names": [
+            "APP_STORE_CONNECT_API_KEY_CONTENT",
+            "APP_STORE_CONNECT_API_KEY_ID",
+            "APP_STORE_CONNECT_API_KEY_ISSUER_ID",
+            "RELEASE_APP_ID",
+            "RELEASE_APP_PRIVATE_KEY"
+          ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/screenshots.yml",
+      "name": "Capture Screenshots",
+      "triggers": {
+        "workflow_dispatch": {}
+      },
+      "inputs": {
+        "languages": {
+          "type": "string",
+          "default": "",
+          "description": "Comma-separated capture locales; blank means all locales"
+        }
+      },
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "capture-screenshots",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "capture",
+          "name": "Capture reviewed screenshot candidate",
+          "needs": [],
+          "condition": "github.ref == 'refs/heads/main'",
+          "runner": "xcode-27",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 240,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "pull-request",
+          "name": "Open screenshot pull request",
+          "needs": [
+            "capture"
+          ],
+          "condition": null,
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": "screenshot-publishing",
+          "timeout_minutes": 30,
+          "permissions": null,
+          "secret_names": []
+        }
+      ]
+    }
+  ]
+}

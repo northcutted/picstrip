@@ -71,6 +71,7 @@ jobs:
         run: |-
           python3 scripts/validate_store_metadata.py
           npm run check:workflows
+          npm run check:docs
           npm run test:ci
           actionlint
       - name: Validate changed store asset inventory

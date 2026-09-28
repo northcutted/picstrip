@@ -72,7 +72,8 @@ PicStrip/
 │   └── ci/                     # benchmark.py, configure_repository.py, toolchain.py, workflow_policy.mjs
 │
 ├── docs/
-│   ├── release-pipeline.md     # Release operations guide (setup, SLSA scope, verification)
+│   ├── release-pipeline.md     # CI/CD start page and task navigation
+│   ├── ci-cd/                 # Operations, architecture, maintenance, generated reference
 │   ├── localization-glossary.md  # Per-locale term decisions — new strings must reuse them
 │   ├── release-advisories.md, release-rehearsal-2026-09-19.md, evidence/  # Dated release records
 │   ├── app_review/             # App Review correspondence (face data)
@@ -790,15 +791,15 @@ PicStrip has no image-upload service. Apple's object-selection model can downloa
 
 ## CI/CD Pipeline
 
-The [release operations guide](docs/release-pipeline.md) describes the job graph, exact Xcode/Ruby pins, environment and repository controls, evidence format, deployment retries, screenshot PR workflow, and rollout commands.
+Start with [CI/CD: from a change to the App Store](docs/release-pipeline.md). It routes everyday tasks to the [operations guide](docs/ci-cd/operations.md), [architecture](docs/ci-cd/architecture.md), and [maintenance recipe for humans and agents](docs/ci-cd/maintenance.md).
 
-`pr.yml` reports the always-running **CI Gate**. A conservative classifier selects simulator, developer-gem, UI, and store-asset checks; unknown changes run every check and the gate validates each intentional skip. The platform's reusable `ci.yml` shares lint/localization, analysis, and both supported test toolchains between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently for release-input changes. **Release** in `promote.yml` resolves an exact successful preparation/TestFlight run into authenticated inputs and supports metadata updates through the same protected deployment worker. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact Apple build before submission. **Release Maintenance** in `observe.yml` provides status refreshes and repository-control inspection.
+Exact workflow inputs, triggers, consumer jobs, toolchains, and classifier examples live in the [generated reference](docs/ci-cd/reference.md) and [JSON index](docs/ci-cd/reference.json). Run `make docs` after source changes; `make check-docs` verifies generated output and CI/CD links in the mandatory PR policy job. Source facts are generated locally without service credentials or network access.
 
 ## SLSA Build Provenance Level 3
 
 The pipeline targets SLSA Build L3 for the GitHub-produced IPA using the isolated upstream generator, authenticated manifests, and verification before every distribution handoff. This claim excludes Apple's re-signed, encrypted, or thinned installed binary. Native attestations complement the isolated provenance; they do not independently establish Build L3.
 
-See the [control coverage, trust limits, and verification commands](docs/release-pipeline.md#slsa-build-l3-scope). Live repository controls and the candidate rollout must be verified before describing this target as deployed.
+See the [control coverage and trust limits](docs/ci-cd/architecture.md#slsa-build-l3-scope) and [verification commands](docs/ci-cd/architecture.md#verify-a-downloaded-release). Live repository controls and the candidate rollout must be verified before describing this target as deployed.
 
 ---
 
