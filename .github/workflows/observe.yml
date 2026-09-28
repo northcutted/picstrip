@@ -1,8 +1,16 @@
-name: App Store Status
+name: Release Maintenance
 on:
   schedule:
-    - cron: 17 * * * *
-  workflow_dispatch: {}
+    - cron: 17 */6 * * *
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Maintenance action
+        type: choice
+        options:
+          - App Store status
+          - Inspect release controls
+        default: App Store status
 permissions:
   contents: read
 concurrency:
@@ -10,16 +18,51 @@ concurrency:
   cancel-in-progress: false
 jobs:
   observe:
-    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+    uses: northcutted/ios-release-workflows/.github/workflows/observe.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
     with:
       config: .github/ios-release.json
-      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
     permissions:
       contents: read
       actions: read
       attestations: read
-    if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true'
+    if: vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && (github.event_name == 'schedule' || inputs.action == 'App Store status')
     secrets:
       APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
       APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
       APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+
+  inspect:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'workflow_dispatch' && inputs.action == 'Inspect release controls'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    environment: release-publishing
+    steps:
+      - name: Mint read-only control inspection token
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
+        id: token
+        with:
+          client-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: read
+          permission-administration: read
+          repositories: ${{ github.event.repository.name }}
+      - name: Read REST and GraphQL control identities
+        env:
+          GH_TOKEN: ${{ steps.token.outputs.token }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          python3 - <<'PY'
+          import json, os, subprocess
+          def gh(*args):
+              return json.loads(subprocess.check_output(['gh', *args], text=True))
+          prefix = 'repos/' + os.environ['REPOSITORY'] + '/rulesets'
+          for rule in gh('api', prefix):
+              if rule['name'] not in ('Main', 'Release tags'):
+                  continue
+              data = gh('api', prefix + '/' + str(rule['id']))
+              public = {key: data.get(key) for key in ('id', 'node_id', 'name', 'updated_at', 'bypass_actors', 'current_user_can_bypass')}
+              query = 'query($id:ID!){node(id:$id){... on RepositoryRuleset{id bypassActors(first:100){totalCount pageInfo{hasNextPage} nodes{id bypassMode}}}}}'
+              public['graphql'] = gh('api', 'graphql', '-f', 'query=' + query, '-f', 'id=' + data['node_id'])
+              print(json.dumps(public, sort_keys=True))
+          PY

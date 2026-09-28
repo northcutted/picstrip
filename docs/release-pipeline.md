@@ -6,20 +6,22 @@ The [2026-09-19 rehearsal record](release-rehearsal-2026-09-19.md) records the v
 
 ## Lifecycle
 
-**Main → verified candidate → manual promotion → TestFlight processing → immutable release → staging → production approval → submission.**
+**PR → checks → merge → verified candidate → Release action → TestFlight processing → staging → production approval.**
 
-Main prepares a clean signed IPA alongside QA and packaging. It does not distribute automatically. A candidate includes the exact source, platform identity, configuration digest, QA reports, component inventory, SBOMs, signing identities, and provenance. Promotion requires an explicit artifact ID and SHA256. It never selects the latest candidate or rebuilds one.
+Main prepares a clean signed IPA alongside QA and packaging when release inputs change. Documentation-only pushes skip preparation. A manual Release Prep run requests a complete candidate. A candidate includes the exact source, platform identity, configuration digest, QA reports, component inventory, SBOMs, signing identities, and provenance.
+
+The **Release** workflow takes an exact preparation or previous TestFlight run URL. It resolves the candidate ID and checksum, authenticates the source and signatures, and freezes the selected identity for the remaining jobs. It never chooses a moving “latest” candidate or rebuilds one. Plain numeric input means the run's API ID; `#86` means preparation workflow number 86.
 
 `RELEASE_DISTRIBUTION_ENABLED` must remain false until rehearsal and control readback succeed. `TESTFLIGHT_CANARY_ENABLED=true` permits an explicit TestFlight canary without publishing. An absent variable is false.
 
-1. Merge a PR only after `CI Gate` passes. It includes iOS 27 tests, iOS 26 compatibility tests, static analysis, lint, localization validation, workflow policy and locked gems. The `screenshots` label additionally runs the en-US screenshot journey and behaviour UI tests on both configured devices; this release-readiness PR carries that label. The screenshot-generation workflow performs full composition; release packaging independently validates the complete image inventory.
-2. Main runs `Release Prep`; the manual equivalent is `gh workflow run main.yml --ref main`. Inspect the candidate artifact ID/digest in the run summary, its signing/inventory evidence, and retained archive/dSYMs.
-3. Dispatch `Promote Candidate` on main with those exact `artifact_id` and `sha256`, the candidate's configured upload adapter, and `publish=false`. PicStrip initially uses Transporter. Switching to Build Uploads requires a reviewed configuration change and a Linux canary; there is no automatic adapter fallback.
-4. Apple must report the recorded build as `VALID`. A successful canary emits a signed processed-handoff artifact with its own ID/digest. To publish later, supply the original candidate ID/digest plus `processed_artifact_id` and `processed_sha256`, and set `publish=true`. This reads back the existing build and skips transfer.
-5. Publication creates/resumes a draft, checks the actual peeled tag commit, attaches and reads back all evidence, then publishes immutably. `release.published` triggers staging of the exact processed Apple build, reviewed metadata, screenshots, accessibility declarations, and configured compliance fields.
-6. Inspect the staged draft and approve the `production` environment. Submission verifies the build again, preserves permitted metadata edits, explicitly applies automatic/phased release with readback, checks readiness, and waits for Apple to confirm submission. Apple still decides review outcomes.
+1. Merge a PR after `CI Gate` passes. App changes run iOS 27 tests, iOS 26 compatibility tests, analysis, lint/localization and UI smoke. Tooling changes also check developer gems. Documentation-only and store-only changes skip simulator jobs; store changes still validate metadata and screenshot inventory. Unknown paths and unavailable comparison history request every check. The required gate runs for every PR and rejects unplanned skips. Labels do not restart checks. Manual PR Checks requests the full suite, including UI smoke.
+2. Inspect the successful **Release Prep** run and retain its URL. Its summary identifies the signed build and its evidence. The manual equivalent is `gh workflow run main.yml --ref main`.
+3. Run **Release** on main. Choose **Upload to TestFlight** and paste that preparation run URL into **Source**. Apple must report the exact uploaded build as `VALID`; the result retains a signed processed handoff. The upload adapter comes from the verified candidate configuration.
+4. After device acceptance, run **Release** again. Choose **Prepare App Store submission** and use the successful TestFlight run URL as **Source**. The workflow authenticates both handoffs, reads back the processed Apple build, and skips another transfer. If TestFlight-only acceptance is unnecessary, this action also accepts a preparation run and completes upload and processing before publication.
+5. Publication creates/resumes a draft, checks the actual peeled tag commit, attaches and reads back all evidence, then publishes immutably. The internal App Store deployment stages the exact processed Apple build, reviewed metadata, screenshots, accessibility declarations, and compliance fields. Using an existing immutable release tag as Source requests staging of that same published build.
+6. Inspect the staged draft and approve the `production` environment. Submission verifies the build again, preserves permitted metadata edits, applies configured release policy with readback, checks readiness, and waits for Apple to confirm submission. Apple still decides review outcomes.
 
-Hourly observation reports build, review, availability, and phased-release state once distribution is enabled. Agreements, account setup, business/compliance answers, and unsupported portal requirements remain owner prerequisites. Configured TestFlight groups are assigned with readback; external groups also require Apple's beta review and previously supplied beta-review information. PicStrip currently declares no automatic tester groups.
+**Release Maintenance → App Store status** provides an immediate refresh. Scheduled observation runs every six hours once distribution is enabled and reports changes in build, review, availability, and phased-release state. It always refreshes the newest release and keeps polling older active/unknown states. Older completed snapshots retain their original observation timestamps; a manual refresh checks them again. Cached observations never authorize a release action. Agreements, account setup, business/compliance answers, and unsupported portal requirements remain owner prerequisites. PicStrip currently declares no automatic TestFlight tester groups.
 
 ## Repository and credential controls
 
@@ -50,17 +52,17 @@ The helper preserves production reviewers, disables distribution, and reads the 
 
 Use **Re-run failed jobs** on the original promotion/deployment run. Operation artifacts are selected only from that run and validated by digest; prior successful job attempts remain usable. Upload/file IDs and checksums, review submission/item IDs, and Apple state are reconciled before resuming. A conflicting build, unrelated review item, missing evidence, or ambiguous legacy upload stops the operation.
 
-A successful signed canary handoff can also be supplied explicitly to a later promotion. Already-published releases are verified and reused, never overwritten. Preparation is separate from deployment, so retrying metadata or review cannot rebuild the IPA.
+A successful TestFlight run URL can be supplied to Release to resume the same signed processed handoff. Failed or incomplete runs, ambiguous/expired artifacts, unapproved signers, and mismatched handoffs stop resolution. Use the original run's failed-job retry for interrupted uploads; a successful Release run is required for a new promotion. Already-published releases are verified and reused, never overwritten.
 
-For a staging retry, dispatch `app-store-deploy.yml` with the workflow ref and `release_tag` both set to the same immutable tag. For reviewed metadata changes, merge the text by PR, then run:
+For reviewed metadata changes, merge the text by PR, then run Release on main with **Update store metadata** (stage only) or **Update metadata and request review**. Source is the existing immutable release tag. Metadata commit can name an exact reviewed commit; blank freezes the main revision selected when the workflow was dispatched.
 
 ```sh
-gh workflow run metadata-only.yml --ref vX.Y.Z \
-  -f release_tag=vX.Y.Z -f metadata_commit=FULL_REVIEWED_COMMIT_SHA \
-  -f submit_for_review=true
+gh workflow run promote.yml --ref main \
+  -f action='Update store metadata' -f source=vX.Y.Z \
+  -f metadata_commit=FULL_REVIEWED_COMMIT_SHA
 ```
 
-Metadata is read from that exact main-ancestor commit; file hashes and differences are recorded. Review uses the same production gate. All Apple mutation jobs share the app's repository concurrency group. A newer queued request can supersede an older pending request under GitHub's concurrency semantics; rerun a superseded request deliberately.
+Metadata is read from that exact main-ancestor commit; file hashes and differences are recorded. Release creates a publisher-only operation tag binding the release, metadata commit, submission choice, originating run, and reviewed deployment source. Its create event starts the internal deployment worker under the existing `v*` environment restrictions. Retrying the originating Release run reuses the tag instead of starting another deployment. Retry a failed deployment in its original run. The internal `app-store-deploy.yml` manual interface remains available for advanced recovery. All Apple mutation jobs share the app's repository concurrency group; deliberately rerun any request superseded by GitHub's pending-run concurrency behavior.
 
 Submission receipts contain public metadata/build snapshots and differences, exclude review credentials/contact details, and are signed separately from immutable release assets. Receipts, candidates, and archive diagnostics have 90-day Actions retention. Download them for longer retention; public Actions artifacts are not private storage.
 
@@ -120,7 +122,7 @@ The protected `trusted_producer_revisions` configuration explicitly approves the
 
 For promotion from newer main tooling, publication creates a separate protected `vVERSION-deploy-FULL_COMMIT` tag after publishing the immutable evidence. Its create event starts the corrected deployment caller. The platform checks the exact commit suffix and protected-main ancestry, then authenticates the original release and processed Apple build. The original app tag, IPA and assets stay immutable. An original release-event run can reject a newer signer; use the deployment-tag run for this recovery. Manual retries select this exact deployment tag and the original release tag input. Production still requires its existing human approval.
 
-Use the main-only **Inspect release controls** workflow to inspect the publisher token’s read-only REST/GraphQL response. It uses the existing release-publishing environment, reports no credentials, and makes no repository or App Store changes.
+Use **Release Maintenance → Inspect release controls** on main to inspect the publisher token’s read-only REST/GraphQL response. It uses the existing release-publishing environment, reports no credentials, and makes no repository or App Store changes.
 
 ## Replacement 1.7.0 build
 
@@ -128,4 +130,4 @@ The reviewed `replacement_release` configuration records the existing `v1.7.0`, 
 
 Staging may replace only the recorded old build while the version is `PREPARE_FOR_SUBMISSION` and no review submission is active. It reads the relationship back after mutation. A different selected build or review state stops deployment. Remove the one-time replacement configuration in a later reviewed PR when normal version advancement should resume.
 
-Approval sequence for this remediation: review the app PR and the companion platform PR, merge only after the required checks and screenshot review, inspect the resulting main-only signed candidate, then approve the exact artifact for upload. `publish=false` still uploads to Apple; it is not a read-only rehearsal. Publication and production submission retain their separate approval boundaries. See the [acceptance record](reviews/1.7.0-implementation-status.md) for hardware and artifact evidence still required before submission.
+Approval sequence for this remediation: review the app and companion platform PRs, merge after required checks and screenshot review, inspect the main-only signed candidate, then authorize its upload. **Upload to TestFlight** uploads to Apple; it is not a read-only rehearsal. Build 86.1 remains reusable through its preparation run URL after this tooling update. Its producer stays explicitly trusted. Keep the replacement override until the 1.7.0 transition is safely completed, then remove it in a reviewed follow-up so normal version advancement resumes. See the [acceptance record](reviews/1.7.0-implementation-status.md) for device evidence still required before submission.

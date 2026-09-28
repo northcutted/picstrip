@@ -46,12 +46,10 @@ PicStrip/
 │   └── workflows/
 │       ├── pr.yml                       # PR gate: policy, lint, analysis, tests
 │       ├── main.yml                     # Release candidate: QA, archive, packaging
-│       ├── promote.yml                  # Manual promotion of a verified candidate
-│       ├── observe.yml                  # Waits for Apple processing
-│       ├── app-store-deploy.yml         # Verified App Store staging + review request
-│       ├── metadata-only.yml            # Metadata changes through the same gate
-│       ├── screenshots.yml              # Manual screenshot capture → reviewed PR
-│       └── inspect-release-controls.yml # Audits repository controls
+│       ├── promote.yml                  # Release actions using an exact run URL or release tag
+│       ├── observe.yml                  # Release Maintenance: status and control inspection
+│       ├── app-store-deploy.yml         # Internal protected staging and review worker
+│       └── screenshots.yml              # Manual screenshot capture → reviewed PR
 │
 ├── fastlane/
 │   ├── Fastfile                # Lane definitions (release lanes are fail-closed locally)
@@ -69,7 +67,6 @@ PicStrip/
 │   ├── audit_localization_strings.sh  # Flags string-returning literals that should be localized
 │   ├── audit_xcstrings.py      # String catalog audit: coverage, placeholders, plural forms, dead keys
 │   ├── translate_xcstrings.js  # Pseudo-localizer for layout smoke testing
-│   ├── semantic_dry_run.mjs    # Read-only Conventional Commit version/notes analysis
 │   ├── render_app_store_metadata.sh / write_release_notes.sh  # Release-note rendering helpers
 │   ├── update_release_platform.py  # Bumps the release platform pin
 │   └── ci/                     # benchmark.py, configure_repository.py, toolchain.py, workflow_policy.mjs
@@ -795,7 +792,7 @@ PicStrip has no image-upload service. Apple's object-selection model can downloa
 
 The [release operations guide](docs/release-pipeline.md) describes the job graph, exact Xcode/Ruby pins, environment and repository controls, evidence format, deployment retries, screenshot PR workflow, and rollout commands.
 
-`pr.yml` reports the always-running **CI Gate**. The release platform's reusable `ci.yml` (the `qa` job in `pr.yml` and `main.yml`) shares SwiftLint (plus the string catalog audit), analysis, and the iOS 27 / iOS 26 test jobs between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently after read-only version analysis. Upload and immutable publication require complete verified evidence. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact App Store build before submission. `metadata-only.yml` uses that same submission gate.
+`pr.yml` reports the always-running **CI Gate**. A conservative classifier selects simulator, developer-gem, UI, and store-asset checks; unknown changes run every check and the gate validates each intentional skip. The platform's reusable `ci.yml` shares lint/localization, analysis, and both supported test toolchains between PRs and releases. `main.yml` runs signed archive creation, QA, and packaging concurrently for release-input changes. **Release** in `promote.yml` resolves an exact successful preparation/TestFlight run into authenticated inputs and supports metadata updates through the same protected deployment worker. `app-store-deploy.yml` stages published releases, then waits for production approval and checks the exact Apple build before submission. **Release Maintenance** in `observe.yml` provides status refreshes and repository-control inspection.
 
 ## SLSA Build Provenance Level 3
 
@@ -995,3 +992,5 @@ A document scan is held as a `VNDocumentCameraScan` and each page is turned into
 ### Scans Get the Document Boost From a Hint, Not a Rectangle
 
 The document camera crops to the page edges, so `DetectRectanglesRequest` rarely finds a quad inside a scan. `ScanHints.scannedDocument` supplies the boost instead: `ScannedDocument.pages` sets it, and `scan(data:hints:)` scores the whole frame as the document — using the image's real aspect ratio — without turning it into a redaction instance. Do not "fix" a missing rectangle by injecting a full-frame one: `applyDocumentContext` would turn it into a region and black out the whole page.
+
+Release version analysis and its tests live in the pinned `ios-release-workflows` platform. Use the Release Prep summary for the candidate version; PicStrip does not maintain a second version calculator.

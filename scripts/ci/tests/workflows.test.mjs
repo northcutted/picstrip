@@ -4,3 +4,14 @@ test('mutable platform calls and broad secret inheritance are rejected',()=>{con
 test('PR secrets, unsafe interpolation and automatic promotion are rejected',()=>{const w=loadWorkflows();w['pr.yml'].jobs.policy.steps.push({run:'echo ${{ inputs.untrusted }}',env:{KEY:'${{ secrets.KEY }}'}});w['promote.yml'].on.push={};const errors=validate(w).join('\n');assert.match(errors,/PR path/);assert.match(errors,/unsafe input/);assert.match(errors,/explicit/);});
 
 test('missing environment secret bindings fail before a signed rehearsal',()=>{const w=loadWorkflows();delete w['main.yml'].jobs.prepare.secrets.MATCH_SSH_PRIVATE_KEY;assert.match(validate(w).join('\n'),/explicit environment secret bindings/);});
+
+test('unrelated label restarts and missing classification cannot silently return',()=>{
+ const w=loadWorkflows();w['pr.yml'].on.pull_request.types.push('labeled');
+ w['pr.yml'].jobs.gate.needs=w['pr.yml'].jobs.gate.needs.filter(name=>name!=='changes');
+ const errors=validate(w).join('\n');assert.match(errors,/labels/);assert.match(errors,/require classification/);
+});
+test('release selection and exact metadata forwarding are required',()=>{
+ const w=loadWorkflows();w['promote.yml'].on.workflow_dispatch.inputs.source.required=false;
+ w['app-store-deploy.yml'].jobs.deploy.with.metadata_commit='main';
+ const errors=validate(w).join('\n');assert.match(errors,/explicit source/);assert.match(errors,/resolved exact commit/);
+});

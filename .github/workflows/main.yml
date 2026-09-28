@@ -10,11 +10,28 @@ concurrency:
   group: release-prep-main
   cancel-in-progress: false
 jobs:
+  changes:
+    name: Select release inputs
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      prepare: ${{ steps.changes.outputs.prepare }}
+    steps:
+      - name: Checkout comparison history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Classify release changes
+        id: changes
+        run: node scripts/ci/changes.mjs
   prepare:
-    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+    needs: changes
+    if: needs.changes.outputs.prepare == 'true'
+    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
     with:
       config: .github/ios-release.json
-      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
     permissions:
       contents: write
       actions: read

@@ -1,34 +1,25 @@
-name: Promote Candidate
+name: Release
 on:
   workflow_dispatch:
     inputs:
-      artifact_id:
-        description: Exact verified candidate artifact ID
-        required: true
-        type: string
-      sha256:
-        description: Exact candidate artifact SHA256
-        required: true
-        type: string
-      processed_artifact_id:
-        description: Optional exact signed canary handoff artifact ID; skips transfer
-        type: string
-        default: ""
-      processed_sha256:
-        description: SHA256 of that signed canary handoff artifact
-        type: string
-        default: ""
-      upload_adapter:
-        description: Must match candidate configuration; no fallback
+      action:
+        description: Release action
         type: choice
         options:
-          - transporter
-          - build-uploads
-        default: transporter
-      publish:
-        description: Publish after processing; false performs TestFlight canary only
-        type: boolean
-        default: false
+          - Upload to TestFlight
+          - Prepare App Store submission
+          - Update store metadata
+          - Update metadata and request review
+        default: Upload to TestFlight
+        required: true
+      source:
+        description: Preparation or previous TestFlight run URL/ID; immutable release tag for metadata
+        type: string
+        required: true
+      metadata_commit:
+        description: Metadata actions only; exact reviewed commit, or blank for this main revision
+        type: string
+        default: ""
 permissions:
   contents: read
 concurrency:
@@ -36,16 +27,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   promote:
-    uses: northcutted/ios-release-workflows/.github/workflows/promote.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
+    uses: northcutted/ios-release-workflows/.github/workflows/release.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
     with:
       config: .github/ios-release.json
-      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
-      artifact_id: ${{ inputs.artifact_id }}
-      sha256: ${{ inputs.sha256 }}
-      processed_artifact_id: ${{ inputs.processed_artifact_id }}
-      processed_sha256: ${{ inputs.processed_sha256 }}
-      upload_adapter: ${{ inputs.upload_adapter }}
-      publish: ${{ inputs.publish }}
+      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
+      action: ${{ inputs.action }}
+      source: ${{ inputs.source }}
+      metadata_commit: ${{ inputs.metadata_commit }}
     permissions:
       contents: read
       actions: read
