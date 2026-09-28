@@ -29,7 +29,6 @@ jobs:
     timeout-minutes: 5
     outputs:
       qa: ${{ steps.changes.outputs.qa }}
-      gems: ${{ steps.changes.outputs.gems }}
       screenshots: ${{ steps.changes.outputs.screenshots }}
       store: ${{ steps.changes.outputs.store }}
     steps:
@@ -54,10 +53,10 @@ jobs:
           fetch-depth: 1
           lfs: ${{ needs.changes.outputs.store == 'true' }}
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@060db3e9c163ece5eb2836ac06344828b728bfe8
+        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
         with:
           config: .github/ios-release.json
-          revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
+          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -66,7 +65,7 @@ jobs:
       - name: Install locked tools
         run: npm ci --ignore-scripts --no-audit --no-fund
       - name: Install pinned workflow validator
-        run: bash "$IOS_RELEASE_ROOT/scripts/ci/install_actionlint.sh"
+        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" install-actionlint
       - name: Validate workflows and release guardrails
         run: |-
           python3 scripts/validate_store_metadata.py
@@ -76,42 +75,19 @@ jobs:
           actionlint
       - name: Validate changed store asset inventory
         if: needs.changes.outputs.store == 'true'
-        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/evidence.py" screenshots fastlane/screenshots/processed --output "$RUNNER_TEMP/screenshots-manifest.json"
+        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-verify fastlane/screenshots/processed --output "$RUNNER_TEMP/screenshots-manifest.json"
   qa:
     needs: changes
     if: needs.changes.outputs.qa == 'true'
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@060db3e9c163ece5eb2836ac06344828b728bfe8
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@2619b51c89cb847b273a4389c3226d5039dc627f
     with:
       config: .github/ios-release.json
-      platform_revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
+      platform_revision: 2619b51c89cb847b273a4389c3226d5039dc627f
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
     permissions:
       contents: read
-  gems-macos:
-    needs: changes
-    if: needs.changes.outputs.gems == 'true'
-    name: Locked gems on macOS
-    runs-on: xcode-27
-    timeout-minutes: 30
-    steps:
-      - name: Checkout exact source
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-        with:
-          persist-credentials: false
-          fetch-depth: 1
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-        with:
-          bundler-cache: false
-      - name: Install locked gems
-        run: |-
-          bundle config set --local path vendor/bundle
-          bundle config set --local frozen true
-          bundle install --jobs 4 --retry 3
-      - name: Load locked developer Fastlane
-        run: bundle exec ruby -e 'require "fastlane"'
   screenshots:
     needs: changes
     name: UI and screenshot smoke test
@@ -124,23 +100,16 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@060db3e9c163ece5eb2836ac06344828b728bfe8
+        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
         with:
           config: .github/ios-release.json
-          revision: 060db3e9c163ece5eb2836ac06344828b728bfe8
+          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
       - name: Resolve screenshot simulators
-        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
-      - name: Set up Ruby
-        uses: ruby/setup-ruby@a0102e0972be65f351c307e2d64b9314a57c8073
-        with:
-          bundler-cache: false
-      - name: Install locked gems
-        run: |-
-          bundle config set --local path vendor/bundle
-          bundle config set --local frozen true
-          bundle install --jobs 4 --retry 3
+        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" toolchain --screenshots
+      - name: Install locked platform Ruby
+        uses: northcutted/ios-release-workflows/actions/ruby@2619b51c89cb847b273a4389c3226d5039dc627f
       - name: Capture en-US screenshots
-        run: bundle exec fastlane screenshots languages:en-US
+        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-capture --languages en-US
       - name: Upload pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
@@ -172,7 +141,6 @@ jobs:
       - changes
       - policy
       - qa
-      - gems-macos
       - screenshots
     steps:
       - name: Checkout gate policy

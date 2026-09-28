@@ -15,3 +15,8 @@ test('release selection and exact metadata forwarding are required',()=>{
  w['app-store-deploy.yml'].jobs.deploy.with.metadata_commit='main';
  const errors=validate(w).join('\n');assert.match(errors,/explicit source/);assert.match(errors,/resolved exact commit/);
 });
+
+test('duplicate Ruby installs cannot return to the consumer',()=>{
+ const w=loadWorkflows();w['pr.yml'].jobs.screenshots.steps.push({run:'bundle install'});
+ assert.match(validate(w).join('\n'),/supported platform command/);
+});

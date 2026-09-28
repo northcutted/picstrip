@@ -37,7 +37,7 @@ PicStrip/
 ├── PicStrip-Info.plist         # app Info.plist (usage descriptions, URL scheme)
 ├── .releaserc.json             # App version policy read by the pinned platform
 ├── .ruby-version               # Ruby version pin for rbenv
-├── Gemfile / Gemfile.lock      # gem "fastlane", "~> 2.240"
+├── .github/ios-release-platform.json # Reviewed shared tools and Ruby dependency pin
 ├── package.json / package-lock.json  # Workflow policy and change-classification checks
 │
 ├── .github/
@@ -932,7 +932,7 @@ func testDetectsBankRoutingNumber() async throws {
 
 ### Step 5 — Test end-to-end
 
-1. `bundle exec fastlane test` — verify the new test passes in the unit test suite.
+1. `make test` — verify the new test passes in the unit test suite.
 2. Run the app; open a photo containing a routing number.
 3. Confirm the red overlay lands on the correct region.
 4. Toggle redaction; confirm the black box covers the number in the saved image.

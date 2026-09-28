@@ -5,10 +5,10 @@ import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 
-export const full = () => ({qa: true, gems: true, screenshots: true, prepare: true, store: true});
+export const full = () => ({qa: true, screenshots: true, prepare: true, store: true});
 
 export function classify(paths) {
-  const result = {qa: false, gems: false, screenshots: false, prepare: false, store: false};
+  const result = {qa: false, screenshots: false, prepare: false, store: false};
   if (!paths.length) return full();
   for (const path of paths) {
     if (!path || path.startsWith('/') || path.split('/').includes('..')) return full();
@@ -35,10 +35,10 @@ export function gate(jobs, selection) {
   for (const name of ['changes', 'policy']) {
     if (jobs[name]?.result !== 'success') throw new Error(`${name} did not pass`);
   }
-  for (const flag of ['qa', 'gems', 'screenshots', 'store']) {
+  for (const flag of ['qa', 'screenshots', 'store']) {
     if (!['true', 'false'].includes(selection[flag])) throw new Error(`Invalid ${flag} decision`);
   }
-  for (const [job, flag] of [['qa', 'qa'], ['gems-macos', 'gems'], ['screenshots', 'screenshots']]) {
+  for (const [job, flag] of [['qa', 'qa'], ['screenshots', 'screenshots']]) {
     const expected = selection[flag] === 'true' ? 'success' : 'skipped';
     if (jobs[job]?.result !== expected) throw new Error(`${job}: expected ${expected}, got ${jobs[job]?.result}`);
   }
@@ -69,16 +69,18 @@ export function compare(eventName, event, git = (...args) => execFileSync('git',
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  if (process.argv[2] === 'gate') {
+  if (process.argv[2] === 'examples') {
+    console.log(JSON.stringify(JSON.parse(process.argv[3]).map(path => ({path, ...classify([path])}))));
+  } else if (process.argv[2] === 'gate') {
     gate(JSON.parse(process.env.JOBS), JSON.parse(process.env.SELECTION));
     console.log('Required checks passed; every skip matches the change classification.');
   } else {
     const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
     const selection = compare(process.env.GITHUB_EVENT_NAME, event);
     fs.appendFileSync(process.env.GITHUB_OUTPUT, Object.entries(selection)
-      .filter(([key]) => ['qa', 'gems', 'screenshots', 'prepare', 'store'].includes(key))
+      .filter(([key]) => ['qa', 'screenshots', 'prepare', 'store'].includes(key))
       .map(([key, value]) => `${key}=${value}\n`).join(''));
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
-      `Checks selected: QA=${selection.qa}, developer gems=${selection.gems}, UI smoke=${selection.screenshots}, release candidate=${selection.prepare}. ${selection.reason}.\n`);
+      `Checks selected: QA=${selection.qa}, UI smoke=${selection.screenshots}, release candidate=${selection.prepare}. ${selection.reason}.\n`);
   }
 }

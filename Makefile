@@ -1,4 +1,4 @@
-FASTLANE ?= bundle exec fastlane
+PLATFORM = python3 scripts/ios_release.py
 DEVICE ?=
 DEVICES ?=
 LANGUAGES ?=
@@ -8,18 +8,20 @@ SUBMIT_FOR_REVIEW ?= false
 RELEASE_TAG ?=
 METADATA_COMMIT ?=
 
-.PHONY: help docs check-docs lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
+.PHONY: help platform-sync platform-gems docs check-docs lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
 	@echo ""
-	@echo "  make docs                         Regenerate the CI/CD reference (Node; no network)"
+	@echo "  make platform-sync                Fetch the reviewed platform pin (once per upgrade)"
+	@echo "  make platform-gems                Install Ruby tools for screenshots/local archives"
+	@echo "  make docs                         Regenerate the CI/CD reference (offline after sync)"
 	@echo "  make check-docs                   Check reference drift and CI/CD documentation links"
 	@echo "  make lint                         Run SwiftLint"
 	@echo "  make analyze                      Run xcodebuild static analysis"
 	@echo "  make test                         Run PicStripTests on the simulator"
 	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
-	@echo "  make build                        Build and export build/PicStrip.ipa"
+	@echo "  make build                        Build and export build/application.ipa"
 	@echo "  make metadata-only RELEASE_TAG=vX.Y.Z METADATA_COMMIT=<sha>  Stage metadata through Release"
 	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
 	@echo "  make localization-export          Export Xcode localization packages to build/localization-export"
@@ -35,6 +37,12 @@ help:
 	@echo "  make process-screenshots          Frame + compose marketing PNGs from existing captures"
 	@echo "  make clean-screenshots            Remove generated screenshots and logs"
 
+platform-sync:
+	$(PLATFORM) sync
+
+platform-gems:
+	$(PLATFORM) gems-install
+
 docs:
 	npm run docs
 
@@ -42,13 +50,13 @@ check-docs:
 	npm run check:docs
 
 lint:
-	$(FASTLANE) lint
+	$(PLATFORM) qa lint
 
 analyze:
-	$(FASTLANE) analyze
+	$(PLATFORM) qa analyze
 
 test:
-	$(FASTLANE) test
+	$(PLATFORM) qa test
 
 # Regenerates the OCR test fixture (PicStripUITests/test_list.png) from
 # scripts/make_fixture.py. The fixture image is committed; this target only
@@ -61,7 +69,7 @@ test-fixture:
 		--out PicStripUITests/test_list.png
 
 build:
-	MARKETING_VERSION="$(MARKETING_VERSION)" BUILD_NUMBER="$(BUILD_NUMBER)" $(FASTLANE) build
+	$(PLATFORM) archive --version "$(MARKETING_VERSION)" --build-number "$(BUILD_NUMBER)"
 
 metadata-only:
 	@test -n "$(RELEASE_TAG)" || (echo "Set RELEASE_TAG to an immutable release"; exit 1)
@@ -99,16 +107,10 @@ localization-validate:
 	swiftlint lint
 
 screenshots:
-	@if [ -n "$(DEVICE)" ]; then \
-		$(FASTLANE) screenshots device:"$(DEVICE)"; \
-	elif [ -n "$(DEVICES)" ]; then \
-		$(FASTLANE) screenshots devices:"$(DEVICES)"; \
-	else \
-		$(FASTLANE) screenshots; \
-	fi
+	$(PLATFORM) screenshots-capture --devices "$(if $(DEVICE),$(DEVICE),$(DEVICES))" --languages "$(LANGUAGES)"
 
 process-screenshots:
-	$(FASTLANE) process_screenshots
+	python3 scripts/compose_screenshots.py
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs

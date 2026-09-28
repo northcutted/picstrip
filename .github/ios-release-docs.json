@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "mode": "consumer",
+  "output_dir": "docs/ci-cd",
+  "pages": [
+    "docs/release-pipeline.md",
+    "docs/ci-cd"
+  ],
+  "navigation": [
+    {
+      "label": "Start here",
+      "path": "docs/release-pipeline.md"
+    },
+    {
+      "label": "Operations",
+      "path": "docs/ci-cd/operations.md"
+    },
+    {
+      "label": "Architecture",
+      "path": "docs/ci-cd/architecture.md"
+    },
+    {
+      "label": "Maintenance",
+      "path": "docs/ci-cd/maintenance.md"
+    }
+  ],
+  "classifier": "scripts/ci/changes.mjs",
+  "change_examples": [
+    "docs/release-pipeline.md",
+    "fastlane/metadata/en-US/description.txt",
+    "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+    "PicStrip/ContentView.swift",
+    "PicStripTests/ImageProcessorTests.swift",
+    ".github/workflows/pr.yml",
+    "unknown/new-file"
+  ],
+  "example_flags": {
+    "qa": "QA",
+    "screenshots": "UI",
+    "prepare": "Prepare",
+    "store": "Store inventory"
+  }
+}

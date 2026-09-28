@@ -31,12 +31,14 @@ export function validate(workflows){
    check(!/fastlane (request_review|app_store_stage|metadata_only|upload_testflight)|publish_release\.py/.test(scripts),label+': release administration belongs in pinned platform');
   }
  }
+ check(!workflows['pr.yml'].jobs['gems-macos'], 'Platform and screenshot checks own Ruby dependency validation');
+ for(const file of ['pr.yml','screenshots.yml'])check(!/bundle (install|exec fastlane)/.test(JSON.stringify(workflows[file])), 'Screenshot tools must use the supported platform command and locked Ruby action');
  check(workflows['main.yml'].jobs.prepare.uses.includes('/prepare.yml@'),'Main must only prepare candidates');
  check(JSON.stringify(Object.keys(workflows['main.yml'].jobs).sort())===JSON.stringify(['changes','prepare']),'Main may only classify changes and prepare candidates');
  check(workflows['main.yml'].jobs.prepare.if==="needs.changes.outputs.prepare == 'true'",'Preparation must honor classified release inputs');
  check(!workflows['pr.yml'].on.pull_request.types.some(type=>['labeled','unlabeled'].includes(type)),'Unrelated labels must not restart PR checks');
  check(workflows['pr.yml'].jobs.gate.needs.includes('changes'),'CI Gate must require classification');
- for(const [job,flag] of [['qa','qa'],['gems-macos','gems'],['screenshots','screenshots']])check(workflows['pr.yml'].jobs[job].if===`needs.changes.outputs.${flag} == 'true'`,job+': must honor conservative classification');
+ for(const [job,flag] of [['qa','qa'],['screenshots','screenshots']])check(workflows['pr.yml'].jobs[job].if===`needs.changes.outputs.${flag} == 'true'`,job+': must honor conservative classification');
  check(workflows['promote.yml'].on.workflow_dispatch&&!workflows['promote.yml'].on.push,'Promotion must be explicit');
  check(workflows['pr.yml'].jobs.gate.name==='CI Gate'&&workflows['pr.yml'].jobs.gate.if==='always()','CI Gate must always report');
  check(workflows['app-store-deploy.yml'].on.release?.types.includes('published'),'Deploy must consume published release');

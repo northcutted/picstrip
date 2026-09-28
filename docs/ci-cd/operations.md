@@ -60,21 +60,9 @@ Review the actual images before merging. This operation creates reviewed assets;
 
 ## Recover a failed run
 
-| Symptom | Next step |
-| --- | --- |
-| A PR job fails | Read that job's logs/artifacts; fix the cause or retry a transient failure. The gate must still pass. |
-| A run is queued | Inspect runner availability and the workflow's concurrency group. Queued is not an upload failure. |
-| TestFlight transfer or processing is interrupted | Use **Re-run failed jobs** on the original Release run. Retained transfer evidence and Apple readback reconcile the attempt. |
-| Publication or staging fails | Retry failed jobs in the original run. Verified published releases are reused, never overwritten. |
-| Metadata deployment fails after the Release action succeeded | Follow the generated deployment tag to its internal deployment run and retry there. |
-| Evidence is missing, expired, or contradictory | Stop promotion. Restore independently retained verified evidence where supported, or prepare a new candidate and repeat acceptance. Never invent an artifact ID or relax verification. |
-| Controls or signer checks reject the operation | Follow [control inspection](maintenance.md#inspect-or-change-repository-controls) or [tool-repair recovery](architecture.md#recover-with-newer-tools). |
+Retry a transient failure in the original run so its recorded identity and receipts remain available. For a metadata operation, follow the generated deployment tag to its internal worker. Check runner availability before treating a queued job as failure.
 
-A failed or incomplete run cannot be supplied as a successful TestFlight handoff. Starting a fresh upload after an uncertain transfer can lose the evidence needed for safe resumption. All Apple mutation jobs share the app's repository concurrency group; GitHub can supersede pending requests, so explicitly rerun an operation that was superseded.
-
-The internal workflow also exposes manual recovery inputs. Its `submit` default is **true**: inspect the [exact interface](reference.md#app-store-deploy-internal) before dispatching it on an approved immutable release/deployment tag. Ordinary releases should use **Release**.
-
-Candidates, submission receipts, and archive diagnostics have 90-day Actions retention; copy required evidence before expiry. Other artifact lifetimes vary by job. Public Actions artifacts are not private storage.
+Shared retry rules, interrupted-upload recovery, producer upgrades, retention and replacement semantics live in the [pinned platform operations guide](reference.md#platform-guides). PicStrip's internal workflow exposes advanced recovery inputs; its `submit` default is **true**, so inspect the [exact interface](reference.md#app-store-deploy-internal) before using it.
 
 ## Observe Apple state
 
@@ -84,8 +72,6 @@ Prior digest-checked observations are optional cache data. They do not authorize
 
 ## Replacement builds
 
-While `replacement_release` is configured, preparation keeps the specified marketing version and requires a build newer than the recorded old one. It publishes evidence under a unique `vVERSION-build-N.ATTEMPT` tag. Existing tags, IPA files, and release assets remain immutable.
+PicStrip currently records a one-time replacement override in [app configuration](../../.github/ios-release.json). Confirm its exact identity in the [generated reference](reference.md#platform-and-configuration) and follow the [pinned platform replacement procedure](reference.md#platform-guides).
 
-Staging may replace only that recorded Apple build while the version is `PREPARE_FOR_SUBMISSION` with no active review submission, and verifies the relationship after mutation. Any other build or state stops deployment. See the [generated override value](reference.md#platform-and-configuration) and [source configuration](../../.github/ios-release.json) for the exact identity.
-
-Remove this one-time override in a reviewed follow-up when the transition is complete and normal version advancement should resume. An old acceptance record or a new successful build does not by itself establish that the transition is complete.
+Remove the override in a reviewed follow-up only after the replacement transition is verified complete and normal version advancement should resume. A tools upgrade or a new successful build does not establish completion.

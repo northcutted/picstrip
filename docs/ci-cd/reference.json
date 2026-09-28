@@ -1,7 +1,8 @@
 {
-  "schema_version": 1,
-  "scope": "Checked-in consumer configuration; excludes live service state and reusable workflow internals.",
+  "schema_version": 2,
+  "scope": "Checked-in workflow contracts; excludes live service state and step scripts.",
   "sources": [
+    ".github/ios-release-docs.json",
     ".github/ios-release.json",
     ".github/ios-release-platform.json",
     ".ruby-version",
@@ -15,7 +16,50 @@
   ],
   "platform": {
     "repository": "northcutted/ios-release-workflows",
-    "revision": "060db3e9c163ece5eb2836ac06344828b728bfe8"
+    "revision": "2619b51c89cb847b273a4389c3226d5039dc627f"
+  },
+  "settings": {
+    "schema_version": 1,
+    "mode": "consumer",
+    "output_dir": "docs/ci-cd",
+    "pages": [
+      "docs/release-pipeline.md",
+      "docs/ci-cd"
+    ],
+    "navigation": [
+      {
+        "label": "Start here",
+        "path": "docs/release-pipeline.md"
+      },
+      {
+        "label": "Operations",
+        "path": "docs/ci-cd/operations.md"
+      },
+      {
+        "label": "Architecture",
+        "path": "docs/ci-cd/architecture.md"
+      },
+      {
+        "label": "Maintenance",
+        "path": "docs/ci-cd/maintenance.md"
+      }
+    ],
+    "classifier": "scripts/ci/changes.mjs",
+    "change_examples": [
+      "docs/release-pipeline.md",
+      "fastlane/metadata/en-US/description.txt",
+      "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+      "PicStrip/ContentView.swift",
+      "PicStripTests/ImageProcessorTests.swift",
+      ".github/workflows/pr.yml",
+      "unknown/new-file"
+    ],
+    "example_flags": {
+      "qa": "QA",
+      "screenshots": "UI",
+      "prepare": "Prepare",
+      "store": "Store inventory"
+    }
   },
   "configuration": {
     "repository": "northcutted/picstrip",
@@ -116,7 +160,6 @@
     {
       "path": "docs/release-pipeline.md",
       "qa": false,
-      "gems": false,
       "screenshots": false,
       "prepare": false,
       "store": false
@@ -124,7 +167,6 @@
     {
       "path": "fastlane/metadata/en-US/description.txt",
       "qa": false,
-      "gems": false,
       "screenshots": false,
       "prepare": true,
       "store": true
@@ -132,7 +174,6 @@
     {
       "path": "fastlane/screenshots/processed/en-US/01_FullPreview.png",
       "qa": false,
-      "gems": false,
       "screenshots": false,
       "prepare": true,
       "store": true
@@ -140,7 +181,6 @@
     {
       "path": "PicStrip/ContentView.swift",
       "qa": true,
-      "gems": false,
       "screenshots": true,
       "prepare": true,
       "store": false
@@ -148,7 +188,6 @@
     {
       "path": "PicStripTests/ImageProcessorTests.swift",
       "qa": true,
-      "gems": false,
       "screenshots": false,
       "prepare": true,
       "store": false
@@ -156,7 +195,6 @@
     {
       "path": ".github/workflows/pr.yml",
       "qa": true,
-      "gems": true,
       "screenshots": true,
       "prepare": true,
       "store": true
@@ -164,12 +202,12 @@
     {
       "path": "unknown/new-file",
       "qa": true,
-      "gems": true,
       "screenshots": true,
       "prepare": true,
       "store": true
     }
   ],
+  "commands": null,
   "workflows": [
     {
       "file": ".github/workflows/app-store-deploy.yml",
@@ -200,6 +238,8 @@
           "description": "Recovery only; exact reviewed metadata commit"
         }
       },
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
@@ -228,7 +268,7 @@
           ],
           "condition": null,
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/deploy.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/deploy.yml@2619b51c89cb847b273a4389c3226d5039dc627f",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -258,6 +298,8 @@
         "workflow_dispatch": {}
       },
       "inputs": {},
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
@@ -286,7 +328,7 @@
           ],
           "condition": "needs.changes.outputs.prepare == 'true'",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/prepare.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/prepare.yml@2619b51c89cb847b273a4389c3226d5039dc627f",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -325,6 +367,8 @@
           "default": "App Store status"
         }
       },
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
@@ -339,7 +383,7 @@
           "needs": [],
           "condition": "vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && (github.event_name == 'schedule' || inputs.action == 'App Store status')",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/observe.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/observe.yml@2619b51c89cb847b273a4389c3226d5039dc627f",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -395,6 +439,8 @@
           "description": "Benchmark only; production remains serial until five-run acceptance"
         }
       },
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
@@ -437,26 +483,12 @@
           ],
           "condition": "needs.changes.outputs.qa == 'true'",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/ci.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/ci.yml@2619b51c89cb847b273a4389c3226d5039dc627f",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
             "contents": "read"
           },
-          "secret_names": []
-        },
-        {
-          "id": "gems-macos",
-          "name": "Locked gems on macOS",
-          "needs": [
-            "changes"
-          ],
-          "condition": "needs.changes.outputs.gems == 'true'",
-          "runner": "xcode-27",
-          "uses": null,
-          "environment": null,
-          "timeout_minutes": 30,
-          "permissions": null,
           "secret_names": []
         },
         {
@@ -480,7 +512,6 @@
             "changes",
             "policy",
             "qa",
-            "gems-macos",
             "screenshots"
           ],
           "condition": "always()",
@@ -523,6 +554,8 @@
           "default": ""
         }
       },
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
@@ -537,7 +570,7 @@
           "needs": [],
           "condition": null,
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/release.yml@060db3e9c163ece5eb2836ac06344828b728bfe8",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/release.yml@2619b51c89cb847b273a4389c3226d5039dc627f",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -570,6 +603,8 @@
           "description": "Comma-separated capture locales; blank means all locales"
         }
       },
+      "secret_names": [],
+      "outputs": {},
       "permissions": {
         "contents": "read"
       },
