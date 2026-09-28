@@ -183,7 +183,7 @@ Concurrency: <code>{"group":"pr-${{ github.event.pull_request.number &#124;&#124
 | <code>changes</code><br>Select required checks | — | <code>ubuntu-24.04</code>; 5 min | — |
 | <code>policy</code><br>Workflow policy and release regression tests | <code>changes</code> | <code>ubuntu-24.04</code>; 30 min | — |
 | <code>qa</code> | <code>changes</code> | [ci.yml](https://github.com/northcutted/ios-release-workflows/blob/2619b51c89cb847b273a4389c3226d5039dc627f/.github/workflows/ci.yml) | <code>needs.changes.outputs.qa == 'true'</code> |
-| <code>screenshots</code><br>UI and screenshot smoke test | <code>changes</code> | <code>xcode-27</code>; 60 min | <code>needs.changes.outputs.screenshots == 'true'</code> |
+| <code>screenshots</code><br>UI and screenshot smoke (${{ matrix.device }}) | <code>changes</code> | <code>xcode-27</code>; 60 min | <code>needs.changes.outputs.screenshots == 'true'</code> |
 | <code>gate</code><br>CI Gate | <code>changes</code>, <code>policy</code>, <code>qa</code>, <code>screenshots</code> | <code>ubuntu-24.04</code>; 30 min | <code>always()</code> |
 
 ### Release

@@ -30,6 +30,7 @@ jobs:
     outputs:
       qa: ${{ steps.changes.outputs.qa }}
       screenshots: ${{ steps.changes.outputs.screenshots }}
+      screenshot_devices: ${{ steps.changes.outputs.screenshot_devices }}
       store: ${{ steps.changes.outputs.store }}
     steps:
       - name: Checkout comparison history
@@ -90,9 +91,15 @@ jobs:
       contents: read
   screenshots:
     needs: changes
-    name: UI and screenshot smoke test
+    name: UI and screenshot smoke (${{ matrix.device }})
     runs-on: xcode-27
     timeout-minutes: 60
+    # Each device gets a fresh host; a second simulator must not inherit the
+    # previous device's state or contend with its still-running services.
+    strategy:
+      fail-fast: false
+      matrix:
+        device: ${{ fromJSON(needs.changes.outputs.screenshot_devices) }}
     steps:
       - name: Checkout exact source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
@@ -109,11 +116,13 @@ jobs:
       - name: Install locked platform Ruby
         uses: northcutted/ios-release-workflows/actions/ruby@2619b51c89cb847b273a4389c3226d5039dc627f
       - name: Capture en-US screenshots
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-capture --languages en-US
-      - name: Upload pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-capture --languages en-US --devices "$SCREENSHOT_DEVICE"
+        env:
+          SCREENSHOT_DEVICE: ${{ matrix.device }}
+      - name: Upload screenshots for this device
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
+          name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
           path: fastlane/screenshots/en-US/
           retention-days: 14
           compression-level: 0
@@ -124,7 +133,7 @@ jobs:
       - name: Retain screenshot failure diagnostics
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
-          name: screenshot-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          name: screenshot-failure-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
           path: |
             fastlane/screenshot_logs/
             fastlane/screenshots/test_output/

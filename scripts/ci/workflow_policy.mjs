@@ -32,6 +32,9 @@ export function validate(workflows){
   }
  }
  check(!workflows['pr.yml'].jobs['gems-macos'], 'Platform and screenshot checks own Ruby dependency validation');
+ const smoke=workflows['pr.yml'].jobs.screenshots;
+ check(smoke.strategy?.matrix?.device==='${{ fromJSON(needs.changes.outputs.screenshot_devices) }}'&&smoke.strategy?.['fail-fast']===false,'Every configured screenshot device must run on a separate host and retain its result');
+ check(smoke.steps.some(step=>step.env?.SCREENSHOT_DEVICE==='${{ matrix.device }}'&&step.run?.includes('--devices "$SCREENSHOT_DEVICE"')),'Screenshot capture must select exactly its matrix device');
  for(const file of ['pr.yml','screenshots.yml'])check(!/bundle (install|exec fastlane)/.test(JSON.stringify(workflows[file])), 'Screenshot tools must use the supported platform command and locked Ruby action');
  check(workflows['main.yml'].jobs.prepare.uses.includes('/prepare.yml@'),'Main must only prepare candidates');
  check(JSON.stringify(Object.keys(workflows['main.yml'].jobs).sort())===JSON.stringify(['changes','prepare']),'Main may only classify changes and prepare candidates');

@@ -7,6 +7,15 @@ import {pathToFileURL} from 'node:url';
 
 export const full = () => ({qa: true, screenshots: true, prepare: true, store: true});
 
+export function screenshotDevices(config) {
+  const devices = config.screenshot_devices;
+  if (!Array.isArray(devices) || !devices.length || new Set(devices).size !== devices.length
+      || devices.some(device => typeof device !== 'string' || !device.trim() || device.includes(','))) {
+    throw new Error('Screenshot matrix requires unique, nonempty device names without commas');
+  }
+  return devices;
+}
+
 export function classify(paths) {
   const result = {qa: false, screenshots: false, prepare: false, store: false};
   if (!paths.length) return full();
@@ -80,6 +89,8 @@ if (import.meta.url === pathToFileURL(process.argv[1]).href) {
     fs.appendFileSync(process.env.GITHUB_OUTPUT, Object.entries(selection)
       .filter(([key]) => ['qa', 'screenshots', 'prepare', 'store'].includes(key))
       .map(([key, value]) => `${key}=${value}\n`).join(''));
+    const devices = screenshotDevices(JSON.parse(fs.readFileSync('.github/ios-release.json', 'utf8')));
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `screenshot_devices=${JSON.stringify(devices)}\n`);
     fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY,
       `Checks selected: QA=${selection.qa}, UI smoke=${selection.screenshots}, release candidate=${selection.prepare}. ${selection.reason}.\n`);
   }

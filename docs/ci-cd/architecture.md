@@ -20,7 +20,7 @@ The platform owns the generator, command implementation and Ruby lockfile. The [
 
 ## PR checks and performance
 
-Policy and `CI Gate` always run. The classifier selects native QA, UI smoke and store inventory checks. Unknown paths, missing comparison history and manual runs select all checks. Native QA covers lint/localization, analysis and tests on both configured runtimes. Screenshot capture exercises app-specific behavior on iPhone and iPad.
+Policy and `CI Gate` always run. The classifier selects native QA, UI smoke and store inventory checks. Unknown paths, missing comparison history and manual runs select all checks. Native QA covers lint/localization, analysis and tests on both configured runtimes. Screenshot capture exercises app-specific behavior on every configured device, with a fresh host per device. The matrix comes from `screenshot_devices` in app configuration; both iPhone and iPad results are required. One failure does not cancel the other device, and each job retains its own screenshots and failure diagnostics.
 
 The former separate gem-install job is covered by platform dependency CI and the actual screenshot consumer job. Compare runner queue time, setup, test execution and Apple processing separately. The [recorded five-run comparison](../release-rehearsal-2026-09-19.md#performance-comparison) found two workers slower; default test execution remains serial.
 

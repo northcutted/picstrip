@@ -493,7 +493,7 @@
         },
         {
           "id": "screenshots",
-          "name": "UI and screenshot smoke test",
+          "name": "UI and screenshot smoke (${{ matrix.device }})",
           "needs": [
             "changes"
           ],

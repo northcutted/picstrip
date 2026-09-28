@@ -1,6 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {classify, compare, full, gate} from '../changes.mjs';
+import {classify, compare, full, gate, screenshotDevices} from '../changes.mjs';
+
+test('screenshot matrix cannot silently omit coverage or select multiple devices per worker', () => {
+  assert.deepEqual(screenshotDevices({screenshot_devices: ['Example Phone', 'Example Pad']}), ['Example Phone', 'Example Pad']);
+  for (const devices of [undefined, [], [''], [' '], ['Phone', 'Phone'], ['Phone,Pad'], [null]]) {
+    assert.throws(() => screenshotDevices({screenshot_devices: devices}));
+  }
+});
 
 test('only known documentation paths skip candidate and simulator work', () => {
   assert.deepEqual(classify(['README.md', 'docs/release-pipeline.md']), {qa: false, screenshots: false, prepare: false, store: false});
