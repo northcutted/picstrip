@@ -121,7 +121,7 @@ PicStrip/
 │   ├── PrivacyInfo.xcprivacy   # Zero-data-collection privacy manifest
 │   ├── Assets.xcassets/, PicStrip.icon/, PicStrip.entitlements
 │
-├── PicStripShareExtension/     # Share Extension target (separate binary, ~120 MB memory ceiling)
+├── PicStripShareExtension/     # Share Extension target (separate process, bounded resources)
 │   ├── ShareViewController.swift    # UIKit host; embeds ExtensionConfigView via UIHostingController
 │   ├── Info.plist, InfoPlist.xcstrings, PicStripShareExtension.entitlements
 │   └── PrivacyInfo.xcprivacy       # Independent privacy manifest
@@ -204,8 +204,16 @@ PicStrip/
 | Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
 | Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
-| No persistence | Metadata is ephemeral; the app writes nothing to `UserDefaults`, Core Data or SwiftData |
+| No history database | Session state stays in memory; protected temporary exports and extension handoffs use explicit expiry and cleanup |
 | In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file |
+
+### Shared processing contract
+
+`ScanCoverage` records each detector's completion independently of its findings. Interactive review keeps incomplete checks visible and requires an explicit acknowledgement; unattended visual-redaction paths reject them. `ExportPlan` captures format, metadata choices and selected regions, and `VerifiedExport` describes the actual encoded result. `AuditReport` exposes counts and field names only. These contracts are shared by the main app, batch, extension and metadata-only Shortcut where applicable.
+
+`ImageResourceBudget` admits at most 25 MP / 128 MiB in the editor, 13 MP / 64 MiB in background work, and 6.5 MP / 48 MiB for extension visual processing. These limits accommodate nominal 24/12/6 MP camera dimensions. Explicit reduction targets remain 12/6 MP. They bound admission, not measured peak process memory.
+
+Photo and live-camera overlay coordinates remain left-to-right pixel coordinates inside an RTL interface. Navigation and textual controls retain the user's layout direction. Do not let directional layout mirror selection borders, handles or pan coordinates independently of the bitmap.
 
 ---
 
@@ -608,7 +616,7 @@ The full rule set is `DetectionRegistry.build()` (60 rules). Representative base
 
 **Why `.accurate` first with `.fast` fallback:** The Neural Engine is unavailable in the simulator; the `.accurate` model returns zero observations on simulator CPU paths. The retry uses a fresh `ImageRequestHandler`.
 
-**Face detector revision:** a default-initialised `DetectFaceRectanglesRequest` still resolves to revision 3 on iOS 27, so revision 4 is requested by name — on devices only (it is unimplemented in the simulator) and behind `#if compiler(>=6.4)` + `#available(iOS 27, *)`. If it errors, `scanImage` retries face detection with the default revision so a face is never silently missed.
+**Face detector revision:** a default-initialised `DetectFaceRectanglesRequest` still resolves to revision 3 on iOS 27, so revision 4 is requested by name — on devices only (it is unimplemented in the simulator) and behind `#if compiler(>=6.4)` + `#available(iOS 27, *)`. If it errors, `scanImage` retries face detection with the default revision and a failed retry remains visible in `ScanCoverage`. A completed detector can still miss a face.
 
 ### Duplicate Detection
 
@@ -627,39 +635,27 @@ ShareViewController (UIKit — UIViewController)
            │
            └─ ExtensionConfigView (SwiftUI, private)
                   └─ observes ExtensionViewModel (@Observable)
-                         phase: .configuring | .processing
+                         phase: .configuring | .processing | .ready | .finished
 ```
 
-`ExtensionViewModel` is a minimal two-phase state machine. The full processing pipeline lives in `ShareViewController.runProcessingPipeline()`.
+`ExtensionViewModel` tracks configuring, processing, ready and finished states. `ShareViewController.runProcessingPipeline()` owns sequential work, cancellation and partial-result reporting.
 
 ### Processing Pipeline (Extension)
 
 ```
 User taps "Process & Save to Photos"
     ↓
-ShareViewController.runProcessingPipeline(stripMetadata:redactPII:)
-    │
-    ├─ Request PHPhotoLibrary .addOnly authorization
-    │
-    └─ for each NSItemProvider (sequential):
-          ├─ Resolve best concrete UTI
-          │     preferredTypes: [jpeg, png, heic, com.apple.heic, rawImage, public.image]
-          │     Photos only registers concrete types; "public.image" abstract causes
-          │     loadDataRepresentation to silently drop its callback
-          │
-          ├─ Load raw Data via continuation bridge
-          │
-          ├─ Optional: PIIScanner().scanImage(data:) → redact with ImageRedactor
-          │
-          ├─ Optional: ImageProcessor.process(data:preset:config:)
-          │     or      ImageProcessor.process(image:sourceData:preset:config:)
-          │
-          └─ PHPhotoLibrary.shared().performChanges {
-                 PHAssetCreationRequest.forAsset()
-                     .addResource(with: .photo, data: finalData)
-             }
+Request Photos add-only permission
     ↓
-extensionContext?.completeRequest(returningItems: [])
+For each selected provider, sequentially:
+    Resolve a concrete image type; prefer a file representation
+    Apply encoded-byte and pixel limits
+    If explicitly allowed, create a smaller copy when required
+    ExportPipeline.clean → typed coverage → verified output
+    Reject incomplete required visual checks
+    PhotoLibraryWriter.save → per-item result
+    ↓
+Show completion or partial-result summary; support cancellation/retry
 ```
 
 ### Shared Core Without a Framework Target
@@ -668,13 +664,9 @@ iOS extensions are separate processes. An extension binary cannot dynamically li
 
 `ExportFormat+AppEnum.swift` remains app-only because it imports `AppIntents`. The extension uses the shared `ExportPreset` directly.
 
-### 120 MB Memory Ceiling
+### Extension resource limits
 
-iOS kills extension processes that exceed ~120 MB without warning. Mitigations:
-
-- Images are processed sequentially — never concurrently.
-- `UIImage` and `Data` references are released immediately after each encode.
-- The extension saves directly to Photos (no in-memory accumulation of processed images).
+Extension memory limits depend on the device and OS; there is no universal safe peak. Visual processing admits up to 6.5 MP and 48 MiB of encoded input. Metadata-only processing uses the 13 MP background limit. Larger images require explicit consent to a smaller copy (6 MP visual / 12 MP metadata target), or the user can hand the original to the main app. Processing stays sequential and saves each output through `PhotoLibraryWriter` without accumulating decoded results. Profile the exact signed build on hardware before accepting these budgets.
 
 ---
 
@@ -726,7 +718,7 @@ The `images` parameter declares `inputConnectionBehavior: .connectToPreviousInte
 | Same | JPEGs with GPS/EXIF/IPTC | Saved JPEGs clean |
 | Get Latest Photos → Strip Metadata from Images *as PNG* → Save to Photos | JPEG (Nikon, GPS, IPTC) | Saved PNG, no metadata |
 
-Photos-backed `IntentFile`s arrived with non-empty `data` and a `fileURL` inside the Shortcuts runner's temp directory; the `fileURL` fallback in `readData(of:)` stays as a guard because earlier OS versions were seen returning empty `data`.
+`readData(of:)` prefers bounded reads from a security-scoped `fileURL`, then accepts inline data when no URL is available. Each verified output is written to a protected file with a neutral `PicStrip` filename and returned with `removedOnCompletion = true`. Failure removes earlier outputs; successful temporary outputs also have an expiry sweep.
 
 Known quirks, none of them in PicStrip's code:
 
@@ -740,11 +732,10 @@ Known quirks, none of them in PicStrip's code:
 
 | Data | Storage | Key | Scope |
 |------|---------|-----|-------|
-| "Edit in PicStrip" hand-off | App Group container (`group.com.northcutt.PicStrip`) | `pending-edit.data` | Until the app next becomes active; written with complete file protection, deleted before loading |
-| Audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_Audit_<UUID>.json` | Session |
-| Batch audit JSON | `FileManager.default.temporaryDirectory` | `PicStrip_BatchAudit_<UUID>.json` | Session |
+| "Edit in PicStrip" handoff | App Group `PendingEdits` directory | Neutral unique filename | 15-minute validity; oldest first, removed on consumption or cancellation |
+| Audit JSON and Shortcut outputs | Temporary `PicStripExports` directory | Neutral unique filename | Cleanup after use/failure where applicable; one-hour expiry |
 
-No photo metadata, no detection results and no user preferences are ever persisted; the app does not use `UserDefaults` at all (and its privacy manifest no longer declares it). This is intentional — nothing about which photos were processed or what PII was found survives a session.
+`PrivateFileStore` writes files with complete protection and excludes its directories from backups. Expired files are rejected and cleaned when the store is accessed; expiry is not a guaranteed background deletion timer. A pending handoff contains the selected original. Reports contain field names and counts, never removed values, OCR snippets or region coordinates. The app has no processing-history database and does not use `UserDefaults`, Core Data or SwiftData. See `PRIVACY.md` for user-selected exports and Photos retention.
 
 ---
 
@@ -760,15 +751,17 @@ Both the main app and share extension declare:
 <key>NSPrivacyTrackingDomains</key><array/>
 ```
 
-Zero data collection. No analytics, no crash reporting, no telemetry.
+No developer data collection, analytics or third-party crash-reporting SDKs. User-selected exports and system services follow the privacy policy.
 
 ### Required-Reason APIs
 
 | API category | Reason code | Why |
 |-------------|-------------|-----|
-| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1` | ImageIO reads file timestamps during metadata extraction — not for fingerprinting |
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1`, both targets | Container file metadata for bounded reads, expiry and oldest-first handoff consumption |
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | `3B52.1`, both targets | File-size checks for files explicitly selected by the user |
+| `NSPrivacyAccessedAPICategorySystemBootTime` | `35F9.1`, app only | Elapsed time between live-camera frames for throttling; not stored or transmitted |
 
-All other frameworks (Vision for OCR, Photos for saving, ImageIO for encoding) do not trigger required-reason APIs.
+Re-audit declarations when adding file, timing or other required-reason API use. The extension does not call the camera uptime API.
 
 ### Permissions
 
@@ -794,7 +787,7 @@ CGImageDestinationCopyImageSource  ImageIO — native iOS
 PHPhotoLibrary.performChanges       Photos — native iOS
 ```
 
-PicStrip has no server and makes no network request of its own. The single exception is iOS downloading Apple's object-selection model on request (`ObjectSegmenter.downloadModel()`), which only `downloadObjectModelAndContinue()` — the consent alert's Download button — can trigger. Nothing about a photo is ever transmitted.
+PicStrip has no image-upload service. Apple's object-selection model can download only after explicit consent through `downloadObjectModelAndContinue()`. Selected Photos/file providers may download an image, and saving or sharing follows the user's chosen service and sync settings. Processing and detection remain on device; user-directed exports may leave it.
 
 ---
 
@@ -957,11 +950,11 @@ The iOS JPEG/HEIC encoder unconditionally re-synthesises structural rendering fi
 
 ### Two-Pass Encoding Overhead
 
-The two-pass strategy adds ~50–100 ms to export time on current hardware. This is not optimisable without breaking the privacy guarantee. Profile with Instruments before proposing changes.
+The two-pass strategy has encoding and memory costs that depend on format and image content. Preserve output-metadata verification when optimizing it. The [release-readiness measurements](docs/evidence/release-readiness-2026-09-27/device-export-benchmark.json) are synthetic, Debug, export-only measurements; they do not establish scanner latency or worst-case memory. Profile the signed candidate with representative photos.
 
 ### Share Extension Memory Ceiling
 
-iOS kills extension processes at ~120 MB without warning. The sequential processing model and explicit deallocation between images are not optional micro-optimisations — they are the budget constraint. Do not introduce concurrent image processing inside the extension.
+Keep extension work sequential and enforce the resource limits above before decoding. Encoded byte size alone does not bound bitmap memory, and the pixel limits still require real-device acceptance.
 
 ### OCR Language Correction Must Stay Disabled
 
@@ -977,7 +970,7 @@ iOS kills extension processes at ~120 MB without warning. The sequential process
 
 ### Batch Processing Must Remain Sequential
 
-Concurrent batch processing would require holding multiple decoded `UIImage` objects in memory simultaneously. On a device processing ten 12 MP photos, this exceeds available memory. The sequential loop with explicit `nil` assignments is not defensive programming overhead — it is the memory model.
+Concurrent batch processing would hold several decoded images and intermediate buffers at once. Keep sequential processing and per-item resource admission; file-backed outputs prevent earlier encoded results accumulating in the Shortcut process.
 
 ### The Language Model Is On-Device Only, and Not Trusted
 
@@ -989,7 +982,7 @@ Concurrent batch processing would require holding multiple decoded `UIImage` obj
 
 ### The Object-Selection Model Is Never Downloaded Unasked
 
-Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model is an asset the OS downloads from Apple on request (`assetStatus` / `downloadAssets()`); it cannot be bundled. It is the only thing in the app that can cause a network transfer, so `ScrubberViewModel.selectObject(at:)` never calls `downloadModel` itself: a `.needsDownload` status raises the consent alert, and only `downloadObjectModelAndContinue()` — the alert's "Download" button — fetches it. Keep that property when touching this code; `ObjectSelectionFlowTests` pins it. Regions are rectangles, so the mask is reduced to its bounding box (`SegmentationMask.boundingBox`), and a mask covering almost the whole image is rejected as "the background".
+Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model is an asset the OS downloads from Apple on request (`assetStatus` / `downloadAssets()`); it cannot be bundled. It requires separate download consent. `ScrubberViewModel.selectObject(at:)` never calls `downloadModel` itself: a `.needsDownload` status raises the consent alert, and only `downloadObjectModelAndContinue()` — the alert's "Download" button — fetches it. Keep that property when touching this code; `ObjectSelectionFlowTests` pins it. Regions are rectangles, so the mask is reduced to its bounding box (`SegmentationMask.boundingBox`), and a mask covering almost the whole image is rejected as "the background".
 
 ### Marketing Screenshots Live in Git LFS
 

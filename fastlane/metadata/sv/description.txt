@@ -1,43 +1,19 @@
-Dela bilder utan att dela din position, din identitet eller hemligheter du inte ser. PicStrip tar bort osynlig metadata och döljer känslig information — helt på enheten, utan konto, utan uppladdningar och utan att kräva nätverksanslutning.
+Hitta och dölj privata uppgifter innan du delar foton. Analys, maskering och borttagning av metadata sker på din enhet. Foton går till en annan app eller tjänst endast genom de import-, spar- och delningsåtgärder du väljer.
 
-METADATA-BORTTAGNING
-Varje foto bär osynligt med sig GPS-koordinater, tidsstämplar, kameramärke och modell, objektivdata, serienummer och Apple-tillverkarinformation. PicStrip tar bort allt detta innan du delar — med en tryckning.
+Prova ett exempel
+Ett påhittat foto. Ingen åtkomst till bildbiblioteket behövs.
 
-UPPTÄCKT OCH DÖLJANDE AV KÄNSLIG INFORMATION
-OCR och datorseende som körs på enheten skannar bilden efter 30 typer av känsliga personuppgifter (PII), rangordnade i fyra risknivåer:
+Granska upptäckter i maskeringsredigeraren. Varje träff visar matchningsstyrka och risknivå så att du kan välja vad som ska döljas. Granska fotot innan du delar. Automatisk upptäckt kan missa detaljer. Namnförslag kräver Apple Intelligence och döljs inte automatiskt. En valfri modell för objektmarkering kan hämtas från Apple efter ditt godkännande.
 
-Kritisk — API-nycklar, kreditkort, personnummer, lösenord, JWT, databasanslutningssträngar
-Hög — ansikten, IBAN, ABA-routingnummer, SWIFT/BIC-koder, fysiska inloggningsuppgifter
-Medel — e-post, telefonnummer, adresser, kryptoplånböcker, chassinummer, registreringsskyltar, IP- och MAC-adresser
-Låg — födelsedatum, länkar, streckkoder
+Justera maskeringar genom att dra eller använda Position och storlek. Lägg till ett centrerat område utan att rita. Använd Markera för att ändra flera områden. Oskärpa och pixling kan lämna igenkännbara detaljer. Använd heltäckande maskering för hemligheter och identifierande text.
 
-Varje upptäckt visar typ, säkerhetsbedömning och risknivå så att du vet vad du ska dölja först.
+Granska dolda metadata, som plats, kamerauppgifter och datum. Välj vad du tar bort och kontrollera det rensade resultatet.
+PNG: Förlustfri kvalitet för skärmbilder och text. Större filer.
+JPEG: Mindre filer för vardagsfoton. Brett stöd.
+HEIC: Kompakta foton med hög kvalitet. Kontrollera mottagarens kompatibilitet.
 
-DÖLJ-REDIGERARE
-• Rita var som helst för att manuellt täcka över det skannern missade
-• Multimarkering och bulkändringar
-• 4 stilar: heltäckande, korsskrafferad, pixelering eller oskärpa
-• Justerbar styrka för oskärpa och pixelering
-• Se exakt hur varje markering kommer att se ut innan du sparar
-• 12 färger för heltäckande och korsskrafferade markeringar
-• 50 ångra/gör om-steg
+Granska och dela den rensade bilden, eller spara en kopia i Bilder. Delningstillägget erbjuder även direkt rensning eller skyddad överföring för redigering. Redigera öppnar den första originalbilden för granskning. En skyddad lokal kopia upphör att gälla efter 15 minuter. Stora foton kräver mindre kopior i tillägget: upp till 6 megapixlar för maskering, eller 12 för enbart metadata. Redigera i PicStrip för fullständig granskning.
 
-IMPORTERA FRÅN VAR SOM HELST
-• Foto-biblioteket
-• Filer-appen — öppna vilken bild eller skärmbild som helst direkt
-• Ta en bild i appen — originalet hamnar aldrig i bildbiblioteket
-• Skanna dokument med kameran — originalet hamnar aldrig i bildbiblioteket
-• Dra och släpp bilder i appen
-• Delningstillägg — städa direkt från Foton, Safari eller vilken app som helst utan att öppna PicStrip
+Bakgrundsåtgärden i Genvägar tar bara bort metadata. Öppna PicStrip för att granska och dölja synligt innehåll.
 
-INTEGRITET BY DESIGN
-• 100% på enheten — inget lämnar din telefon
-• Ansiktsdetektering stannar på enheten; PicStrip samlar inte in, lagrar, överför eller delar ansiktsdata
-• Inget konto, ingen inloggning, ingen spårning
-• Inga annonser, inga köp i appen, inga prenumerationer
-• Öppen källkod — varje rad kod kan granskas på GitHub
-• SLSA-nivå 3 build-provenance — varje release verifieras kryptografiskt
-• Integritetsetikett: "Inga data samlas in"
-
-KORTKOMMANDON OCH AUTOMATISERING
-PicStrip innehåller en Genvägar-åtgärd som automatiskt tar bort metadata och döljer känslig information: vid import, i bulk eller som del av dina arbetsflöden.
+Rapporten innehåller fältnamn och antal, aldrig ursprungliga metadatavärden eller upptäckt text.

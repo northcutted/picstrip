@@ -1,0 +1,52 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "modelName": "iPhone 17",
+        "osBuildNumber": "24A434",
+        "osVersion": "27.0",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "passedTests": 234,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "PicStrip \u00b7 Built with macOS 27.0",
+  "expectedFailures": 0,
+  "failedTests": 0,
+  "finishTime": 1790544245.75,
+  "passedTests": 234,
+  "result": "Passed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1790544129.402,
+  "statistics": [
+    {
+      "subtitle": "2 test runs",
+      "title": "2 tests collected performance metrics"
+    }
+  ],
+  "testFailures": [],
+  "title": "Test - PicStrip",
+  "topInsights": [
+    {
+      "category": "Longest Test Runs",
+      "impact": "46% of duration",
+      "text": "4 longest test runs with outlier durations exceeding 1.62s (three standard deviations)"
+    }
+  ],
+  "totalTestCount": 234,
+  "evidence_scope": {
+    "configuration": "Debug",
+    "xcode": "27.0 release 27A266a",
+    "purpose": "Full app unit and integration suite including file-first transfer and nominal camera-resolution admission regressions",
+    "limitations": "Simulator Vision barcode support is unavailable; failed checks require explicit manual review. The subsequent large-text-only presentation adjustment is verified in the separate UI run. Physical-device acceptance is recorded separately."
+  }
+}

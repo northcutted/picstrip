@@ -1,1 +1,1 @@
-PicStrip supprime les métadonnées et masque les données sensibles, dont les visages, sur l'appareil. Aucune donnée faciale, aucun envoi.
+Repérez et masquez les détails privés avant de partager vos photos. Traité sur votre appareil. Essayer un exemple.

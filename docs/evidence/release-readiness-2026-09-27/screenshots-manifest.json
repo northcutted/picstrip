@@ -1,0 +1,855 @@
+{
+  "files": [
+    {
+      "bytes": 551344,
+      "name": "en-US/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "7996124fa29c13f602d158523d54f7fb0623f9654bce8a32e84c7376e7b0f9e2"
+    },
+    {
+      "bytes": 603345,
+      "name": "en-US/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "e4fd56c0200226a1f94e0c3d9fe5c95d084d01d7e10b184468985854f65d61ab"
+    },
+    {
+      "bytes": 615871,
+      "name": "en-US/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "f751351d32f805a02b292e3d18a31816aaa2e87887c2f17911dfac7c3c6312d8"
+    },
+    {
+      "bytes": 668718,
+      "name": "en-US/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "15d56fab6ad4b92c1116f7230577c7d272ba013ab1b730c93bf25e98d1e015bf"
+    },
+    {
+      "bytes": 495199,
+      "name": "en-US/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "b52a5ea25e7463fea21f1ed448e31a1fc1dd3608f9042b462594b54f02461c77"
+    },
+    {
+      "bytes": 567510,
+      "name": "en-US/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "3ad926cb4a2ac5b859475b19cf979024a6def58d54b219dd461311875bae4bab"
+    },
+    {
+      "bytes": 617887,
+      "name": "en-US/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "c95a6f1da7d065c0b3acce21f160d306be13eacac67922eb438151850ed398be"
+    },
+    {
+      "bytes": 609867,
+      "name": "en-US/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "1682ff7b9c8368eec532dced0cbd1d4a58d607aab2076ce722fb39a191041680"
+    },
+    {
+      "bytes": 604539,
+      "name": "en-US/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "214bcbe5ed7382d4767ad869be2075e078dfa35261854e7b0fea72674fecf57e"
+    },
+    {
+      "bytes": 512599,
+      "name": "en-US/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "8feb963dcaad4c751f31cf0a8d80b29be61e494fda5a574e6ba86d8db14ba60a"
+    },
+    {
+      "bytes": 552550,
+      "name": "ar-SA/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "e6517db7985ad304afff52d27bb1226fc18025c400842720d02ccfbdfdd43a0e"
+    },
+    {
+      "bytes": 585230,
+      "name": "ar-SA/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "68ab68c7dd9f13ac289c818627df0873875701d547e32c955b59158f515daf01"
+    },
+    {
+      "bytes": 609492,
+      "name": "ar-SA/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "4c3ccac8d498ef04cd4dfdc7e07bc35beb99b145a42ec2c6d0b70fe35855034c"
+    },
+    {
+      "bytes": 669904,
+      "name": "ar-SA/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "e832af1fc3cdf18efa462854bf23a30ff355e534c4b219258b11cf500de377f6"
+    },
+    {
+      "bytes": 481618,
+      "name": "ar-SA/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "c8301286510b918fca12f1beaa2078d5c2873487740c995f62b0f1d480d32ef3"
+    },
+    {
+      "bytes": 580687,
+      "name": "ar-SA/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "40b07d5e33245987e6708cbd3614615463a409d9db534acd7f47e1b5b510c37e"
+    },
+    {
+      "bytes": 648943,
+      "name": "ar-SA/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "d8208fbaf1ca9d479beeb6aed6a1013b02869fd855060a6686714055b2a67160"
+    },
+    {
+      "bytes": 666173,
+      "name": "ar-SA/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "3176aaec7354bb4a29c932efc3fa21300d6572f1e6d4f6132a0253220ed73e19"
+    },
+    {
+      "bytes": 661917,
+      "name": "ar-SA/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "55a52a1271721d84eca64b60667266ad69ae47f907983f3b8d239ea997815b0b"
+    },
+    {
+      "bytes": 492723,
+      "name": "ar-SA/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "8e99572cd556e07d2d244c6399ada75e4cacf0ba047cd07f542e602f8fc5cdf4"
+    },
+    {
+      "bytes": 568287,
+      "name": "de-DE/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "9ee81d62c904c6fd8c61b24cd476a3cdaac7fa92bf17a1fa57bbdc3c21cf1b33"
+    },
+    {
+      "bytes": 628835,
+      "name": "de-DE/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "bf68e2ce8a0a6ef97f41b528b0a05ec7841b79de36dbf58f0f905c9d6dc2da7f"
+    },
+    {
+      "bytes": 628724,
+      "name": "de-DE/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "c8d5785c6c25f315248e2111e18ffe95e22589fb14a4cc6862612de56c7ae6ed"
+    },
+    {
+      "bytes": 690764,
+      "name": "de-DE/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "944543dd87a3370d10240b82f703d410f6454ef4b32620ae1fb1f3ce22cafb48"
+    },
+    {
+      "bytes": 526301,
+      "name": "de-DE/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "3aef881326785a1240f15807880608b2c054202bcb678954a83e9b8286c237e8"
+    },
+    {
+      "bytes": 582183,
+      "name": "de-DE/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "2e69302d11f26dfe67b38100a907e7887ede1ba8428c4aa251555171e8c35a7c"
+    },
+    {
+      "bytes": 592641,
+      "name": "de-DE/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "0f87d0a50d7b6427bc6726ef5cfc2f1863a7160391ad03a587398410b24e7ff9"
+    },
+    {
+      "bytes": 598631,
+      "name": "de-DE/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "46dd4059a745320cd04ac24f168eb29ce1b8c458b654e07cef8832465230b11a"
+    },
+    {
+      "bytes": 602850,
+      "name": "de-DE/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "f0b17a778a479275d3185f4b97b6d1526c274fce76f55e12ce937fd01f35bffc"
+    },
+    {
+      "bytes": 543814,
+      "name": "de-DE/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "bc9f780209c478518f55fddc8f0425e493f31fa8e5a11a2a65a01556385e7a5a"
+    },
+    {
+      "bytes": 567644,
+      "name": "es-ES/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "81764c152935bd0a20bea5570b86a432217fa806c3d8e4f87c05324761651e63"
+    },
+    {
+      "bytes": 635506,
+      "name": "es-ES/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "0639315f84ed4b7d69bfb5dd091a3316c0d4790131dae6b6b0d2fd267b665d31"
+    },
+    {
+      "bytes": 642639,
+      "name": "es-ES/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "1971fad70aafb8fd92daea5fea9f7561ae3f8746045e67c77f70b44c080d21df"
+    },
+    {
+      "bytes": 722191,
+      "name": "es-ES/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "d4856db100fc9bf055a4020d111fa781fda302b5fdf395fca9e70259127d6763"
+    },
+    {
+      "bytes": 516197,
+      "name": "es-ES/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "e445d1c63834ade23940684b787b4b3008e2d13ae12407abf39211e1f847d0d8"
+    },
+    {
+      "bytes": 560700,
+      "name": "es-ES/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "09b2dda7d812c242d389d1ddba1a5582be3787f641ee41b021dc414e0b044e6a"
+    },
+    {
+      "bytes": 650847,
+      "name": "es-ES/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "06dd032191a94d27cd1dc1dc66451b75fe6f41dd1680a94808b62b6b2286fe2d"
+    },
+    {
+      "bytes": 636681,
+      "name": "es-ES/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "7072fe1bbce513fe08c26bf1849308a16f1fe091b44fc2ee5a4843270242bd91"
+    },
+    {
+      "bytes": 634157,
+      "name": "es-ES/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "8e2fd6cac0d416cdf4733a724fc4befe32ff50f9193650732bb79efbe222880e"
+    },
+    {
+      "bytes": 533328,
+      "name": "es-ES/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "59ff05867d4ed1f92dd62ce2f0722ee3e95b8280aba49a93cc6acceeb67ec08b"
+    },
+    {
+      "bytes": 568665,
+      "name": "es-MX/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "c45a7dfadd1c22b4efc0b72d77f3b0c3903292e0a5b2b843f374565087999c65"
+    },
+    {
+      "bytes": 639395,
+      "name": "es-MX/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "ed80b8e868eea9f15b9c011db5282e91f64d24fe7348dcc7d29ebf71159a16c5"
+    },
+    {
+      "bytes": 644025,
+      "name": "es-MX/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "0a76257d257fed6c8dc485fd7f6ccd2a779c20cc86ff685b34963cb70128f135"
+    },
+    {
+      "bytes": 723521,
+      "name": "es-MX/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "9471ae87b17585d6706715ef542c20a04c2e302df192592110c7dd86bf7f3c6f"
+    },
+    {
+      "bytes": 516768,
+      "name": "es-MX/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "4b09491544c8c375123edf3914399e5b38ebf9da02377f7ac109cd817b4c5016"
+    },
+    {
+      "bytes": 560437,
+      "name": "es-MX/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "eae2c30919f24c94a6bba7d8509fe759a8424a4658c67e7a5578c7cf7588e7ad"
+    },
+    {
+      "bytes": 652085,
+      "name": "es-MX/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "fc998e7d8503d01f348284d67e3ad7d6e90323f9253ee7677a97f5823af2be14"
+    },
+    {
+      "bytes": 636701,
+      "name": "es-MX/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "1ddd44ae071c5faa0647a27c5e09739758a365537aa7cd2e401672efccd2aa72"
+    },
+    {
+      "bytes": 633974,
+      "name": "es-MX/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "97c8b8d31f8924b4d33502ab32fe7cca486a6ae16b60e18be5293215ee4987f5"
+    },
+    {
+      "bytes": 533498,
+      "name": "es-MX/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "1b87eafc6e7aa064418881e99eedcb4b612a74e6dcb386ee0c7675cf20d92fc4"
+    },
+    {
+      "bytes": 564243,
+      "name": "fr-FR/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "de6bcef09dcbfdabd624f811a7a0bdaba09166876343af5e9e8a45e1e94de4ee"
+    },
+    {
+      "bytes": 633595,
+      "name": "fr-FR/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "930e21ff068f4ef0572ff9a0f84212e24e402d164c845805baadbc195655377b"
+    },
+    {
+      "bytes": 641778,
+      "name": "fr-FR/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "2c45ad2b7f7506f08f064071ba9ba126fec66c00ce57be28018802f893ac6944"
+    },
+    {
+      "bytes": 698790,
+      "name": "fr-FR/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "931a23c45bf5d7605dd05470ff1d4fdc49af6f1e415a39bbd43acdda1e7da648"
+    },
+    {
+      "bytes": 522902,
+      "name": "fr-FR/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "a9933fc8af023013b85ebc8c8d389b983e4c7f336b8d122ef5f9e721cf4fb31b"
+    },
+    {
+      "bytes": 562387,
+      "name": "fr-FR/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "b8912478fc26c89dbd83c97dcf069b6466275db1deed92eca8a9071024ef2af8"
+    },
+    {
+      "bytes": 608610,
+      "name": "fr-FR/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "a1f5adbba0019071264a46afd7b9c504cfecf091433360a219e5734b331e4da0"
+    },
+    {
+      "bytes": 624343,
+      "name": "fr-FR/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "52d941069cd5b498b80ff364b8c103ab8736757a660be833c19ea6e834d2fb46"
+    },
+    {
+      "bytes": 640415,
+      "name": "fr-FR/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "d962efb6a25ee92a2d0648af173aa49b503ddda37c34558e22ef5dda499daa2d"
+    },
+    {
+      "bytes": 532103,
+      "name": "fr-FR/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "0ae83875e9e826b90bf026fb5014b30481e8917d476f0510f46608b4472068bf"
+    },
+    {
+      "bytes": 564630,
+      "name": "it/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "fd41bf6d0372e668baf006c121ba1f8169da2a9f13af75a4e07fe9d66585a824"
+    },
+    {
+      "bytes": 641303,
+      "name": "it/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "9fb2fac3b219f85fc5fc7cc373f0f06a982d430e4c4b1e77f1b57c9fd6106cdc"
+    },
+    {
+      "bytes": 627735,
+      "name": "it/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "02a7d0bccbdaf5b7239974c537023e534efb30dd1805429ffd6859c5be1b97e1"
+    },
+    {
+      "bytes": 700216,
+      "name": "it/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "3cbd47a0f2395e0f9baf1d54e44037bfa4af278fff0be22adde977c4601cce1e"
+    },
+    {
+      "bytes": 518915,
+      "name": "it/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "584daa92ae0e28de7500497be6f5dfd542592919170f5cdfbaca889b07c9fbed"
+    },
+    {
+      "bytes": 556286,
+      "name": "it/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "8dbf2186d02dda325c44d996ca883fb671ca2a369611ecf3f66b4046c8b4c03b"
+    },
+    {
+      "bytes": 632782,
+      "name": "it/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "87c8a94d0cbd69bd3624792706d5a73219dfa25e38607a6bf2194c2c736ee682"
+    },
+    {
+      "bytes": 605205,
+      "name": "it/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "c7b6928469c7e4d5923671aaa20cf32de6242fcda989b1925597809e2e41b8be"
+    },
+    {
+      "bytes": 628614,
+      "name": "it/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "51fff4a077df0b4094f94765eace05d7a0a73fe453a0ba0830fb49bef08a85c9"
+    },
+    {
+      "bytes": 545926,
+      "name": "it/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "6d7b4a1bb132f8245f0dc447c384d17646de556ee1ff4d057a24852bd03cda3f"
+    },
+    {
+      "bytes": 565771,
+      "name": "ja/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "82cb8d7086b55ae50cdb350882dd9a116b473b89125985c99d5c601ed2e47d83"
+    },
+    {
+      "bytes": 602192,
+      "name": "ja/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "afb7c9790e4ec0f7e8427086b26b7a5d862e8e7d12b7daf092297212e11df658"
+    },
+    {
+      "bytes": 624604,
+      "name": "ja/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "f8982b4e8f6cd236e659eae7f61bed4985d7de886d35eef3af8214ff48e8872a"
+    },
+    {
+      "bytes": 696332,
+      "name": "ja/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "ed4775aff0202baebfc14eb7e804b14dbd6db4a7fb9387b438bb330987b5586f"
+    },
+    {
+      "bytes": 516144,
+      "name": "ja/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "f41987305cae181c61e327293082c05a219513d62de38e5fbc3e17a11e906032"
+    },
+    {
+      "bytes": 591200,
+      "name": "ja/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "7ec7699364965f671e5ea3bac12c67767a36b2e039c79f3ea52c48d1bf48983d"
+    },
+    {
+      "bytes": 661943,
+      "name": "ja/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "ac03a143e62c20d4dd722d77e5a7bd0024c555cbf7706829ad2d78ef1d84ffb9"
+    },
+    {
+      "bytes": 622668,
+      "name": "ja/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "9d37365e17d33ffbdc2f254e5fbe48b36c356a4ef0d8a94aff6af912613fb3d8"
+    },
+    {
+      "bytes": 666985,
+      "name": "ja/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "7775d1a34fbd59d0ad71c51f1bef5949ad4dfbe770c4d8f991a9263d5198113f"
+    },
+    {
+      "bytes": 582662,
+      "name": "ja/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "7787c3fd305de52afd8a3a660d629ae2e6e5ee8c0f9336094c3061baefe25520"
+    },
+    {
+      "bytes": 535137,
+      "name": "ko/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "84ec0e72c91527ae0e91fc78ef2689638757b38183b50f4ba67a5e82e16dce7b"
+    },
+    {
+      "bytes": 556959,
+      "name": "ko/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "ee5a550e5d179470859ffc2449db1756cfb767ce74dd8fdf12bfa4b268acefb6"
+    },
+    {
+      "bytes": 577415,
+      "name": "ko/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "e205d10ee14c08015c13017c74d245cd86cb694ba31b801aba4165f28e113212"
+    },
+    {
+      "bytes": 591524,
+      "name": "ko/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "0b52e34953a64e1410eb37d37a88bbd7fd849723860df874ab993bf5f131def1"
+    },
+    {
+      "bytes": 460774,
+      "name": "ko/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "ad113aac782aae11d12a5b716015b154302aabae9f6ecab92c0e79392d71e142"
+    },
+    {
+      "bytes": 555318,
+      "name": "ko/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "5167f2af7dd7a47c82df8d2532bb6a83d7fdcb0016ba97d7cdcb29ac443d744b"
+    },
+    {
+      "bytes": 597290,
+      "name": "ko/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "e6e2bbed2e559af579032784667a2d6b7f9ee58991c4e1414c4fb2b29015b355"
+    },
+    {
+      "bytes": 607622,
+      "name": "ko/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "dc5d171ef40ec06c99028598583612bff28e67748b4e1eacef8b8bc2e94f4f4f"
+    },
+    {
+      "bytes": 561430,
+      "name": "ko/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "4ff35d69b3cce770889e95e7aab7bf35c1e28dcd5f48682972872dab8582cc65"
+    },
+    {
+      "bytes": 487632,
+      "name": "ko/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "4f668f1b09977397328376ace896900fc8de4848e11ca7493bba3ebd7fd4f87b"
+    },
+    {
+      "bytes": 573162,
+      "name": "nl-NL/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "0a1fe784c0216dcb38b2766da4ea1586833480b7ea59f9ff3359a251e48dd3cd"
+    },
+    {
+      "bytes": 636805,
+      "name": "nl-NL/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "d174812e15159272d801c886748158412add188634817539f4ea557d5a601562"
+    },
+    {
+      "bytes": 636759,
+      "name": "nl-NL/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "b89d545749bb2b560dd5e90d7425020cf02693ef59c3a5a17aa19ff54a253363"
+    },
+    {
+      "bytes": 714888,
+      "name": "nl-NL/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "6f596f3c553e6ae21aeca1b0242860955085a5cf96b69ee09a54a3c6af57e82a"
+    },
+    {
+      "bytes": 518962,
+      "name": "nl-NL/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "67d2117ce338368f4fa4782d116ec02287d844fb55d9c74f5fbf33f65b043549"
+    },
+    {
+      "bytes": 570416,
+      "name": "nl-NL/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "f2ed4706a13003e1fb4932b5b23b0eaa8e88d42235542e9fdacd8ece2457cf58"
+    },
+    {
+      "bytes": 590789,
+      "name": "nl-NL/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "287e334b769edd978cf45d2ce7a1112c954093e1ddc5a6b5256c38f7996240f4"
+    },
+    {
+      "bytes": 624412,
+      "name": "nl-NL/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "5bf664679388f724e49bbd0318005aa4c37bb81e2745478b2cffa9729c58cf45"
+    },
+    {
+      "bytes": 624508,
+      "name": "nl-NL/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "7ccee04df9d59ee7066bbc7b7459607b8cfe758fbe1e33a2d597e9aecac98562"
+    },
+    {
+      "bytes": 520030,
+      "name": "nl-NL/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "ddfd779c15dee142e4473c613858c7a60265200112b31f0f299feddfde6e38b8"
+    },
+    {
+      "bytes": 582929,
+      "name": "pl/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "a26e4e99a5261e4244fe819739db859b0fedf97c55c9b2e9cdb6d8e7363ac612"
+    },
+    {
+      "bytes": 649077,
+      "name": "pl/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "e2440375c99d9a894599ec90a29f361937f4c5b788ea1b693733105d3375ce85"
+    },
+    {
+      "bytes": 640345,
+      "name": "pl/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "79536663a57c2f510abd758e32ad056c281511c89dc2275e2d2fe0d014c50614"
+    },
+    {
+      "bytes": 705594,
+      "name": "pl/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "5d78610d0e92648a6459a7511c710be12db90a39f429bf07ddb9c397c0776fcc"
+    },
+    {
+      "bytes": 537399,
+      "name": "pl/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "81c51c4cea2af0d24991e3308dccc861a0bdc6061ea0b8031bff5d7720b96aa1"
+    },
+    {
+      "bytes": 589623,
+      "name": "pl/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "1079c5cf99bbde92d08ba75f4a7ada403bca34210c29a67954dfe7c3ebb02765"
+    },
+    {
+      "bytes": 610713,
+      "name": "pl/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "0400ed8e99cc650169789e6905fccd0348ac44142cf5cfffdd1d504b4c2e18dd"
+    },
+    {
+      "bytes": 612593,
+      "name": "pl/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "c32c08f84e9a2ff598d53c552fcad0a017b45ebd32393453b58b9408c971db00"
+    },
+    {
+      "bytes": 623855,
+      "name": "pl/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "f753f484bfa72e6838107bde0cfa282a2d93b1f1443c41c4312880b0622fb4da"
+    },
+    {
+      "bytes": 564192,
+      "name": "pl/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "f168a0e9b5c98874e910a1f1336e201b7854e3ce54032bcc11b1c16cd3754f27"
+    },
+    {
+      "bytes": 572130,
+      "name": "pt-BR/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "a86e2a504bb802c376219890ffe6a2e2eee24d72b701c4a4baf98bae860716a0"
+    },
+    {
+      "bytes": 657553,
+      "name": "pt-BR/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "781d0c56c66375badbcb0642dd5602ca5f993ab432a99459f6aa48ac38bd18aa"
+    },
+    {
+      "bytes": 655989,
+      "name": "pt-BR/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "5806c1d2ea459ba2986aefe59ad3d04f7657f7fd97d1ea7f306a0ed970f70905"
+    },
+    {
+      "bytes": 714387,
+      "name": "pt-BR/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "4e722fb372743c819925c1aeb428536175ab85fc2c77dc3a3ef57227d769f3c8"
+    },
+    {
+      "bytes": 540392,
+      "name": "pt-BR/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "0c1699ad0d3afc3e56127a9ebc157bdae8ab587af47d1a3b24d93b06769aa3a0"
+    },
+    {
+      "bytes": 562197,
+      "name": "pt-BR/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "92773d89944bf370f31fa20c7c49f0eab61c80c64892a8bf8488790e96f7dfb7"
+    },
+    {
+      "bytes": 626085,
+      "name": "pt-BR/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "f15fd5fd716d06928bbaa9436a6d000ab64a6c1d4c69568109bf3b1d87ef1abd"
+    },
+    {
+      "bytes": 634975,
+      "name": "pt-BR/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "9636f27d851755675df5bd201b063ed9344df4da62b0189079731807916fe4b7"
+    },
+    {
+      "bytes": 626479,
+      "name": "pt-BR/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "72e70818b5bea62d8a69c3dde21ac2e904054910745c6c37df642894ce8a870d"
+    },
+    {
+      "bytes": 512367,
+      "name": "pt-BR/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "dbfea60c572c4185c75b9615ee66cd7851229a3402bd84aa7235d369bf4a2f7a"
+    },
+    {
+      "bytes": 579811,
+      "name": "pt-PT/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "e71fecc054ed7fc1b680010b55606482f2b6f83b1dfae0e992894a686864995e"
+    },
+    {
+      "bytes": 653016,
+      "name": "pt-PT/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "1682f6bbcc4e450127e006a9fb2199043fbf2829b812b59a87a97e4a3b273a2a"
+    },
+    {
+      "bytes": 649764,
+      "name": "pt-PT/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "0fd17a004787258bcd48bb1b50900ec6b9a7aece1ec6060a07407605f756c147"
+    },
+    {
+      "bytes": 709246,
+      "name": "pt-PT/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "5ce3585d86eb029465aae98063740fbf4bf0e007d1f79c33af9d288289752462"
+    },
+    {
+      "bytes": 534995,
+      "name": "pt-PT/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "8f2f8ce9759de124b6c5881f406780acc3a9729a40dfb7b87d8ccfd0e3a91f6a"
+    },
+    {
+      "bytes": 565352,
+      "name": "pt-PT/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "92efac114f94dfebf3f0704a72580df6404413904541828deea8332c38882bf8"
+    },
+    {
+      "bytes": 639417,
+      "name": "pt-PT/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "de19af507ba6f863a2a57d16bdc9696233fdb0b2914c9f832ae8f69c52eaff65"
+    },
+    {
+      "bytes": 631852,
+      "name": "pt-PT/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "307dc39a94d33cbad8726828bed4a48eb3a53ae4710370001945be70152782ec"
+    },
+    {
+      "bytes": 610965,
+      "name": "pt-PT/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "5c1437bf4795574dc1a97de6fad84a2791922ce6a0ab6e084f77724d43f45a46"
+    },
+    {
+      "bytes": 509758,
+      "name": "pt-PT/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "4f676f03ac4efb0771174c66077635b092e56b789a3a90d2f9b58d6a4603689d"
+    },
+    {
+      "bytes": 561095,
+      "name": "sv/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "00588ef6c5a743e1ca06cd907673aabaa003a6fcccfef3bc95fdd5c15bc8683d"
+    },
+    {
+      "bytes": 624103,
+      "name": "sv/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "8fcd4e6841388d6f482d7caa88ea75e10e83c028bf1c145bc2a9630a41970b06"
+    },
+    {
+      "bytes": 627291,
+      "name": "sv/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "b89622d50d2f18c3e3be494b85d604e1b0635007378cecb9a93da9cac82647d8"
+    },
+    {
+      "bytes": 678803,
+      "name": "sv/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "220efb2380369f70761f557a8e422a682c00ea08f935bef3ff77833958da6ffb"
+    },
+    {
+      "bytes": 519599,
+      "name": "sv/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "5d0136acaa6abda29d0d1f4d9327cff799aab1891e5d8bb7b9c78ea7c059ebb1"
+    },
+    {
+      "bytes": 571355,
+      "name": "sv/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "5570caa54ebe6d48b223f529debd9ca6fb9b80cd92ffe0df97a876d943833c8f"
+    },
+    {
+      "bytes": 614991,
+      "name": "sv/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "083801ef9ff437bfb5288a90da02714cff7a1b221003c2238893f91bdd27bc48"
+    },
+    {
+      "bytes": 608514,
+      "name": "sv/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "da7c0a0f811690e02acc743c8325985ab8e7e98a3fa5bab9efe87fcd23fa111e"
+    },
+    {
+      "bytes": 641240,
+      "name": "sv/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "89cf3f8728bee74493b06b392c8e2bc5d789869f5c229c4f05a091451d9af2c3"
+    },
+    {
+      "bytes": 539057,
+      "name": "sv/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "3f9253c9bb4eb75ce0e9c1b6f283bd1b6dfe6713507f93c6b971f1ccdfb53e74"
+    },
+    {
+      "bytes": 570131,
+      "name": "tr/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "567b22db98e400bd74fe0eadc16d7fa1596a94d9c40633ccaee13505ad5c02a5"
+    },
+    {
+      "bytes": 614850,
+      "name": "tr/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "4b20708223505a7979641c1ce225c58f682d4c34a3dd6f57503be045051d1a32"
+    },
+    {
+      "bytes": 623940,
+      "name": "tr/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "d5bbb743edf15a3536f9a612b9a9139b7e15391db000eea535146e9e8621be07"
+    },
+    {
+      "bytes": 666122,
+      "name": "tr/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "782f43aa2fdeb8ceb24ea95fae6a23ef768f70d609df1e8159429d6ad33086d6"
+    },
+    {
+      "bytes": 504465,
+      "name": "tr/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "029340ddbbc234b95dbbc063b91422656e3ba8472b7106ba68e706aabcefc4a9"
+    },
+    {
+      "bytes": 579861,
+      "name": "tr/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "d164cdca495fd75ca08d2c4d9ee0adbf64e53beca0f108975008ec619921f1f9"
+    },
+    {
+      "bytes": 648367,
+      "name": "tr/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "450ffdfee671032d4247e708a70a0f67962cb219f7e54b97dcf9bf5c7823a463"
+    },
+    {
+      "bytes": 620549,
+      "name": "tr/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "629e2ec5580c5afa1219654535190808b55f972fa8f23fde0d5e22cedc634453"
+    },
+    {
+      "bytes": 646336,
+      "name": "tr/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "000fd1c5d726f604461238590d22cfb7822ce33fa3ace99134bebebcbdd3dc40"
+    },
+    {
+      "bytes": 513924,
+      "name": "tr/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "06fbafad308d262d69a501564a86eb1002d3e026e99ac52904f2211342eb4cca"
+    },
+    {
+      "bytes": 561857,
+      "name": "zh-Hans/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "ed082c15179b93dc2a88e030054e24da60165f4e23dddeffd678d16a0530ebff"
+    },
+    {
+      "bytes": 573420,
+      "name": "zh-Hans/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "7f641549183fe978c9b9bae685060606fd717d8d62db528bf29788893f076d1e"
+    },
+    {
+      "bytes": 602970,
+      "name": "zh-Hans/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "74fa1fc104d33dde43ef1cd27dcbe7b99ee89730ce7478d8ea166db350b03c80"
+    },
+    {
+      "bytes": 682757,
+      "name": "zh-Hans/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "5188d18a953307b2dcaeae47e88e2a6e0b3a7913df85239db5b55e9cdafbad45"
+    },
+    {
+      "bytes": 476321,
+      "name": "zh-Hans/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "84d5bdd3af5d1a6cdedeb34e4c38f7214815e4180144b231bc376d4f14f9545a"
+    },
+    {
+      "bytes": 577298,
+      "name": "zh-Hans/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "08b549d9644f3251f32c7b773c5adffc961af26ca7bb02b66d8fa97ce59a1b34"
+    },
+    {
+      "bytes": 608685,
+      "name": "zh-Hans/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "5265f6100cb611592ef8fb923e2b62ad4e89ed5e007c60ec2ef7743ae50f76cc"
+    },
+    {
+      "bytes": 622200,
+      "name": "zh-Hans/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "b6a2e4e8d5b2bfd4be4dd973b776073f823b552a1353597808cbfaf97b2ced2d"
+    },
+    {
+      "bytes": 649884,
+      "name": "zh-Hans/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "7702acd78d6de259f301476801b694f13f76b19d17fd11969661996f72565e7b"
+    },
+    {
+      "bytes": 486606,
+      "name": "zh-Hans/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "5d977c4bdf01359ce18a1acc565729d1c88030a15c4e1ef2f10203a2ae6ab298"
+    },
+    {
+      "bytes": 575035,
+      "name": "zh-Hant/iPhone 18 Pro Max-01_FullPreview.png",
+      "sha256": "d9d9dcaa49dd4ac1a0dbff101141b4062dd0eadf1e8bbf5b4297168469029248"
+    },
+    {
+      "bytes": 575325,
+      "name": "zh-Hant/iPhone 18 Pro Max-02_RedactionEditor.png",
+      "sha256": "4c68519359f7940464b8baf7bdb7cbe3e4530e23c3ecf50559f1784d35129556"
+    },
+    {
+      "bytes": 618646,
+      "name": "zh-Hant/iPhone 18 Pro Max-03_Metadata.png",
+      "sha256": "5a81d66873d9303f9b8b755de6fa4cdf4c15b92f7f9335cfed0d76a75be81bc6"
+    },
+    {
+      "bytes": 690045,
+      "name": "zh-Hant/iPhone 18 Pro Max-04_ReviewAndShare.png",
+      "sha256": "ccca60d8c875693f688cd9ff90bd7acc1d70e1f646f7294b6c6059031faaf638"
+    },
+    {
+      "bytes": 483865,
+      "name": "zh-Hant/iPhone 18 Pro Max-05_Sample.png",
+      "sha256": "f52f7bbc5317e79238eb904e9d131786c1f02c1c13e87c15d2cb34aa3dc438dd"
+    },
+    {
+      "bytes": 584994,
+      "name": "zh-Hant/iPad Pro 13-inch (M5)-01_FullPreview.png",
+      "sha256": "5dc36d3d57a631de44b13b8b45e38f98cbc638c82db2979f44cad4d8d7511eb8"
+    },
+    {
+      "bytes": 605341,
+      "name": "zh-Hant/iPad Pro 13-inch (M5)-02_RedactionEditor.png",
+      "sha256": "20026edffbb662b18903cffbe5e23c30f41ae00a5258decd00e496b4c07d5657"
+    },
+    {
+      "bytes": 647111,
+      "name": "zh-Hant/iPad Pro 13-inch (M5)-03_Metadata.png",
+      "sha256": "6399fbfc87ffce3c743a1e2ee92dcaeff04cae1a3de6b413fc3cb3fb6904c77a"
+    },
+    {
+      "bytes": 643275,
+      "name": "zh-Hant/iPad Pro 13-inch (M5)-04_ReviewAndShare.png",
+      "sha256": "cee8e222526cd863e0f5ac62b567913818f130b584988f345eb2e183b9170de9"
+    },
+    {
+      "bytes": 482048,
+      "name": "zh-Hant/iPad Pro 13-inch (M5)-05_Sample.png",
+      "sha256": "f8554f66a6837939bc78674e21cf4b8fe73bdf8b6bc76c3b54d49165c8b35a1e"
+    }
+  ],
+  "schema_version": 1
+}

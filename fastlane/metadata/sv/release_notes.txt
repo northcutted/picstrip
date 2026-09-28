@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Granska och dela
+
+• Prova ett exempel. Ett påhittat foto. Ingen åtkomst till bildbiblioteket behövs.
+• Granska hela bilden. Visa original.
+• Dela rensad bild. Delningsförinställning. Aktuell filstorlek.
+• Lägg till centrerat område. Position och storlek.
+• Vissa kontroller kunde inte slutföras. Matchningsstyrka.
+• Tillförlitligare sparande i Bilder, bättre täckning av privata nyckelblock och skyddade tillfälliga filer.
+• Bakgrundsåtgärden i Genvägar tar bara bort metadata. Öppna PicStrip för att granska och dölja synligt innehåll.
+
+Granska fotot innan du delar. Automatisk upptäckt kan missa detaljer.

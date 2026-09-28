@@ -1,3 +1,4 @@
+import Synchronization
 import UIKit
 import XCTest
 
@@ -10,16 +11,38 @@ import XCTest
 /// headless CI.
 ///
 /// Screens captured:
-///   01_Home          — home screen with hero animation
-///   02_About         — About & Trust sheet
-///   03_PhotoLoaded   — photo loaded, scan complete, Edit Redactions row visible
-///   04_RedactionEditor — custom redaction edit mode
-///   05_ReviewAndSave — pre-save review sheet
+///   01_FullPreview — full-resolution output inspection
+///   02_RedactionEditor — custom redaction edit mode
+///   03_Metadata — metadata and detected regions
+///   04_ReviewAndShare — cleaned result and removal summary
+///   05_Sample — fictional sample without photo-library access
 @MainActor
 final class PicStripUITests: XCTestCase {
+    private nonisolated let recordingIssue = Mutex(false)
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+    }
+
+    override func record(_ issue: XCTIssue) {
+        // XCTest can report worker-queue failures. Never block that queue on
+        // the UI executor just to collect diagnostics, or replace its issue.
+        let captureTree = Thread.isMainThread && recordingIssue.withLock { recording in
+            guard !recording else { return false }
+            recording = true
+            return true
+        }
+        if captureTree {
+            defer { recordingIssue.withLock { $0 = false } }
+            // Capture only the Sendable string on the UI executor. XCTestCase
+            // itself stays on the queue that is recording the original issue.
+            let description = MainActor.assumeIsolated { XCUIApplication().debugDescription }
+            let tree = XCTAttachment(string: description)
+            tree.name = "Accessibility tree"
+            tree.lifetime = .keepAlways
+            add(tree)
+        }
+        super.record(issue)
     }
 
     private func fixtureImageURL() -> URL? {
@@ -46,8 +69,7 @@ final class PicStripUITests: XCTestCase {
     // MARK: - All screenshots — two launches
 
     /// Captures every App Store screenshot in one continuous session.
-    /// Launch 1 (no fixture): 01_Home, 02_About
-    /// Launch 2 (with fixture): 03_PhotoLoaded, 04_RedactionEditor, 05_ReviewAndSave
+    /// Launch 1: fictional sample. Launch 2: editable fixture and final output.
     @MainActor
     func testAllScreenshots() throws {
 
@@ -55,23 +77,23 @@ final class PicStripUITests: XCTestCase {
         setupSnapshot(app)
 
         // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 1: No fixture — home + About
+        // LAUNCH 1: No fixture — home and fictional sample
         // ─────────────────────────────────────────────────────────────────────
         // The simulator has no camera, so it would hide "Take Photo" and "Scan
         // Document".  Show the home screen the way a real iPhone shows it.
         app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
         app.launch()
 
-        // 01 — Home: hero animation has started, wait for it to settle.
+        // Home: hero animation has started, wait for it to settle.
         Thread.sleep(forTimeInterval: 1.5)
-        snapshot("01_Home")
+        attachScreen("Home")
 
-        // 02 — About sheet
-        let infoButton = app.buttons["infoButton"]
-        XCTAssertTrue(infoButton.waitForExistence(timeout: 5))
-        infoButton.tap()
-        Thread.sleep(forTimeInterval: 0.8)
-        snapshot("02_About")
+        // Demo shows value without requesting library permission.
+        app.buttons["tryDemoButton"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 30))
+        snapshot("05_Sample")
+        attachScreen("05_Sample")
 
         // ─────────────────────────────────────────────────────────────────────
         // LAUNCH 2: With fixture — photo loaded screens
@@ -94,7 +116,8 @@ final class PicStripUITests: XCTestCase {
 
         // 03 — Photo loaded: wait for the dismiss button (photo fully loaded), then
         // wait for editRedactionsButton which only appears once the PII scan is
-        // complete — guarantees the badge row is stable and saveButton is enabled.
+        // complete — guarantees the badge row is stable. Incomplete checks still
+        // require a separate acknowledgement before saving or sharing.
         let dismissButton = app.buttons["dismissPhotoButton"]
         XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
                       "Dismiss button should appear after fixture image loads")
@@ -116,7 +139,8 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["metadataFoundLabel"].exists,
             "Metadata should remain its own section when visual sensitive data is present."
         )
-        snapshot("03_PhotoLoaded")
+        snapshot("03_Metadata")
+        attachScreen("03_Metadata")
 
         // 04 — Redaction editor: create one manual redaction on top of detected regions.
         editRedactionsButton.tap()
@@ -130,7 +154,8 @@ final class PicStripUITests: XCTestCase {
         let end = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.45))
         start.press(forDuration: 0.1, thenDragTo: end)
         Thread.sleep(forTimeInterval: 0.5)
-        snapshot("04_RedactionEditor")
+        snapshot("02_RedactionEditor")
+        attachScreen("02_RedactionEditor")
         app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
         Thread.sleep(forTimeInterval: 0.3)
 
@@ -148,16 +173,24 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["savePreviewLabel"].exists,
             "Review sheet should label the visual save preview."
         )
-        snapshot("05_ReviewAndSave")
+        XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable,
+                      "The primary share action must remain visible while reviewing the photo")
+        snapshot("04_ReviewAndShare")
+        attachScreen("04_ReviewAndShare")
+        app.buttons["inspectFullImageButton"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
+        snapshot("01_FullPreview")
+        attachScreen("01_FullPreview")
     }
 
     /// The simulator has no camera, so by default the home screen must not offer a scan.
     @MainActor
     func testHomeScreenHidesScanWithoutACamera() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
+        app.descendants(matching: .any)["moreImportsButton"].firstMatch.tap()
         XCTAssertTrue(app.buttons["selectMultiplePhotosButton"].exists)
         XCTAssertTrue(app.buttons["browseFilesButton"].exists)
         XCTAssertFalse(app.buttons["scanDocumentButton"].exists)
@@ -168,7 +201,7 @@ final class PicStripUITests: XCTestCase {
     /// navigation bar — never as a stray control among the import buttons.
     @MainActor
     func testPasteIsOfferedOnlyWhenThereIsAnImageToPaste() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
         app.launch()
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
         XCTAssertFalse(app.descendants(matching: .any)["pasteImageButton"].firstMatch.exists)
@@ -187,22 +220,23 @@ final class PicStripUITests: XCTestCase {
     /// With the scan button present, every import action must still be on screen and tappable.
     @MainActor
     func testHomeScreenFitsAllImportActionsWithScan() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
         app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        let identifiers = [
-            "selectPhotoButton", "selectMultiplePhotosButton", "takePhotoButton", "scanDocumentButton", "browseFilesButton"
-        ]
+        XCTAssertTrue(app.buttons["tryDemoButton"].isHittable)
+        app.descendants(matching: .any)["moreImportsButton"].firstMatch.tap()
+        let identifiers = ["selectMultiplePhotosButton", "takePhotoButton", "scanDocumentButton", "browseFilesButton"]
         for identifier in identifiers {
+            reveal(app.buttons[identifier], in: app)
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be reachable on the home screen.")
         }
     }
 
     @MainActor
     func testCleanFixtureShowsNoMetadataBanner() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
 
         let cleanPath = "/tmp/picstrip_clean_fixture.png"
         try makeCleanPNG().write(to: URL(fileURLWithPath: cleanPath))
@@ -223,7 +257,7 @@ final class PicStripUITests: XCTestCase {
 
     @MainActor
     func testManualRedactionEditorCanCreateCustomRegion() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
 
         let fixtureURL = fixtureImageURL()
         let tmpPath = "/tmp/picstrip_manual_redaction_fixture.png"
@@ -266,7 +300,7 @@ final class PicStripUITests: XCTestCase {
     /// tapping it should open the redaction editor with at least one region.
     @MainActor
     func testPIIDetectedOpensEditorWithRegions() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
 
         let fixtureURL = fixtureImageURL()
         let tmpPath = "/tmp/picstrip_sensitive_fixture.png"
@@ -310,7 +344,7 @@ final class PicStripUITests: XCTestCase {
     /// which no unit test sees, because only a real save reaches PhotoKit.
     @MainActor
     func testSaveAsNewPhotoReachesThePhotoLibrary() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
         app.resetAuthorizationStatus(for: .photos)
 
         let tmpPath = "/tmp/picstrip_save_fixture.png"
@@ -333,7 +367,16 @@ final class PicStripUITests: XCTestCase {
         saveButton.tap()
 
         let saveAsNew = app.buttons["saveAsNewPhotoButton"]
-        XCTAssertTrue(saveAsNew.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["inspectFullImageButton"].waitForExistence(timeout: 10))
+        reveal(saveAsNew, in: app)
+        let acknowledgement = app.descendants(matching: .any)["manualReviewAcknowledgement"].firstMatch
+        if acknowledgement.exists {
+            reveal(acknowledgement, in: app)
+            acknowledgement.tap()
+            reveal(saveAsNew, in: app)
+        }
+        XCTAssertTrue(saveAsNew.exists, "The review must expose save actions after its coverage summary")
+        XCTAssertTrue(saveAsNew.isEnabled)
         saveAsNew.tap()
 
         // First save on a fresh authorization: accept the add-only prompt.
@@ -354,7 +397,7 @@ final class PicStripUITests: XCTestCase {
     /// Blur and pixelate offer a strength slider; solid and crosshatch do not.
     @MainActor
     func testStrengthSliderAppearsOnlyForBlurAndPixelate() throws {
-        let app = XCUIApplication()
+        let app = englishApp()
 
         let tmpPath = "/tmp/picstrip_strength_fixture.png"
         if let srcURL = fixtureImageURL(),
@@ -375,6 +418,7 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(firstRow.waitForExistence(timeout: 5))
         firstRow.tap()
 
+        app.buttons["editRegionStyleButton"].tap()
         let slider = app.sliders["strengthSlider"]
         XCTAssertTrue(app.buttons["styleButton-solid"].waitForExistence(timeout: 5))
         XCTAssertFalse(slider.exists, "Solid has no strength.")
@@ -384,7 +428,7 @@ final class PicStripUITests: XCTestCase {
         XCTAssertFalse(app.buttons["colorButton-black"].exists, "Blur has no colour.")
 
         slider.adjust(toNormalizedSliderPosition: 1)
-        XCTAssertTrue(app.buttons["undoRedactionButton"].isEnabled, "A strength change is undoable.")
+
         dumpScreen("blur")
 
         app.buttons["styleButton-pixelate"].tap()
@@ -394,6 +438,119 @@ final class PicStripUITests: XCTestCase {
         dumpScreen("crosshatch")
         XCTAssertTrue(app.buttons["colorButton-black"].waitForExistence(timeout: 5))
         XCTAssertFalse(slider.exists, "Crosshatch has no strength.")
+        app.buttons["doneStyleButton"].tap()
+        XCTAssertTrue(app.buttons["undoRedactionButton"].isEnabled, "Style and strength changes are undoable.")
+    }
+
+    func testSampleAndAccessibleRegionReview() throws {
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["tryDemoButton"].waitForExistence(timeout: 15))
+        app.buttons["tryDemoButton"].tap()
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30))
+        XCTAssertFalse(app.alerts.firstMatch.exists, "The sample does not need library permission.")
+        attachScreen("06_Sample")
+        edit.tap()
+        XCTAssertTrue(app.buttons["addCenteredRedactionButton"].waitForExistence(timeout: 5))
+        app.buttons["addCenteredRedactionButton"].tap()
+        app.buttons["regionPositionButton"].tap()
+        XCTAssertTrue(app.sliders["Width"].waitForExistence(timeout: 5))
+        app.sliders["Width"].adjust(toNormalizedSliderPosition: 0.65)
+        attachScreen("07_AccessiblePosition")
+        app.navigationBars.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["undoRedactionButton"].isEnabled)
+        app.buttons["doneEditingRedactionsButton"].tap()
+        app.buttons["saveButton"].tap()
+        let inspect = app.buttons["inspectFullImageButton"]
+        XCTAssertTrue(inspect.waitForExistence(timeout: 15))
+        reveal(inspect, in: app)
+        inspect.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
+        let revealOriginal = app.buttons["revealOriginalButton"]
+        XCTAssertTrue(revealOriginal.exists)
+        revealOriginal.tap()
+        XCTAssertTrue(app.navigationBars["Original"].exists)
+        attachScreen("08_OriginalComparison")
+        revealOriginal.tap()
+        XCTAssertTrue(app.navigationBars["Final preview"].exists)
+        attachScreen("09_FullPreview")
+    }
+
+    func testSampleReviewAtLargestTextSize() throws {
+        let app = englishApp()
+        app.launchArguments += ["-UIPreferredContentSizeCategoryName", UIContentSizeCategory.accessibilityExtraExtraExtraLarge.rawValue]
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launch()
+        let sample = app.buttons["tryDemoButton"]
+        XCTAssertTrue(sample.waitForExistence(timeout: 15))
+        reveal(sample, in: app)
+        sample.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 30))
+        let review = app.buttons["saveButton"]
+        reveal(review, in: app)
+        XCTAssertTrue(review.isHittable)
+        review.tap()
+        let inspect = app.buttons["inspectFullImageButton"]
+        XCTAssertTrue(inspect.waitForExistence(timeout: 15))
+        reveal(inspect, in: app)
+        XCTAssertTrue(inspect.isHittable)
+        XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable)
+        attachScreen("10_LargestTextReview")
+        inspect.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
+    }
+
+    private func englishApp() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments += ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        return app
+    }
+
+    private func reveal(_ element: XCUIElement, in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        // A lazy List may not create the target until we scroll toward it.
+        // Reading its identifier before it exists would fail before any gesture.
+        let identifier = element.exists ? element.identifier : ""
+        let list = identifier.isEmpty ? app.collectionViews.firstMatch
+            : app.collectionViews.containing(.any, identifier: identifier).firstMatch
+        let scroll = identifier.isEmpty ? app.scrollViews.firstMatch
+            : app.scrollViews.containing(.any, identifier: identifier).firstMatch
+        let container = list.exists ? list : (scroll.exists ? scroll : app)
+        let containerFrame = container.frame.intersection(app.frame)
+        let navigationBottom = app.navigationBars.allElementsBoundByIndex
+            .map(\.frame).filter { $0.intersects(containerFrame) }.map(\.maxY).max() ?? containerFrame.minY
+        let share = app.buttons["shareCleanedImageButton"]
+        let top = max(containerFrame.minY, navigationBottom) + 4
+        let bottom = min(containerFrame.maxY, share.exists ? share.frame.minY - 12 : containerFrame.maxY) - 4
+        let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
+        XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
+
+        for _ in 0..<8 {
+            // XCTest can report a control behind the fixed footer as hittable.
+            // Require its actual frame to fit above the footer before tapping.
+            if element.exists, viewport.contains(element.frame.insetBy(dx: 1, dy: 1)), element.isHittable || !element.isEnabled {
+                // A visible disabled Save still needs the manual-review acknowledgement.
+                return
+            }
+            let upwards = !element.exists || element.frame.maxY > viewport.maxY
+            let upper = viewport.minY + viewport.height * 0.25
+            let lower = viewport.maxY - 24
+            // Use the enclosing list's edge: iPad sheets do not fill the screen,
+            // and dragging through the preview image would pan that image.
+            let origin = app.coordinate(withNormalizedOffset: .zero)
+            let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
+            let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+            start.press(forDuration: 0.05, thenDragTo: end)
+        }
+        XCTFail("Could not reveal \(identifier.isEmpty ? "the off-screen control" : identifier) inside the unobscured viewport", file: file, line: line)
+    }
+
+    private func attachScreen(_ name: String) {
+        let attachment = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
     }
 
     /// Saves a screenshot for a human to look at when `PICSTRIP_UITEST_DUMP` names a folder.

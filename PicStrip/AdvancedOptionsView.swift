@@ -8,7 +8,13 @@ struct AdvancedOptionsView: View {
     var hasPII: Bool = false
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 0) {
+            if let data = viewModel.processedData {
+                LabeledContent("Current file size", value: ByteCountFormatter.string(fromByteCount: Int64(data.count), countStyle: .file))
+                    .font(.subheadline)
+                    .padding()
+                Divider()
+            }
             ForEach(Array(ExportFormat.allCases.enumerated()), id: \.element.id) { index, format in
                 formatRow(format)
 

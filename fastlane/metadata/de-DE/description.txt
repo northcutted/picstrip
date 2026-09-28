@@ -1,43 +1,19 @@
-Teile Fotos, ohne deinen Standort, deine Identität oder unsichtbare Geheimnisse mitzuteilen. PicStrip entfernt unsichtbare Metadaten und schwärzt sensible Informationen — komplett auf dem Gerät, ohne Konto, ohne Uploads und ohne dass eine Netzwerkverbindung nötig ist.
+Finde und verdecke private Details, bevor du Fotos teilst. Scannen, Schwärzen und Entfernen von Metadaten erfolgen auf deinem Gerät. Fotos gelangen nur durch die von dir gewählten Import-, Speicher- und Teilaktionen zu anderen Apps oder Diensten.
 
-METADATEN ENTFERNEN
-Jedes Foto trägt unsichtbar GPS-Koordinaten, Zeitstempel, Kameradaten, Objektivinfos und Seriennummern. PicStrip entfernt all das vor dem Teilen — per Tipp.
+Beispiel ausprobieren
+Ein erfundenes Foto. Kein Zugriff auf deine Mediathek nötig.
 
-ERKENNUNG & SCHWÄRZUNG SENSIBLER DATEN
-OCR und Computer Vision auf deinem Gerät erkennen 30 Arten sensibler personenbezogener Daten (PII), eingeteilt in vier Risikostufen:
+Erkennungen prüfen im Schwärzungseditor. Jeder Fund zeigt die Übereinstimmungsstärke und eine Risikoeinstufung, damit du entscheiden kannst, was verdeckt werden soll. Prüfe das Foto vor dem Teilen. Die automatische Erkennung kann Details übersehen. Namensvorschläge erfordern Apple Intelligence und werden nicht automatisch verdeckt. Ein optionales Modell zur Objektauswahl kann nach deiner Zustimmung von Apple geladen werden.
 
-Kritisch — API-Schlüssel, Kreditkarten, Sozialversicherungsnummern, Passwörter, JWTs, Datenbankverbindungen
-Hoch — Gesichter, IBANs, ABA-Routing-Nummern, SWIFT/BIC-Codes, physische Zugangsdaten
-Mittel — E-Mails, Telefonnummern, Adressen, Krypto-Wallets, Fahrzeugidentifikationsnummern, Kennzeichen, IP- und MAC-Adressen
-Niedrig — Geburtsdaten, Links, Barcodes
+Schwärzungen anpassen: Ziehe sie oder nutze Position & Größe. Füge einen zentrierten Bereich ohne Zeichnen hinzu. Mit Auswählen änderst du mehrere Bereiche. Weichzeichnen und Verpixeln können Details erkennbar lassen. Verwende eine deckende Fläche für Geheimnisse und identifizierenden Text.
 
-Jede Erkennung zeigt Typ, Konfidenz-Score und Risikostufe — damit du weißt, was wirklich zählt.
+Verborgene Metadaten prüfen, etwa Standort, Kameradetails und Zeitstempel. Wähle, was entfernt wird, und prüfe das bereinigte Ergebnis.
+PNG: Verlustfreie Qualität für Screenshots und Text. Größere Dateien.
+JPEG: Kleinere Dateien für Alltagsfotos. Weitgehend unterstützt.
+HEIC: Kompakte Fotos mit hoher Qualität. Prüfe die Kompatibilität beim Empfänger.
 
-SCHWÄRZUNGSEDITOR
-• Zeichne überall, um manuell abzudecken, was der Scanner übersehen hat
-• Mehrfachauswahl und Massenaktionen für Bereiche
-• 4 Stile: Vollton, Kreuzschraffur, Pixelierung oder Weichzeichner
-• Stärke von Weichzeichner und Pixelierung einstellbar
-• Vor dem Speichern sehen, wie jede Schwärzung wirklich aussieht
-• 12 Farben für Vollton- und Kreuzschraffur-Schwärzungen
-• 50-Schritte Rückgängig/Wiederherstellen
+Prüfen & teilen: Teile das bereinigte Bild oder speichere eine Kopie in Fotos. Die Teilen-Erweiterung bietet auch direktes Bereinigen oder eine geschützte Übergabe zum Bearbeiten. Bearbeiten öffnet das erste Originalbild zur Prüfung. Eine geschützte lokale Kopie läuft nach 15 Minuten ab. Große Fotos benötigen in der Erweiterung kleinere Kopien: bis zu 6 Megapixel für Schwärzungen oder 12 nur für Metadaten. Bearbeite sie in PicStrip für eine vollständige Prüfung.
 
-IMPORT VON ÜBERALL
-• Fotomediathek
-• Dateien-App — Bilder und Screenshots direkt öffnen
-• Fotos in der App aufnehmen — das Original landet nie in deiner Fotomediathek
-• Dokumente mit der Kamera scannen — das Original landet nie in deiner Fotomediathek
-• Drag & Drop in die App
-• Teilen-Erweiterung — direkt aus Fotos, Safari oder jeder App bereinigen, ohne PicStrip zu öffnen
+Die Hintergrundaktion in Kurzbefehle entfernt nur Metadaten. Öffne PicStrip, um sichtbare Inhalte zu prüfen und zu verdecken.
 
-PRIVATSPHÄRE BY DESIGN
-• 100% auf dem Gerät — nichts verlässt dein iPhone
-• Gesichtserkennung bleibt auf dem Gerät; PicStrip erfasst, speichert, überträgt oder teilt keine Gesichtsdaten
-• Kein Konto, kein Login, kein Tracking
-• Keine Werbung, keine In-App-Käufe, keine Abos
-• Open Source — jede Codezeile auf GitHub prüfbar
-• SLSA Level 3 Build-Provenance — jede Veröffentlichung kryptografisch verifiziert
-• Datenschutz-Etikett: „Keine Daten erfasst"
-
-KURZBEFEHLE & AUTOMATISIERUNG
-PicStrip enthält eine Kurzbefehl-Aktion zum automatischen Entfernen von Metadaten und Schwärzen sensibler Daten: beim Import, als Stapelverarbeitung oder in deinen bestehenden Workflows.
+Dieser Bericht enthält Feldnamen und Anzahlen, niemals ursprüngliche Metadatenwerte oder erkannten Text.

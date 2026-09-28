@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Revisar y compartir
+
+• Probar un ejemplo. Una foto ficticia. No necesita acceso a tu fototeca.
+• Inspeccionar imagen completa. Mostrar original.
+• Compartir imagen limpia. Preajuste para compartir. Tamaño actual del archivo.
+• Agregar área centrada. Posición y tamaño.
+• Algunas comprobaciones no finalizaron. Intensidad de coincidencia.
+• Guardado en Fotos más confiable, mejor cobertura de bloques de claves privadas y archivos temporales protegidos.
+• La acción de Atajos en segundo plano solo elimina metadatos. Abre PicStrip para revisar y censurar contenido visible.
+
+Revisa la foto antes de compartir. La detección automática puede omitir detalles.

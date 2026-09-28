@@ -1,0 +1,40 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "modelName": "iPhone 17",
+        "osBuildNumber": "24A434",
+        "osVersion": "27.0",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "passedTests": 1,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "PicStrip \u00b7 Built with macOS 27.0",
+  "expectedFailures": 0,
+  "failedTests": 0,
+  "finishTime": 1790547479.733,
+  "passedTests": 1,
+  "result": "Passed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1790547381.276,
+  "statistics": [],
+  "testFailures": [],
+  "title": "Test - PicStrip",
+  "topInsights": [],
+  "totalTestCount": 1,
+  "evidence_scope": {
+    "test": "ReleaseReadinessTests.testImagePixelGeometryDoesNotMirrorInRightToLeftLayout",
+    "xcode": "27.0 / 27A266a",
+    "cases": "Enabled/disabled regions, with/without selection borders and resize handles; pixel equality between LTR and RTL plus a nonempty-overlay check."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "run_url": "https://github.com/northcutted/picstrip/actions/runs/36352330564",
+  "pull_request_head": "f4d3d8ae14efeec8108ef72f0475ef2ff6bb8853",
+  "tested_merge_commit": "7ddf57b9de874f91bdd8341f7cd331ae7d2ecab3",
+  "checks": [
+    {
+      "check": "test",
+      "status": 0,
+      "toolchain": "Xcode 27.0 / iOS 27.0",
+      "total": 234,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "check": "test-compatibility",
+      "status": 0,
+      "toolchain": "Xcode 26.6 / iOS 26.5",
+      "total": 234,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "scope": "Hosted core suite on the PR merge revision; screenshot UI checks and the final asset commit are tracked separately."
+}

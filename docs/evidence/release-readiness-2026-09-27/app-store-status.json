@@ -1,0 +1,13 @@
+{
+  "observation_run": "https://github.com/northcutted/picstrip/actions/runs/36351697162",
+  "observed_at": "2026-09-27T21:26:59Z",
+  "read_only": true,
+  "version": "1.7.0",
+  "state": "PREPARE_FOR_SUBMISSION",
+  "selected_build": "77.1",
+  "build_id": "043d3495-15f2-4955-9a20-5dbf97f072d1",
+  "processing_state": "VALID",
+  "release_type": "MANUAL",
+  "phased_release": null,
+  "apple_mutation_performed": false
+}

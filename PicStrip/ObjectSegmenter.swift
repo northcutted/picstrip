@@ -112,7 +112,7 @@ nonisolated enum ObjectSegmenter {
         let probe = GenerateIterativeSegmentationRequest(seedPoint: NormalizedPoint(x: 0.5, y: 0.5))
         switch await probe.assetStatus {
         case .ready:    return .ready
-        case .notReady: return .needsDownload
+        case .notReady, .downloading: return .needsDownload
         case .error:    return .unsupported
         @unknown default: return .unsupported
         }

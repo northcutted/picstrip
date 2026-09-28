@@ -266,36 +266,18 @@ def _shape_for_display(
 # ``fastlane/MarketingHeadlines.xcstrings`` is missing. Kept in sync with the
 # canonical English values in that file.
 HEADLINES: dict[str, str] = {
-    "01_Home":            "Share the photo.\nNot the story behind it.",
-    "02_PrivacyImpact":   "GPS. Time. Camera ID.\nAll stripped automatically.",
-    "03_About":           "Open source.\nAuditable privacy.",
-    "04_PhotoLoaded":     "Sensitive data\ncaught instantly.",
-    "05_RedactionEditor": "Draw to hide\nanything sensitive.",
-    "06_SensitiveData":   "See exactly\nwhat gets hidden.",
-    "07_ReviewAndSave":   "Export clean.\nShare confidently.",
+    "04_ReviewAndShare": "Review & Share\nProcessed on your device",
+    "02_RedactionEditor": "Position & size\nAdd centered region",
+    "03_Metadata": "Location · Camera & date\nImage details",
+    "01_FullPreview": "Inspect full image",
+    "05_Sample": "Try a sample\nA fictional photo",
 }
 
-DEFAULT_HEADLINE = "Share the photo.\nNot the story behind it."
+DEFAULT_HEADLINE = "Review & Share"
 
-# Output filenames control App Store screenshot order. The first 1–3 slots
-# drive the bulk of conversion, so the lead with the strongest emotional hook
-# (Home — "Share the photo. Not the story behind it."), prove the product
-# works (PhotoLoaded — sensitive data caught), then close the loop
-# (ReviewAndSave — clean export). Slots 4–7 reinforce: the redaction power
-# feature, transparency, breadth of metadata stripped, and the brand close.
-SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {
-    "01_Home": "01_Home",
-    "02_About": "02_About",
-    "03_PhotoLoaded": "03_PhotoLoaded",
-    "04_RedactionEditor": "04_RedactionEditor",
-    "05_ReviewAndSave": "05_ReviewAndSave",
-}
-
-# The localized catalog retains its established keys.
-CAPTURE_HEADLINE_KEYS = {
-    "02_About": "03_About", "03_PhotoLoaded": "04_PhotoLoaded",
-    "04_RedactionEditor": "05_RedactionEditor", "05_ReviewAndSave": "07_ReviewAndSave",
-}
+# Show the result first, then editing, metadata, full inspection and the demo.
+SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {key: key for key in HEADLINES}
+CAPTURE_HEADLINE_KEYS: dict[str, str] = {}
 
 
 @dataclass(frozen=True)
@@ -1095,16 +1077,15 @@ def _composite_device_shadows(
     canvas.alpha_composite(contact)
 
 
-def _iter_inputs(input_dir: Path) -> Iterable[Path]:
-    """Yield raw screenshots, skipping any ``*_framed.png`` siblings.
+def _iter_inputs(input_dir: Path, expected_names: set[str]) -> Iterable[Path]:
+    """Yield only the configured raw device/screen captures.
 
-    We deliberately ignore frameit's framed output and build our own clean
-    device frame in code from the raw capture.
+    Fastlane can copy stale screenshots from its shared cache. They must not
+    become current marketing assets, even if they have a recognized screen.
     """
     for path in sorted(input_dir.glob("*.png")):
-        if path.stem.endswith("_framed"):
-            continue
-        yield path
+        if path.name in expected_names:
+            yield path
 
 
 def _compose_one(
@@ -1146,15 +1127,26 @@ def process_directory(
     output_dir: Path,
     locale: str,
     xcstrings_path: Path,
+    config_path: Path,
 ) -> int:
     if not input_dir.is_dir():
         print(f"error: input dir not found: {input_dir}", file=sys.stderr)
         return 1
 
+    config = json.loads(config_path.read_text())
+    expected_names = {
+        f"{device}-{screen}.png"
+        for device in config["screenshot_devices"]
+        for screen in config["screens"]
+    }
+    missing = sorted(name for name in expected_names if not (input_dir / name).is_file())
+    if missing:
+        print(f"error: missing configured screenshots: {', '.join(missing)}", file=sys.stderr)
+        return 1
     xcstrings_map = _load_headlines_xcstrings(xcstrings_path)
 
     count = 0
-    for raw in _iter_inputs(input_dir):
+    for raw in _iter_inputs(input_dir, expected_names):
         screen_key = _screen_key_from_filename(raw.name)
         headline = _resolve_headline(screen_key, locale, xcstrings_map)
         dest = output_dir / _ordered_output_name(raw.name)
@@ -1191,6 +1183,11 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--config",
+        default=".github/ios-release.json",
+        help="Release configuration with the required device/screen inventory.",
+    )
+    parser.add_argument(
         "--headlines",
         default="fastlane/MarketingHeadlines.xcstrings",
         help="Path to the xcstrings file with localized headlines.",
@@ -1208,6 +1205,7 @@ def main(argv: list[str] | None = None) -> int:
         output_dir=output_dir,
         locale=args.locale,
         xcstrings_path=Path(args.headlines),
+        config_path=Path(args.config),
     )
 
 

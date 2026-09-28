@@ -49,11 +49,11 @@
     }
   },
   "screens": [
-    "01_Home",
-    "02_About",
-    "03_PhotoLoaded",
-    "04_RedactionEditor",
-    "05_ReviewAndSave"
+    "01_FullPreview",
+    "02_RedactionEditor",
+    "03_Metadata",
+    "04_ReviewAndShare",
+    "05_Sample"
   ],
   "locales": [
     "en-US",
@@ -191,5 +191,11 @@
   "trusted_producer_revisions": [
     "152fce760a7e5a9261b182ab116e2c0111c2af87",
     "a198fb0f2c5acb18f815f52e700e89dfdf1cc18a"
-  ]
+  ],
+  "replacement_release": {
+    "version": "1.7.0",
+    "source_tag": "v1.7.0",
+    "build_number": "77.1",
+    "app_store_build_id": "043d3495-15f2-4955-9a20-5dbf97f072d1"
+  }
 }

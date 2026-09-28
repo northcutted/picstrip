@@ -76,9 +76,13 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
     private let photoOutput = AVCapturePhotoOutput()
     private let videoOutput = AVCaptureVideoDataOutput()
 
+    // Preview layers and their rotation coordinator stay on the main actor.
+    @MainActor private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
+    @MainActor private var rotationObservations: [NSKeyValueObservation] = []
+    @MainActor private weak var previewLayer: AVCaptureVideoPreviewLayer?
+
     // sessionQueue
-    private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
-    private var rotationObservations: [NSKeyValueObservation] = []
+    private var captureRotationAngle: CGFloat = 0
     private var photoContinuation: CheckedContinuation<Data?, Never>?
 
     // videoQueue
@@ -88,31 +92,47 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
 
     /// Configures and starts the session.  `previewLayer` is needed up front: the
     /// rotation coordinator keeps the frames upright relative to what it shows.
+    @MainActor
     func start(
         previewLayer: AVCaptureVideoPreviewLayer,
         onBoxes: @escaping @Sendable (_ boxes: [CGRect], _ videoSize: CGSize) -> Void
     ) async throws {
-        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        let device = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<AVCaptureDevice, Error>) in
             sessionQueue.async { [self] in
                 do {
-                    try configure(previewLayer: previewLayer)
+                    let device = try configure()
                     videoQueue.sync { self.onBoxes = onBoxes }
                     session.startRunning()
-                    continuation.resume()
+                    continuation.resume(returning: device)
                 } catch {
                     continuation.resume(throwing: error)
                 }
             }
         }
+        self.previewLayer = previewLayer
+        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
+        rotationCoordinator = coordinator
+        updateRotation()
+        rotationObservations = [
+            coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.new]) { [weak self] _, _ in
+                Task { @MainActor in self?.updateRotation() }
+            },
+            coordinator.observe(\.videoRotationAngleForHorizonLevelCapture, options: [.new]) { [weak self] _, _ in
+                Task { @MainActor in self?.updateRotation() }
+            }
+        ]
     }
 
+    @MainActor
     func stop() {
+        rotationObservations.removeAll()
+        rotationCoordinator = nil
+        previewLayer = nil
         videoQueue.async { [self] in
             isAnalysisEnabled = false
             onBoxes = nil
         }
         sessionQueue.async { [self] in
-            rotationObservations.removeAll()
             if session.isRunning { session.stopRunning() }
             photoContinuation?.resume(returning: nil)
             photoContinuation = nil
@@ -133,10 +153,9 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
                     return
                 }
                 photoContinuation = continuation
-                if let angle = rotationCoordinator?.videoRotationAngleForHorizonLevelCapture,
-                   let connection = photoOutput.connection(with: .video),
-                   connection.isVideoRotationAngleSupported(angle) {
-                    connection.videoRotationAngle = angle
+                if let connection = photoOutput.connection(with: .video),
+                   connection.isVideoRotationAngleSupported(captureRotationAngle) {
+                    connection.videoRotationAngle = captureRotationAngle
                 }
                 photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
             }
@@ -145,7 +164,7 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
 
     // MARK: Configuration (sessionQueue)
 
-    private func configure(previewLayer: AVCaptureVideoPreviewLayer) throws {
+    private func configure() throws -> AVCaptureDevice {
         guard let device = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back)
                 ?? AVCaptureDevice.default(for: .video)
         else { throw SetupError.noCamera }
@@ -164,26 +183,21 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         videoOutput.setSampleBufferDelegate(self, queue: videoQueue)
         session.addOutput(videoOutput)
 
-        let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
-        rotationCoordinator = coordinator
-        applyPreviewRotation(coordinator.videoRotationAngleForHorizonLevelPreview, previewLayer: previewLayer)
-        rotationObservations = [
-            coordinator.observe(\.videoRotationAngleForHorizonLevelPreview, options: [.new]) { [weak self] _, change in
-                guard let self, let angle = change.newValue else { return }
-                sessionQueue.async { self.applyPreviewRotation(angle, previewLayer: previewLayer) }
-            }
-        ]
+        return device
     }
 
-    /// Rotates the preview and the analysed frames together, so a box found in a
-    /// frame lands on the same thing in the preview.
-    private func applyPreviewRotation(_ angle: CGFloat, previewLayer: AVCaptureVideoPreviewLayer) {
-        if let connection = videoOutput.connection(with: .video), connection.isVideoRotationAngleSupported(angle) {
-            connection.videoRotationAngle = angle
+    @MainActor
+    private func updateRotation() {
+        guard let coordinator = rotationCoordinator else { return }
+        let previewAngle = coordinator.videoRotationAngleForHorizonLevelPreview
+        let captureAngle = coordinator.videoRotationAngleForHorizonLevelCapture
+        if let connection = previewLayer?.connection, connection.isVideoRotationAngleSupported(previewAngle) {
+            connection.videoRotationAngle = previewAngle
         }
-        DispatchQueue.main.async {
-            if let connection = previewLayer.connection, connection.isVideoRotationAngleSupported(angle) {
-                connection.videoRotationAngle = angle
+        sessionQueue.async { [self] in
+            captureRotationAngle = captureAngle
+            if let connection = videoOutput.connection(with: .video), connection.isVideoRotationAngleSupported(previewAngle) {
+                connection.videoRotationAngle = previewAngle
             }
         }
     }
@@ -323,6 +337,8 @@ struct LiveCameraView: View {
                             .position(x: rect.midX, y: rect.midY)
                     }
                 }
+                // Vision/video rectangles use pixel coordinates, not reading order.
+                .environment(\.layoutDirection, .leftToRight)
                 .animation(reduceMotion ? nil : .linear(duration: 0.12), value: model.boxes)
             }
             .ignoresSafeArea()
@@ -347,7 +363,7 @@ struct LiveCameraView: View {
                             Spacer()
                         }
 
-                        Text("Covered areas will be redacted. You can change them after the photo is taken.")
+                        Text("Live preview is a guide. After capture, review the full scan and choose what to cover.")
                             .font(.caption.weight(.semibold))
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 12)

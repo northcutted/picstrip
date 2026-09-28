@@ -1,43 +1,19 @@
-Compartilhe fotos sem compartilhar sua localização, sua identidade ou segredos que você nem percebe. O PicStrip remove os metadados invisíveis e oculta informações sensíveis — tudo no dispositivo, sem conta, sem uploads e sem precisar de conexão de rede.
+Encontre e cubra detalhes privados antes de compartilhar fotos. Análise, ocultação e remoção de metadados acontecem no dispositivo. As fotos só vão para outro app ou serviço pelas ações de importar, salvar e compartilhar que você escolher.
 
-REMOÇÃO DE METADADOS
-Cada foto carrega de forma invisível coordenadas de GPS, marcas de tempo, marca e modelo da câmera, dados da lente, números de série e notas do fabricante da Apple. O PicStrip remove tudo isso antes de você compartilhar — com um toque.
+Experimentar um exemplo
+Uma foto fictícia. Não precisa acessar sua fototeca.
 
-DETECÇÃO E OCULTAÇÃO DE INFORMAÇÕES SENSÍVEIS
-OCR e visão computacional executados no dispositivo varrem sua foto em busca de 30 tipos de informações pessoais sensíveis (PII), organizadas em quatro níveis de risco:
+Revise as detecções no editor. Cada resultado mostra a força da correspondência e um nível de risco para ajudar a escolher o que cobrir. Revise a foto antes de compartilhar. A detecção automática pode deixar passar detalhes. Sugestões de nomes exigem Apple Intelligence e não são cobertas automaticamente. Um modelo opcional de seleção de objetos pode ser baixado da Apple após seu consentimento.
 
-Crítico — chaves de API, cartões de crédito, CPFs, senhas, JWTs, strings de conexão a bancos de dados
-Alto — rostos, IBANs, números ABA, códigos SWIFT/BIC, credenciais físicas
-Médio — e-mails, telefones, endereços, carteiras cripto, chassis, placas, endereços IP e MAC
-Baixo — datas de nascimento, links, códigos de barras
+Ajuste as ocultações arrastando ou usando Posição e tamanho. Adicione uma área centralizada sem desenhar. Use Selecionar para alterar várias áreas. Desfoque e pixelização podem deixar detalhes reconhecíveis. Use cobertura sólida para segredos e textos de identificação.
 
-Cada detecção mostra o tipo, a pontuação de confiança e o nível de risco para você priorizar o que ocultar.
+Revise os metadados ocultos, como localização, câmera e datas. Escolha o que remover e confira o resultado limpo.
+PNG: Qualidade sem perdas para capturas de tela e texto. Arquivos maiores.
+JPEG: Arquivos menores para fotos do dia a dia. Ampla compatibilidade.
+HEIC: Fotos compactas com alta qualidade. Confira a compatibilidade do destinatário.
 
-EDITOR DE OCULTAÇÃO
-• Desenhe em qualquer área para cobrir manualmente o que o scanner não pegou
-• Seleção múltipla e alterações em lote
-• 4 estilos: sólido, hachurado, pixelado ou desfoque
-• Intensidade ajustável do desfoque e do pixelado
-• Veja exatamente como cada área vai ficar antes de salvar
-• 12 cores para áreas sólidas e hachuradas
-• 50 níveis de desfazer/refazer
+Revise e compartilhe a imagem limpa ou salve uma cópia em Fotos. A extensão de compartilhamento também oferece limpeza direta ou transferência protegida para edição. Editar abre a primeira imagem original para revisão. Uma cópia local protegida expira após 15 minutos. Fotos grandes precisam de cópias menores na extensão: até 6 megapixels para ocultar conteúdo ou 12 só para metadados. Edite no PicStrip para uma revisão completa.
 
-IMPORTE DE QUALQUER LUGAR
-• Biblioteca de Fotos
-• App Arquivos — abra qualquer imagem ou captura de tela diretamente
-• Tire uma foto no app — o original nunca chega à sua fototeca
-• Escaneie documentos com a câmera — o original nunca chega à sua fototeca
-• Arraste e solte imagens no app
-• Extensão de compartilhamento — limpe fotos direto de Fotos, Safari ou qualquer app sem abrir o PicStrip
+A ação do Atalhos em segundo plano remove apenas metadados. Abra o PicStrip para revisar e ocultar conteúdo visível.
 
-PRIVACIDADE POR PROJETO
-• 100% no dispositivo — nada sai do seu celular
-• A detecção de rostos fica no dispositivo; o PicStrip não coleta, armazena, transmite nem compartilha dados faciais
-• Sem conta, sem login, sem rastreamento
-• Sem anúncios, sem compras no app, sem assinaturas
-• Código aberto — cada linha pode ser auditada no GitHub
-• Procedência de build SLSA Nível 3 — cada versão é verificada criptograficamente
-• Rótulo de privacidade: "Nenhum dado coletado"
-
-ATALHOS E AUTOMAÇÃO
-O PicStrip inclui uma ação de Atalhos para remover metadados e ocultar informações sensíveis automaticamente: ao importar, em lote ou como parte de qualquer fluxo de trabalho.
+Este relatório contém nomes e contagens de campos, nunca os valores originais dos metadados ou o texto detectado.

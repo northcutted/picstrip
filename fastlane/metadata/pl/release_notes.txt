@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Sprawdź i udostępnij
+
+• Wypróbuj przykład. Fikcyjne zdjęcie. Dostęp do biblioteki nie jest potrzebny.
+• Sprawdź cały obraz. Pokaż oryginał.
+• Udostępnij wyczyszczony obraz. Ustawienie udostępniania. Aktualny rozmiar pliku.
+• Dodaj wyśrodkowany obszar. Pozycja i rozmiar.
+• Niektóre kontrole nie zostały ukończone. Siła dopasowania.
+• Bardziej niezawodne zapisywanie w Zdjęciach, lepsze zamazywanie bloków kluczy prywatnych i chronione pliki tymczasowe.
+• Działanie Skrótów w tle usuwa tylko metadane. Otwórz PicStrip, aby sprawdzić i zasłonić widoczne treści.
+
+Sprawdź zdjęcie przed udostępnieniem. Automatyczne wykrywanie może pomijać szczegóły.

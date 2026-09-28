@@ -4,7 +4,7 @@ import UniformTypeIdentifiers
 
 /// Simple four-way format choice exposed in the UI.
 /// Maps to an `ExportPreset` for the stripping engine.
-/// Cases are ordered for display: most private first.
+/// Cases are ordered for display: lossless first.
 nonisolated enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
     case png
     case jpeg
@@ -24,10 +24,10 @@ nonisolated enum ExportFormat: String, CaseIterable, Identifiable, Sendable {
 
     var description: String {
         switch self {
-        case .png:      return String(localized: "Maximum Privacy. Prevents OS from injecting format headers.")
-        case .jpeg:     return String(localized: "Reduced file size. Standard compatibility.")
-        case .heic:     return String(localized: "High efficiency. Apple OS may inject Maker data upon saving.")
-        case .original: return String(localized: "Keeps original format. OS may re-encode and inject basic headers.")
+        case .png:      return String(localized: "Lossless quality for screenshots and text. Larger files.")
+        case .jpeg:     return String(localized: "Smaller files for everyday photos. Widely supported.")
+        case .heic:     return String(localized: "Compact photos with high quality. Check receiver compatibility.")
+        case .original: return String(localized: "Re-encodes in the source format when supported.")
         }
     }
 

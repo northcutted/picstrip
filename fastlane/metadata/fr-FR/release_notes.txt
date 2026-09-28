@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Vérifier et partager
+
+• Essayer un exemple. Une photo fictive. Aucun accès à votre photothèque nécessaire.
+• Examiner l’image entière. Afficher l’original.
+• Partager l’image nettoyée. Préréglage de partage. Taille actuelle du fichier.
+• Ajouter une zone centrée. Position et taille.
+• Certaines vérifications n’ont pas abouti. Force de correspondance.
+• Enregistrement dans Photos plus fiable, meilleure couverture des blocs de clés privées et fichiers temporaires protégés.
+• L’action Raccourcis en arrière-plan supprime uniquement les métadonnées. Ouvrez PicStrip pour vérifier et masquer le contenu visible.
+
+Vérifiez la photo avant de la partager. La détection automatique peut manquer des détails.

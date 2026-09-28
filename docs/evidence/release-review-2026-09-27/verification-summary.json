@@ -1,0 +1,49 @@
+{
+  "reviewed_source": "c7eabd3b4b24f35059bc0df56b9ae455b49caf4f",
+  "date": "2026-09-27",
+  "local_xcode": "27.0 (27A5194q), beta; not the pinned release compiler",
+  "device": "iPhone 17 simulator, iOS 27.0",
+  "existing_unit_suite": {
+    "tests": 207,
+    "failures": 0,
+    "skipped": 0
+  },
+  "existing_ui_tests": {
+    "tests": [
+      "testAllScreenshots",
+      "testSaveAsNewPhotoReachesThePhotoLibrary",
+      "testStrengthSliderAppearsOnlyForBlurAndPixelate"
+    ],
+    "failures": 0
+  },
+  "fresh_flow_capture": {
+    "tests": 1,
+    "failures": 0,
+    "screenshots": 6,
+    "name_detection_disabled": true,
+    "camera_buttons_forced_visible": true,
+    "camera_capture_tested": false
+  },
+  "diagnostic_probes": {
+    "tests": 4,
+    "assertion_failures": 6,
+    "confirmed_findings": [
+      "Removed GPS values copied into audit JSON",
+      "Scan error cleared while preparing export review",
+      "Data share representation advertises public.data, not an image UTI"
+    ],
+    "inconclusive": [
+      "PEM header/payload probe: header-recognition precondition failed, so it did not establish header-only redaction dynamically"
+    ]
+  },
+  "localization_audit": "python3 scripts/audit_xcstrings.py passed",
+  "limitations": [
+    "No physical-device performance or thermal profiling",
+    "No end-to-end third-party share receiver test",
+    "No actual camera, on-device name model, or object model testing",
+    "No proficient VoiceOver evaluation on all supported devices",
+    "Old signed 77.1 IPA was not run on a physical device",
+    "Latest Apple status is a read-only workflow observation, not a fresh direct API call"
+  ],
+  "raw_evidence_location": "/private/tmp/picstrip-review-20260927"
+}

@@ -49,7 +49,7 @@ private let visualEntries: [PIIEntry] = [
     .init(type: .openAIKey, icon: "sparkles", color: .purple, detail: "OpenAI API keys (sk- and sk-proj- formats)"),
     .init(type: .slackToken, icon: "message.fill", color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
     .init(type: .stripeKey, icon: "dollarsign.circle.fill", color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
-    .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "PEM headers: RSA, EC, DSA, OPENSSH private keys"),
+    .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "Multiline PEM private-key blocks, including their encoded contents"),
     .init(type: .jwtToken, icon: "ellipsis.curlybraces", color: .cyan, detail: "JSON Web Tokens — double eyJ base64url prefix uniquely identifies the format"),
     .init(type: .developerSecret, icon: "lock.shield.fill", color: .red, detail: "Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord bot tokens"),
     .init(type: .connectionString, icon: "server.rack", color: .brown, detail: "Database/broker URIs with inline credentials: postgres, mysql, mongodb, redis, amqp"),
@@ -92,7 +92,7 @@ private func riskIcon(_ level: RiskLevel) -> String {
 
 // MARK: - About view
 
-/// Native iOS "About" sheet — instructions, privacy guarantee, scoring system explanation,
+/// Native iOS "About" sheet — instructions, privacy behavior, match-strength explanation,
 /// and detection catalogue.
 struct AboutView: View {
 
@@ -165,22 +165,22 @@ struct AboutView: View {
                         instructionRow(
                             icon: "square.dashed",
                             color: .orange,
-                            text: "**Review detections** in the Redaction Editor. Each finding shows its match confidence and a risk rating so you can make informed decisions about what to cover."
+                            text: "**Review detections** in the Redaction Editor. Each finding shows its match strength and a risk rating so you can make informed decisions about what to cover."
                         )
                         instructionRow(
                             icon: "hand.tap.fill",
                             color: .indigo,
-                            text: "**Adjust redactions** by tapping to select, dragging to reposition, or pinching to resize. Use the **Select** button to choose multiple regions at once and apply the same style or color to all of them in one step."
+                            text: "**Adjust redactions** by dragging or using Position & size. Add a centered box without drawing. Use **Select** to apply changes to multiple regions."
                         )
                         instructionRow(
                             icon: "tag.slash.fill",
                             color: .teal,
-                            text: "**Hidden metadata** like GPS coordinates, camera model, and timestamps is stripped from the file before it ever leaves your device."
+                            text: "**Review hidden metadata** such as location, camera details, and timestamps. Choose what to remove and check the cleaned output."
                         )
                         instructionRow(
                             icon: "square.and.arrow.down.fill",
                             color: .green,
-                            text: "**Save the cleaned photo** back to your library. You can also share directly from the Photos app using the PicStrip Share Extension."
+                            text: "**Review & Share** the cleaned image, or save a new copy to Photos. The Share Extension also offers direct cleaning or a protected handoff for editing."
                         )
                     }
                     .padding(.vertical, 6)
@@ -231,16 +231,16 @@ struct AboutView: View {
                             // Confidence explanation
                             VStack(alignment: .leading, spacing: 8) {
                                 Label {
-                                    Text("Match Confidence")
+                                    Text("Match strength")
                                         .font(.subheadline.weight(.semibold))
                                 } icon: {
-                                    Image(systemName: "percent")
+                                    Image(systemName: "text.magnifyingglass")
                                         .font(.system(size: 13, weight: .semibold))
                                         .foregroundStyle(.white)
                                         .frame(width: 26, height: 26)
                                         .background(Color.blue, in: RoundedRectangle(cornerRadius: 6))
                                 }
-                                Text("The **match confidence** percentage tells you how certain our on-device models are that the detected pattern is really what we think it is. It is derived from two factors:\n• **Pattern specificity** — how structurally unambiguous the detection rule is. An AWS key with its exact AKIA prefix scores 98%; a date string scores only 48% because dates appear in many non-sensitive contexts.\n• **OCR quality** — Apple's Vision OCR confidence for the specific text observation. A crisp screenshot produces a higher score than a blurry photograph of the same text.\n\nA higher confidence means fewer false positives, but low-confidence detections can still be real — use your judgement.")
+                                Text("Match strength combines pattern rules and text-recognition quality. Strong, possible, and tentative matches help you prioritize review; they are not probabilities and cannot certify that an image is safe. Check the whole photo for anything you do not want to share.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -260,7 +260,7 @@ struct AboutView: View {
                                         .frame(width: 26, height: 26)
                                         .background(Color.orange, in: RoundedRectangle(cornerRadius: 6))
                                 }
-                                Text("The **risk level** is our editorial assessment of how harmful it would be if this type of data were accidentally shared. It does not change based on detection confidence — a critical-risk item is critical regardless of whether we detected it at 60% or 99%.")
+                                Text("Risk describes how sensitive a kind of information may be if shared. It is an editorial guide, separate from match strength. Even a tentative match may contain something you want to keep private.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .fixedSize(horizontal: false, vertical: true)
@@ -278,14 +278,14 @@ struct AboutView: View {
                         disclosureLabel(
                             icon: "chart.bar.xaxis",
                             color: .indigo,
-                            title: "Confidence & Risk Scores",
+                            title: "Match strength & risk",
                             count: "How to read them"
                         )
                     }
                 } header: {
                     Text("Understanding Your Results")
                 } footer: {
-                    Text("Both scores are shown together for every detection so you can see exactly what was found, how certain we are, and how serious exposure would be.")
+                    Text("Match strength helps you review a finding. Risk helps you decide whether to cover it. Neither replaces your final review.")
                         .font(.caption)
                 }
 
@@ -373,37 +373,37 @@ struct AboutView: View {
                     .padding(.vertical, 6)
                 }
 
-                // ── Section 7: Privacy Guarantee ───────────────────────────
+                // ── Section 7: Privacy ───────────────────────────
                 Section(header: Text("Privacy")) {
                     privacyRow(
                         icon: "lock.fill",
                         color: .green,
                         title: "100% On-Device Processing",
-                        detail: "Your photos are never uploaded to any server. All scanning, redaction, and metadata stripping happens entirely on your iPhone or iPad."
+                        detail: "Scanning, redaction, and metadata removal happen on your device. Photos go to another app or service only through the import, save, and sharing actions you choose."
                     )
                     privacyRow(
                         icon: "face.dashed",
                         color: .pink,
                         title: "Face Data Is Not Collected",
-                        detail: "Face detection uses temporary on-device rectangles only. PicStrip does not identify people or store, transmit, or share face data."
+                        detail: "Face rectangles stay in the editing session. PicStrip does not identify people. Images you save or share can contain faces you leave uncovered."
                     )
                     privacyRow(
                         icon: "wifi.slash",
                         color: .orange,
-                        title: "No Internet Required",
-                        detail: "PicStrip works completely offline and never sends your photos anywhere. One optional download exists: the Apple model behind tap-to-select, which iOS fetches only after you agree."
+                        title: "Offline Editing",
+                        detail: "Editing works offline after your image is available locally. Cloud imports, optional Apple model downloads, and services you choose for saving or sharing may use the network."
                     )
                     privacyRow(
                         icon: "chart.bar.xaxis",
                         color: .red,
                         title: "No Analytics or Tracking",
-                        detail: "No telemetry, no crash reporters, no ad SDKs. Your usage is not observed or collected in any way."
+                        detail: "No ads, usage analytics, or third-party crash reporting. PicStrip does not send your activity to a developer-operated service."
                     )
                     privacyRow(
                         icon: "clock.badge.xmark",
                         color: .purple,
                         title: "No Photo History",
-                        detail: "PicStrip does not keep photo history, removed values, OCR snippets, or redaction coordinates. Nothing about what you process is stored beyond the current session."
+                        detail: "PicStrip keeps no photo history. Protected edit copies expire after 15 minutes and temporary exports after one hour. Cleanup runs when the app or extension can access them."
                     )
                 }
 

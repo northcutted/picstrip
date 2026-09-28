@@ -1,43 +1,19 @@
-Fotoğraflarınızı; konumunuzu, kimliğinizi ya da göremediğiniz sırları paylaşmadan paylaşın. PicStrip görünmez üst verileri kaldırır ve hassas bilgileri sansürler — tamamen cihazınızda, hesapsız, yüklemesiz ve ağ bağlantısı gerektirmeden.
+Fotoğrafları paylaşmadan önce özel bilgileri bulun ve örtün. Tarama, karartma ve meta veri kaldırma aygıtınızda gerçekleşir. Fotoğraflar başka bir uygulamaya veya hizmete yalnızca seçtiğiniz içe aktarma, kaydetme ve paylaşma işlemleriyle gider.
 
-ÜST VERİLERİ KALDIRMA
-Her fotoğraf gizlice GPS koordinatları, zaman damgaları, kamera marka ve modeli, lens bilgileri, seri numaraları ve Apple üretici notları taşır. PicStrip paylaşmadan önce bunların tümünü tek dokunuşla kaldırır.
+Bir örnek dene
+Kurgusal bir fotoğraf. Arşivinize erişim gerekmez.
 
-HASSAS BİLGİ TESPİTİ VE SANSÜRLEME
-Cihazınızda çalışan OCR ve bilgisayarla görme, fotoğrafı dört risk seviyesinde sınıflandırılmış 30 tür hassas kişisel bilgi (PII) için tarar:
+Düzenleyicide tespitleri inceleyin. Her sonuç, nelerin örtüleceğine karar vermeniz için eşleşme gücünü ve risk düzeyini gösterir. Paylaşmadan önce fotoğrafı inceleyin. Otomatik tespit ayrıntıları kaçırabilir. İsim önerileri Apple Intelligence gerektirir ve otomatik olarak örtülmez. İsteğe bağlı nesne seçimi modeli, onayınızdan sonra Apple’dan indirilebilir.
 
-Kritik — API anahtarları, kredi kartları, sosyal güvenlik numaraları, parolalar, JWT'ler, veritabanı bağlantı dizileri
-Yüksek — yüzler, IBAN'lar, ABA yönlendirme numaraları, SWIFT/BIC kodları, fiziksel kimlik bilgileri
-Orta — e-postalar, telefonlar, adresler, kripto cüzdanları, VIN'ler, plakalar, IP ve MAC adresleri
-Düşük — doğum tarihleri, bağlantılar, barkodlar
+Karartmaları ayarlayın: Sürükleyin veya Konum ve boyut’u kullanın. Çizmeden ortalanmış bir alan ekleyin. Birden çok alanı değiştirmek için Seç’i kullanın. Bulanıklaştırma ve pikselleştirme ayrıntıları tanınabilir bırakabilir. Sırlar ve kimlik belirten metinler için düz, opak kaplama kullanın.
 
-Her tespit; tür, güven puanı ve risk seviyesi bilgisini gösterir, böylece neyi öncelikle sansürleyeceğinizi bilirsiniz.
+Konum, kamera bilgileri ve tarihler gibi gizli meta verileri inceleyin. Nelerin kaldırılacağını seçin ve temizlenmiş çıktıyı kontrol edin.
+PNG: Ekran görüntüleri ve metinler için kayıpsız kalite. Daha büyük dosyalar.
+JPEG: Günlük fotoğraflar için küçük dosyalar. Geniş uyumluluk.
+HEIC: Yüksek kaliteli, küçük fotoğraflar. Alıcının uyumluluğunu kontrol edin.
 
-SANSÜR EDİTÖRÜ
-• Tarayıcının kaçırdığını manuel olarak örtmek için istediğiniz yere çizin
-• Çoklu seçim ve toplu değişiklik
-• 4 stil: dolu renk, çapraz tarama, pikselleştirme veya bulanıklık
-• Bulanıklık ve pikselleştirme yoğunluğu ayarlanabilir
-• Kaydetmeden önce her stilin nasıl görüneceğini tam olarak görün
-• Dolu renk ve çapraz tarama için 12 renk seçeneği
-• 50 adım geri al/yinele
+Temizlenmiş görüntüyü İnceleyin ve paylaşın ya da Fotoğraflar’a bir kopya kaydedin. Paylaşım uzantısı doğrudan temizleme veya düzenleme için korumalı aktarım da sunar. Düzenle, incelemek için ilk özgün görüntüyü açar. Korumalı yerel kopyanın süresi 15 dakika sonra dolar. Uzantıda büyük fotoğraflar için daha küçük kopyalar gerekir: karartma için en fazla 6 megapiksel, yalnızca meta veriler için 12 megapiksel. Tam inceleme için PicStrip’te düzenleyin.
 
-HER YERDEN İÇE AKTARMA
-• Fotoğraflar kütüphanesi
-• Dosyalar uygulaması — herhangi bir görseli veya ekran görüntüsünü doğrudan açın
-• Uygulamada fotoğraf çekin — orijinali fotoğraf arşivinize hiç ulaşmaz
-• Belgeleri kamerayla tarayın — orijinali fotoğraf arşivinize hiç ulaşmaz
-• Görselleri sürükleyip uygulamaya bırakın
-• Paylaşım uzantısı — PicStrip'i açmadan Fotoğraflar, Safari veya herhangi bir uygulamadan doğrudan temizleyin
+Arka plandaki Kestirmeler eylemi yalnızca meta verileri kaldırır. Görünür içeriği inceleyip karartmak için PicStrip’i açın.
 
-TASARIM GEREĞİ GİZLİLİK
-• %100 cihazınızda — hiçbir şey telefonunuzdan çıkmaz
-• Yüz algılama cihazda kalır; PicStrip yüz verilerini toplamaz, saklamaz, iletmez veya paylaşmaz
-• Hesap yok, oturum açma yok, izleme yok
-• Reklam yok, uygulama içi satın alma yok, abonelik yok
-• Açık kaynak — her kod satırı GitHub'da denetlenebilir
-• SLSA Seviye 3 yapı kanıtı — her sürüm kriptografik olarak doğrulanır
-• Gizlilik etiketi: "Veri toplanmıyor"
-
-KISAYOLLAR VE OTOMASYON
-PicStrip; içe aktarmada, toplu işlemde veya mevcut iş akışlarınızda üst verileri kaldırıp hassas bilgileri otomatik olarak sansürlemenizi sağlayan bir Kısayollar eylemi içerir.
+Bu rapor alan adlarını ve sayılarını içerir; özgün meta veri değerlerini veya tespit edilen metni asla içermez.

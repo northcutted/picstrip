@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Controleren en delen
+
+• Probeer een voorbeeld. Een fictieve foto. Geen toegang tot je bibliotheek nodig.
+• Hele afbeelding bekijken. Origineel tonen.
+• Opgeschoonde afbeelding delen. Deelvoorinstelling. Huidige bestandsgrootte.
+• Gecentreerd gebied toevoegen. Positie en grootte.
+• Sommige controles zijn niet voltooid. Matchsterkte.
+• Betrouwbaarder bewaren in Foto’s, betere dekking van privésleutelblokken en beveiligde tijdelijke bestanden.
+• De achtergrondactie in Opdrachten verwijdert alleen metadata. Open PicStrip om zichtbare inhoud te controleren en af te dekken.
+
+Controleer de foto voordat je deelt. Automatische detectie kan details missen.

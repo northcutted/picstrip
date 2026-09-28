@@ -1,511 +1,536 @@
 {
-  "sourceLanguage": "en",
-  "strings": {
-    "01_Home": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "شارك الصورة.\nلا القصة وراءها."
+  "sourceLanguage" : "en",
+  "strings" : {
+    "04_ReviewAndShare" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Review & Share\nProcessed on your device"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Teile das Foto.\nNicht die Geschichte dahinter."
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Granska och dela\nBearbetas på din enhet"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Share the photo.\nNot the story behind it."
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź i udostępnij\nPrzetwarzane na urządzeniu"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Comparte la foto.\nNo la historia detrás."
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認して共有\nデバイス上で処理"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Partagez la photo.\nPas l'histoire derrière."
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar y compartir\nProcesado en tu dispositivo"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Condividi la foto.\nNon la storia dietro."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifier et partager\nTraité sur votre appareil"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "写真は共有。\n背景の情報は守る。"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İncele ve paylaş\nAygıtınızda işlenir"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "사진은 공유하세요.\n그 안의 정보는 빼고."
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مراجعة ومشاركة\nتتم المعالجة على جهازك"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Deel de foto.\nNiet het verhaal erachter."
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controleren en delen\nVerwerkt op je apparaat"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Udostępnij zdjęcie.\nNie historię za nim."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar e compartilhar\nProcessado no seu dispositivo"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Compartilhe a foto.\nNão a história por trás."
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검토 및 공유\n기기에서 처리됨"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Partilhe a foto.\nNão a história por detrás."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar y compartir\nProcesado en tu dispositivo"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Dela bilden.\nInte historien bakom."
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查并分享\n在你的设备上处理"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Fotoğrafı paylaş.\nArkasındaki hikâyeyi değil."
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisar e partilhar\nProcessado no seu dispositivo"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "分享照片。\n不分享背后的故事。"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查並分享\n在你的裝置上處理"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "分享照片。\n不分享背後的故事。"
-          }
-        }
-      }
-    },
-    "02_About": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مفتوح المصدر.\nخصوصية يمكن تدقيقها."
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla e condividi\nElaborato sul dispositivo"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open Source.\nPrüfbare Privatsphäre."
-          }
-        },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open source.\nAuditable privacy."
-          }
-        },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Código abierto.\nPrivacidad auditable."
-          }
-        },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open source.\nConfidentialité auditable."
-          }
-        },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open source.\nPrivacy verificabile."
-          }
-        },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "オープンソース。\n検証可能なプライバシー。"
-          }
-        },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "오픈 소스.\n검증 가능한 프라이버시."
-          }
-        },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Open source.\nControleerbare privacy."
-          }
-        },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Otwarty kod.\nAudytowalna prywatność."
-          }
-        },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Código aberto.\nPrivacidade auditável."
-          }
-        },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Código aberto.\nPrivacidade auditável."
-          }
-        },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Öppen källkod.\nGranskbar integritet."
-          }
-        },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Açık kaynak.\nDenetlenebilir gizlilik."
-          }
-        },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "开源代码。\n隐私可审计。"
-          }
-        },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "開源程式碼。\n隱私可稽核。"
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prüfen & teilen\nAuf deinem Gerät verarbeitet"
           }
         }
       }
     },
-    "03_PhotoLoaded": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "مصنّفة حسب الخطورة.\nلا شيء يفوت."
+    "02_RedactionEditor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position & size\nAdd centered region"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Risiken eingestuft.\nNichts übersehen."
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position och storlek\nLägg till centrerat område"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Risks ranked.\nNothing missed."
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozycja i rozmiar\nDodaj wyśrodkowany obszar"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Riesgos ordenados.\nNada se escapa."
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置とサイズ\n中央に領域を追加"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Risques classés.\nRien de manqué."
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posición y tamaño\nAgregar área centrada"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Rischi classificati.\nNulla sfugge."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position et taille\nAjouter une zone centrée"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "リスク評価済み。\n見逃しゼロ。"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konum ve boyut\nOrtalanmış bölge ekle"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "위험 등급 분류.\n놓치는 것 없이."
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الموضع والحجم\nإضافة منطقة في الوسط"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Risico's gerangschikt.\nNiets gemist."
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Positie en grootte\nGecentreerd gebied toevoegen"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ryzyka ocenione.\nNic nie umknie."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posição e tamanho\nAdicionar área centralizada"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Riscos classificados.\nNada passa despercebido."
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 및 크기\n중앙에 영역 추가"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Riscos classificados.\nNada passa despercebido."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posición y tamaño\nAñadir área centrada"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Risker rangordnade.\nIngenting missas."
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置与大小\n添加居中区域"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Riskler sıralandı.\nHiçbir şey gözden kaçmıyor."
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posição e tamanho\nAdicionar área centrada"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "风险已评级。\n无一遗漏。"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置與大小\n加入置中區域"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "風險已評級。\n無一遺漏。"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione e dimensioni\nAggiungi area centrata"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Position & Größe\nZentrierten Bereich hinzufügen"
           }
         }
       }
     },
-    "04_RedactionEditor": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "تحديد متعدد.\nبالطريقة التي تريدها."
+    "03_Metadata" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Location · Camera & date\nImage details"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mehrfachauswahl.\nNach deinen Regeln."
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plats · Kamera och datum\nBilduppgifter"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Multi-select.\nRedact your way."
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lokalizacja · Aparat i data\nDane obrazu"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selección múltiple.\nA tu manera."
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置情報 · カメラと日時\n画像情報"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sélection multiple.\nÀ votre façon."
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubicación · Cámara y fecha\nDetalles de la imagen"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Selezione multipla.\nA modo tuo."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lieu · Appareil photo et date\nDétails de l’image"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "複数選択。\n自分流に編集。"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Konum · Kamera ve tarih\nGörüntü bilgileri"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "다중 선택.\n나만의 방식으로."
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الموقع · الكاميرا والتاريخ\nتفاصيل الصورة"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Meerdere selecteren.\nOp jouw manier."
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Locatie · Camera en datum\nAfbeeldingsgegevens"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Zaznacz wiele.\nRedaguj po swojemu."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização · Câmera e data\nDetalhes da imagem"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seleção múltipla.\nDo seu jeito."
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "위치 · 카메라 및 날짜\n이미지 정보"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Seleção múltipla.\nÀ sua maneira."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ubicación · Cámara y fecha\nDetalles de la imagen"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Välj flera.\nRedigera som du vill."
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置 · 相机与日期\n图像信息"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Çoklu seçim.\nKendi yönteminle."
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Localização · Câmara e data\nDetalhes da imagem"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "多选模式。\n按你的方式涂抹。"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "位置 · 相機與日期\n影像資訊"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "多選模式。\n照你的方式遮蓋。"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posizione · Fotocamera e data\nDettagli dell’immagine"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standort · Kamera & Datum\nBilddetails"
           }
         }
       }
     },
-    "05_ReviewAndSave": {
-      "extractionState": "manual",
-      "localizations": {
-        "ar": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "صدِّر بأمان.\nشارك بثقة."
+    "01_FullPreview" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspect full image"
           }
         },
-        "de": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Sauber exportieren.\nSicher teilen."
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Granska hela bilden"
           }
         },
-        "en": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Export clean.\nShare confidently."
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź cały obraz"
           }
         },
-        "es": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exporta limpio.\nComparte tranquilo."
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "画像全体を確認"
           }
         },
-        "fr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exportez sans traces.\nPartagez sereinement."
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspeccionar imagen completa"
           }
         },
-        "it": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Esporta pulito.\nCondividi sereno."
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Examiner l’image entière"
           }
         },
-        "ja": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "きれいに書き出し。\n安心して共有。"
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tüm görüntüyü incele"
           }
         },
-        "ko": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "깨끗하게 내보내기.\n안심하고 공유."
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فحص الصورة كاملة"
           }
         },
-        "nl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exporteer schoon.\nDeel zorgeloos."
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hele afbeelding bekijken"
           }
         },
-        "pl": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Eksportuj czysto.\nUdostępniaj spokojnie."
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspecionar imagem completa"
           }
         },
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exporte limpo.\nCompartilhe tranquilo."
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전체 이미지 확인"
           }
         },
-        "pt-PT": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exporte limpo.\nPartilhe tranquilo."
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspeccionar imagen completa"
           }
         },
-        "sv": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Exportera rent.\nDela tryggt."
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "检查完整图像"
           }
         },
-        "tr": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Temiz dışa aktar.\nGönül rahatlığıyla paylaş."
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspecionar imagem completa"
           }
         },
-        "zh-Hans": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "干净导出。\n放心分享。"
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "檢查完整影像"
           }
         },
-        "zh-Hant": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "乾淨匯出。\n放心分享。"
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esamina l’intera immagine"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganzes Bild prüfen"
+          }
+        }
+      }
+    },
+    "05_Sample" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Try a sample\nA fictional photo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prova ett exempel\nPåhittat exempel"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wypróbuj przykład\nFikcyjny przykład"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "サンプルを試す\n架空のサンプル"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar un ejemplo\nEjemplo ficticio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Essayer un exemple\nExemple fictif"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir örnek dene\nKurgusal örnek"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجربة مثال\nمثال خيالي"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probeer een voorbeeld\nFictief voorbeeld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimentar um exemplo\nExemplo fictício"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "샘플 사용해 보기\n가상 샘플"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Probar un ejemplo\nEjemplo ficticio"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "试用示例\n虚构示例"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Experimentar um exemplo\nExemplo fictício"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "試用範例\n虛構範例"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prova un esempio\nEsempio inventato"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beispiel ausprobieren\nErfundenes Beispiel"
           }
         }
       }
     }
   },
-  "version": "1.0"
+  "version" : "1.0"
 }

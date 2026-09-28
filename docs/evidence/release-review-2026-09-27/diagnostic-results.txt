@@ -1,0 +1,14 @@
+Test Case '-[PicStripTests.ReleaseReviewProbes testDefaultAuditDoesNotReintroduceRemovedGPS]' started.
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:54: error: -[PicStripTests.ReleaseReviewProbes testDefaultAuditDoesNotReintroduceRemovedGPS] : XCTAssertFalse failed - Default shareable audit exposes the removed latitude
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:55: error: -[PicStripTests.ReleaseReviewProbes testDefaultAuditDoesNotReintroduceRemovedGPS] : XCTAssertFalse failed - Default shareable audit exposes the removed longitude
+Test Case '-[PicStripTests.ReleaseReviewProbes testDefaultAuditDoesNotReintroduceRemovedGPS]' failed (0.245 seconds).
+Test Case '-[PicStripTests.ReleaseReviewProbes testFailedScanWarningSurvivesOpeningExportReview]' started.
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:38: error: -[PicStripTests.ReleaseReviewProbes testFailedScanWarningSurvivesOpeningExportReview] : XCTAssertNotNil failed - A failed scan must remain disclosed during final review
+Test Case '-[PicStripTests.ReleaseReviewProbes testFailedScanWarningSurvivesOpeningExportReview]' failed (0.018 seconds).
+Test Case '-[PicStripTests.ReleaseReviewProbes testPrivateKeyRedactionCoversThePayloadNotJustItsHeader]' started.
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:89: error: -[PicStripTests.ReleaseReviewProbes testPrivateKeyRedactionCoversThePayloadNotJustItsHeader] : XCTAssertTrue failed - Precondition: scanner recognizes the PEM header
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:93: error: -[PicStripTests.ReleaseReviewProbes testPrivateKeyRedactionCoversThePayloadNotJustItsHeader] : XCTAssertTrue failed - Detected private-key header leaves the key payload unredacted
+Test Case '-[PicStripTests.ReleaseReviewProbes testPrivateKeyRedactionCoversThePayloadNotJustItsHeader]' failed (1.191 seconds).
+Test Case '-[PicStripTests.ReleaseReviewProbes testSharedProcessedBytesAdvertiseAnImageType]' started.
+/Users/eddie/Development/PicStrip/PicStripTests/ReleaseReviewProbes.swift:62: error: -[PicStripTests.ReleaseReviewProbes testSharedProcessedBytesAdvertiseAnImageType] : XCTAssertTrue failed - ShareLink uses this Data representation: ["public.data"]
+Test Case '-[PicStripTests.ReleaseReviewProbes testSharedProcessedBytesAdvertiseAnImageType]' failed (0.005 seconds).

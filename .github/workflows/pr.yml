@@ -36,10 +36,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@9795586bfb7d3ea3e737647a7309dc2ba00adacb
+        uses: northcutted/ios-release-workflows/actions/bootstrap@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
         with:
           config: .github/ios-release.json
-          revision: 9795586bfb7d3ea3e737647a7309dc2ba00adacb
+          revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
       - name: Set up Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
@@ -51,14 +51,15 @@ jobs:
         run: bash "$IOS_RELEASE_ROOT/scripts/ci/install_actionlint.sh"
       - name: Validate workflows and release guardrails
         run: |-
+          python3 scripts/validate_store_metadata.py
           npm run check:workflows
           npm run test:ci
           actionlint
   qa:
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@9795586bfb7d3ea3e737647a7309dc2ba00adacb
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
     with:
       config: .github/ios-release.json
-      platform_revision: 9795586bfb7d3ea3e737647a7309dc2ba00adacb
+      platform_revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
@@ -96,10 +97,10 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@9795586bfb7d3ea3e737647a7309dc2ba00adacb
+        uses: northcutted/ios-release-workflows/actions/bootstrap@d59e678d4f8f997dfdcbefe065c3c4efa9758f96
         with:
           config: .github/ios-release.json
-          revision: 9795586bfb7d3ea3e737647a7309dc2ba00adacb
+          revision: d59e678d4f8f997dfdcbefe065c3c4efa9758f96
       - name: Resolve screenshot simulators
         run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py" --screenshots
       - name: Set up Ruby
@@ -117,11 +118,24 @@ jobs:
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
         with:
           name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}
-          path: fastlane/screenshots/
+          path: fastlane/screenshots/en-US/
           retention-days: 14
           compression-level: 0
           if-no-files-found: error
         if: always()
+      # This secret-free job uses fresh hosted simulators and repository-owned
+      # synthetic fixtures only. Preserve the failing device's XCTest evidence.
+      - name: Retain screenshot failure diagnostics
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: screenshot-failure-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            fastlane/screenshot_logs/
+            fastlane/screenshots/test_output/
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: ignore
+        if: failure()
     if: contains(github.event.pull_request.labels.*.name, 'screenshots')
   gate:
     name: CI Gate

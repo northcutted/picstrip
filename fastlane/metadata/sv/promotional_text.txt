@@ -1,1 +1,1 @@
-PicStrip tar bort metadata och döljer känslig info, även ansikten, på enheten. Ingen ansiktsdata samlas in, inga uppladdningar.
+Hitta och dölj privata uppgifter innan du delar foton. Bearbetas på din enhet. Prova ett exempel.

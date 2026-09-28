@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — İncele ve paylaş
+
+• Bir örnek dene. Kurgusal bir fotoğraf. Arşivinize erişim gerekmez.
+• Tüm görüntüyü incele. Özgünü göster.
+• Temizlenmiş görüntüyü paylaş. Paylaşım ön ayarı. Geçerli dosya boyutu.
+• Ortalanmış alan ekle. Konum ve boyut.
+• Bazı kontroller tamamlanamadı. Eşleşme gücü.
+• Fotoğraflar’a daha güvenilir kaydetme, özel anahtar blokları için daha iyi kapsama ve korumalı geçici dosyalar.
+• Arka plandaki Kestirmeler eylemi yalnızca meta verileri kaldırır. Görünür içeriği inceleyip karartmak için PicStrip’i açın.
+
+Paylaşmadan önce fotoğrafı inceleyin. Otomatik tespit ayrıntıları kaçırabilir.

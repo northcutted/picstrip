@@ -1,0 +1,48 @@
+{
+  "reviewed_on": "2026-09-27",
+  "xcode": "27.0 / 27A266a",
+  "simulator_runtime": "iOS 27.0 / 24A434",
+  "locales": [
+    "en-US",
+    "ar-SA",
+    "de-DE",
+    "es-ES",
+    "es-MX",
+    "fr-FR",
+    "it",
+    "ja",
+    "ko",
+    "nl-NL",
+    "pl",
+    "pt-BR",
+    "pt-PT",
+    "sv",
+    "tr",
+    "zh-Hans",
+    "zh-Hant"
+  ],
+  "devices": [
+    "iPhone 18 Pro Max",
+    "iPad Pro 13-inch (M5)"
+  ],
+  "screens": [
+    "01_FullPreview",
+    "02_RedactionEditor",
+    "03_Metadata",
+    "04_ReviewAndShare",
+    "05_Sample"
+  ],
+  "processed_png_count": 170,
+  "inventory_and_dimensions": "passed pinned release-platform validator",
+  "manifest_sha256": "12493eb659aab2af58769242a8145673a6a486e1a03a87aa72ec7c1d0cbe10e4",
+  "visual_review": "All 17 locale contact sheets reviewed: headline fit, image framing, localized controls, redaction geometry, and correspondence to the actual capture. 140 previously inspected compositions are byte-identical to their final files after renaming. Refreshed Arabic and both Chinese sets were inspected in the final composition.",
+  "rtl_regression": "Arabic phone and tablet raw editor captures additionally inspected after fixing mirrored outlines and resize handles. Image geometry aligns while controls remain RTL.",
+  "capture_constraints": [
+    "Repository-owned fictional fixtures; optional name detection disabled for deterministic captures.",
+    "Simulator camera controls shown for layout only.",
+    "Incomplete simulator detector coverage remains visible with manual acknowledgement required before sharing.",
+    "Source captures are development builds; screenshots do not certify the eventual signed artifact or full accessibility/translation conformance."
+  ],
+  "release_order": "Full cleaned-image inspection first, then editor, metadata, review/share, and fictional sample.",
+  "apple_upload_performed": false
+}

@@ -16,11 +16,14 @@ nonisolated struct IncomingImage: Transferable, Sendable {
     static var transferRepresentation: some TransferRepresentation {
         // Files app, Photos, and other document providers hand over a file.
         FileRepresentation(importedContentType: .image) { received in
-            IncomingImage(data: try Data(contentsOf: received.file))
+            IncomingImage(data: try ImageResourceBudget.editor.read(received.file))
         }
         // Safari, Messages, and the pasteboard hand over the bytes directly.
         DataRepresentation(importedContentType: .image) { data in
-            IncomingImage(data: data)
+            guard data.count <= ImageResourceBudget.editor.maximumBytes else {
+                throw ImageResourceBudget.AdmissionError.fileTooLarge
+            }
+            return IncomingImage(data: data)
         }
     }
 
@@ -30,7 +33,7 @@ nonisolated struct IncomingImage: Transferable, Sendable {
     static func read(securityScoped url: URL) async -> Data? {
         let scoped = url.startAccessingSecurityScopedResource()
         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-        return try? Data(contentsOf: url)
+        return try? ImageResourceBudget.editor.read(url)
     }
 }
 

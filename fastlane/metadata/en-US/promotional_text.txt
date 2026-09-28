@@ -1,1 +1,1 @@
-PicStrip strips hidden metadata and redacts sensitive info, including faces, on-device. No face data collected, no uploads.
+Try a fictional sample, cover sensitive details, remove hidden metadata, and inspect the cleaned photo before sharing. Processed on your device.

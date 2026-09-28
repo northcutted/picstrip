@@ -1,3 +1,11 @@
-Bug Fixes
-• ci: disable concurrent tests to see if that fixes it
-• update appstore metadata
+PicStrip 1.7.0 — Prüfen & teilen
+
+• Beispiel ausprobieren. Ein erfundenes Foto. Kein Zugriff auf deine Mediathek nötig.
+• Ganzes Bild prüfen. Original einblenden.
+• Bereinigtes Bild teilen. Voreinstellung zum Teilen. Aktuelle Dateigröße.
+• Zentrierten Bereich hinzufügen. Position & Größe.
+• Einige Prüfungen konnten nicht abgeschlossen werden. Übereinstimmungsstärke.
+• Zuverlässigeres Speichern in Fotos, bessere Abdeckung privater Schlüsselblöcke und geschützte temporäre Dateien.
+• Die Hintergrundaktion in Kurzbefehle entfernt nur Metadaten. Öffne PicStrip, um sichtbare Inhalte zu prüfen und zu verdecken.
+
+Prüfe das Foto vor dem Teilen. Die automatische Erkennung kann Details übersehen.

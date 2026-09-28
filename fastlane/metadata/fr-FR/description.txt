@@ -1,43 +1,19 @@
-Partagez vos photos sans partager votre position, votre identité ou des secrets que vous ne voyez pas. PicStrip supprime les métadonnées invisibles et masque les informations sensibles — entièrement sur votre appareil, sans compte, sans envoi et sans connexion réseau requise.
+Repérez et masquez les détails privés avant de partager vos photos. L’analyse, le masquage et la suppression des métadonnées se font sur votre appareil. Les photos ne vont vers une autre app ou un service que par les actions d’importation, d’enregistrement et de partage que vous choisissez.
 
-SUPPRESSION DES MÉTADONNÉES
-Chaque photo contient secrètement des coordonnées GPS, des horodatages, la marque et le modèle de l'appareil, les données de l'objectif et des numéros de série. PicStrip supprime tout cela avant le partage — en un clic.
+Essayer un exemple
+Une photo fictive. Aucun accès à votre photothèque nécessaire.
 
-DÉTECTION & MASQUAGE D'INFORMATIONS SENSIBLES
-L'OCR et la vision par ordinateur, exécutés sur l'appareil, détectent 30 types d'informations personnelles sensibles (PII), répartis en quatre niveaux de risque :
+Vérifiez les détections dans l’éditeur de masquage. Chaque résultat indique la force de correspondance et un niveau de risque pour vous aider à choisir quoi masquer. Vérifiez la photo avant de la partager. La détection automatique peut manquer des détails. Les suggestions de noms nécessitent Apple Intelligence et ne sont pas masquées automatiquement. Un modèle facultatif de sélection d’objets peut être téléchargé depuis Apple avec votre accord.
 
-Critique — clés API, cartes bancaires, numéros de sécurité sociale, mots de passe, JWT, chaînes de connexion
-Élevé — visages, IBAN, numéros ABA, codes SWIFT/BIC, identifiants physiques
-Moyen — e-mails, téléphones, adresses, portefeuilles crypto, VIN, plaques d'immatriculation, adresses IP et MAC
-Faible — dates de naissance, liens, codes-barres
+Ajustez les masquages en les faisant glisser ou avec Position et taille. Ajoutez une zone centrée sans dessiner. Utilisez Sélectionner pour modifier plusieurs zones. Le flou et la pixellisation peuvent laisser des détails reconnaissables. Utilisez un aplat opaque pour les secrets et le texte identifiant.
 
-Chaque détection affiche son type, son score de confiance et son niveau de risque pour vous aider à prioriser ce qu'il faut masquer.
+Vérifiez les métadonnées cachées, comme le lieu, l’appareil photo et les dates. Choisissez quoi supprimer et vérifiez le résultat nettoyé.
+PNG: Qualité sans perte pour les captures d’écran et le texte. Fichiers plus volumineux.
+JPEG: Fichiers plus petits pour les photos courantes. Largement compatible.
+HEIC: Photos compactes de haute qualité. Vérifiez la compatibilité du destinataire.
 
-ÉDITEUR DE MASQUAGE
-• Dessinez n'importe où pour couvrir manuellement ce que le scanner a manqué
-• Sélection multiple et modifications en masse
-• 4 styles : plein, hachures croisées, pixelisé ou flou
-• Intensité réglable du flou et de la pixelisation
-• Voyez le rendu exact de chaque style sur la photo avant d'enregistrer
-• 12 couleurs pour les blocs pleins et à hachures croisées
-• 50 niveaux d'annulation/rétablissement
+Vérifiez et partagez l’image nettoyée, ou enregistrez une copie dans Photos. L’extension de partage permet aussi un nettoyage direct ou un transfert protégé pour la retouche. Modifier ouvre la première image originale pour vérification. Une copie locale protégée expire après 15 minutes. Les grandes photos nécessitent des copies réduites dans l’extension : jusqu’à 6 mégapixels pour le masquage, ou 12 pour les métadonnées seules. Modifiez dans PicStrip pour une vérification complète.
 
-IMPORTER DE N'IMPORTE OÙ
-• Bibliothèque Photos
-• App Fichiers — ouvrez directement toute image ou capture d'écran
-• Prenez une photo dans l'app — l'original n'atteint jamais votre photothèque
-• Scannez des documents avec l'appareil photo — l'original n'atteint jamais votre photothèque
-• Glisser-déposer des images dans l'app
-• Extension de partage — nettoyez directement depuis Photos, Safari ou toute app, sans ouvrir PicStrip
+L’action Raccourcis en arrière-plan supprime uniquement les métadonnées. Ouvrez PicStrip pour vérifier et masquer le contenu visible.
 
-CONFIDENTIALITÉ PAR CONCEPTION
-• 100% sur l'appareil — rien ne quitte votre téléphone
-• La détection des visages reste sur l'appareil ; PicStrip ne collecte, ne stocke, ne transmet ni ne partage aucune donnée faciale
-• Sans compte, sans connexion, sans traçage
-• Sans publicité, sans achats intégrés, sans abonnements
-• Open source — chaque ligne de code est auditable sur GitHub
-• Provenance de build SLSA Niveau 3 — chaque version est vérifiée cryptographiquement
-• Étiquette de confidentialité : « Aucune donnée collectée »
-
-RACCOURCIS & AUTOMATISATION
-PicStrip inclut une action Raccourcis pour supprimer les métadonnées et masquer les informations sensibles automatiquement : à l'import, par lots ou dans vos workflows existants.
+Ce rapport contient les noms des champs et des comptes, jamais les valeurs des métadonnées d’origine ni le texte détecté.

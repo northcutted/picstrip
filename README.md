@@ -12,16 +12,16 @@
 
 </div>
 
-PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Every byte of processing happens locally using Apple frameworks. No network required, no analytics, no third-party code.
+PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Scanning and image processing use Apple frameworks on the device. PicStrip has no developer photo server, analytics or advertising SDK. User-selected imports, saves and shares follow the chosen service settings; optional Apple models may need a download.
 
 ---
 
 ## Screenshots
 
 <p align="center">
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_PhotoLoaded.png" width="240" alt="A loaded photo with its risks ranked"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-04_RedactionEditor.png" width="240" alt="The redaction editor"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-05_ReviewAndSave.png" width="240" alt="Review and save"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_Metadata.png" width="240" alt="A loaded photo with its risks ranked"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-02_RedactionEditor.png" width="240" alt="The redaction editor"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-01_FullPreview.png" width="240" alt="Inspect the cleaned image in full"/>
 </p>
 
 ---
@@ -35,14 +35,16 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
 | **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
-| **Take Photo** | A viewfinder that shows, live, what will be redacted; the photo goes straight into the editor and the original never reaches your photo library |
-| **Scan Document** | Scan paper straight into the editor; multi-page scans go through batch. The un-redacted scan is never saved |
-| **Import Anywhere** | Photos, Files, paste, drag and drop — always the original bytes, metadata intact |
-| **Batch Processing** | Clean many photos at once with one privacy policy; nothing is saved unless every requested step succeeded |
+| **Take Photo** | An advisory live viewfinder; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
+| **Scan Document** | Scan paper into the editor; multi-page scans use batch. Captures are not automatically saved to Photos |
+| **Import Anywhere** | Photos, Files, paste, drag and drop; review the supplied image and metadata |
+| **Batch Processing** | Process sequentially with a shared policy; incomplete visual scans are skipped, successful copies are retained, and cancellation stops future saves |
+| **Try a Sample** | Explore a fictional image without granting library access; compare the original and cleaned output |
+| **Accessible Editing** | Add a centered box and adjust its position and size without drawing; changes remain undoable |
 | **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG (privacy default), JPEG, HEIC, or the original format |
-| **Audit Reports** | Export a JSON record of every stripped field and redacted region |
-| **Share Extension** | Clean photos from the share sheet without opening the app |
-| **Shortcuts** | "Clean Photos with PicStrip" opens the picker; "Strip Metadata from Images" cleans files in the background |
+| **Audit Reports** | Export field names, counts and scan status without original values or detected text |
+| **Share Extension** | Save cleaned copies from the share sheet, or prepare the first original for editing using a protected, expiring handoff |
+| **Shortcuts** | "Clean Photos with PicStrip" opens the picker; "Strip Metadata from Images" removes metadata only in the background |
 
 Available in English and 16 more localizations, including separate Spanish for Spain and Latin America.
 
@@ -50,12 +52,12 @@ Available in English and 16 more localizations, including separate Spanish for S
 
 ## Privacy
 
-- **No network required.** PicStrip has no server and no account, and makes no network request of its own.
-- No analytics, no tracking, no data collection, no third-party code.
-- Names are found by Apple's **on-device** language model only — never Private Cloud Compute — and are not redacted until you switch them on.
-- The "Take Photo" viewfinder analyses frames in memory to show what would be redacted; no frame and no result is stored.
-- Photos you take or scan in the app never reach your photo library un-redacted.
-- One opt-in exception to "no network": on iOS 27, iOS downloads Apple's object-selection model the first time you agree to use tap to redact — the model only, never your photos.
+- Scanning, redaction and metadata removal happen on your device. No account, analytics or advertising SDK is required.
+- Name suggestions use Apple's on-device model and remain optional for redaction.
+- Live-camera overlays are a guide; review the full scan after capture. PicStrip does not automatically save an unreviewed capture to Photos.
+- A model for object selection can download from Apple after consent. Cloud imports, synced photo libraries and chosen share destinations follow their own settings.
+- Protected, backup-excluded edit handoffs expire after 15 minutes and are consumed once. Export files are cleaned up on completion where possible, with an expiry sweep as a fallback.
+- Automatic detection can miss details. Failed required checks remain visible and require a deliberate manual-review confirmation in the editor; unattended visual workflows reject incomplete scans.
 
 The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permissions and required-reason APIs are covered in [DEVELOPMENT.md](DEVELOPMENT.md#privacy--security).
 
@@ -66,7 +68,8 @@ The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permiss
 ```mermaid
 graph TD
     A["SwiftUI Views\nContentView · LiveCameraView · PreSaveReviewView · BatchConfigView"] -->|observes| B["ScrubberViewModel\n@Observable @MainActor"]
-    B -->|calls| C["ImageProcessor\nstateless enum"]
+    B -->|verified export| P["ExportPipeline · ScanCoverage\nImageResourceBudget · PrivateFileStore"]
+    P --> C["ImageProcessor\nstateless enum"]
     B -->|calls| D["PIIScanner\nstateless struct"]
     B -->|calls| E["ImageRedactor\nstateless struct"]
     B -->|calls| G["SemanticPII · ObjectSelection\non-device models, app only"]

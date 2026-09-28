@@ -12,7 +12,7 @@ Main prepares a clean signed IPA alongside QA and packaging. It does not distrib
 
 `RELEASE_DISTRIBUTION_ENABLED` must remain false until rehearsal and control readback succeed. `TESTFLIGHT_CANARY_ENABLED=true` permits an explicit TestFlight canary without publishing. An absent variable is false.
 
-1. Merge a PR only after `CI Gate` passes. The gate includes iOS 27 tests, iOS 26 compatibility tests, static analysis, lint, localization validation, workflow policy, locked gems, and screenshot composition smoke tests.
+1. Merge a PR only after `CI Gate` passes. It includes iOS 27 tests, iOS 26 compatibility tests, static analysis, lint, localization validation, workflow policy and locked gems. The `screenshots` label additionally runs the en-US screenshot journey and behaviour UI tests on both configured devices; this release-readiness PR carries that label. The screenshot-generation workflow performs full composition; release packaging independently validates the complete image inventory.
 2. Main runs `Release Prep`; the manual equivalent is `gh workflow run main.yml --ref main`. Inspect the candidate artifact ID/digest in the run summary, its signing/inventory evidence, and retained archive/dSYMs.
 3. Dispatch `Promote Candidate` on main with those exact `artifact_id` and `sha256`, the candidate's configured upload adapter, and `publish=false`. PicStrip initially uses Transporter. Switching to Build Uploads requires a reviewed configuration change and a Linux canary; there is no automatic adapter fallback.
 4. Apple must report the recorded build as `VALID`. A successful canary emits a signed processed-handoff artifact with its own ID/digest. To publish later, supply the original candidate ID/digest plus `processed_artifact_id` and `processed_sha256`, and set `publish=true`. This reads back the existing build and skips transfer.
@@ -121,3 +121,11 @@ The protected `trusted_producer_revisions` configuration explicitly approves the
 For promotion from newer main tooling, publication creates a separate protected `vVERSION-deploy-FULL_COMMIT` tag after publishing the immutable evidence. Its create event starts the corrected deployment caller. The platform checks the exact commit suffix and protected-main ancestry, then authenticates the original release and processed Apple build. The original app tag, IPA and assets stay immutable. An original release-event run can reject a newer signer; use the deployment-tag run for this recovery. Manual retries select this exact deployment tag and the original release tag input. Production still requires its existing human approval.
 
 Use the main-only **Inspect release controls** workflow to inspect the publisher token’s read-only REST/GraphQL response. It uses the existing release-publishing environment, reports no credentials, and makes no repository or App Store changes.
+
+## Replacement 1.7.0 build
+
+The reviewed `replacement_release` configuration records the existing `v1.7.0`, build `77.1`, and its exact Apple build ID. Preparation keeps marketing version 1.7.0, requires a higher build number and creates a unique `v1.7.0-build-N.ATTEMPT` evidence tag. The old tag, binary and assets remain immutable. The signed manifest binds the replacement configuration, tag, build and source.
+
+Staging may replace only the recorded old build while the version is `PREPARE_FOR_SUBMISSION` and no review submission is active. It reads the relationship back after mutation. A different selected build or review state stops deployment. Remove the one-time replacement configuration in a later reviewed PR when normal version advancement should resume.
+
+Approval sequence for this remediation: review the app PR and the companion platform PR, merge only after the required checks and screenshot review, inspect the resulting main-only signed candidate, then approve the exact artifact for upload. `publish=false` still uploads to Apple; it is not a read-only rehearsal. Publication and production submission retain their separate approval boundaries. See the [acceptance record](reviews/1.7.0-implementation-status.md) for hardware and artifact evidence still required before submission.

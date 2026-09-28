@@ -1,43 +1,19 @@
-Condividi le foto senza condividere la tua posizione, la tua identità o segreti che non riesci a vedere. PicStrip rimuove i metadati invisibili e oscura le informazioni sensibili — interamente sul dispositivo, senza account, senza caricamenti e senza bisogno di connessione di rete.
+Trova e copri i dettagli privati prima di condividere le foto. Analisi, oscuramento e rimozione dei metadati avvengono sul dispositivo. Le foto passano ad altre app o servizi solo tramite le azioni di importazione, salvataggio e condivisione che scegli.
 
-RIMOZIONE DEI METADATI
-Ogni foto contiene di nascosto coordinate GPS, timestamp, marca e modello della fotocamera, dati dell'obiettivo, numeri di serie e note del produttore Apple. PicStrip rimuove tutto prima della condivisione — con un tocco.
+Prova un esempio
+Una foto inventata. Nessun accesso alla libreria necessario.
 
-RILEVAMENTO E OSCURAMENTO DI INFORMAZIONI SENSIBILI
-OCR e visione artificiale, eseguiti sul dispositivo, individuano 30 tipi di informazioni personali sensibili (PII), classificati in quattro livelli di rischio:
+Controlla i rilevamenti nell’editor. Ogni risultato mostra la forza della corrispondenza e un livello di rischio per aiutarti a scegliere cosa coprire. Controlla la foto prima di condividerla. Il rilevamento automatico può perdere dettagli. I suggerimenti dei nomi richiedono Apple Intelligence e non vengono coperti automaticamente. Un modello facoltativo per selezionare oggetti può essere scaricato da Apple con il tuo consenso.
 
-Critico — chiavi API, carte di credito, codici fiscali, password, JWT, stringhe di connessione a database
-Alto — volti, IBAN, codici ABA, codici SWIFT/BIC, credenziali fisiche
-Medio — e-mail, telefoni, indirizzi, wallet crypto, numeri telaio, targhe, indirizzi IP e MAC
-Basso — date di nascita, link, codici a barre
+Regola le oscuramenti trascinandole o usando Posizione e dimensioni. Aggiungi un’area centrata senza disegnare. Usa Seleziona per modificare più aree. Sfocatura e pixelatura possono lasciare dettagli riconoscibili. Usa una copertura piena per segreti e testo identificativo.
 
-Ogni rilevamento mostra tipo, punteggio di affidabilità e livello di rischio, così sai cosa oscurare per primo.
+Controlla i metadati nascosti, come posizione, fotocamera e date. Scegli cosa rimuovere e verifica il risultato pulito.
+PNG: Qualità senza perdita per schermate e testo. File più grandi.
+JPEG: File più piccoli per foto quotidiane. Ampia compatibilità.
+HEIC: Foto compatte di alta qualità. Verifica la compatibilità del destinatario.
 
-EDITOR DI OSCURAMENTO
-• Disegna ovunque per coprire manualmente ciò che lo scanner ha mancato
-• Selezione multipla e modifiche in blocco
-• 4 stili: pieno, tratteggiato, pixelato o sfocato
-• Intensità regolabile per sfocato e pixelato
-• Guarda come apparirà ogni stile sulla foto prima di salvare
-• 12 colori per i blocchi pieni e tratteggiati
-• 50 livelli di annullamento/ripristino
+Controlla e condividi l’immagine pulita, oppure salva una copia in Foto. L’estensione di condivisione offre anche pulizia diretta o un trasferimento protetto per la modifica. Modifica apre la prima immagine originale per il controllo. Una copia locale protetta scade dopo 15 minuti. Le foto grandi richiedono copie più piccole nell’estensione: fino a 6 megapixel per oscurare, o 12 per i soli metadati. Modifica in PicStrip per un controllo completo.
 
-IMPORTA DA QUALSIASI POSTO
-• Libreria Foto
-• App File — apri qualsiasi immagine o screenshot direttamente
-• Scatta una foto nell'app — l'originale non arriva mai nella libreria foto
-• Scansiona documenti con la fotocamera — l'originale non arriva mai nella libreria foto
-• Trascina e rilascia le immagini nell'app
-• Estensione di condivisione — ripulisci direttamente da Foto, Safari o qualsiasi app senza aprire PicStrip
+L’azione Comandi Rapidi in background rimuove solo i metadati. Apri PicStrip per controllare e oscurare il contenuto visibile.
 
-PRIVACY BY DESIGN
-• 100% sul dispositivo — niente lascia il tuo iPhone
-• Il rilevamento dei volti resta sul dispositivo; PicStrip non raccoglie, conserva, trasmette né condivide dati facciali
-• Nessun account, nessun login, nessun tracciamento
-• Niente pubblicità, niente acquisti in-app, niente abbonamenti
-• Open source — ogni riga di codice è verificabile su GitHub
-• Provenienza di build SLSA Livello 3 — ogni rilascio è verificato crittograficamente
-• Etichetta privacy: «Nessun dato raccolto»
-
-SCORCIATOIE E AUTOMAZIONE
-PicStrip include un'azione Comandi Rapidi per rimuovere i metadati e oscurare le informazioni sensibili automaticamente: all'importazione, in blocco o all'interno dei tuoi flussi di lavoro.
+Questo rapporto contiene nomi e conteggi dei campi, mai i valori originali dei metadati o il testo rilevato.

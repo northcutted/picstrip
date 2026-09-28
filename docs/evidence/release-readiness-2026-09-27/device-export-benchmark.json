@@ -1,0 +1,29 @@
+{
+  "device": "iPhone 17 Pro Max",
+  "os": "iOS 27.0 24A437",
+  "configuration": "Debug",
+  "iterations": 3,
+  "fixture": "Synthetic JPEG with horizontal colored bands on a white background",
+  "operation": "ExportPipeline.encode, high-quality JPEG, all metadata selected for removal; actual output metadata read back",
+  "measurements": [
+    {
+      "pixels": 12000000,
+      "clock_seconds": [
+        0.023026,
+        0.022538,
+        0.026699
+      ],
+      "mean_peak_physical_kb": 77498.256
+    },
+    {
+      "pixels": 24000000,
+      "clock_seconds": [
+        0.046301,
+        0.045729,
+        0.045019
+      ],
+      "mean_peak_physical_kb": 140309.123
+    }
+  ],
+  "limits": "Synthetic export-only measurements. Not scan, mixed-style redaction, extension memory, thermal, worst-case content, older-device or Release/TestFlight benchmarks. Peak memory includes the process and fixture state."
+}

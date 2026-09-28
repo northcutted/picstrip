@@ -1,35 +1,13 @@
-# App Review Face Data Response
+# Face-data explanation for App Review
 
-Submission ID: 81f8c840-f3c2-433e-a7e3-3759947f1ec3  
-Review date: May 14, 2026  
-Version reviewed: 1.6.2 (62)
+Updated for the replacement 1.7.0 source. This supersedes the response prepared for version 1.6.2 on 14 May 2026. It is a local draft until included in the approved submission.
 
-## What face data does the app collect?
+PicStrip uses Apple's on-device Vision face-rectangle detection to suggest regions to cover. Temporary rectangles help users review and edit the current image, and can contribute to local document-context detection. PicStrip does not identify people, compare faces, create faceprints or biometric templates, authenticate users, train models, or use faces for analytics or advertising. Optional name suggestions come from recognized text, not facial identification.
 
-PicStrip does not collect face data. When visual redaction is enabled, the app uses Apple's on-device Vision face-rectangle detector (`VNDetectFaceRectanglesRequest`) to find where faces appear in the current photo. The app uses only temporary bounding rectangles for the current photo. It does not collect face images, faceprints, biometric templates, face embeddings, landmarks, identity, names, or recognition profiles.
+The app does not send photos, face rectangles or recognized text to a developer-operated service. Face rectangles and scan results are held in memory for the current editing session and are cleared with that session. Live-camera frames are processed in memory for an advisory preview; the captured photo receives a full scan before review.
 
-## Planned uses of face data
+Users can deliberately save or share a processed image. Those copies can still contain faces or other information the user leaves visible. Saving to a synced Photos library and sharing to another app follow the selected service's settings. The app does not automatically save an unreviewed camera capture to Photos.
 
-The temporary face bounding rectangles are used only to show editable redaction boxes and, if the user chooses to save/share the cleaned image, to burn those redactions into the output image. The app may also use the presence of a face as one local signal when ranking whether a document-like photo may contain sensitive identity content. PicStrip does not identify people, compare faces, track people, authenticate users, personalize content, train models, or use face data for analytics or advertising.
+An extension-to-app edit handoff can temporarily contain the original photo, including faces. The local file has complete file protection, is excluded from backups, expires after 15 minutes, and is removed on consumption or cancellation. Expired records are removed on subsequent app/extension access. Temporary exported image/report files are also protected and cleaned up on completion where possible, with an expiry sweep as a fallback. Reports contain names of metadata fields, counts and coverage status, not original values or recognized text.
 
-## Third-party sharing and storage
-
-Face data is not shared with any third parties. It is not uploaded, transmitted, or stored on PicStrip servers or third-party servers. PicStrip does not use third-party SDKs, analytics, advertising, or crash reporting. Processing happens on device. The only persistent output is the cleaned image the user explicitly saves to their own Photos library or shares through the system share sheet.
-
-## Retention
-
-PicStrip does not retain face data. Face detection results exist only in memory for the current photo/session so the user can review and edit redactions. They are discarded when the photo is cleared, the session ends, or the app state is reset. PicStrip does not keep photo history, face rectangles, redaction coordinates, OCR snippets, removed metadata values, or separate face data records.
-
-## Privacy policy location and quoted text
-
-The collection, use, disclosure, sharing, storage, and retention of face data are explained in the privacy policy sections "On-Device Processing Only", "Face Data", and "Third-Party Services":
-
-> PicStrip does not collect face data. When visual redaction is enabled, PicStrip uses Apple's on-device Vision face-rectangle detector to find where faces appear in the current photo so the app can show redaction boxes and, if you choose, burn those redactions into the cleaned copy.
-
-> PicStrip does not identify people, perform face recognition, compare faces across photos, create faceprints or biometric templates, infer identity, or use face landmarks/profiles. The only face-related result used by the app is a temporary bounding rectangle for each face detected in the photo being processed.
-
-> Face detection results are used only for the current on-device editing and export flow. They are not uploaded, transmitted, shared with third parties, written to PicStrip servers, written to third-party servers, or retained by PicStrip after the current photo/session is cleared.
-
-## Addendum — September 19, 2026: in-app camera and document scanning
-
-PicStrip can now capture a photo with the system camera ("Take Photo") or a document with Apple's system document camera ("Scan Document"). A capture enters the same on-device flow as a photo chosen from the library, so everything above applies unchanged: face detection produces only temporary bounding rectangles for the current page, nothing is identified, compared, uploaded, or shared, and the results are discarded with the session. The original capture is never saved to the photo library by PicStrip; only the cleaned copy the user chooses to save or share persists. While the "Take Photo" viewfinder is open, the same on-device face-rectangle detector runs on camera frames so the app can show, live, which areas it would redact. Each frame is analysed in memory and dropped; only the rectangles for the current frame exist, they replace the previous frame's, and nothing about a frame — no image, no rectangle — is stored, transmitted, or used to identify anyone. The camera is used for nothing else.
+The public policy is [PRIVACY.md](../../PRIVACY.md). Review its current face-data, storage and user-directed sharing sections rather than submitting quotations from an older policy.

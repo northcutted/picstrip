@@ -1,0 +1,46 @@
+{
+  "devicesAndConfigurations": [
+    {
+      "device": {
+        "architecture": "arm64",
+        "modelName": "iPhone 17",
+        "osBuildNumber": "24A434",
+        "osVersion": "27.0",
+        "platform": "iOS Simulator"
+      },
+      "expectedFailures": 0,
+      "failedTests": 0,
+      "passedTests": 1,
+      "skippedTests": 0,
+      "testPlanConfiguration": {
+        "configurationId": "1",
+        "configurationName": "Test Scheme Action"
+      }
+    }
+  ],
+  "environmentDescription": "PicStripScreenshots \u00b7 Built with macOS 27.0",
+  "expectedFailures": 0,
+  "failedTests": 0,
+  "finishTime": 1790544638.379,
+  "passedTests": 1,
+  "result": "Passed",
+  "runtimeWarnings": [],
+  "skippedTests": 0,
+  "startTime": 1790544547.857,
+  "statistics": [],
+  "testFailures": [],
+  "title": "Test - PicStripScreenshots",
+  "topInsights": [],
+  "totalTestCount": 1,
+  "evidence_scope": {
+    "configuration": "Debug",
+    "xcode": "27.0 release 27A266a",
+    "text_size": "accessibilityExtraExtraExtraLarge",
+    "purpose": "Fictional sample to review to full-image inspection; fixed Share action stays reachable and long labels wrap",
+    "limitations": "Focused interaction and visual check, not a complete accessibility conformance assessment",
+    "tested_files": {
+      "PicStrip/PreSaveReviewView.swift": "bd2493a987dca32ce9cb54b9fe3fb18520788da378dc48536a84141c41dd0cc6",
+      "PicStripUITests/PicStripUITests.swift": "8830e00ec86795a9a845e6061445cb39ec77e599b601feab7492cc917b88d12d"
+    }
+  }
+}
