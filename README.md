@@ -128,7 +128,9 @@ open PicStrip.xcodeproj
 | `make audit-localization` | Finds unlocalized literals and catalog gaps (every key in all 16 localizations, placeholders intact, plural forms complete) |
 | `make screenshots` | App Store screenshot capture; `DEVICE=` / `DEVICES=` select a subset |
 
-Releases run through a pinned public iOS release platform that targets SLSA Build Level 3 for the GitHub-built IPA; see the [release operations guide](docs/release-pipeline.md). Translations are LLM-generated from the English source and edited inline; the rules and per-locale terms are in [DEVELOPMENT.md](DEVELOPMENT.md#localization) and the [localization glossary](docs/localization-glossary.md).
+For checks, TestFlight, and App Store updates, start with [CI/CD: from a change to the App Store](docs/release-pipeline.md). The [workflow reference](docs/ci-cd/reference.md) is generated from source; `make docs` refreshes it and `make check-docs` catches drift. The pinned release platform targets SLSA Build Level 3 for the GitHub-built IPA.
+
+Translations are LLM-generated from the English source and edited inline; the rules and per-locale terms are in [DEVELOPMENT.md](DEVELOPMENT.md#localization) and the [localization glossary](docs/localization-glossary.md).
 
 ---
 

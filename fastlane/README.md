@@ -1,7 +1,7 @@
-# Local app tooling
+# Screenshot scenarios
 
-PicStrip's Fastfile supports local lint, analysis, tests, signing/build diagnostics, screenshot capture, and screenshot composition. Use `bundle exec fastlane lanes` or `make help` for the local commands.
+PicStrip's Fastfile contains app-specific screenshot capture only. Run `make platform-sync`, `make platform-gems`, then `make screenshots`. `make process-screenshots` calls the Python compositor directly.
 
-Release operations run through the pinned [public iOS release platform](https://github.com/northcutted/ios-release-workflows). The former local upload, staging, submission, and metadata lanes fail closed to prevent alternate release paths.
+The pinned platform owns Ruby dependencies, native QA, signing, archive/export and release operations. Use `make lint`, `make analyze`, `make test` and `make build` for local commands. Old local release-administration lane names remain disabled.
 
-See [release operations](../docs/release-pipeline.md) for candidate preparation, manual promotion, App Store approval, metadata changes, and retries. Screenshot scenarios and assets remain app-owned; deployment tools and locked dependencies are platform-owned.
+See [PicStrip operations](../docs/release-pipeline.md) and the [integration guide](../docs/ci-cd/maintenance.md).

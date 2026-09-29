@@ -15,3 +15,14 @@ test('release selection and exact metadata forwarding are required',()=>{
  w['app-store-deploy.yml'].jobs.deploy.with.metadata_commit='main';
  const errors=validate(w).join('\n');assert.match(errors,/explicit source/);assert.match(errors,/resolved exact commit/);
 });
+
+test('duplicate Ruby installs cannot return to the consumer',()=>{
+ const w=loadWorkflows();w['pr.yml'].jobs.screenshots.steps.push({run:'bundle install'});
+ assert.match(validate(w).join('\n'),/supported platform command/);
+});
+
+test('UI isolation cannot drop a configured device or capture both on the same host',()=>{
+ const w=loadWorkflows();w['pr.yml'].jobs.screenshots.strategy.matrix.device=['Only one device'];
+ for(const step of w['pr.yml'].jobs.screenshots.steps)if(step.env?.SCREENSHOT_DEVICE)delete step.env.SCREENSHOT_DEVICE;
+ const errors=validate(w).join('\n');assert.match(errors,/Every configured screenshot device/);assert.match(errors,/exactly its matrix device/);
+});

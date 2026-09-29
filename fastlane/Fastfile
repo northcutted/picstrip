@@ -1,143 +1,10 @@
 require "json"
-require "shellwords"
 
 default_platform(:ios)
 
 platform :ios do
-  # ── Constants ────────────────────────────────────────────────────────────────
-  ROOT          = File.expand_path("..", __dir__)
-  APP_ID         = "com.northcutt.PicStrip"
-  EXTENSION_ID   = "com.northcutt.PicStrip.ShareExtension"
-  SCHEME         = "PicStrip"
-  PROJECT        = "PicStrip.xcodeproj"
-  OUTPUT_DIR     = "build"
-  IPA_NAME       = "PicStrip.ipa"
-  # App Store Connect category IDs. Display names like "Photo & Video" are not
-  # valid relationship IDs when Fastlane patches app info categories.
-  APP_STORE_PRIMARY_CATEGORY = "PHOTO_AND_VIDEO"
-  APP_STORE_SECONDARY_CATEGORY = "UTILITIES"
+  ROOT = File.expand_path("..", __dir__)
   CI_CONFIG = JSON.parse(File.read(File.join(ROOT, ".github/ios-release.json"))).freeze
-  SCREENSHOT_DEVICES = CI_CONFIG.fetch("screenshot_devices").freeze
-  EXPORT_COMPLIANCE_PLISTS = [
-    "PicStrip-Info.plist",
-    "PicStripShareExtension/Info.plist"
-  ].freeze
-  EXPORT_COMPLIANCE_SUBMISSION = {
-    # PicStrip uses only standard platform encryption, so it does not use
-    # non-exempt encryption. Keep this in sync with ITSAppUsesNonExemptEncryption=false.
-    export_compliance_uses_encryption: false
-  }.freeze
-
-  private_lane :validate_export_compliance do
-    require "plist"
-
-    invalid = EXPORT_COMPLIANCE_PLISTS.filter_map do |relative_path|
-      path = File.join(ROOT, relative_path)
-      plist = Plist.parse_xml(path)
-      relative_path unless plist && plist["ITSAppUsesNonExemptEncryption"] == false
-    end
-
-    UI.user_error!(
-      "Expected ITSAppUsesNonExemptEncryption=false in: #{invalid.join(', ')}"
-    ) if invalid.any?
-  end
-
-  private_lane :validate_release_notes do
-    metadata_root = File.join(ROOT, "fastlane", "metadata")
-    locale_dirs = Dir.children(metadata_root)
-                     .map { |entry| File.join(metadata_root, entry) }
-                     .select { |path| File.directory?(path) }
-                     .reject { |path| File.basename(path) == "review_information" }
-                     .sort
-
-    missing = locale_dirs.filter_map do |path|
-      notes_path = File.join(path, "release_notes.txt")
-      File.basename(path) unless File.exist?(notes_path) && !File.read(notes_path).strip.empty?
-    end
-
-    UI.user_error!(
-      "Missing App Store release_notes.txt for locale(s): #{missing.join(', ')}. " \
-      "Render release metadata before app_store_stage."
-    ) if missing.any?
-  end
-
-  # ── PR lanes (no signing) ────────────────────────────────────────────────────
-
-  desc "Run SwiftLint"
-  lane :lint do
-    sh("cd #{ROOT} && swiftlint lint --strict --no-cache --config .swiftlint.yml")
-  end
-
-  desc "Run xcodebuild analyze (static analysis)"
-  lane :analyze do
-    xcodebuild(
-      project:      PROJECT,
-      scheme:       SCHEME,
-      configuration: "Debug",
-      sdk:          "iphonesimulator",
-      destination:  ENV.fetch("TEST_DESTINATION", "platform=iOS Simulator,name=iPhone 17,OS=#{CI_CONFIG['xcode']['runtime']}"),
-      xcargs: "CODE_SIGNING_ALLOWED=NO",
-      analyze:      true,
-      buildlog_path: "build/logs"
-    )
-  end
-
-  desc "Run unit tests on simulator"
-  lane :test do
-    run_tests(
-      project:     PROJECT,
-      scheme:      SCHEME,
-      destination: ENV.fetch("TEST_DESTINATION", "platform=iOS Simulator,name=iPhone 17,OS=#{CI_CONFIG['xcode']['runtime']}"),
-      xcargs: "CODE_SIGNING_ALLOWED=NO",
-      clean:       true,
-      disable_concurrent_testing: ENV.fetch("TEST_WORKERS", "1") == "1",
-      parallel_testing: ENV.fetch("TEST_WORKERS", "1") != "1",
-      concurrent_workers: Integer(ENV.fetch("TEST_WORKERS", "1")),
-      result_bundle: true,
-      output_directory:  "build/test_output",
-      output_files: "report.junit",
-      output_types: "junit",
-      only_testing: ["PicStripTests"],
-      fail_build:  true
-    )
-  end
-
-  # ── Main lanes (signed) ──────────────────────────────────────────────────────
-
-  desc "Sync App Store distribution certificates (readonly on CI)"
-  lane :certificates do
-    if ENV["CI"]
-      create_keychain(path: ENV.fetch("SIGNING_KEYCHAIN"),
-                      password: ENV.fetch("SIGNING_KEYCHAIN_PASSWORD"),
-                      default_keychain: false, unlock: true, timeout: 3600)
-    end
-    match(
-      type: "appstore", app_identifier: [APP_ID, EXTENSION_ID], readonly: true,
-      git_url: ENV.fetch("MATCH_GIT_URL", "git@github.com:northcutted/picstrip-certs.git"),
-      git_branch: ENV.fetch("MATCH_GIT_BRANCH", "master"),
-      keychain_name: ENV["SIGNING_KEYCHAIN"], keychain_password: ENV["SIGNING_KEYCHAIN_PASSWORD"]
-    )
-  end
-
-  desc "Build and export the exact release version without changing tracked files"
-  lane :build do
-    build_number = ENV.fetch("BUILD_NUMBER", "1.1")
-    marketing_version = ENV.fetch("MARKETING_VERSION")
-    UI.user_error!("Invalid build number") unless build_number.match?(/\A[1-9]\d{0,3}\.[1-9]\d?\z/)
-    UI.user_error!("Invalid marketing version") unless marketing_version.match?(/\A\d+\.\d+\.\d+\z/)
-    gym(
-      project: PROJECT, scheme: SCHEME, configuration: "Release", clean: true,
-      output_directory: OUTPUT_DIR, output_name: IPA_NAME,
-      buildlog_path: "#{OUTPUT_DIR}/logs",
-      archive_path: "#{OUTPUT_DIR}/PicStrip.xcarchive", include_symbols: true,
-      export_method: "app-store",
-      xcargs: "MARKETING_VERSION=#{marketing_version} CURRENT_PROJECT_VERSION=#{build_number}",
-      export_options: {
-        method: "app-store-connect", signingStyle: "manual", manageAppVersionAndBuildNumber: false,
-        provisioningProfiles: {APP_ID => "match AppStore #{APP_ID}", EXTENSION_ID => "match AppStore #{EXTENSION_ID}"}
-      }
-    )
-  end
 
   desc "Capture App Store screenshots on simulator (reads fastlane/Snapfile)"
   lane :screenshots do |options|
@@ -179,7 +46,7 @@ platform :ios do
     screenshot_options[:ios_version] = ENV.fetch("SIMULATOR_RUNTIME", CI_CONFIG.fetch("xcode").fetch("runtime"))
     unless ENV["SIMULATOR_UDIDS"]
       ENV["DEVELOPER_DIR"] = CI_CONFIG.fetch("xcode").fetch("path")
-      ENV["SIMULATOR_UDIDS"] = sh("python3", "#{ROOT}/scripts/ci/toolchain.py", "--screenshots", "--destinations-json", log: false).strip
+      ENV["SIMULATOR_UDIDS"] = sh("python3", "#{ROOT}/scripts/ios_release.py", "toolchain", "--screenshots", "--destinations-json", log: false).strip
     end
     require 'snapshot/test_command_generator'
     # Use the same resolved simulator for preparation, installation and tests.
@@ -198,33 +65,6 @@ platform :ios do
     end)
 
     capture_ios_screenshots(screenshot_options)
-  end
-
-  desc "Compose marketing screenshots from raw captures into ./fastlane/screenshots/processed/"
-  lane :process_screenshots do
-    # Deliver validates every top-level directory under screenshots_path as a
-    # locale. Keep old captured log folders from breaking screenshot uploads.
-    sh("rm -rf #{ROOT}/fastlane/screenshots/Logs")
-
-    # Replace only captured locales, removing stale screen names before composing.
-    # Full locale/device coverage is required before staging.
-
-    # The Python compositor handles device framing internally — it draws a
-    # matte rounded-rect frame around each raw capture rather than consuming
-    # frameit's output. We discover the locales from the directory tree
-    # rather than hardcoding the list so adding or removing a locale in
-    # Snapfile doesn't require editing the Fastfile too. Paths are absolute
-    # via ROOT — Ruby's CWD inside a fastlane lane isn't reliably the
-    # project root, and a relative ``Dir.glob`` here silently returns []
-    # which would skip the entire compose step without any error message.
-    locale_dirs = Dir.glob(File.join(ROOT, "fastlane/screenshots/*/"))
-                     .map { |p| File.basename(p) }
-                     .reject { |d| d == "processed" || d.start_with?(".") }
-    locale_dirs &= CI_CONFIG.fetch("locales")
-    locale_dirs.each do |locale|
-      FileUtils.rm_rf(File.join(ROOT, "fastlane/screenshots/processed", locale))
-      sh("cd #{Shellwords.escape(ROOT)} && python3 scripts/process_screenshots.py --locale #{Shellwords.escape(locale)}")
-    end
   end
 
   # Release administration lives only in the pinned public workflow platform.
