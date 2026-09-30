@@ -100,11 +100,14 @@ nonisolated struct ScannedLine: Sendable {
 
 // MARK: - Live frame scan
 
-/// One finding in a camera frame: what it is and where, never what it says.
+/// One finding in a camera frame: what it is, where, and how strong the match
+/// is — never what it says.
 nonisolated struct LiveDetection: Sendable, Equatable {
     let type: PIIType
     /// Normalised, top-left origin — the same space as `DetectedInstance.boundingBox`.
     let boundingBox: CGRect
+    /// The same heuristic as `DetectedInstance.score`; show it as a `ConfidenceLevel`.
+    let score: Double
 }
 
 /// What `PIIScanner.liveScan` found in one camera frame.
@@ -325,9 +328,13 @@ nonisolated struct PIIScanner {
             case .recognizeText(_, let found):
                 observations = found
             case .detectFaceRectangles(_, let found):
-                scan.detections += found.map { LiveDetection(type: .face, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect)) }
+                scan.detections += found.map {
+                    LiveDetection(type: .face, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect), score: visualDetectionScore)
+                }
             case .detectBarcodes(_, let found):
-                scan.detections += found.map { LiveDetection(type: .barcode, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect)) }
+                scan.detections += found.map {
+                    LiveDetection(type: .barcode, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect), score: visualDetectionScore)
+                }
             default:
                 break
             }
@@ -335,7 +342,9 @@ nonisolated struct PIIScanner {
         scan.textLines = observations.map { swiftUIBox(from: $0.boundingBox.cgRect) }
         let textFindings = (try? detectPII(in: observations)) ?? []
         for finding in textFindings where finding.type.isRedactedByDefault {
-            scan.detections += finding.instances.map { LiveDetection(type: finding.type, boundingBox: $0.boundingBox) }
+            scan.detections += finding.instances.map {
+                LiveDetection(type: finding.type, boundingBox: $0.boundingBox, score: $0.score)
+            }
         }
         return scan
     }
@@ -1280,16 +1289,20 @@ nonisolated struct PIIScanner {
         }
     }
 
+    /// Faces and codes are found by Vision's detectors, not by pattern rules over
+    /// OCR, so they have no rule score to combine: every one is a strong match.
+    nonisolated static let visualDetectionScore = 0.99
+
     nonisolated static func faceResults(from rects: [CGRect]) -> [DetectionResult] {
         guard !rects.isEmpty else { return [] }
         let instances = rects.map { rect in
             DetectedInstance(
                 snippet: String(localized: "Face detected"),
                 boundingBox: rect,
-                score: 0.99
+                score: visualDetectionScore
             )
         }
-        return [DetectionResult(type: .face, score: 0.99, instances: instances)]
+        return [DetectionResult(type: .face, score: visualDetectionScore, instances: instances)]
     }
 
     /// Maps `BarcodeObservation`s from the single-pass handler into one
@@ -1302,14 +1315,14 @@ nonisolated struct PIIScanner {
             let instance = DetectedInstance(
                 snippet: snippet(payload, max: 60),
                 boundingBox: context.boundingBox,
-                score: 0.99
+                score: visualDetectionScore
             )
             if !instances.contains(instance) {
                 instances.append(instance)
             }
         }
         guard !instances.isEmpty else { return [] }
-        return [DetectionResult(type: .barcode, score: 0.99, instances: instances)]
+        return [DetectionResult(type: .barcode, score: visualDetectionScore, instances: instances)]
     }
 
     // MARK: - Document region boost

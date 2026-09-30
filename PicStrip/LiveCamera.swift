@@ -642,7 +642,7 @@ final class LiveCameraModel {
         }
         let stabilised = { (box: CGRect) in box.offsetBy(dx: -origin.dx, dy: -origin.dy) }
         tracker.update(with: scan.detections.map {
-            LiveDetection(type: $0.type, boundingBox: stabilised($0.boundingBox))
+            LiveDetection(type: $0.type, boundingBox: stabilised($0.boundingBox), score: $0.score)
         })
         tracks = tracker.tracks
         textLines = scan.textLines.map(stabilised)
