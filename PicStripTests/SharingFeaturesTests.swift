@@ -1,3 +1,4 @@
+import AVFoundation
 import ImageIO
 import UniformTypeIdentifiers
 import XCTest
@@ -76,15 +77,21 @@ final class PartialCoverTests: XCTestCase {
         }
     }
 
-    /// Where Vision only knows the whole word, the split leans toward covering.
-    func testTheEstimatedSplitLeansTowardCovering() throws {
+    /// Where Vision only knows the whole word, the split follows the glyphs'
+    /// widths and leans toward covering.
+    func testTheEstimatedSplitFollowsTheGlyphs() throws {
         let box = CGRect(x: 0.2, y: 0.4, width: 0.3, height: 0.05)
-        let partial = try XCTUnwrap(PIIScanner.estimatedPartialBox(matchBox: box, coveredCharacters: 6, totalCharacters: 10))
-        XCTAssertEqual(partial.minX, 0.2)
-        XCTAssertGreaterThan(partial.width, 0.3 * 0.6, "A little more than the six covered characters.")
-        XCTAssertLessThan(partial.width, 0.3 * 0.7, "Less than seven.")
-        XCTAssertNil(PIIScanner.estimatedPartialBox(matchBox: box, coveredCharacters: 0, totalCharacters: 10))
-        XCTAssertNil(PIIScanner.estimatedPartialBox(matchBox: box, coveredCharacters: 10, totalCharacters: 10))
+        let digits = try XCTUnwrap(PIIScanner.estimatedPartialBox(matchBox: box, covered: "618555", whole: "6185551234"))
+        XCTAssertEqual(digits.minX, 0.2)
+        XCTAssertGreaterThan(digits.width, 0.3 * 0.6, "A little more than the six covered digits.")
+        XCTAssertLessThan(digits.width, 0.3 * 0.7, "Less than seven.")
+
+        // Narrow letters before the "@", wide ones after it.
+        let email = try XCTUnwrap(PIIScanner.estimatedPartialBox(matchBox: box, covered: "alex.thornton", whole: "alex.thornton@northwoodcg.com"))
+        XCTAssertLessThan(email.width, 0.3 * 13.0 / 29.0, "Narrower than an even split, so the domain stays readable.")
+
+        XCTAssertNil(PIIScanner.estimatedPartialBox(matchBox: box, covered: "", whole: "6185551234"))
+        XCTAssertNil(PIIScanner.estimatedPartialBox(matchBox: box, covered: "6185551234", whole: "6185551234"))
     }
 
     func testARegionSwitchesBetweenWholeAndPartialAndUndoes() throws {
@@ -169,19 +176,9 @@ final class SharingPurposeTests: XCTestCase {
 @MainActor
 final class AlwaysCoverTests: XCTestCase {
 
-    private var fileURL: URL!
-
-    override func setUp() {
-        super.setUp()
-        fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("AlwaysCover-\(UUID().uuidString).json")
-    }
-
-    override func tearDown() {
-        try? FileManager.default.removeItem(at: fileURL)
-        super.tearDown()
-    }
-
     func testTermsAreKeptOnceAndRemembered() throws {
+        let fileURL = FileManager.default.temporaryDirectory.appendingPathComponent("AlwaysCover-\(UUID().uuidString).json")
+        defer { try? FileManager.default.removeItem(at: fileURL) }
         let list = AlwaysCoverList(fileURL: fileURL)
         XCTAssertTrue(list.add("  Alex Thornton "))
         XCTAssertFalse(list.add("alex thornton"), "The same term, ignoring case, is not added twice.")
@@ -243,5 +240,137 @@ final class AlwaysCoverTests: XCTestCase {
         nonisolated(unsafe) let frame = try XCTUnwrap(LiveCameraFixture.pixelBuffer(from: image))
         let scan = await PIIScanner.liveScan(in: frame, alwaysCover: ["Chicago"])
         XCTAssertTrue(scan.detections.contains { $0.type == .alwaysCover })
+    }
+}
+
+// MARK: - Videos and Live Photos
+
+@MainActor
+final class VideoCleanerTests: XCTestCase {
+
+    /// A two-frame H.264 movie carrying the metadata an iPhone writes: where,
+    /// on what, and when.
+    private func makeMovie() async throws -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripTest-\(UUID().uuidString).mov")
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+        func item(_ identifier: AVMetadataIdentifier, _ value: String) -> AVMetadataItem {
+            let item = AVMutableMetadataItem()
+            item.identifier = identifier
+            item.value = value as NSString
+            item.dataType = kCMMetadataBaseDataType_UTF8 as String
+            return item
+        }
+        writer.metadata = [
+            item(.quickTimeMetadataLocationISO6709, "+41.8781-087.6298+180.000/"),
+            item(.quickTimeMetadataMake, "Apple"),
+            item(.quickTimeMetadataModel, "iPhone 17 Pro"),
+            item(.quickTimeMetadataSoftware, "27.0"),
+            item(.quickTimeMetadataCreationDate, "2026-09-30T12:00:00-0500"),
+            item(.quickTimeMetadataTitle, "Our trip")
+        ]
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: 64, AVVideoHeightKey: 64
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA, kCVPixelBufferWidthKey as String: 64, kCVPixelBufferHeightKey as String: 64
+        ])
+        writer.add(input)
+        XCTAssertTrue(writer.startWriting())
+        writer.startSession(atSourceTime: .zero)
+        for frame in 0..<2 {
+            while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
+            var buffer: CVPixelBuffer?
+            CVPixelBufferCreate(nil, 64, 64, kCVPixelFormatType_32BGRA, nil, &buffer)
+            XCTAssertTrue(adaptor.append(try XCTUnwrap(buffer), withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: 30)))
+        }
+        input.markAsFinished()
+        await writer.finishWriting()
+        XCTAssertEqual(writer.status, .completed, "\(String(describing: writer.error))")
+        return url
+    }
+
+    func testTheOriginalsHiddenDetailsAreFound() async throws {
+        let movie = try await makeMovie()
+        defer { try? FileManager.default.removeItem(at: movie) }
+        let kinds = Set(try await VideoCleaner.findings(in: movie).map(\.kind))
+        XCTAssertEqual(kinds, [.location, .device, .date, .other])
+    }
+
+    func testTheCleanedCopyHasNoLocationDeviceOrDate() async throws {
+        let movie = try await makeMovie()
+        let output = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripTest-\(UUID().uuidString).mov")
+        defer {
+            try? FileManager.default.removeItem(at: movie)
+            try? FileManager.default.removeItem(at: output)
+        }
+        try await VideoCleaner.clean(movie, to: output)
+
+        let left = try await VideoCleaner.findings(in: output)
+        XCTAssertEqual(left.count, 1, "Only the new random identifier is left: \(left)")
+        XCTAssertTrue(left.allSatisfy { $0.kind == .other }, "Left: \(left)")
+        XCTAssertNotNil(UUID(uuidString: try XCTUnwrap(left.first?.value)), "The title and the rest are gone too.")
+        let tracks = try await AVURLAsset(url: output).loadTracks(withMediaType: .video)
+        XCTAssertEqual(tracks.count, 1, "The frames are copied, not dropped.")
+    }
+
+    func testKeysAreSortedIntoKinds() {
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "mdta/com.apple.quicktime.location.ISO6709"), .location)
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "udta/%A9xyz"), .location)
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "mdta/com.apple.quicktime.model"), .device)
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "udta/%A9swr"), .device)
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "mdta/com.apple.quicktime.creationdate"), .date)
+        XCTAssertEqual(VideoCleaner.kind(ofKey: "mdta/com.apple.quicktime.content.identifier"), .other)
+    }
+
+    func testALocationReadsAsCoordinates() {
+        XCTAssertEqual(VideoCleanerView.readable("+41.8781-087.6298+180.000/"), "41.8781, -87.6298")
+        XCTAssertEqual(VideoCleanerView.readable("Apple"), "Apple")
+    }
+
+    /// The still of a kept Live Photo carries its pairing identifier, and nothing else is added.
+    func testTheStillGetsItsPairingIdentifierBack() throws {
+        let jpeg = try XCTUnwrap(UIImage(data: try makePNG())?.jpegData(compressionQuality: 0.9))
+        let paired = try XCTUnwrap(LivePhotoCleaner.pairedStill(jpeg, identifier: "8C1F3E0A-0000-4000-8000-000000000001"))
+        let properties = try XCTUnwrap(SourceProperties(imageData: paired)).dictionary
+        let makerApple = try XCTUnwrap(properties[kCGImagePropertyMakerAppleDictionary] as? [String: Any])
+        XCTAssertEqual(makerApple[LivePhotoCleaner.contentIdentifierKey] as? String, "8C1F3E0A-0000-4000-8000-000000000001")
+        XCTAssertNil(properties[kCGImagePropertyGPSDictionary])
+    }
+
+    func testMotionIsOnlyKeptWhenNothingIsCovered() {
+        let model = ScrubberViewModel(scanImage: { _ in [] })
+        XCTAssertFalse(model.canKeepLivePhotoMotion, "Not a Live Photo.")
+    }
+}
+
+@MainActor
+final class SharingSummaryTests: XCTestCase {
+
+    private func makeJPEGWithLocation() throws -> Data {
+        let cgImage = try XCTUnwrap(UIImage(data: try makePNG())?.cgImage)
+        let data = NSMutableData()
+        let destination = try XCTUnwrap(CGImageDestinationCreateWithData(data, UTType.jpeg.identifier as CFString, 1, nil))
+        let properties: [CFString: Any] = [
+            kCGImagePropertyGPSDictionary: [
+                kCGImagePropertyGPSLatitude: 41.8781, kCGImagePropertyGPSLatitudeRef: "N",
+                kCGImagePropertyGPSLongitude: 87.6298, kCGImagePropertyGPSLongitudeRef: "W"
+            ],
+            kCGImagePropertyTIFFDictionary: [kCGImagePropertyTIFFModel: "iPhone 17 Pro"]
+        ]
+        CGImageDestinationAddImage(destination, cgImage, properties as CFDictionary)
+        XCTAssertTrue(CGImageDestinationFinalize(destination))
+        return data as Data
+    }
+
+    func testTheSummarySaysWhenTheLocationGoes() async throws {
+        let model = ScrubberViewModel(scanImage: { _ in [] })
+        await model.loadData(try makeJPEGWithLocation())
+        try await waitUntil { model.allSourceMetadata != nil }
+        XCTAssertTrue(model.sharingSummary.locationRemoved)
+        XCTAssertGreaterThan(model.sharingSummary.metadataFieldsRemoved, 0)
+        XCTAssertEqual(model.sharingSummary.detailsCovered, 0)
+
+        model.stripConfig.categoryEnabled["GPS"] = false
+        XCTAssertFalse(model.sharingSummary.locationRemoved, "A kept location is not reported as removed.")
     }
 }

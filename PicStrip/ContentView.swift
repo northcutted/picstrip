@@ -14,6 +14,10 @@ struct ContentView: View {
 
     /// Set to true when `StripImageIntent` asks for the multi-photo picker.
     @State private var isShowingIntentBatchPicker = false
+    /// Set to true when `CleanScreenshotIntent` asks for the screenshot picker.
+    @State private var isShowingScreenshotPicker = false
+    /// A video picked on the home screen; its cleaner shows while it is set.
+    @State private var selectedVideoItem: PhotosPickerItem?
 
     /// Bumped by `haptic(_:)`; each change plays one impact.
     @State private var lightImpacts = 0
@@ -190,6 +194,30 @@ struct ContentView: View {
             matching: .images,
             photoLibrary: .shared()
         )
+        .onChange(of: intentRouter.isScreenshotPickerRequested, initial: true) { _, requested in
+            guard requested else { return }
+            intentRouter.screenshotPickerPresented()
+            isShowingScreenshotPicker = true
+        }
+        .photosPicker(
+            isPresented: $isShowingScreenshotPicker,
+            selection: $viewModel.selectedItem,
+            matching: .screenshots,
+            photoLibrary: .shared()
+        )
+        .sheet(isPresented: Binding(
+            get: { selectedVideoItem != nil },
+            set: { if !$0 { selectedVideoItem = nil } }
+        )) {
+            if let item = selectedVideoItem {
+                VideoCleanerView(item: item)
+            }
+        }
+        .onChange(of: intentRouter.isCameraRequested, initial: true) { _, requested in
+            guard requested else { return }
+            intentRouter.cameraPresented()
+            if CameraCaptureView.isAvailable { openCamera { isShowingLiveCamera = true } }
+        }
         .onChange(of: viewModel.batchItems) { _, items in
             guard !items.isEmpty else { return }
             if items.count == 1 {
@@ -360,7 +388,7 @@ struct ContentView: View {
     private var homeScreen: some View {
         GeometryReader { geometry in
             ScrollView {
-                VStack(spacing: 24) {
+                VStack(spacing: 20) {
                     VStack(spacing: 8) {
                         Text("PicStrip")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
@@ -370,7 +398,7 @@ struct ContentView: View {
                             .multilineTextAlignment(.center)
                     }
                     ScannerHeroView()
-                        .frame(height: 170)
+                        .frame(height: 150)
                         .accessibilityHidden(true)
                     VStack(spacing: 20) {
                         importButton(primaryImportAction, isRow: true)
@@ -418,14 +446,17 @@ struct ContentView: View {
         let isCompact = dynamicTypeSize.isAccessibilitySize
         let columns = isCompact ? 1 : 2
         let actions = importActions.filter { $0 != primaryImportAction }
-        return Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+        return Grid(horizontalSpacing: 10, verticalSpacing: 10) {
             ForEach(Array(stride(from: 0, to: actions.count, by: columns)), id: \.self) { start in
+                let row = actions[start..<min(start + columns, actions.count)]
                 GridRow {
-                    ForEach(actions[start..<min(start + columns, actions.count)], id: \.self) { action in
+                    ForEach(row, id: \.self) { action in
                         importButton(action, isRow: isCompact)
                             .buttonStyle(.glass)
                             .buttonBorderShape(isCompact ? .capsule : .roundedRectangle(radius: 22))
                             .frame(maxHeight: .infinity)
+                            // A last tile on its own takes the whole row.
+                            .gridCellColumns(row.count < columns ? columns : 1)
                     }
                 }
             }
@@ -436,16 +467,16 @@ struct ContentView: View {
     }
 
     private enum ImportAction: Hashable {
-        case camera, photo, documentScanner, multiplePhotos, files
+        case camera, photo, screenshot, documentScanner, video, multiplePhotos, files
     }
 
     /// The camera actions only where there is a camera to use.
     private var importActions: [ImportAction] {
         var actions: [ImportAction] = []
         if CameraCaptureView.isAvailable { actions.append(.camera) }
-        actions.append(.photo)
+        actions += [.photo, .screenshot]
         if DocumentScannerView.isAvailable { actions.append(.documentScanner) }
-        actions += [.multiplePhotos, .files]
+        actions += [.video, .multiplePhotos, .files]
         return actions
     }
 
@@ -475,6 +506,19 @@ struct ContentView: View {
             }
             .accessibilityIdentifier("selectPhotoButton")
             .accessibilityLabel("Select a photo from your library")
+        case .screenshot:
+            // The picker, filtered to screenshots and newest first — no library access needed.
+            PhotosPicker(selection: $viewModel.selectedItem, matching: .screenshots, photoLibrary: .shared()) {
+                ImportTileLabel(icon: "camera.viewfinder", text: "Screenshots", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectScreenshotButton")
+            .accessibilityLabel("Select a screenshot")
+        case .video:
+            PhotosPicker(selection: $selectedVideoItem, matching: .videos, photoLibrary: .shared()) {
+                ImportTileLabel(icon: "video", text: "Videos", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectVideoButton")
+            .accessibilityLabel("Select a video to clean")
         case .documentScanner:
             Button {
                 haptic(.light)
@@ -595,6 +639,17 @@ struct ContentView: View {
             imageDisplay
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.secondarySystemBackground))
+                .overlay(alignment: .top) {
+                    if let confirmation = viewModel.savedConfirmation {
+                        SavedConfirmationBanner(confirmation: confirmation) {
+                            viewModel.savedConfirmation = nil
+                        }
+                        .padding(12)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .id(confirmation.id)
+                    }
+                }
+                .animation(.spring(duration: 0.35), value: viewModel.savedConfirmation)
                 .onChange(of: viewModel.allSourceMetadata?.fields.count) { _, newCount in
                     if newCount == nil {
                         isPanelOpen = false
@@ -1200,7 +1255,57 @@ nonisolated private struct ImportTileLabel: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, 8)
+        }
+    }
+}
+
+// MARK: - Saved confirmation
+
+/// Shown over the editor once a cleaned copy is in Photos: what went, in a few
+/// lines, then gone by itself.
+private struct SavedConfirmationBanner: View {
+    let confirmation: ScrubberViewModel.SavedConfirmation
+    let onDismiss: () -> Void
+
+    var body: some View {
+        let summary = confirmation.summary
+        VStack(alignment: .leading, spacing: 6) {
+            Label(confirmation.replacedOriginal ? "Original replaced in Photos" : "Saved to Photos", systemImage: "checkmark.circle.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.green)
+            VStack(alignment: .leading, spacing: 3) {
+                if summary.locationRemoved {
+                    Label("Location removed", systemImage: "location.slash")
+                }
+                if summary.metadataFieldsRemoved > 0 {
+                    Label("^[\(summary.metadataFieldsRemoved) privacy field](inflect: true) stripped", systemImage: "tag.slash")
+                }
+                if summary.detailsCovered > 0 {
+                    Label("Details covered: \(summary.detailsCovered)", systemImage: "eye.slash")
+                }
+                Label("Processed on your device", systemImage: "lock.shield")
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+        }
+        .padding(14)
+        .frame(maxWidth: 420, alignment: .leading)
+        .glassEffect(in: .rect(cornerRadius: 18))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("savedConfirmation")
+        .accessibilityAction(named: "Dismiss", onDismiss)
+        .onTapGesture(perform: onDismiss)
+        .sensoryFeedback(.success, trigger: confirmation.id)
+        .task(id: confirmation.id) {
+            AccessibilityNotification.Announcement(
+                confirmation.replacedOriginal
+                    ? String(localized: "Original replaced in Photos")
+                    : String(localized: "Saved to Photos")
+            ).post()
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled else { return }
+            onDismiss()
         }
     }
 }

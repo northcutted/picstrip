@@ -208,7 +208,10 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        let identifiers = ["takePhotoButton", "selectPhotoButton", "scanDocumentButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"]
+        let identifiers = [
+            "takePhotoButton", "selectPhotoButton", "selectScreenshotButton", "scanDocumentButton",
+            "selectVideoButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"
+        ]
         for identifier in identifiers {
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be on the first screen.")
         }
@@ -407,6 +410,61 @@ final class PicStripUITests: XCTestCase {
         waitForExpectations(timeout: 20)
         XCTAssertEqual(app.state, .runningForeground, "PicStrip should survive saving to Photos.")
         XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
+        XCTAssertTrue(
+            app.descendants(matching: .any)["savedConfirmation"].waitForExistence(timeout: 5),
+            "A confirmation says what the saved copy left out."
+        )
+        attachScreen("saved_confirmation")
+    }
+
+    /// Always Cover terms are added and removed from the home screen.
+    @MainActor
+    func testAlwaysCoverListAddsAndRemovesTerms() throws {
+        let app = englishApp()
+        app.launch()
+        XCTAssertTrue(app.buttons["alwaysCoverButton"].waitForExistence(timeout: 15))
+        app.buttons["alwaysCoverButton"].tap()
+
+        let field = app.textFields["alwaysCoverField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("Alex Thornton")
+        app.buttons["alwaysCoverAddButton"].tap()
+        let row = app.staticTexts["Alex Thornton"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        attachScreen("always_cover")
+
+        row.swipeLeft()
+        app.buttons["Delete"].firstMatch.tap()
+        XCTAssertFalse(row.waitForExistence(timeout: 2))
+    }
+
+    /// A card, phone or email finding can leave its end visible, and any text
+    /// finding can join Always Cover.
+    @MainActor
+    func testEditorOffersPartialCoverAndAlwaysCover() throws {
+        let app = englishApp()
+        let tmpPath = "/tmp/picstrip_partial_fixture.png"
+        if let srcURL = fixtureImageURL(), let data = try? Data(contentsOf: srcURL) {
+            try? data.write(to: URL(fileURLWithPath: tmpPath))
+        }
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
+        app.launch()
+
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 25))
+        XCTAssertTrue(app.descendants(matching: .any)["sharingPresetButton"].firstMatch.exists, "The sharing purpose is shown.")
+        edit.tap()
+
+        let email = app.descendants(matching: .any)["regionRow-detected-email-0"].firstMatch
+        XCTAssertTrue(email.waitForExistence(timeout: 5))
+        email.tap()
+        let partial = app.switches["partialCoverToggle"].firstMatch
+        XCTAssertTrue(partial.waitForExistence(timeout: 5), "An email can keep its domain visible.")
+        partial.switches.firstMatch.exists ? partial.switches.firstMatch.tap() : partial.tap()
+        XCTAssertTrue(app.buttons["alwaysCoverThisButton"].exists, "A text finding can join Always Cover.")
+        attachScreen("partial_cover")
     }
 
     /// Blur and pixelate offer a strength slider; solid and crosshatch do not.

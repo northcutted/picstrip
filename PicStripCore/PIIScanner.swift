@@ -1,3 +1,4 @@
+import CoreText
 import CoreVideo
 import Foundation
 import ImageIO
@@ -1885,16 +1886,27 @@ nonisolated struct PIIScanner {
         }
         return estimatedPartialBox(
             matchBox: matchBox,
-            coveredCharacters: text.distance(from: matchRange.lowerBound, to: coverRange.upperBound),
-            totalCharacters: text.distance(from: matchRange.lowerBound, to: matchRange.upperBound)
+            covered: String(text[matchRange.lowerBound..<coverRange.upperBound]),
+            whole: String(text[matchRange])
         )
     }
 
-    /// The covered part of `matchBox` when characters are placed evenly along it.
-    nonisolated static func estimatedPartialBox(matchBox: CGRect, coveredCharacters: Int, totalCharacters: Int) -> CGRect? {
-        guard totalCharacters > 0, (1..<totalCharacters).contains(coveredCharacters) else { return nil }
-        let fraction = min(1, (Double(coveredCharacters) + 1.0 / 3.0) / Double(totalCharacters))
+    /// The covered part of `matchBox`, from how wide the covered characters are
+    /// in the system font next to the whole match — "alex" is narrower than
+    /// "mmmm" — plus a third of an average character toward covering.
+    nonisolated static func estimatedPartialBox(matchBox: CGRect, covered: String, whole: String) -> CGRect? {
+        guard !covered.isEmpty, covered.count < whole.count else { return nil }
+        let wholeWidth = typographicWidth(whole)
+        guard wholeWidth > 0 else { return nil }
+        let margin = wholeWidth / Double(whole.count) / 3
+        let fraction = min(1, (typographicWidth(covered) + margin) / wholeWidth)
         return CGRect(x: matchBox.minX, y: matchBox.minY, width: matchBox.width * fraction, height: matchBox.height)
+    }
+
+    nonisolated private static func typographicWidth(_ string: String) -> Double {
+        let font = CTFontCreateUIFontForLanguage(.system, 17, nil)
+        let attributed = NSAttributedString(string: string, attributes: [kCTFontAttributeName as NSAttributedString.Key: font as Any])
+        return CTLineGetTypographicBounds(CTLineCreateWithAttributedString(attributed), nil, nil, nil)
     }
 
     // MARK: - Snippet helpers

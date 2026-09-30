@@ -250,6 +250,44 @@ final class ScrubberViewModel {
     /// Populated when any step throws; `nil` on success.
     var errorMessage: String?
 
+    /// What cleaning takes out of the current image — for the review sheet and
+    /// the confirmation after saving.  Counts only, never a value.
+    struct SharingSummary: Equatable {
+        var locationRemoved = false
+        var metadataFieldsRemoved = 0
+        var detailsCovered = 0
+    }
+
+    var sharingSummary: SharingSummary {
+        let removed = allSourceMetadata?.fields.filter(isRemoved) ?? []
+        return SharingSummary(
+            locationRemoved: removed.contains { $0.category == "GPS" },
+            metadataFieldsRemoved: removed.count,
+            detailsCovered: enabledRedactionRegions.count
+        )
+    }
+
+    /// Set when a cleaned copy has reached the photo library, for the
+    /// confirmation shown over the editor; cleared when it has been seen.
+    struct SavedConfirmation: Identifiable, Equatable {
+        let id = UUID()
+        let summary: SharingSummary
+        let replacedOriginal: Bool
+    }
+
+    var savedConfirmation: SavedConfirmation?
+
+    /// The picker item when the open photo is a Live Photo, whose motion can be
+    /// kept on save; `nil` for everything else.
+    private(set) var livePhotoItem: PhotosPickerItem?
+    var keepsLivePhotoMotion = false
+
+    /// The motion is not covered like the still, so it may only be kept when
+    /// nothing is covered — and in a format that can carry the pairing (not PNG).
+    var canKeepLivePhotoMotion: Bool {
+        livePhotoItem != nil && enabledRedactionRegions.isEmpty && selectedExportFormat != .png
+    }
+
     // MARK: - Save flow state
 
     /// Controls which bottom sheet (if any) is currently presented.
@@ -591,6 +629,7 @@ final class ScrubberViewModel {
 
     private func loadAndProcess(item: PhotosPickerItem) async {
         let token = resetForNewImage()
+        livePhotoItem = item.supportedContentTypes.contains(.livePhoto) ? item : nil
 
         do {
             let incoming = try await item.loadTransferable(type: IncomingImage.self)
@@ -650,6 +689,9 @@ final class ScrubberViewModel {
         selectedRedactionRegionID = nil
         redactedUIImage = nil
         typesToRedact = []
+        savedConfirmation = nil
+        livePhotoItem = nil
+        keepsLivePhotoMotion = false
         scannedLines = []
         currentHints = .none
         sharingPurpose = .photo
@@ -1483,12 +1525,38 @@ final class ScrubberViewModel {
         isProcessing = true
         defer { isProcessing = false }
 
+        if keepsLivePhotoMotion, canKeepLivePhotoMotion, let item = livePhotoItem {
+            do {
+                try await saveLivePhoto(still: data, item: item)
+                savedConfirmation = SavedConfirmation(summary: sharingSummary, replacedOriginal: false)
+                activeSheet = nil
+                return
+            } catch {
+                // The still is still worth saving; say that the motion was not kept.
+                errorMessage = String(localized: "The motion could not be kept, so the photo was saved as a still.")
+            }
+        }
+
         do {
             try await PhotoLibraryWriter.save(data)
+            savedConfirmation = SavedConfirmation(summary: sharingSummary, replacedOriginal: false)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not save to Photos: \(error.localizedDescription)")
         }
+    }
+
+    /// Saves `still` with the Live Photo's paired video, cleaned, as a Live Photo.
+    private func saveLivePhoto(still: Data, item: PhotosPickerItem) async throws {
+        guard let livePhoto = try await item.loadTransferable(type: PHLivePhoto.self) else {
+            throw VideoCleaner.Failure.cannotExport
+        }
+        let video = try await LivePhotoCleaner.cleanPairedVideo(of: livePhoto)
+        defer { PrivateFileStore.exports.remove(video.url) }
+        guard let pairedStill = LivePhotoCleaner.pairedStill(still, identifier: video.identifier) else {
+            throw VideoCleaner.Failure.cannotExport
+        }
+        try await PhotoLibraryWriter.saveLivePhoto(photo: pairedStill, pairedVideo: video.url)
     }
 
     private func saveReplacing(data: Data) async {
@@ -1506,6 +1574,7 @@ final class ScrubberViewModel {
 
         do {
             try await PhotoLibraryWriter.save(data, deleting: asset)
+            savedConfirmation = SavedConfirmation(summary: sharingSummary, replacedOriginal: true)
             activeSheet = nil
         } catch {
             errorMessage = String(localized: "Could not replace photo: \(error.localizedDescription)")

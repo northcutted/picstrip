@@ -49,6 +49,57 @@ struct StripImageIntent: AppIntent {
     }
 }
 
+// MARK: - TakePhotoIntent
+
+/// Opens PicStrip's live camera — for the Action Button, Control Center (as a
+/// shortcut) or Siri.  Foreground only: the camera is PicStrip's own view.
+struct TakePhotoIntent: AppIntent {
+
+    static let title: LocalizedStringResource = "Take a Photo with PicStrip"
+
+    static let description = IntentDescription(
+        LocalizedStringResource("Opens PicStrip's camera, which shows what it would cover before you take the photo."),
+        categoryName: LocalizedStringResource("Privacy")
+    )
+
+    static let supportedModes: IntentModes = .foreground(.immediate)
+
+    @AppDependency private var router: IntentRouter
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        router.requestCamera()
+        return .result()
+    }
+}
+
+// MARK: - CleanScreenshotIntent
+
+/// Opens PicStrip at the user's screenshots, the newest first.
+///
+/// The system photo picker, filtered to screenshots, rather than "the latest
+/// screenshot": finding that would need access to the whole photo library,
+/// which PicStrip never asks for.
+struct CleanScreenshotIntent: AppIntent {
+
+    static let title: LocalizedStringResource = "Clean a Screenshot with PicStrip"
+
+    static let description = IntentDescription(
+        LocalizedStringResource("Opens PicStrip at your screenshots so you can pick one to clean."),
+        categoryName: LocalizedStringResource("Privacy")
+    )
+
+    static let supportedModes: IntentModes = .foreground(.immediate)
+
+    @AppDependency private var router: IntentRouter
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        router.requestScreenshotPicker()
+        return .result()
+    }
+}
+
 // MARK: - PicStripShortcuts
 
 /// Registers "Clean Photos with PicStrip" as an App Shortcut so it appears
@@ -67,6 +118,24 @@ struct PicStripShortcuts: AppShortcutsProvider {
             ],
             shortTitle: "Clean Photos",
             systemImageName: "shield.checkmark"
+        )
+        AppShortcut(
+            intent: TakePhotoIntent(),
+            phrases: [
+                "Take a photo with \(.applicationName)",
+                "Open the \(.applicationName) camera"
+            ],
+            shortTitle: "Take Photo",
+            systemImageName: "camera"
+        )
+        AppShortcut(
+            intent: CleanScreenshotIntent(),
+            phrases: [
+                "Clean a screenshot with \(.applicationName)",
+                "Clean my screenshot with \(.applicationName)"
+            ],
+            shortTitle: "Clean Screenshot",
+            systemImageName: "camera.viewfinder"
         )
     }
 }

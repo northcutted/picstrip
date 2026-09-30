@@ -19,7 +19,19 @@ nonisolated struct PrivateFileStore: Sendable {
 
     func write(_ data: Data, extension fileExtension: String, now: Date = Date()) throws -> URL {
         guard data.count <= maximumBytes else { throw ImageResourceBudget.AdmissionError.fileTooLarge }
-        let allowed = Set(["png", "jpg", "jpeg", "heic", "heif", "tif", "tiff", "gif", "bmp", "webp", "avif", "dng", "json", "data"])
+        let url = try reserve(extension: fileExtension, now: now)
+        try data.write(to: url, options: [.atomic, .completeFileProtection])
+        try FileManager.default.setAttributes([.modificationDate: now], ofItemAtPath: url.path)
+        return url
+    }
+
+    /// A new, unused file name in the protected directory, for a writer that
+    /// produces its own file (a video export).  Nothing is created at the URL.
+    func reserve(extension fileExtension: String, now: Date = Date()) throws -> URL {
+        let allowed = Set([
+            "png", "jpg", "jpeg", "heic", "heif", "tif", "tiff", "gif", "bmp", "webp", "avif", "dng", "json", "data",
+            "mov", "mp4", "m4v"
+        ])
         let suffix = allowed.contains(fileExtension.lowercased()) ? fileExtension.lowercased() : "data"
         try FileManager.default.createDirectory(
             at: directory, withIntermediateDirectories: true,
@@ -30,9 +42,17 @@ nonisolated struct PrivateFileStore: Sendable {
         values.isExcludedFromBackup = true
         try protectedDirectory.setResourceValues(values)
         removeExpired(now: now)
-        let url = directory.appendingPathComponent("PicStrip-\(UUID().uuidString).\(suffix)")
-        try data.write(to: url, options: [.atomic, .completeFileProtection])
-        try FileManager.default.setAttributes([.modificationDate: now], ofItemAtPath: url.path)
+        return directory.appendingPathComponent("PicStrip-\(UUID().uuidString).\(suffix)")
+    }
+
+    /// Copies a file into the protected directory — a video handed over by the
+    /// photo picker, which is too large to hold in memory.
+    func copy(_ source: URL, extension fileExtension: String, now: Date = Date()) throws -> URL {
+        let url = try reserve(extension: fileExtension, now: now)
+        try FileManager.default.copyItem(at: source, to: url)
+        try FileManager.default.setAttributes(
+            [.modificationDate: now, .protectionKey: FileProtectionType.complete], ofItemAtPath: url.path
+        )
         return url
     }
 

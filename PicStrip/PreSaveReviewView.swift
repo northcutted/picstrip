@@ -10,6 +10,8 @@ struct PreSaveReviewView: View {
     @State private var expandedCategories: Set<String> = []
     @State private var showAdvanced: Bool = false
     @State private var showFullPreview = false
+    /// `true` while the preview is held down to show the original.
+    @GestureState private var isComparing = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @State private var auditURL: URL?
@@ -171,6 +173,14 @@ struct PreSaveReviewView: View {
                         Text("Your sharing summary")
                             .font(.subheadline.weight(.semibold))
 
+                        if viewModel.sharingSummary.locationRemoved {
+                            Label("Location removed", systemImage: "location.slash")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.green)
+                                .labelStyle(ReviewLabelStyle())
+                                .accessibilityIdentifier("locationRemovedLabel")
+                        }
+
                         if originalMetadataCount > 0 {
                             Label(
                                 "^[\(originalMetadataCount) privacy field](inflect: true) stripped",
@@ -190,6 +200,11 @@ struct PreSaveReviewView: View {
                             .foregroundStyle(.secondary)
                             .labelStyle(ReviewLabelStyle())
                         }
+
+                        Label("Processed on your device", systemImage: "lock.shield")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .labelStyle(ReviewLabelStyle())
                     }
                 }
 
@@ -204,14 +219,14 @@ struct PreSaveReviewView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .accessibilityIdentifier("savePreviewLabel")
 
-                    Image(uiImage: previewImage)
-                        .resizable()
-                        .scaledToFit()
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 290)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                        .accessibilityLabel("Final preview")
-                        .accessibilityIdentifier("savePreviewImage")
+                    comparablePreview(previewImage)
+                    if viewModel.sourceUIImage != nil {
+                        Text("Touch and hold to compare with the original")
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .frame(maxWidth: .infinity)
+                            .accessibilityHidden(true)
+                    }
                     Button {
                         showFullPreview = true
                     } label: {
@@ -227,6 +242,45 @@ struct PreSaveReviewView: View {
         }
         .padding(16)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    /// The cleaned image, or — only while it is held down — the original, so the
+    /// difference is one gesture away but never the resting state.
+    private func comparablePreview(_ cleaned: UIImage) -> some View {
+        let original = viewModel.sourceUIImage
+        let showsOriginal = isComparing && original != nil
+        return Image(uiImage: showsOriginal ? original ?? cleaned : cleaned)
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity)
+            .frame(height: 290)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(alignment: .topLeading) {
+                if showsOriginal {
+                    Text("Original")
+                        .font(.caption.weight(.bold))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.orange, in: Capsule())
+                        .foregroundStyle(.white)
+                        .padding(8)
+                }
+            }
+            .contentShape(Rectangle())
+            .gesture(
+                // Holding, not a quick touch: scrolling past the preview must not
+                // flash the original.
+                LongPressGesture(minimumDuration: 0.2)
+                    .sequenced(before: DragGesture(minimumDistance: 0))
+                    .updating($isComparing) { value, state, _ in
+                        if case .second(true, _) = value { state = true }
+                    },
+                isEnabled: original != nil
+            )
+            .sensoryFeedback(.selection, trigger: isComparing)
+            .accessibilityLabel(showsOriginal ? "Original" : "Final preview")
+            .accessibilityHint(original != nil ? "Touch and hold to compare with the original" : "")
+            .accessibilityIdentifier("savePreviewImage")
     }
 
     @ViewBuilder
@@ -328,7 +382,11 @@ struct PreSaveReviewView: View {
                     }
                     .font(.footnote)
 
-                    if originalMetadataCount > 0 {
+                    if viewModel.livePhotoItem != nil {
+                        livePhotoMotionToggle
+                    }
+
+                    if originalMetadataCount > 0, !(viewModel.keepsLivePhotoMotion && viewModel.canKeepLivePhotoMotion) {
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "exclamationmark.triangle")
                                 .font(.caption)
@@ -348,6 +406,24 @@ struct PreSaveReviewView: View {
         }
         .padding(16)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 14))
+    }
+
+    // MARK: - Live Photo motion
+
+    private var livePhotoMotionToggle: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle("Keep Live Photo motion", isOn: $viewModel.keepsLivePhotoMotion)
+                .font(.subheadline)
+                .disabled(!viewModel.canKeepLivePhotoMotion)
+                .accessibilityIdentifier("keepLivePhotoMotionToggle")
+            Text(viewModel.canKeepLivePhotoMotion
+                 ? "Saved with its hidden details removed. The motion is not covered, so check it shows nothing private."
+                 : "Only without covered details, and not as PNG: the motion would still show them.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.top, 2)
     }
 
     // MARK: - Collapsible category section
