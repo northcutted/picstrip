@@ -208,6 +208,11 @@ struct ContentView: View {
             else { return }
             await viewModel.loadData(data)
         }
+        // PICSTRIP_LIVE_CAMERA_FIXTURE opens the viewfinder on a still image,
+        // which is the only way to run it on the simulator.
+        .task {
+            if LiveCameraFixture.isConfigured { isShowingLiveCamera = true }
+        }
         .confirmationDialog("Use a smaller copy?", isPresented: $viewModel.showResizeOffer, titleVisibility: .visible) {
             Button("Use smaller copy") { Task { await viewModel.useSmallerCopy() } }
             Button("Cancel", role: .cancel) { viewModel.discardLargeImage() }
@@ -1046,26 +1051,6 @@ struct ContentView: View {
         ))
         .accessibilityHint("Opens the redaction editor")
         .accessibilityIdentifier("editRedactionsButton")
-    }
-
-    // MARK: - Risk helpers (used by edit-redactions row and other in-body callouts)
-
-    private func riskIcon(_ level: RiskLevel) -> String {
-        switch level {
-        case .critical: return "exclamationmark.octagon.fill"
-        case .high:     return "exclamationmark.triangle.fill"
-        case .medium:   return "info.circle.fill"
-        case .low:      return "checkmark.circle.fill"
-        }
-    }
-
-    private func riskColor(_ level: RiskLevel) -> Color {
-        switch level {
-        case .critical: return .red
-        case .high:     return .orange
-        case .medium:   return .blue
-        case .low:      return .green
-        }
     }
 
 }

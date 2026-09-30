@@ -330,7 +330,7 @@ No developer data collection, analytics or third-party crash-reporting SDKs. Use
 |-------------|-------------|-----|
 | `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1`, both targets | Container file metadata for bounded reads, expiry and oldest-first handoff consumption |
 | `NSPrivacyAccessedAPICategoryFileTimestamp` | `3B52.1`, both targets | File-size checks for files explicitly selected by the user |
-| `NSPrivacyAccessedAPICategorySystemBootTime` | `35F9.1`, app only | Elapsed time between live-camera frames for throttling; not stored or transmitted |
+| `NSPrivacyAccessedAPICategorySystemBootTime` | `35F9.1`, app only | Elapsed time between live-camera frames, to throttle analysis and measure how fast the camera moves; not stored or transmitted |
 
 Re-audit declarations when adding file, timing or other required-reason API use. The extension does not call the camera uptime API.
 
@@ -350,7 +350,7 @@ The app defaults to `.addOnly` authorization. Users must explicitly grant read+w
 UIImage(data:)          native iOS — no network
 CGImageSourceCreateWithData  ImageIO — native iOS
 RecognizeTextRequest    Vision — on-device model, no network
-PIIScanner.liveBoxes    Vision on camera frames — in memory, never stored
+PIIScanner.liveScan     Vision on camera frames — in memory, never stored
 SystemLanguageModel     FoundationModels — on-device only; never Private Cloud Compute
 NSRegularExpression     Foundation — native iOS
 UIGraphicsImageRenderer CoreGraphics — native iOS
@@ -399,7 +399,15 @@ Concurrent batch processing would hold several decoded images and intermediate b
 
 ### The Live Viewfinder Is Advisory
 
-`PIIScanner.liveBoxes(in:)` runs on camera frames for the viewfinder's boxes only: one frame at a time, at most every 0.35 s (`AnalysisThrottle`), paused while the thermal state is serious or critical. The captured photo is scanned again by the full pipeline, so nothing in the editor depends on what the viewfinder showed. Frames are never stored. It uses accurate OCR — the fast model garbles the digits the pattern rules need (and reads nothing on the simulator) — so tune the interval, not the level, if a device runs hot. If the capture session cannot be configured, `LiveCameraView` reports `.unavailable` and the system camera (`CameraCaptureView`) is presented instead.
+`PIIScanner.liveScan(in:)` runs on camera frames for the viewfinder only. It returns each finding's `PIIType` and box, and the boxes of every line of text it read — never the text itself. Only types that are `isRedactedByDefault` are shown, and the language-model name pass does not run. The captured photo is scanned again by the full pipeline, so nothing in the editor depends on what the viewfinder showed. Frames are never stored.
+
+- **Pacing.** One pass at a time (`AnalysisThrottle`). The interval comes from `LiveAnalysisPacing`: 0.35 s on a cool phone, 0.6 s from thermal state `.fair`, and at least 1.5 × the last pass so a slow device never runs Vision back to back. Analysis pauses at `.serious` or `.critical`, and the status line says so. It uses accurate OCR — the fast model garbles the digits the pattern rules need (and reads nothing on the simulator) — so tune the interval, not the level, if a device runs hot. `OSSignposter` intervals "Live scan" and "Frame registration" (subsystem `com.northcutt.PicStrip`, category `LiveCamera`) measure both on a device; the frame size is logged once at debug level.
+- **Motion.** Between passes, `FrameRegistration` (Vision translational image registration, about 15 Hz) measures how far the picture slid, and `LiveMotion` accumulates it. Findings are stored in that stabilised space and drawn at their position plus the offset, so boxes stay on their content while the phone moves and the pass's latency is hidden. Passes are skipped while the picture moves faster than 0.8 frame lengths per second, when OCR reads only blur. Zoom, rotation, interruptions and thermal pauses clear the findings and restart the measurement.
+- **Stability.** `LiveDetectionTracker` matches each pass to the findings on screen by type and overlap, eases a moved box into place and keeps a missed one for two passes, faded, so the overlay neither swaps boxes between findings nor blinks when OCR misses a line.
+- **Presentation.** Findings are outlined in their risk colour (`RiskLevel.color`, shared with the editor and About) and labelled with their type; `LiveLabelLayout` keeps labels off other findings, the controls and, where it can, text. A toggle shows black boxes instead, as a preview of the result; the choice is not remembered, because PicStrip keeps no preferences. The status line above the shutter summarises what is in view and carries the VoiceOver label; VoiceOver announces a kind of finding when it comes into view.
+- **Camera.** The back camera is a virtual device where there is one, started at the Camera app's 1× (`displayVideoZoomFactorMultiplier`), so close-ups switch to the macro-capable lens on their own. Tap to focus and expose, a 1×/2× zoom, the flashlight, and the volume buttons or Camera Control (`onCameraCaptureEvent`) as a shutter. Session interruptions show "Camera paused"; a runtime error restarts the session.
+
+If the capture session cannot be configured, `LiveCameraView` reports `.unavailable` and the system camera (`CameraCaptureView`) is presented instead. The simulator has no camera: launch with `PICSTRIP_LIVE_CAMERA_FIXTURE=<path to an image>` and the app opens the viewfinder on that still image (`LiveCameraFixture`), which `testLiveViewfinderNamesFindingsAndCaptures` uses. Faces and barcodes are not detected there — those Vision requests fail on the simulator — and focus, zoom, the flashlight and motion need a device.
 
 ### The Object-Selection Model Is Never Downloaded Unasked
 

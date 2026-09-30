@@ -98,6 +98,22 @@ nonisolated struct ScannedLine: Sendable {
     }
 }
 
+// MARK: - Live frame scan
+
+/// One finding in a camera frame: what it is and where, never what it says.
+nonisolated struct LiveDetection: Sendable, Equatable {
+    let type: PIIType
+    /// Normalised, top-left origin — the same space as `DetectedInstance.boundingBox`.
+    let boundingBox: CGRect
+}
+
+/// What `PIIScanner.liveScan` found in one camera frame.
+nonisolated struct LiveFrameScan: Sendable, Equatable {
+    var detections: [LiveDetection] = []
+    /// Every line of text Vision read, sensitive or not.  Normalised, top-left origin.
+    var textLines: [CGRect] = []
+}
+
 /// Everything one scan produced: the findings, and the text they were found in.
 nonisolated struct ScanOutput: Sendable {
     let results: [DetectionResult]
@@ -278,48 +294,50 @@ nonisolated struct PIIScanner {
 
     // MARK: - Live preview
 
-    /// A fast, approximate pass over one camera frame, for the viewfinder's
-    /// advisory boxes: what PicStrip would redact if the shutter were pressed now.
+    /// A fast, approximate pass over one camera frame, for the viewfinder: what
+    /// PicStrip would redact if the shutter were pressed now, and which lines of
+    /// text it could read.
     ///
     /// OCR, default faces, barcodes, and the same pattern rules — but none of the
     /// document scoring, and no retries.  It is only a preview: the captured photo
     /// goes through `scan(data:hints:)` like any other image.  Nothing about a
-    /// frame is kept; the boxes are the only thing that leaves this function.
+    /// frame is kept, and no recognised text leaves this function — only the
+    /// category and the box of each finding, and the boxes of the lines read.
     ///
     /// Accurate OCR by default: the pattern rules need the digits right, and the
     /// fast model garbles them (and reads nothing at all on the simulator).  The
     /// caller's throttle, not the model, is what keeps the frame rate sane.
     @concurrent
-    static func liveBoxes(
+    static func liveScan(
         in pixelBuffer: CVPixelBuffer,
         orientation: CGImagePropertyOrientation = .up,
         textLevel: RecognizeTextRequest.RecognitionLevel = .accurate
-    ) async -> [CGRect] {
+    ) async -> LiveFrameScan {
         let requests: [any VisionRequest] = [
             makeTextRequest(level: textLevel),
             DetectFaceRectanglesRequest(),
             DetectBarcodesRequest()
         ]
         var observations: [RecognizedTextObservation] = []
-        var boxes: [CGRect] = []
+        var scan = LiveFrameScan()
         for await result in ImageRequestHandler(pixelBuffer, orientation: orientation).performAll(requests) {
             switch result {
             case .recognizeText(_, let found):
                 observations = found
             case .detectFaceRectangles(_, let found):
-                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+                scan.detections += found.map { LiveDetection(type: .face, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect)) }
             case .detectBarcodes(_, let found):
-                boxes += found.map { swiftUIBox(from: $0.boundingBox.cgRect) }
+                scan.detections += found.map { LiveDetection(type: .barcode, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect)) }
             default:
                 break
             }
         }
+        scan.textLines = observations.map { swiftUIBox(from: $0.boundingBox.cgRect) }
         let textFindings = (try? detectPII(in: observations)) ?? []
-        boxes += textFindings
-            .filter(\.type.isRedactedByDefault)
-            .flatMap(\.instances)
-            .map(\.boundingBox)
-        return boxes
+        for finding in textFindings where finding.type.isRedactedByDefault {
+            scan.detections += finding.instances.map { LiveDetection(type: finding.type, boundingBox: $0.boundingBox) }
+        }
+        return scan
     }
 
     /// Highest score first, alphabetical tiebreak.

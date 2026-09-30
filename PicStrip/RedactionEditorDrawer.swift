@@ -672,8 +672,8 @@ struct RedactionEditorDrawer: View {
                 // ── Leading icon: risk-level colour for detected, accent for custom ──
                 Group {
                     if let type = region.type {
-                        Image(systemName: riskIcon(type.riskLevel))
-                            .foregroundStyle(riskColor(type.riskLevel))
+                        Image(systemName: type.riskLevel.symbolName)
+                            .foregroundStyle(type.riskLevel.color)
                     } else {
                         Image(systemName: "square.dashed")
                             .foregroundStyle(.accent)
@@ -682,7 +682,7 @@ struct RedactionEditorDrawer: View {
                 .font(.callout.weight(.semibold))
                 .frame(width: 28, height: 28)
                 .background(
-                    (region.type.map { riskColor($0.riskLevel) } ?? Color.accentColor).opacity(0.12),
+                    (region.type.map { $0.riskLevel.color } ?? Color.accentColor).opacity(0.12),
                     in: RoundedRectangle(cornerRadius: 7)
                 )
                 .accessibilityHidden(true)
@@ -711,11 +711,11 @@ struct RedactionEditorDrawer: View {
                         if let type = region.type {
                             Text(type.riskLevel.shortLabel)
                                 .font(.caption2.weight(.semibold))
-                                .foregroundStyle(riskColor(type.riskLevel))
+                                .foregroundStyle(type.riskLevel.color)
                                 .padding(.horizontal, 5)
                                 .padding(.vertical, 1)
                                 .background(
-                                    riskColor(type.riskLevel).opacity(0.12),
+                                    type.riskLevel.color.opacity(0.12),
                                     in: Capsule()
                                 )
                         }
@@ -788,26 +788,6 @@ struct RedactionEditorDrawer: View {
         }
         .accessibilityAction(named: "Delete redaction") {
             onDeleteRegion(region.id)
-        }
-    }
-
-    // MARK: - Risk helpers
-
-    private func riskIcon(_ level: RiskLevel) -> String {
-        switch level {
-        case .critical: return "exclamationmark.octagon.fill"
-        case .high:     return "exclamationmark.triangle.fill"
-        case .medium:   return "info.circle.fill"
-        case .low:      return "checkmark.circle.fill"
-        }
-    }
-
-    private func riskColor(_ level: RiskLevel) -> Color {
-        switch level {
-        case .critical: return .red
-        case .high:     return .orange
-        case .medium:   return .blue
-        case .low:      return .green
         }
     }
 }

@@ -217,6 +217,36 @@ final class PicStripUITests: XCTestCase {
         }
     }
 
+    /// The live viewfinder, run on a still image because the simulator has no
+    /// camera: it says what it finds, switches to a preview of the redactions,
+    /// and hands the photo to the editor.
+    @MainActor
+    func testLiveViewfinderNamesFindingsAndCaptures() throws {
+        let app = englishApp()
+        let path = "/tmp/picstrip_live_fixture.png"
+        try Data(contentsOf: try XCTUnwrap(fixtureImageURL())).write(to: URL(fileURLWithPath: path))
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_LIVE_CAMERA_FIXTURE"] = path
+        app.launch()
+
+        let status = app.descendants(matching: .any)["liveCameraStatus"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
+        let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
+        wait(for: [found], timeout: 20)
+        XCTAssertTrue(status.label.contains("Email Address"), "The status names what is in view; got \"\(status.label)\".")
+        attachScreen("live_01_highlight")
+
+        app.descendants(matching: .any)["liveCameraPreviewToggle"].firstMatch.tap()
+        attachScreen("live_02_preview")
+
+        app.buttons["liveCameraShutterButton"].tap()
+        XCTAssertTrue(
+            app.buttons["dismissPhotoButton"].waitForExistence(timeout: 15),
+            "The photo goes straight to the editor."
+        )
+        attachScreen("live_03_editor")
+    }
+
     @MainActor
     func testCleanFixtureShowsNoMetadataBanner() throws {
         let app = englishApp()
