@@ -191,6 +191,7 @@ final class DetectionRegistryTests: XCTestCase {
             .phoneNumber, .address, .link,  // NSDataDetector
             .face, .barcode,                // DetectFaceRectanglesRequest / DetectBarcodesRequest
             .personName,                    // SemanticPII
+            .alwaysCover,                   // AlwaysCoverMatcher, from the user's own list
         ]
 
         for type in PIIType.allCases where !ruleExemptTypes.contains(type) {

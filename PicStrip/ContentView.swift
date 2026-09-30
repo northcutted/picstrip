@@ -64,6 +64,8 @@ struct ContentView: View {
 
     /// Controls presentation of the About / Trust sheet.
     @State private var showingAbout = false
+    /// Controls presentation of the Always Cover list.
+    @State private var showingAlwaysCover = false
 
     private func openPanel(category: String) {
         visiblePanelCategory = category
@@ -131,6 +133,15 @@ struct ContentView: View {
                             }
                             ToolbarItem(placement: .topBarTrailing) {
                                 Button {
+                                    showingAlwaysCover = true
+                                } label: {
+                                    Image(systemName: "pin")
+                                }
+                                .accessibilityIdentifier("alwaysCoverButton")
+                                .accessibilityLabel("Always Cover")
+                            }
+                            ToolbarItem(placement: .topBarTrailing) {
+                                Button {
                                     showingAbout = true
                                 } label: {
                                     Image(systemName: "questionmark.circle")
@@ -141,6 +152,9 @@ struct ContentView: View {
                         }
                         .sheet(isPresented: $showingAbout) {
                             AboutView()
+                        }
+                        .sheet(isPresented: $showingAlwaysCover, onDismiss: viewModel.refreshAlwaysCover) {
+                            AlwaysCoverView(list: viewModel.alwaysCoverList)
                         }
                 }
             }
@@ -650,7 +664,9 @@ struct ContentView: View {
                             isAddingRedaction = false
                             viewModel.selectRedactionRegion(id: nil)
                         }
-                    }
+                    },
+                    onSetPartial: { id, isPartial in viewModel.setPartialCover(id: id, isPartial) },
+                    onAlwaysCover: { term in viewModel.alwaysCover(term) }
                 )
                 .background(Color(.systemBackground))
                 .transition(.asymmetric(
@@ -867,12 +883,30 @@ struct ContentView: View {
             if hasPhoto {
                 HStack {
                     Menu {
-                        ForEach(SharingPurpose.allCases) { purpose in
-                            Button(purpose.title) { viewModel.applySharingPurpose(purpose) }
+                        Picker("Sharing as", selection: Binding(
+                            get: { viewModel.sharingPurpose },
+                            set: { viewModel.applySharingPurpose($0) }
+                        )) {
+                            ForEach(SharingPurpose.allCases) { purpose in
+                                Label {
+                                    Text(purpose.title)
+                                    Text(purpose.summary)
+                                } icon: {
+                                    Image(systemName: purpose.symbolName)
+                                }
+                                .tag(purpose)
+                            }
                         }
                     } label: {
-                        Label("Sharing preset", systemImage: "slider.horizontal.3")
+                        HStack(spacing: 4) {
+                            Label(viewModel.sharingPurpose.title, systemImage: viewModel.sharingPurpose.symbolName)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .imageScale(.small)
+                                .accessibilityHidden(true)
+                        }
                     }
+                    .accessibilityLabel("Sharing preset")
+                    .accessibilityValue(viewModel.sharingPurpose.title)
                     .accessibilityIdentifier("sharingPresetButton")
                     Spacer()
                     if viewModel.isDemo {

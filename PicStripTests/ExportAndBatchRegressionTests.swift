@@ -282,7 +282,8 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
 
         scan.finish()
         try await waitUntil { viewModel.activeSheet == .preSave && !viewModel.isProcessing }
-        XCTAssertEqual(Fixture.type(of: try XCTUnwrap(viewModel.processedData)), .png)
+        // An everyday photo is shared as a JPEG (`SharingPurpose.photo`).
+        XCTAssertEqual(Fixture.type(of: try XCTUnwrap(viewModel.processedData)), .jpeg)
         XCTAssertFalse(viewModel.isScanningPII)
     }
 
@@ -295,9 +296,14 @@ final class ScrubberViewModelRegressionTests: XCTestCase {
         viewModel.requestSave()
         try await waitUntil { viewModel.activeSheet == .preSave }
 
+        // An everyday photo is shown, and encoded, as a JPEG.
         let output = try XCTUnwrap(viewModel.processedData)
-        XCTAssertEqual(viewModel.selectedExportFormat, .png)
-        XCTAssertEqual(Fixture.type(of: output), .png, "A JPEG source must be exported as the displayed PNG format.")
+        XCTAssertEqual(viewModel.selectedExportFormat, .jpeg)
+        XCTAssertEqual(Fixture.type(of: output), .jpeg, "The export must be the displayed format.")
+
+        viewModel.selectedExportFormat = .png
+        viewModel.requestSave()
+        try await waitUntil { viewModel.activeSheet == .preSave && !viewModel.isProcessing && viewModel.processedData.map(Fixture.type(of:)) == .png }
     }
 
     func testChangingFormat_changesPreset() {

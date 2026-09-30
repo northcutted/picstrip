@@ -42,6 +42,8 @@ enum SamplePhoto {
     }
 }
 
+/// What an image is being shared as.  Each purpose picks a format and which
+/// findings are covered straight away; everything stays editable.
 enum SharingPurpose: String, CaseIterable, Identifiable {
     case photo, screenshot, document
     var id: String { rawValue }
@@ -52,7 +54,43 @@ enum SharingPurpose: String, CaseIterable, Identifiable {
         case .document: String(localized: "Document")
         }
     }
+
+    /// What choosing it does, in one line.
+    var summary: String {
+        switch self {
+        case .photo: String(localized: "A smaller JPEG. Covers what is found; names stay your choice.")
+        case .screenshot: String(localized: "A sharp PNG for text. Covers what is found; names stay your choice.")
+        case .document: String(localized: "A sharp PNG. Covers everything found, names included.")
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .photo: "photo"
+        case .screenshot: "camera.viewfinder"
+        case .document: "doc.text"
+        }
+    }
+
     var format: ExportFormat { self == .photo ? .jpeg : .png }
+
+    /// Whether findings of `type` are covered as soon as they are found.  On a
+    /// letter or an ID the names are the point, so documents cover them too.
+    func coversByDefault(_ type: PIIType) -> Bool {
+        self == .document || type.isRedactedByDefault
+    }
+
+    /// The likeliest purpose for an image: a document-camera scan is a document,
+    /// and iOS writes "Screenshot" into the EXIF user comment of its screenshots.
+    nonisolated static func detect(properties: [CFString: Any]?, hints: ScanHints) -> SharingPurpose {
+        if hints.wholeImageIsDocument { return .document }
+        let exif = properties?[kCGImagePropertyExifDictionary] as? [CFString: Any]
+        if let comment = exif?[kCGImagePropertyExifUserComment] as? String,
+           comment.trimmingCharacters(in: .whitespaces).caseInsensitiveCompare("Screenshot") == .orderedSame {
+            return .screenshot
+        }
+        return .photo
+    }
 }
 
 extension ScrubberViewModel {
@@ -64,7 +102,8 @@ extension ScrubberViewModel {
     /// Presets choose quality and remove metadata. Region positions and styles survive.
     func applySharingPurpose(_ purpose: SharingPurpose) {
         stripConfig = .default
+        sharingPurpose = purpose
         selectedExportFormat = purpose.format
-        typesToRedact = Set(detectedPII.map(\.type).filter(\.isRedactedByDefault))
+        typesToRedact = Set(detectedPII.map(\.type).filter(purpose.coversByDefault))
     }
 }

@@ -298,6 +298,19 @@ final class ScrubberViewModel {
         didSet { syncDetectedRegionEnablement() }
     }
 
+    /// What the current image is being shared as: it picks the export format and
+    /// which findings are covered straight away.  Guessed when an image loads
+    /// (`SharingPurpose.detect`); the user can change it.
+    var sharingPurpose: SharingPurpose = .photo
+
+    /// The words and phrases the user wants covered in every photo.
+    let alwaysCoverList: AlwaysCoverList
+
+    /// The text the last scan read, kept so a new Always Cover term can be
+    /// found in the open photo without scanning it again.
+    @ObservationIgnored private var scannedLines: [ScannedLine] = []
+    @ObservationIgnored private var currentHints: ScanHints = .none
+
     /// Editable per-photo redaction boxes. Detected boxes are seeded from OCR;
     /// custom boxes are user-created and never persisted across photos.
     var redactionRegions: [RedactionRegion] = []
@@ -465,22 +478,26 @@ final class ScrubberViewModel {
             try await PIIScanner().scan(data: $0, hints: $1, progress: $2)
         },
         semantic: SemanticPII = .live,
-        objectSelection: ObjectSelection = .live
+        objectSelection: ObjectSelection = .live,
+        alwaysCoverList: AlwaysCoverList = .shared
     ) {
         self.scan = scan
         self.semantic = semantic
         self.objectSelection = objectSelection
+        self.alwaysCoverList = alwaysCoverList
     }
 
     /// For tests that supply findings directly: no recognised text, so no name pass.
     convenience init(
         scanImageWithHints: @escaping @Sendable (Data, ScanHints) async throws -> [DetectionResult],
-        objectSelection: ObjectSelection = .unsupported
+        objectSelection: ObjectSelection = .unsupported,
+        alwaysCoverList: AlwaysCoverList = AlwaysCoverList(fileURL: nil)
     ) {
         self.init(
             scan: { data, hints, _ in ScanOutput(results: try await scanImageWithHints(data, hints), lines: []) },
             semantic: .unavailable,
-            objectSelection: objectSelection
+            objectSelection: objectSelection,
+            alwaysCoverList: alwaysCoverList
         )
     }
 
@@ -633,6 +650,9 @@ final class ScrubberViewModel {
         selectedRedactionRegionID = nil
         redactedUIImage = nil
         typesToRedact = []
+        scannedLines = []
+        currentHints = .none
+        sharingPurpose = .photo
         clearUndoRedoStacks()
 
         return token
@@ -654,6 +674,7 @@ final class ScrubberViewModel {
             isProcessing = false
             return
         }
+        currentHints = hints
         startPIIScan(data: data, hints: hints)
         async let metadata: Void = catalogSourceMetadata(from: data)
         let preview = await Self.makePreviewImage(from: data)
@@ -743,6 +764,17 @@ final class ScrubberViewModel {
         pendingStrippedMetadata = catalog.stripped
         allSourceMetadata       = catalog.all
         sourceUTType            = catalog.utType
+        adoptDetectedPurpose(SharingPurpose.detect(properties: catalog.props?.dictionary, hints: currentHints))
+    }
+
+    /// Takes on the purpose guessed for a freshly loaded image — its format, and
+    /// its selection if the scan has already finished.
+    private func adoptDetectedPurpose(_ purpose: SharingPurpose) {
+        sharingPurpose = purpose
+        selectedExportFormat = purpose.format
+        if !isScanningPII, !detectedPII.isEmpty {
+            typesToRedact = Set(detectedPII.map(\.type).filter(purpose.coversByDefault))
+        }
     }
 
     private static func makePreviewImage(from data: Data) async -> UIImage? {
@@ -796,12 +828,17 @@ final class ScrubberViewModel {
                 if let scanError { self.errorMessage = scanError }
                 self.scanFailureMessage = scanError
                 self.scanCoverage = coverage
-                self.detectedPII = result
-                // Privacy by default: pre-select every detected type for redaction.
-                // `detectedPII.didSet` already called replaceDetectedRedactionRegions;
-                // syncDetectedRegionEnablement (via typesToRedact.didSet) then enables
-                // each region whose type is in typesToRedact.
-                self.typesToRedact = Set(result.map(\.type).filter(\.isRedactedByDefault))
+                self.scannedLines = lines
+                let findings = PIIScanner.sorted(
+                    result + AlwaysCoverMatcher.results(terms: self.alwaysCoverList.terms, lines: lines)
+                )
+                self.detectedPII = findings
+                // Privacy by default: pre-select every detected type the sharing
+                // purpose covers.  `detectedPII.didSet` already called
+                // replaceDetectedRedactionRegions; syncDetectedRegionEnablement (via
+                // typesToRedact.didSet) then enables each region whose type is in
+                // typesToRedact.
+                self.typesToRedact = Set(findings.map(\.type).filter(self.sharingPurpose.coversByDefault))
                 self.isScanningPII = false
                 self.scanProgress = .finished
                 self.piiScanTask = nil
@@ -839,19 +876,35 @@ final class ScrubberViewModel {
     /// it — moved, restyled, disabled or deleted — and adds the new ones to the
     /// undo history too, so an undo cannot make them vanish.
     private func appendDetections(_ results: [DetectionResult]) {
-        guard !results.isEmpty else { return }
-        isAppendingDetections = true
-        detectedPII = PIIScanner.sorted(detectedPII + results)
-        isAppendingDetections = false
-
-        let regions = results.flatMap { result in
-            result.instances.enumerated().map { index, instance in
+        var merged = detectedPII
+        var regions: [RedactionRegion] = []
+        for result in results {
+            // A kind already found gains instances; its regions' ids carry on
+            // from the existing ones so none repeats.
+            let index = merged.firstIndex { $0.type == result.type }
+            let existing = index.map { merged[$0].instances } ?? []
+            let added = result.instances.filter { instance in
+                !existing.contains { PIIScanner.representsSameRegion($0.boundingBox, instance.boundingBox) }
+            }
+            guard !added.isEmpty else { continue }
+            if let index {
+                merged[index].instances += added
+                merged[index].score = max(merged[index].score, result.score)
+            } else {
+                merged.append(result)
+            }
+            regions += added.enumerated().map { offset, instance in
                 RedactionRegion.detected(
-                    result: result, instance: instance, index: index,
+                    result: result, instance: instance, index: existing.count + offset,
                     isEnabled: typesToRedact.contains(result.type)
                 )
             }
         }
+        guard !regions.isEmpty else { return }
+        isAppendingDetections = true
+        detectedPII = PIIScanner.sorted(merged)
+        isAppendingDetections = false
+
         // Detected regions come before custom ones, as in `replaceDetectedRedactionRegions`.
         func adding(to existing: [RedactionRegion]) -> [RedactionRegion] {
             let firstCustom = existing.firstIndex { $0.source == .custom } ?? existing.endIndex
@@ -889,6 +942,20 @@ final class ScrubberViewModel {
                 self.piiFocusTask = nil
             }
         }
+    }
+
+    /// Adds `term` to the Always Cover list and covers it in the open photo.
+    func alwaysCover(_ term: String) {
+        alwaysCoverList.add(term)
+        refreshAlwaysCover()
+    }
+
+    /// Finds Always Cover terms added since the open photo was scanned.
+    func refreshAlwaysCover() {
+        let found = AlwaysCoverMatcher.results(terms: alwaysCoverList.terms, lines: scannedLines)
+        guard !found.isEmpty else { return }
+        typesToRedact.insert(.alwaysCover)
+        appendDetections(found)
     }
 
     func addCustomRedaction(rect: CGRect) {
@@ -1054,6 +1121,20 @@ final class ScrubberViewModel {
 
     /// Changes how hard a `.pixelate` / `.blur` region scrambles what is under it.
     /// The mutation is undoable and clears any cached redacted image.
+    /// Covers only part of a finding — all but the last four digits, or the
+    /// name before an email's "@" — or the whole of it again.  Switching resets
+    /// the box to the one the scanner found.
+    func setPartialCover(id: String, _ isPartial: Bool) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }),
+              let cover = redactionRegions[index].partialCover,
+              redactionRegions[index].isPartial != isPartial
+        else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].isPartial = isPartial
+        redactionRegions[index].rect = isPartial ? cover.partial : cover.full
+        redactedUIImage = nil
+    }
+
     func changeRedactionStrength(id: String, strength: Double) {
         bulkChangeRedactionStrength(ids: [id], strength: strength)
     }
@@ -1571,6 +1652,14 @@ final class ScrubberViewModel {
         let preset = config.outputFormat.exportPreset
         let formatTitle = config.outputFormat.title
         var originalsNotFound = 0
+        // Always Cover applies to batches as well: the matches join each photo's findings.
+        let terms = alwaysCoverList.terms
+        let scanWithAlwaysCover: @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput = { [scan] data, hints, progress in
+            let output = try await scan(data, hints, progress)
+            let covered = AlwaysCoverMatcher.results(terms: terms, lines: output.lines)
+            guard !covered.isEmpty else { return output }
+            return ScanOutput(results: PIIScanner.sorted(output.results + covered), lines: output.lines, coverage: output.coverage)
+        }
 
         for (index, source) in sources.enumerated() {
             if batchCancellationRequested || Task.isCancelled { break }
@@ -1584,7 +1673,7 @@ final class ScrubberViewModel {
                       hints: source.hints,
                       plan: ExportPlan(preset: preset, metadata: config.stripMetadata ? .allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])),
                       redactVisualPII: config.redactVisualPII,
-                      scan: scan
+                      scan: scanWithAlwaysCover
                   )
             else {
                 batchFailedCount += 1
