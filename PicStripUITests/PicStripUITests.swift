@@ -173,7 +173,6 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        app.descendants(matching: .any)["moreImportsButton"].firstMatch.tap()
         XCTAssertTrue(app.buttons["selectMultiplePhotosButton"].exists)
         XCTAssertTrue(app.buttons["browseFilesButton"].exists)
         XCTAssertFalse(app.buttons["scanDocumentButton"].exists)
@@ -200,7 +199,8 @@ final class PicStripUITests: XCTestCase {
         )
     }
 
-    /// With the scan button present, every import action must still be on screen and tappable.
+    /// With a camera, every import action is on the first screen at once — no
+    /// disclosure to open, no scrolling — and tappable.
     @MainActor
     func testHomeScreenFitsAllImportActionsWithScan() throws {
         let app = englishApp()
@@ -208,13 +208,11 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.buttons["tryDemoButton"].isHittable)
-        app.descendants(matching: .any)["moreImportsButton"].firstMatch.tap()
-        let identifiers = ["selectMultiplePhotosButton", "takePhotoButton", "scanDocumentButton", "browseFilesButton"]
+        let identifiers = ["selectPhotoButton", "takePhotoButton", "scanDocumentButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"]
         for identifier in identifiers {
-            reveal(app.buttons[identifier], in: app)
-            XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be reachable on the home screen.")
+            XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be on the first screen.")
         }
+        attachScreen("home")
     }
 
     /// The live viewfinder, run on a still image because the simulator has no
