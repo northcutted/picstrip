@@ -80,11 +80,11 @@ final class LiveDetectionTrackerTests: XCTestCase {
 
     func testAFindingKeepsItsIdentityAsItMoves() throws {
         var tracker = LiveDetectionTracker(smoothing: 1)
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
         let id = try XCTUnwrap(tracker.tracks.first?.id)
 
         let moved = email.offsetBy(dx: 0.02, dy: 0.01)
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: moved)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: moved, score: 0.9)])
 
         XCTAssertEqual(tracker.tracks.map(\.id), [id], "The same email, a little further along, is the same finding.")
         XCTAssertEqual(tracker.tracks.first?.box, moved)
@@ -92,8 +92,8 @@ final class LiveDetectionTrackerTests: XCTestCase {
 
     func testANewPositionIsEasedInto() throws {
         var tracker = LiveDetectionTracker(smoothing: 0.5)
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email.offsetBy(dx: 0.02, dy: 0))])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email.offsetBy(dx: 0.02, dy: 0), score: 0.9)])
 
         let box = try XCTUnwrap(tracker.tracks.first?.box)
         XCTAssertEqual(box.minX, email.minX + 0.01, accuracy: 0.0001)
@@ -102,7 +102,7 @@ final class LiveDetectionTrackerTests: XCTestCase {
     /// OCR misses a line now and then; the box should not blink out for it.
     func testAMissedPassFadesAFindingInsteadOfDroppingIt() {
         var tracker = LiveDetectionTracker(maximumMissedPasses: 2)
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
 
         tracker.update(with: [])
         XCTAssertEqual(tracker.tracks.map(\.missedPasses), [1])
@@ -114,10 +114,10 @@ final class LiveDetectionTrackerTests: XCTestCase {
 
     func testFindingItAgainRevivesIt() throws {
         var tracker = LiveDetectionTracker()
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
         let id = try XCTUnwrap(tracker.tracks.first?.id)
         tracker.update(with: [])
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
 
         XCTAssertEqual(tracker.tracks.map(\.id), [id])
         XCTAssertEqual(tracker.tracks.map(\.missedPasses), [0])
@@ -125,8 +125,8 @@ final class LiveDetectionTrackerTests: XCTestCase {
 
     func testDifferentKindsInTheSamePlaceAreDifferentFindings() {
         var tracker = LiveDetectionTracker()
-        tracker.update(with: [LiveDetection(type: .email, boundingBox: email)])
-        tracker.update(with: [LiveDetection(type: .link, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
+        tracker.update(with: [LiveDetection(type: .link, boundingBox: email, score: 0.9)])
 
         XCTAssertEqual(tracker.tracks.map(\.type), [.email, .link])
         XCTAssertEqual(tracker.tracks.map(\.missedPasses), [1, 0])
@@ -138,14 +138,14 @@ final class LiveDetectionTrackerTests: XCTestCase {
         let second = CGRect(x: 0.1, y: 0.36, width: 0.3, height: 0.04)
         var tracker = LiveDetectionTracker(smoothing: 1)
         tracker.update(with: [
-            LiveDetection(type: .phoneNumber, boundingBox: first),
-            LiveDetection(type: .phoneNumber, boundingBox: second)
+            LiveDetection(type: .phoneNumber, boundingBox: first, score: 0.9),
+            LiveDetection(type: .phoneNumber, boundingBox: second, score: 0.9)
         ])
         let ids = tracker.tracks.map(\.id)
 
         tracker.update(with: [
-            LiveDetection(type: .phoneNumber, boundingBox: second.offsetBy(dx: 0, dy: 0.005)),
-            LiveDetection(type: .phoneNumber, boundingBox: first.offsetBy(dx: 0, dy: 0.005))
+            LiveDetection(type: .phoneNumber, boundingBox: second.offsetBy(dx: 0, dy: 0.005), score: 0.9),
+            LiveDetection(type: .phoneNumber, boundingBox: first.offsetBy(dx: 0, dy: 0.005), score: 0.9)
         ])
 
         let byID = Dictionary(uniqueKeysWithValues: tracker.tracks.map { ($0.id, $0.box) })
@@ -160,9 +160,36 @@ final class LiveDetectionTrackerTests: XCTestCase {
         XCTAssertEqual(LiveDetectionTracker.matchScore(email, email.offsetBy(dx: 0, dy: 0.2)), 0)
     }
 
+    /// A finding's match strength follows the passes that see it, smoothed.
+    func testTheScoreIsSmoothedAcrossPasses() throws {
+        var tracker = LiveDetectionTracker(smoothing: 0.5)
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.9)])
+        tracker.update(with: [LiveDetection(type: .email, boundingBox: email, score: 0.5)])
+
+        let track = try XCTUnwrap(tracker.tracks.first)
+        XCTAssertEqual(track.score, 0.7, accuracy: 0.0001)
+        XCTAssertEqual(track.confidence, .medium)
+    }
+
+    /// A score hovering on a band boundary must not flip the label every pass.
+    func testTheBandChangesOnlyOnceClearlyPastABoundary() {
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.79, showing: .high), .high, "Just under the line: still strong.")
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.76, showing: .high), .medium)
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.81, showing: .medium), .medium, "Just over the line: still possible.")
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.84, showing: .medium), .high)
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.95, showing: .low), .high, "A jump across two bands is not held back.")
+        XCTAssertEqual(LiveDetectionTracker.confidence(for: 0.6, showing: .medium), .medium)
+    }
+
+    func testANewFindingShowsItsOwnBand() {
+        var tracker = LiveDetectionTracker()
+        tracker.update(with: [LiveDetection(type: .link, boundingBox: email, score: 0.45)])
+        XCTAssertEqual(tracker.tracks.first?.confidence, .low)
+    }
+
     func testRemoveAllForgetsEverything() {
         var tracker = LiveDetectionTracker()
-        tracker.update(with: [LiveDetection(type: .face, boundingBox: email)])
+        tracker.update(with: [LiveDetection(type: .face, boundingBox: email, score: 0.9)])
         tracker.removeAll()
         XCTAssertTrue(tracker.tracks.isEmpty)
     }
@@ -303,11 +330,11 @@ final class LiveScanSummaryTests: XCTestCase {
     func testKindsAreListedByRiskThenCount() {
         let box = CGRect(x: 0, y: 0, width: 0.1, height: 0.1)
         let summary = LiveScanSummary(tracks: [
-            LiveTrack(id: 0, type: .email, box: box),
-            LiveTrack(id: 1, type: .phoneNumber, box: box),
-            LiveTrack(id: 2, type: .phoneNumber, box: box),
-            LiveTrack(id: 3, type: .creditCard, box: box),
-            LiveTrack(id: 4, type: .link, box: box)
+            LiveTrack(id: 0, type: .email, box: box, score: 0.9),
+            LiveTrack(id: 1, type: .phoneNumber, box: box, score: 0.9),
+            LiveTrack(id: 2, type: .phoneNumber, box: box, score: 0.9),
+            LiveTrack(id: 3, type: .creditCard, box: box, score: 0.9),
+            LiveTrack(id: 4, type: .link, box: box, score: 0.9)
         ])
 
         XCTAssertEqual(summary.types, [.creditCard, .phoneNumber, .email, .link])
@@ -357,6 +384,9 @@ final class LiveScanTests: XCTestCase {
             "The line holding the email is one of the lines read."
         )
         XCTAssertGreaterThan(scan.textLines.count, scan.detections.count, "Every line read is reported, not just the sensitive ones.")
+        for detection in scan.detections {
+            XCTAssertTrue((0...1).contains(detection.score), "\(detection.type) has score \(detection.score).")
+        }
     }
 
     /// The viewfinder never shows names: they are not redacted until the user

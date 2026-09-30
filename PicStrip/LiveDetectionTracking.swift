@@ -14,8 +14,21 @@ nonisolated struct LiveTrack: Identifiable, Equatable, Sendable {
     /// Where it is in the stabilised space of `LiveMotion`: the frame it was
     /// found in, shifted back by the camera motion up to that frame.
     var box: CGRect
+    /// The match score, smoothed over the passes that saw it.
+    var score: Double
+    /// The match strength shown for it — `score`'s band, changed only once the
+    /// score is clearly past a boundary, so the label does not flicker.
+    var confidence: ConfidenceLevel
     /// Consecutive passes that have not seen it; zero while it is in view.
     var missedPasses = 0
+
+    init(id: Int, type: PIIType, box: CGRect, score: Double) {
+        self.id = id
+        self.type = type
+        self.box = box
+        self.score = score
+        self.confidence = ConfidenceLevel(score: score)
+    }
 }
 
 // MARK: - LiveDetectionTracker
@@ -67,8 +80,13 @@ nonisolated struct LiveDetectionTracker {
         for pair in pairs where !matchedTracks.contains(pair.track) && !matchedDetections.contains(pair.detection) {
             matchedTracks.insert(pair.track)
             matchedDetections.insert(pair.detection)
-            updated[pair.track].box = Self.blend(updated[pair.track].box, detections[pair.detection].boundingBox, by: smoothing)
-            updated[pair.track].missedPasses = 0
+            let detection = detections[pair.detection]
+            var track = updated[pair.track]
+            track.box = Self.blend(track.box, detection.boundingBox, by: smoothing)
+            track.score += (detection.score - track.score) * smoothing
+            track.confidence = Self.confidence(for: track.score, showing: track.confidence)
+            track.missedPasses = 0
+            updated[pair.track] = track
         }
 
         var next: [LiveTrack] = []
@@ -77,7 +95,7 @@ nonisolated struct LiveDetectionTracker {
             if track.missedPasses <= maximumMissedPasses { next.append(track) }
         }
         for (index, detection) in detections.enumerated() where !matchedDetections.contains(index) {
-            next.append(LiveTrack(id: nextID, type: detection.type, box: detection.boundingBox))
+            next.append(LiveTrack(id: nextID, type: detection.type, box: detection.boundingBox, score: detection.score))
             nextID += 1
         }
         tracks = next
@@ -99,6 +117,18 @@ nonisolated struct LiveDetectionTracker {
         let overlap = shared / (lhsArea + rhsArea - shared)
         let containment = shared / min(lhsArea, rhsArea)
         return overlap >= minimumOverlap || containment >= minimumContainment ? overlap : 0
+    }
+
+    /// How far past a band boundary a score must move before the band shown changes.
+    static let confidenceHysteresis = 0.03
+
+    /// The band to show for `score` when `current` is on screen: `score`'s own
+    /// band, unless it is within `confidenceHysteresis` of the boundary it crossed.
+    static func confidence(for score: Double, showing current: ConfidenceLevel) -> ConfidenceLevel {
+        let band = ConfidenceLevel(score: score)
+        guard band != current else { return current }
+        let settled = ConfidenceLevel(score: band > current ? score - confidenceHysteresis : score + confidenceHysteresis)
+        return settled == current ? current : band
     }
 
     static func blend(_ from: CGRect, _ to: CGRect, by amount: CGFloat) -> CGRect {
