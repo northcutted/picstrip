@@ -1048,26 +1048,6 @@ struct ContentView: View {
         .accessibilityIdentifier("editRedactionsButton")
     }
 
-    // MARK: - Risk helpers (used by edit-redactions row and other in-body callouts)
-
-    private func riskIcon(_ level: RiskLevel) -> String {
-        switch level {
-        case .critical: return "exclamationmark.octagon.fill"
-        case .high:     return "exclamationmark.triangle.fill"
-        case .medium:   return "info.circle.fill"
-        case .low:      return "checkmark.circle.fill"
-        }
-    }
-
-    private func riskColor(_ level: RiskLevel) -> Color {
-        switch level {
-        case .critical: return .red
-        case .high:     return .orange
-        case .medium:   return .blue
-        case .low:      return .green
-        }
-    }
-
 }
 
 // MARK: - Breathing gradient

@@ -6,7 +6,6 @@ import SwiftUI
 // never extracted into the string catalog, so it would stay English everywhere.
 private struct PIIEntry {
     let type: PIIType
-    let icon: String
     let color: Color
     let detail: LocalizedStringKey
 }
@@ -21,44 +20,44 @@ private struct MetadataEntry {
 
 private let visualEntries: [PIIEntry] = [
     // Contact
-    .init(type: .phoneNumber, icon: "phone.fill", color: .green, detail: "Detected via Apple's NLP text engine"),
-    .init(type: .email, icon: "envelope.fill", color: .blue, detail: "RFC-compliant address regex + NLP"),
+    .init(type: .phoneNumber, color: .green, detail: "Detected via Apple's NLP text engine"),
+    .init(type: .email, color: .blue, detail: "RFC-compliant address regex + NLP"),
     // Identity
-    .init(type: .address, icon: "map.fill", color: .orange, detail: "Street addresses via Apple's NLP text engine"),
-    .init(type: .socialSecurityNumber, icon: "person.text.rectangle.fill", color: .red, detail: "US SSN — 3-2-4 format with anti-zero guards"),
-    .init(type: .dateOfBirth, icon: "calendar", color: .purple, detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
-    .init(type: .nationalInsuranceNumber, icon: "person.badge.shield.checkmark.fill", color: .indigo, detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
-    .init(type: .governmentID, icon: "person.text.rectangle", color: .teal, detail: "Canadian SIN, Indian PAN/Aadhaar, Spanish DNI/NIE, Brazilian CPF, German Steuer-ID, Italian Codice Fiscale, French INSEE, Japanese My Number"),
+    .init(type: .address, color: .orange, detail: "Street addresses via Apple's NLP text engine"),
+    .init(type: .socialSecurityNumber, color: .red, detail: "US SSN — 3-2-4 format with anti-zero guards"),
+    .init(type: .dateOfBirth, color: .purple, detail: "MM/DD/YYYY and YYYY-MM-DD formats"),
+    .init(type: .nationalInsuranceNumber, color: .indigo, detail: "UK NI — two-letter prefix, six digits, A-D suffix"),
+    .init(type: .governmentID, color: .teal, detail: "Canadian SIN, Indian PAN/Aadhaar, Spanish DNI/NIE, Brazilian CPF, German Steuer-ID, Italian Codice Fiscale, French INSEE, Japanese My Number"),
     // Web
-    .init(type: .ipAddress, icon: "network", color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
-    .init(type: .macAddress, icon: "wifi", color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
-    .init(type: .link, icon: "link", color: .blue, detail: "URLs and web links"),
+    .init(type: .ipAddress, color: .cyan, detail: "IPv4 (four 0-255 octets) and IPv6"),
+    .init(type: .macAddress, color: .teal, detail: "Colon or hyphen-separated hardware addresses"),
+    .init(type: .link, color: .blue, detail: "URLs and web links"),
     // Vehicle
-    .init(type: .vehicleIdentificationNumber, icon: "car.fill", color: .brown, detail: "17-character ISO 3779 VIN (no I/O/Q)"),
-    .init(type: .licensePlate, icon: "rectangle.fill", color: .brown, detail: "California-style plates detected structurally; other formats require a nearby plate label"),
+    .init(type: .vehicleIdentificationNumber, color: .brown, detail: "17-character ISO 3779 VIN (no I/O/Q)"),
+    .init(type: .licensePlate, color: .brown, detail: "California-style plates detected structurally; other formats require a nearby plate label"),
     // Financial
-    .init(type: .creditCard, icon: "creditcard.fill", color: .pink, detail: "Visa, Mastercard, Amex, Discover — with or without spaces"),
-    .init(type: .iban, icon: "building.columns.fill", color: .brown, detail: "International bank account numbers (2-letter country code + check digits)"),
-    .init(type: .cryptoWallet, icon: "bitcoinsign.circle.fill", color: .orange, detail: "Ethereum (0x... 40 hex) and Bitcoin Bech32 (bc1...)"),
-    .init(type: .swiftBIC, icon: "globe", color: .teal, detail: "SWIFT/BIC bank codes — requires a SWIFT/BIC label nearby to prevent false positives"),
-    .init(type: .abaRoutingNumber, icon: "banknote.fill", color: .green, detail: "US ABA 9-digit routing numbers — requires a routing/ABA keyword nearby"),
+    .init(type: .creditCard, color: .pink, detail: "Visa, Mastercard, Amex, Discover — with or without spaces"),
+    .init(type: .iban, color: .brown, detail: "International bank account numbers (2-letter country code + check digits)"),
+    .init(type: .cryptoWallet, color: .orange, detail: "Ethereum (0x... 40 hex) and Bitcoin Bech32 (bc1...)"),
+    .init(type: .swiftBIC, color: .teal, detail: "SWIFT/BIC bank codes — requires a SWIFT/BIC label nearby to prevent false positives"),
+    .init(type: .abaRoutingNumber, color: .green, detail: "US ABA 9-digit routing numbers — requires a routing/ABA keyword nearby"),
     // Developer Secrets
-    .init(type: .awsAccessKey, icon: "cloud.fill", color: .orange, detail: "AWS Access Key IDs (AKIA... prefix)"),
-    .init(type: .githubToken, icon: "chevron.left.forwardslash.chevron.right", color: .gray, detail: "Classic ghp_, gho_, ghu_, ghs_, ghr_ tokens"),
-    .init(type: .googleAPIKey, icon: "key.horizontal.fill", color: .red, detail: "Google Cloud API keys (AIza... prefix)"),
-    .init(type: .openAIKey, icon: "sparkles", color: .purple, detail: "OpenAI API keys (sk- and sk-proj- formats)"),
-    .init(type: .slackToken, icon: "message.fill", color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
-    .init(type: .stripeKey, icon: "dollarsign.circle.fill", color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
-    .init(type: .genericPrivateKey, icon: "key.fill", color: .yellow, detail: "Multiline PEM private-key blocks, including their encoded contents"),
-    .init(type: .jwtToken, icon: "ellipsis.curlybraces", color: .cyan, detail: "JSON Web Tokens — double eyJ base64url prefix uniquely identifies the format"),
-    .init(type: .developerSecret, icon: "lock.shield.fill", color: .red, detail: "Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord bot tokens"),
-    .init(type: .connectionString, icon: "server.rack", color: .brown, detail: "Database/broker URIs with inline credentials: postgres, mysql, mongodb, redis, amqp"),
+    .init(type: .awsAccessKey, color: .orange, detail: "AWS Access Key IDs (AKIA... prefix)"),
+    .init(type: .githubToken, color: .gray, detail: "Classic ghp_, gho_, ghu_, ghs_, ghr_ tokens"),
+    .init(type: .googleAPIKey, color: .red, detail: "Google Cloud API keys (AIza... prefix)"),
+    .init(type: .openAIKey, color: .purple, detail: "OpenAI API keys (sk- and sk-proj- formats)"),
+    .init(type: .slackToken, color: .green, detail: "Bot, user, and app tokens (xox... prefix)"),
+    .init(type: .stripeKey, color: .indigo, detail: "Secret and publishable keys (sk_/pk_ + live/test)"),
+    .init(type: .genericPrivateKey, color: .yellow, detail: "Multiline PEM private-key blocks, including their encoded contents"),
+    .init(type: .jwtToken, color: .cyan, detail: "JSON Web Tokens — double eyJ base64url prefix uniquely identifies the format"),
+    .init(type: .developerSecret, color: .red, detail: "Anthropic, GitLab PAT, npm, HuggingFace, DigitalOcean, Twilio, SendGrid, Discord bot tokens"),
+    .init(type: .connectionString, color: .brown, detail: "Database/broker URIs with inline credentials: postgres, mysql, mongodb, redis, amqp"),
     // Vision-detected
-    .init(type: .face, icon: "face.dashed", color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
-    .init(type: .barcode, icon: "qrcode", color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
+    .init(type: .face, color: .pink, detail: "Human faces detected via Apple's on-device Face Rectangles model"),
+    .init(type: .barcode, color: .primary, detail: "QR codes and barcodes — decoded payload shown in the snippet (Wi-Fi passwords, vCards, URLs, MFA seeds)"),
     // Unstructured
-    .init(type: .personName, icon: "person.text.rectangle", color: .teal, detail: "People's names, found by Apple's on-device language model where Apple Intelligence is on. Listed, but not redacted until you switch them on"),
-    .init(type: .unstructuredCredential, icon: "note.text", color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
+    .init(type: .personName, color: .teal, detail: "People's names, found by Apple's on-device language model where Apple Intelligence is on. Listed, but not redacted until you switch them on"),
+    .init(type: .unstructuredCredential, color: .secondary, detail: "Whiteboard or sticky-note passwords detected via keyword + separator heuristic")
 ]
 
 private let metadataEntries: [MetadataEntry] = [
@@ -69,26 +68,6 @@ private let metadataEntries: [MetadataEntry] = [
     .init(name: "IPTC", icon: "person.2.fill", color: .purple, detail: "Press-agency fields: caption, keywords, creator credit, contact info, and copyright"),
     .init(name: "Apple Maker Note", icon: "iphone.gen2", color: .gray, detail: "Private Apple metadata: face detection data, HDR analysis, scene classification, front/rear camera ID")
 ]
-
-// MARK: - Risk Level display helpers
-
-private func riskColor(_ level: RiskLevel) -> Color {
-    switch level {
-    case .critical: return .red
-    case .high:     return .orange
-    case .medium:   return .blue
-    case .low:      return .green
-    }
-}
-
-private func riskIcon(_ level: RiskLevel) -> String {
-    switch level {
-    case .critical: return "exclamationmark.octagon.fill"
-    case .high:     return "exclamationmark.triangle.fill"
-    case .medium:   return "info.circle.fill"
-    case .low:      return "checkmark.circle.fill"
-    }
-}
 
 // MARK: - About view
 
@@ -296,7 +275,7 @@ struct AboutView: View {
                         VStack(spacing: 2) {
                             ForEach(visualEntries, id: \.type) { entry in
                                 detectionRow(
-                                    icon: entry.icon,
+                                    icon: entry.type.symbolName,
                                     color: entry.color,
                                     type: entry.type,
                                     detail: entry.detail
@@ -557,10 +536,10 @@ struct AboutView: View {
                     // Inline risk badge
                     Text(type.riskLevel.shortLabel)
                         .font(.caption2.weight(.semibold))
-                        .foregroundStyle(riskColor(type.riskLevel))
+                        .foregroundStyle(type.riskLevel.color)
                         .padding(.horizontal, 5)
                         .padding(.vertical, 1)
-                        .background(riskColor(type.riskLevel).opacity(0.12), in: Capsule())
+                        .background(type.riskLevel.color.opacity(0.12), in: Capsule())
                 }
 
                 Text(detail)
@@ -606,17 +585,17 @@ struct AboutView: View {
     /// Single risk-level explanatory row used inside the scoring disclosure group.
     private func riskLevelRow(_ level: RiskLevel) -> some View {
         HStack(alignment: .top, spacing: 10) {
-            Image(systemName: riskIcon(level))
+            Image(systemName: level.symbolName)
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 22, height: 22)
-                .background(riskColor(level), in: RoundedRectangle(cornerRadius: 5))
+                .background(level.color, in: RoundedRectangle(cornerRadius: 5))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(level.label)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(riskColor(level))
+                    .foregroundStyle(level.color)
 
                 Text(riskDescription(level))
                     .font(.caption2)
