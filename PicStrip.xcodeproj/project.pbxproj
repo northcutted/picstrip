@@ -44,6 +44,8 @@
 		CE96047AF07FA48A7E20EB5C /* ImageRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DA6420661FE58D8EF1A57C8 /* ImageRedactor.swift */; };
 		DC72DAD41244DA41A8058E94 /* Photos.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8DFB22CCF819AC347B4E633F /* Photos.framework */; };
 		E7BA6DC40737014742CBA7DD /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */; };
+		C0DEF4010000000000000001 /* test_list.png in Resources (unit) */ = {isa = PBXBuildFile; fileRef = C0DEF4020000000000000001 /* test_list.png */; };
+		C0DEF4010000000000000002 /* test_list.png in Resources (UI) */ = {isa = PBXBuildFile; fileRef = C0DEF4020000000000000001 /* test_list.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -113,6 +115,7 @@
 		D779E28A613915656383E7F6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		E0B898439C4F2D32F734067A /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		E5429861B58D7DC967E80ED5 /* PIIScanner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PIIScanner.swift; path = PicStripCore/PIIScanner.swift; sourceTree = SOURCE_ROOT; };
+		C0DEF4020000000000000001 /* test_list.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = test_list.png; path = Tests/Fixtures/test_list.png; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -185,6 +188,7 @@
 			children = (
 				C0DEF1000000000000000001 /* PicStripCore */,
 				2C0D1E192FA686B60032DDDA /* PicStrip */,
+				C0DEF4020000000000000001 /* test_list.png */,
 				2C0D1E272FA686B80032DDDA /* PicStripTests */,
 				2C0D1E312FA686B80032DDDA /* PicStripUITests */,
 				2C0D1E182FA686B60032DDDA /* Products */,
@@ -403,6 +407,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0DEF4010000000000000001 /* test_list.png in Resources (unit) */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,6 +415,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C0DEF4010000000000000002 /* test_list.png in Resources (UI) */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

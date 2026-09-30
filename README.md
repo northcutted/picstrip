@@ -59,7 +59,7 @@ Available in English and 16 more localizations, including separate Spanish for S
 - Protected, backup-excluded edit handoffs expire after 15 minutes and are consumed once. Export files are cleaned up on completion where possible, with an expiry sweep as a fallback.
 - Automatic detection can miss details. Failed required checks remain visible and require a deliberate manual-review confirmation in the editor; unattended visual workflows reject incomplete scans.
 
-The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permissions and required-reason APIs are covered in [DEVELOPMENT.md](DEVELOPMENT.md#privacy--security).
+The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permissions and required-reason APIs are covered in [DEVELOPMENT.md](docs/development/architecture.md#privacy--security).
 
 ---
 
@@ -130,7 +130,7 @@ open PicStrip.xcodeproj
 
 For checks, TestFlight, and App Store updates, start with [CI/CD: from a change to the App Store](docs/release-pipeline.md). The [workflow reference](docs/ci-cd/reference.md) is generated from source; `make docs` refreshes it and `make check-docs` catches drift. The pinned release platform targets SLSA Build Level 3 for the GitHub-built IPA.
 
-Translations are LLM-generated from the English source and edited inline; the rules and per-locale terms are in [DEVELOPMENT.md](DEVELOPMENT.md#localization) and the [localization glossary](docs/localization-glossary.md).
+Translations are LLM-generated from the English source and edited inline; the rules and per-locale terms are in the [localization guide](docs/development/localization.md#localization) and the [localization glossary](docs/localization-glossary.md).
 
 ---
 

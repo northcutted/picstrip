@@ -23,8 +23,9 @@
     "mode": "consumer",
     "output_dir": "docs/ci-cd",
     "pages": [
-      "docs/release-pipeline.md",
-      "docs/ci-cd"
+      "README.md",
+      "DEVELOPMENT.md",
+      "docs"
     ],
     "navigation": [
       {

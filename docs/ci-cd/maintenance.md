@@ -32,7 +32,7 @@ For local analysis/tests, use `make analyze` and `make test` with the configured
 | Shared tools, dependency locks or generator | Actions repository | Platform checks and a consumer run before adopting |
 | Platform adoption | `python3 scripts/update_release_platform.py FULL_REVIEWED_SHA` | Sync, regenerate and review pins/producer approvals; full CI |
 
-The [launcher](../../scripts/ios_release.py) forwards to the supported platform CLI. Existing `scripts/ci/toolchain.py`, `configure_repository.py` and `benchmark.py` paths are compatibility shims. They contain no duplicate implementation. Do not restore a separate app Ruby lockfile or copy platform code here.
+The [launcher](../../scripts/ios_release.py) forwards to the supported platform CLI. Use its `toolchain`, `controls-configure` and `benchmark` subcommands directly. Do not restore a separate app Ruby lockfile or copy platform code here.
 
 ## Agent reading and editing recipe
 

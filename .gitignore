@@ -72,7 +72,7 @@ build/
 #     our own device frame in the Python compositor and don't ship frameit
 #     output.
 #   - ``processed/`` (final marketing PNGs) is tracked via Git LFS — that's
-#     what ``screenshots.yml`` uploads to App Store Connect.
+#     the release input reviewed through screenshot pull requests.
 fastlane/screenshots/**/*.png
 !fastlane/screenshots/en-US/*.png
 !fastlane/screenshots/processed/**/*.png

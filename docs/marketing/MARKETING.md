@@ -28,13 +28,13 @@ python3 scripts/audit_xcstrings.py
 
 The first check validates lengths, presence and release-note language boundaries. The second checks app translations, placeholders and plural coverage. Neither certifies native-language quality. Inspect representative localized screens and review terminology in [the glossary](../localization-glossary.md).
 
-Keep engineering details in the GitHub release notes. `scripts/write_release_notes.sh` validates the curated copy. The compatibility metadata packager preserves it unchanged.
+Keep engineering details in the GitHub release notes. Run `python3 scripts/validate_store_metadata.py` to validate curated copy. The verified platform packages it for release.
 
 ## Prepare screenshots
 
 Use the configured capture workflow and actual app UI. Lead with a cleaned result and redaction controls, then show metadata, full-image review and the fictional sample. Five screens × two device classes × 17 locales produces 170 images. Verify count, dimensions, text fit, order and source identity in the candidate manifest.
 
-The screenshot workflow prepares assets for review; publishing a release and deploying to Apple are separate actions. Follow [release operations](../release-pipeline.md) and [the 1.7.0 acceptance record](../reviews/1.7.0-implementation-status.md).
+The screenshot workflow prepares assets for review; publishing a release and deploying to Apple are separate actions. Follow [release operations](../release-pipeline.md) and [the 1.7.0 acceptance record](../releases/1.7.0-acceptance.md).
 
 ## Submission details
 
