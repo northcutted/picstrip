@@ -398,7 +398,7 @@ private struct LiveDetectionLayer: View {
     var body: some View {
         let placed = placedTracks
         let placements = showsRedactionPreview ? [:] : LiveLabelLayout.place(
-            placed.map { LiveLabelLayout.Item(id: $0.track.id, box: $0.rect, labelSize: LiveDetectionLabel.size(for: $0.track.type)) },
+            placed.map { LiveLabelLayout.Item(id: $0.track.id, box: $0.rect, labelSize: LiveDetectionLabel.size(for: $0.track.type, confidence: $0.track.confidence)) },
             in: labelBounds,
             avoiding: obstacles,
             textLines: textLines
@@ -442,7 +442,7 @@ private struct LiveDetectionLayer: View {
                 let color = track.type.riskLevel.color
                 shape
                     .fill(color.opacity(0.16))
-                    .strokeBorder(color, lineWidth: 2)
+                    .strokeBorder(color, style: Self.outline(for: track.confidence))
                     .shadow(color: color.opacity(0.6), radius: 5)
             }
         }
@@ -453,12 +453,22 @@ private struct LiveDetectionLayer: View {
         .transition(reduceMotion ? .opacity : .scale(scale: 1.15).combined(with: .opacity))
     }
 
+    /// Match strength at a glance, even where a finding only has a badge: a
+    /// strong match is outlined solid, a possible one dashed, a tentative one dotted.
+    private static func outline(for confidence: ConfidenceLevel) -> StrokeStyle {
+        switch confidence {
+        case .high:   return StrokeStyle(lineWidth: 2)
+        case .medium: return StrokeStyle(lineWidth: 2, lineCap: .round, dash: [7, 4])
+        case .low:    return StrokeStyle(lineWidth: 2, lineCap: .round, dash: [0.5, 4])
+        }
+    }
+
     @ViewBuilder
     private func label(for track: LiveTrack, in rect: CGRect, placement: LiveLabelLayout.Placement) -> some View {
         Group {
             switch placement {
             case .label(let frame):
-                LiveDetectionLabel(type: track.type)
+                LiveDetectionLabel(type: track.type, confidence: track.confidence)
                     .frame(width: frame.width, height: frame.height)
                     .position(x: frame.midX, y: frame.midY)
             case .badge:
@@ -477,23 +487,29 @@ private struct LiveDetectionLayer: View {
 
 // MARK: - LiveDetectionLabel
 
-/// A finding's kind, in its risk colour.  Sized ahead of layout so labels can be
-/// kept from covering each other.
+/// A finding's kind and match strength, in its risk colour.  Sized ahead of
+/// layout so labels can be kept from covering each other.
+///
+/// Match strength, not a percentage: like the editor, the viewfinder never
+/// presents the heuristic score as a probability (see "Match strength" in About).
 private struct LiveDetectionLabel: View {
     let type: PIIType
+    let confidence: ConfidenceLevel
 
     /// Long names ("Physical Credential / Password") are cut short rather than
-    /// covering the picture.
-    private static let maximumWidth: CGFloat = 190
+    /// covering the picture; the match strength never is.
+    private static let maximumWidth: CGFloat = 240
     private static let horizontalPadding: CGFloat = 7
     private static let verticalPadding: CGFloat = 3
     private static let spacing: CGFloat = 4
+    private static let dividerWidth: CGFloat = 1
 
     /// Follows Dynamic Type, up to a size that still leaves the picture visible.
-    private static var font: UIFont {
-        UIFontMetrics(forTextStyle: .caption1).scaledFont(
-            for: .systemFont(ofSize: 12, weight: .semibold), maximumPointSize: 18
-        )
+    private static var font: UIFont { scaledFont(weight: .semibold) }
+    private static var strengthFont: UIFont { scaledFont(weight: .regular) }
+
+    private static func scaledFont(weight: UIFont.Weight) -> UIFont {
+        UIFontMetrics(forTextStyle: .caption1).scaledFont(for: .systemFont(ofSize: 12, weight: weight), maximumPointSize: 18)
     }
 
     var body: some View {
@@ -502,6 +518,16 @@ private struct LiveDetectionLabel: View {
             Text(type.description)
                 .lineLimit(1)
                 .truncationMode(.tail)
+            Rectangle()
+                .fill(.white.opacity(0.5))
+                .frame(width: Self.dividerWidth)
+                .padding(.vertical, Self.verticalPadding + 1)
+            Text(confidence.matchLabel)
+                .font(Font(Self.strengthFont))
+                .opacity(0.9)
+                .lineLimit(1)
+                .fixedSize()
+                .layoutPriority(1)
         }
         .font(Font(Self.font))
         .foregroundStyle(.white)
@@ -511,12 +537,14 @@ private struct LiveDetectionLabel: View {
         .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
     }
 
-    static func size(for type: PIIType) -> CGSize {
+    static func size(for type: PIIType, confidence: ConfidenceLevel) -> CGSize {
         let font = Self.font
-        let text = (type.description as NSString).size(withAttributes: [.font: font])
+        let name = (type.description as NSString).size(withAttributes: [.font: font])
+        let strength = (confidence.matchLabel as NSString).size(withAttributes: [.font: strengthFont])
         let symbol = UIImage(systemName: type.symbolName, withConfiguration: UIImage.SymbolConfiguration(font: font))
         // A point of slack each side: SwiftUI rounds text and symbol widths up.
-        let width = ceil(text.width) + ceil(symbol?.size.width ?? font.lineHeight) + spacing + horizontalPadding * 2 + 2
+        let width = ceil(symbol?.size.width ?? font.lineHeight) + ceil(name.width) + dividerWidth + ceil(strength.width)
+            + spacing * 3 + horizontalPadding * 2 + 2
         return CGSize(width: min(width, maximumWidth), height: ceil(font.lineHeight) + verticalPadding * 2)
     }
 }
