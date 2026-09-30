@@ -358,14 +358,10 @@ struct ContentView: View {
                     ScannerHeroView()
                         .frame(height: 170)
                         .accessibilityHidden(true)
-                    VStack(spacing: 12) {
-                        PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
-                            PillLabel(icon: "photo.badge.plus", text: "Select a Photo")
-                        }
-                        .buttonStyle(.glassProminent)
-                        .buttonBorderShape(.capsule)
-                        .accessibilityIdentifier("selectPhotoButton")
-                        .accessibilityLabel("Select a photo from your library")
+                    VStack(spacing: 20) {
+                        importButton(primaryImportAction, isRow: true)
+                            .buttonStyle(.glassProminent)
+                            .buttonBorderShape(.capsule)
 
                         importGrid
                     }
@@ -405,80 +401,96 @@ struct ContentView: View {
     /// Every other way in, at once: two tiles to a row, or one full-width row
     /// each at accessibility text sizes, where a tile would be too narrow.
     private var importGrid: some View {
-        let columns = dynamicTypeSize.isAccessibilitySize ? 1 : 2
-        let actions = importActions
+        let isCompact = dynamicTypeSize.isAccessibilitySize
+        let columns = isCompact ? 1 : 2
+        let actions = importActions.filter { $0 != primaryImportAction }
         return Grid(horizontalSpacing: 12, verticalSpacing: 12) {
             ForEach(Array(stride(from: 0, to: actions.count, by: columns)), id: \.self) { start in
                 GridRow {
                     ForEach(actions[start..<min(start + columns, actions.count)], id: \.self) { action in
-                        importButton(action)
+                        importButton(action, isRow: isCompact)
+                            .buttonStyle(.glass)
+                            .buttonBorderShape(isCompact ? .capsule : .roundedRectangle(radius: 22))
                             .frame(maxHeight: .infinity)
                     }
                 }
             }
         }
+        // Tiles in a row share its height, but the grid takes only what its
+        // tallest tiles need, not the screen's spare height.
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private enum ImportAction: Hashable {
-        case camera, documentScanner, multiplePhotos, files
+        case camera, photo, documentScanner, multiplePhotos, files
     }
 
     /// The camera actions only where there is a camera to use.
     private var importActions: [ImportAction] {
         var actions: [ImportAction] = []
         if CameraCaptureView.isAvailable { actions.append(.camera) }
+        actions.append(.photo)
         if DocumentScannerView.isAvailable { actions.append(.documentScanner) }
         actions += [.multiplePhotos, .files]
         return actions
     }
 
+    /// Taking a photo leads, so it goes straight through the live viewfinder;
+    /// without a camera, choosing one from the library does.
+    private var primaryImportAction: ImportAction {
+        CameraCaptureView.isAvailable ? .camera : .photo
+    }
+
+    /// The button for `action`, unstyled: the caller makes it the prominent
+    /// button or a tile.  `isRow` lays the label out as a full-width row.
     @ViewBuilder
-    private func importButton(_ action: ImportAction) -> some View {
-        let isCompact = dynamicTypeSize.isAccessibilitySize
-        Group {
-            switch action {
-            case .camera:
-                Button {
-                    haptic(.light)
-                    openCamera { isShowingLiveCamera = true }
-                } label: {
-                    ImportTileLabel(icon: "camera", text: "Take Photo", isRow: isCompact)
-                }
-                .accessibilityIdentifier("takePhotoButton")
-                .accessibilityLabel("Take a photo with the camera")
-            case .documentScanner:
-                Button {
-                    haptic(.light)
-                    openCamera { isShowingScanner = true }
-                } label: {
-                    ImportTileLabel(icon: "doc.viewfinder", text: "Scan Document", isRow: isCompact)
-                }
-                .accessibilityIdentifier("scanDocumentButton")
-                .accessibilityLabel("Scan a document with the camera")
-            case .multiplePhotos:
-                PhotosPicker(
-                    selection: $viewModel.batchItems,
-                    maxSelectionCount: 0,
-                    matching: .images,
-                    photoLibrary: .shared()
-                ) {
-                    ImportTileLabel(icon: "photo.stack", text: "Select Multiple Photos", isRow: isCompact)
-                }
-                .accessibilityIdentifier("selectMultiplePhotosButton")
-                .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
-            case .files:
-                Button {
-                    haptic(.light)
-                    isShowingFilePicker = true
-                } label: {
-                    ImportTileLabel(icon: "folder", text: "Browse Files", isRow: isCompact)
-                }
-                .accessibilityIdentifier("browseFilesButton")
-                .accessibilityLabel("Browse files to select an image")
+    private func importButton(_ action: ImportAction, isRow: Bool) -> some View {
+        switch action {
+        case .camera:
+            Button {
+                haptic(.light)
+                openCamera { isShowingLiveCamera = true }
+            } label: {
+                ImportTileLabel(icon: "camera", text: "Take Photo", isRow: isRow)
             }
+            .accessibilityIdentifier("takePhotoButton")
+            .accessibilityLabel("Take a photo with the camera")
+        case .photo:
+            PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
+                ImportTileLabel(icon: "photo.badge.plus", text: "Select a Photo", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectPhotoButton")
+            .accessibilityLabel("Select a photo from your library")
+        case .documentScanner:
+            Button {
+                haptic(.light)
+                openCamera { isShowingScanner = true }
+            } label: {
+                ImportTileLabel(icon: "doc.viewfinder", text: "Scan Document", isRow: isRow)
+            }
+            .accessibilityIdentifier("scanDocumentButton")
+            .accessibilityLabel("Scan a document with the camera")
+        case .multiplePhotos:
+            PhotosPicker(
+                selection: $viewModel.batchItems,
+                maxSelectionCount: 0,
+                matching: .images,
+                photoLibrary: .shared()
+            ) {
+                ImportTileLabel(icon: "photo.stack", text: "Select Multiple Photos", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectMultiplePhotosButton")
+            .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
+        case .files:
+            Button {
+                haptic(.light)
+                isShowingFilePicker = true
+            } label: {
+                ImportTileLabel(icon: "folder", text: "Browse Files", isRow: isRow)
+            }
+            .accessibilityIdentifier("browseFilesButton")
+            .accessibilityLabel("Browse files to select an image")
         }
-        .buttonStyle(.glass)
-        .buttonBorderShape(isCompact ? .capsule : .roundedRectangle(radius: 22))
     }
 
     // MARK: - Breathing gradient

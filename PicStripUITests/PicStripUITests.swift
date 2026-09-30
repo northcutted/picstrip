@@ -208,10 +208,14 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        let identifiers = ["selectPhotoButton", "takePhotoButton", "scanDocumentButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"]
+        let identifiers = ["takePhotoButton", "selectPhotoButton", "scanDocumentButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"]
         for identifier in identifiers {
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be on the first screen.")
         }
+        XCTAssertLessThan(
+            app.buttons["takePhotoButton"].frame.maxY, app.buttons["selectPhotoButton"].frame.minY,
+            "With a camera, Take Photo is the main button, above the grid."
+        )
         attachScreen("home")
     }
 
