@@ -42,21 +42,8 @@ struct ContentView: View {
     /// Shown when the camera permission has been refused.
     @State private var isShowingCameraDenied = false
 
-    /// Rotating taglines shown beneath the app title on the home screen.
-    private let mottos: [LocalizedStringKey] = [
-        "Share the photo. Not the story behind it.",
-        "Clean photos. Clear conscience.",
-        "Your moment, minus the metadata.",
-        "Photos without the fingerprints.",
-        "Strip the data. Keep the memory."
-    ]
-
-    /// Index of the currently displayed motto.
-    @State private var mottoIndex = 0
-    @State private var moreImportsExpanded = false
-
     @Environment(IntentRouter.self) private var intentRouter
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
 
     private var hasPhoto: Bool { viewModel.inputImage != nil }
@@ -371,94 +358,28 @@ struct ContentView: View {
                     ScannerHeroView()
                         .frame(height: 170)
                         .accessibilityHidden(true)
-                    VStack(spacing: 12) {
-                        PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
-                            PillLabel(icon: "photo.badge.plus", text: "Select a Photo")
-                        }
-                        .buttonStyle(.glassProminent)
-                        .accessibilityIdentifier("selectPhotoButton")
-                        .accessibilityLabel("Select a photo from your library")
+                    VStack(spacing: 20) {
+                        importButton(primaryImportAction, isRow: true)
+                            .buttonStyle(.glassProminent)
+                            .buttonBorderShape(.capsule)
 
+                        importGrid
+                    }
+                    VStack(spacing: 2) {
                         Button {
                             Task { await viewModel.loadDemo() }
                         } label: {
-                            PillLabel(icon: "sparkles", text: "Try a sample")
+                            Label("Try a sample", systemImage: "sparkles")
+                                .font(.callout.weight(.semibold))
+                                .frame(minHeight: 44)
                         }
-                        .buttonStyle(.glass)
+                        .buttonStyle(.borderless)
                         .accessibilityIdentifier("tryDemoButton")
                         Text("A fictional photo. No library access needed.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
-
-                        Button {
-                            withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.2)) { moreImportsExpanded.toggle() }
-                        } label: {
-                            HStack {
-                                Text("More ways to import")
-                                Spacer()
-                                Image(systemName: moreImportsExpanded ? "chevron.down" : "chevron.right")
-                            }
-                            .frame(minHeight: 44)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .foregroundStyle(Color.accentColor)
-                        .accessibilityIdentifier("moreImportsButton")
-                        .accessibilityValue(moreImportsExpanded ? "Expanded" : "Collapsed")
-                        if moreImportsExpanded {
-                            VStack(spacing: 12) {
-                                PhotosPicker(
-                                    selection: $viewModel.batchItems,
-                                    maxSelectionCount: 0,
-                                    matching: .images,
-                                    photoLibrary: .shared()
-                                ) {
-                                    PillLabel(icon: "photo.stack", text: "Select Multiple Photos")
-                                }
-                                .buttonStyle(.glass)
-                                .accessibilityIdentifier("selectMultiplePhotosButton")
-                                .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
-
-                                if CameraCaptureView.isAvailable {
-                                    Button {
-                                        haptic(.light)
-                                        openCamera { isShowingLiveCamera = true }
-                                    } label: {
-                                        PillLabel(icon: "camera", text: "Take Photo")
-                                    }
-                                    .buttonStyle(.glass)
-                                    .accessibilityIdentifier("takePhotoButton")
-                                    .accessibilityLabel("Take a photo with the camera")
-                                }
-
-                                if DocumentScannerView.isAvailable {
-                                    Button {
-                                        haptic(.light)
-                                        openCamera { isShowingScanner = true }
-                                    } label: {
-                                        PillLabel(icon: "doc.viewfinder", text: "Scan Document")
-                                    }
-                                    .buttonStyle(.glass)
-                                    .accessibilityIdentifier("scanDocumentButton")
-                                    .accessibilityLabel("Scan a document with the camera")
-                                }
-
-                                Button {
-                                    haptic(.light)
-                                    isShowingFilePicker = true
-                                } label: {
-                                    PillLabel(icon: "folder", text: "Browse Files")
-                                }
-                                .buttonStyle(.glass)
-                                .accessibilityIdentifier("browseFilesButton")
-                                .accessibilityLabel("Browse files to select an image")
-
-                            }
-                            .padding(.top, 12)
-                        }
                     }
-                    .buttonBorderShape(.capsule)
                     if let error = viewModel.errorMessage {
                         Text(error).font(.footnote).foregroundStyle(.red)
                     }
@@ -471,6 +392,104 @@ struct ContentView: View {
                 .frame(maxWidth: 520)
                 .frame(maxWidth: .infinity, minHeight: geometry.size.height)
             }
+            // The bar above is transparent; content scrolling under it fades out
+            // instead of running into the clock.
+            .scrollEdgeEffectStyle(.soft, for: .top)
+        }
+    }
+
+    /// Every other way in, at once: two tiles to a row, or one full-width row
+    /// each at accessibility text sizes, where a tile would be too narrow.
+    private var importGrid: some View {
+        let isCompact = dynamicTypeSize.isAccessibilitySize
+        let columns = isCompact ? 1 : 2
+        let actions = importActions.filter { $0 != primaryImportAction }
+        return Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+            ForEach(Array(stride(from: 0, to: actions.count, by: columns)), id: \.self) { start in
+                GridRow {
+                    ForEach(actions[start..<min(start + columns, actions.count)], id: \.self) { action in
+                        importButton(action, isRow: isCompact)
+                            .buttonStyle(.glass)
+                            .buttonBorderShape(isCompact ? .capsule : .roundedRectangle(radius: 22))
+                            .frame(maxHeight: .infinity)
+                    }
+                }
+            }
+        }
+        // Tiles in a row share its height, but the grid takes only what its
+        // tallest tiles need, not the screen's spare height.
+        .fixedSize(horizontal: false, vertical: true)
+    }
+
+    private enum ImportAction: Hashable {
+        case camera, photo, documentScanner, multiplePhotos, files
+    }
+
+    /// The camera actions only where there is a camera to use.
+    private var importActions: [ImportAction] {
+        var actions: [ImportAction] = []
+        if CameraCaptureView.isAvailable { actions.append(.camera) }
+        actions.append(.photo)
+        if DocumentScannerView.isAvailable { actions.append(.documentScanner) }
+        actions += [.multiplePhotos, .files]
+        return actions
+    }
+
+    /// Taking a photo leads, so it goes straight through the live viewfinder;
+    /// without a camera, choosing one from the library does.
+    private var primaryImportAction: ImportAction {
+        CameraCaptureView.isAvailable ? .camera : .photo
+    }
+
+    /// The button for `action`, unstyled: the caller makes it the prominent
+    /// button or a tile.  `isRow` lays the label out as a full-width row.
+    @ViewBuilder
+    private func importButton(_ action: ImportAction, isRow: Bool) -> some View {
+        switch action {
+        case .camera:
+            Button {
+                haptic(.light)
+                openCamera { isShowingLiveCamera = true }
+            } label: {
+                ImportTileLabel(icon: "camera", text: "Take Photo", isRow: isRow)
+            }
+            .accessibilityIdentifier("takePhotoButton")
+            .accessibilityLabel("Take a photo with the camera")
+        case .photo:
+            PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
+                ImportTileLabel(icon: "photo.badge.plus", text: "Select a Photo", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectPhotoButton")
+            .accessibilityLabel("Select a photo from your library")
+        case .documentScanner:
+            Button {
+                haptic(.light)
+                openCamera { isShowingScanner = true }
+            } label: {
+                ImportTileLabel(icon: "doc.viewfinder", text: "Scan Document", isRow: isRow)
+            }
+            .accessibilityIdentifier("scanDocumentButton")
+            .accessibilityLabel("Scan a document with the camera")
+        case .multiplePhotos:
+            PhotosPicker(
+                selection: $viewModel.batchItems,
+                maxSelectionCount: 0,
+                matching: .images,
+                photoLibrary: .shared()
+            ) {
+                ImportTileLabel(icon: "photo.stack", text: "Select Multiple Photos", isRow: isRow)
+            }
+            .accessibilityIdentifier("selectMultiplePhotosButton")
+            .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
+        case .files:
+            Button {
+                haptic(.light)
+                isShowingFilePicker = true
+            } label: {
+                ImportTileLabel(icon: "folder", text: "Browse Files", isRow: isRow)
+            }
+            .accessibilityIdentifier("browseFilesButton")
+            .accessibilityLabel("Browse files to select an image")
         }
     }
 
@@ -1117,6 +1136,37 @@ private struct BreathingGradient: View {
         )
         .animation(reduceMotion ? nil : .easeInOut(duration: blob.period).repeatForever(autoreverses: true)) {
             $0.opacity(reduceMotion ? blob.still / blob.peak : (bright ? 1 : blob.floor / blob.peak))
+        }
+    }
+}
+
+// MARK: - Import tile label
+
+/// An import action's icon and name: stacked in a tile of the home screen's
+/// grid, or side by side in a full-width row at accessibility text sizes.
+///
+/// `nonisolated` for the same reason as `PillLabel`: `PhotosPicker` builds its
+/// label in a nonisolated closure.
+nonisolated private struct ImportTileLabel: View {
+    let icon: String
+    let text: LocalizedStringKey
+    let isRow: Bool
+
+    var body: some View {
+        if isRow {
+            PillLabel(icon: icon, text: text)
+        } else {
+            VStack(spacing: 8) {
+                Image(systemName: icon)
+                    .font(.title2)
+                    .accessibilityHidden(true)
+                Text(text)
+                    .font(.footnote.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .padding(.vertical, 12)
         }
     }
 }
