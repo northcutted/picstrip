@@ -208,6 +208,11 @@ struct ContentView: View {
             else { return }
             await viewModel.loadData(data)
         }
+        // PICSTRIP_LIVE_CAMERA_FIXTURE opens the viewfinder on a still image,
+        // which is the only way to run it on the simulator.
+        .task {
+            if LiveCameraFixture.isConfigured { isShowingLiveCamera = true }
+        }
         .confirmationDialog("Use a smaller copy?", isPresented: $viewModel.showResizeOffer, titleVisibility: .visible) {
             Button("Use smaller copy") { Task { await viewModel.useSmallerCopy() } }
             Button("Cancel", role: .cancel) { viewModel.discardLargeImage() }

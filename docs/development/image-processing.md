@@ -74,10 +74,11 @@ struct PIIScanner {
     func scanImage(data: Data, hints: ScanHints = .none) async throws -> [DetectionResult]
     /// scanImage plus the recognised lines, for the on-device name pass.
     func scan(data: Data, hints: ScanHints = .none) async throws -> ScanOutput
-    /// Advisory boxes for one camera frame — viewfinder only, never stored.
-    static func liveBoxes(in pixelBuffer: CVPixelBuffer,
-                          orientation: CGImagePropertyOrientation = .up,
-                          textLevel: RecognizeTextRequest.RecognitionLevel = .accurate) async -> [CGRect]
+    /// What one camera frame shows — finding types and boxes, and the lines
+    /// read — for the viewfinder only, never stored.
+    static func liveScan(in pixelBuffer: CVPixelBuffer,
+                         orientation: CGImagePropertyOrientation = .up,
+                         textLevel: RecognizeTextRequest.RecognitionLevel = .accurate) async -> LiveFrameScan
 }
 ```
 

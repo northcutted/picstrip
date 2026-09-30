@@ -34,7 +34,8 @@
         3B52.1: file sizes of images explicitly chosen through system pickers
         are checked before reading. File metadata is not used to fingerprint.
         35F9.1: elapsed time between live-camera frames limits local analysis
-        frequency. Uptime and frame timing are not stored or transmitted.
+        frequency and measures how fast the camera moves, to keep the overlay
+        on its content. Uptime and frame timing are not stored or transmitted.
 
         PicStrip does not read or write UserDefaults. Editing sessions have no
         persistent history; private handoff/export files have bounded lifetimes.

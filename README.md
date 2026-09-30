@@ -35,7 +35,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
 | **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
-| **Take Photo** | An advisory live viewfinder; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
+| **Take Photo** | An advisory live viewfinder that outlines and names what it would redact, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
 | **Scan Document** | Scan paper into the editor; multi-page scans use batch. Captures are not automatically saved to Photos |
 | **Import Anywhere** | Photos, Files, paste, drag and drop; review the supplied image and metadata |
 | **Batch Processing** | Process sequentially with a shared policy; incomplete visual scans are skipped, successful copies are retained, and cancellation stops future saves |
