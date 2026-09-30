@@ -24,7 +24,7 @@ To request preparation manually, run `gh workflow run main.yml --ref main`. This
 
 ## Prepare an App Store submission
 
-1. Finish device acceptance on the exact TestFlight build. For the current remediation, use the [1.7.0 acceptance checklist](../reviews/1.7.0-implementation-status.md#final-acceptance-checklist).
+1. Finish device acceptance on the exact TestFlight build. For the current remediation, use the [1.7.0 acceptance checklist](../releases/1.7.0-acceptance.md#final-acceptance-checklist).
 2. Run **Release** with **Prepare App Store submission** and the successful TestFlight run URL. The platform verifies both handoffs and reads back the Apple build before reusing it, without another transfer.
 3. Follow the resulting **App Store Deploy (internal)** run. Publication verifies all evidence before publishing an immutable GitHub release; deployment stages that exact build, metadata, screenshots, and supported declarations.
 4. Inspect staging's build identity, metadata differences, screenshot coverage, and release policy. Approve the protected **production** job only when ready to request Apple review. Apple's review and eventual availability remain separate service states.

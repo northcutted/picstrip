@@ -20,7 +20,7 @@ help:
 	@echo "  make lint                         Run SwiftLint"
 	@echo "  make analyze                      Run xcodebuild static analysis"
 	@echo "  make test                         Run PicStripTests on the simulator"
-	@echo "  make test-fixture                 Regenerate the OCR test fixture (PicStripUITests/test_list.png)"
+	@echo "  make test-fixture                 Regenerate the OCR test fixture (Tests/Fixtures/test_list.png)"
 	@echo "  make build                        Build and export build/application.ipa"
 	@echo "  make metadata-only RELEASE_TAG=vX.Y.Z METADATA_COMMIT=<sha>  Stage metadata through Release"
 	@echo "  make audit-localization           Check for unlocalized literals and string catalog gaps"
@@ -58,15 +58,15 @@ analyze:
 test:
 	$(PLATFORM) qa test
 
-# Regenerates the OCR test fixture (PicStripUITests/test_list.png) from
+# Regenerates the OCR test fixture (Tests/Fixtures/test_list.png) from
 # scripts/make_fixture.py. The fixture image is committed; this target only
 # needs to run when the fixture itself is being changed (e.g. to add a new
 # PII type to the OCR-detection scenarios). Requires Pillow:
 #   pip3 install --user -r scripts/requirements.txt
 test-fixture:
 	python3 scripts/make_fixture.py \
-		--reference PicStripUITests/test_list.png \
-		--out PicStripUITests/test_list.png
+		--reference Tests/Fixtures/test_list.png \
+		--out Tests/Fixtures/test_list.png
 
 build:
 	$(PLATFORM) archive --version "$(MARKETING_VERSION)" --build-number "$(BUILD_NUMBER)"

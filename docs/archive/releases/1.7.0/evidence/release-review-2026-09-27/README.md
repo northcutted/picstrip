@@ -1,6 +1,6 @@
 **PicStrip release-review evidence — 27 September 2026**
 
-This directory accompanies [the review](/Users/eddie/Development/PicStrip/docs/reviews/1.7.0-2026-09-27.md). Reviewed source: c7eabd3b4b24f35059bc0df56b9ae455b49caf4f.
+This directory accompanies [the review](../../reviews/1.7.0-2026-09-27.md). Reviewed source: c7eabd3b4b24f35059bc0df56b9ae455b49caf4f.
 
 **What is retained**
 
@@ -28,7 +28,7 @@ The temporary diagnostic source files were removed from their test-target folder
 
 **Reproduction**
 
-Working directory: /Users/eddie/Development/PicStrip.
+Run the commands from the repository root.
 
 The local simulator was iPhone 17, iOS 27.0, identifier 473CA813-9A41-4E62-B1CA-377553FDB87E. Xcode was 27.0 beta build 27A5194q. Discover an available destination on another machine and use the pinned release Xcode for final acceptance.
 

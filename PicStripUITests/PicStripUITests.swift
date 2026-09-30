@@ -46,24 +46,7 @@ final class PicStripUITests: XCTestCase {
     }
 
     private func fixtureImageURL() -> URL? {
-        let bundle = Bundle(for: type(of: self))
-        if let url = bundle.url(forResource: "test_list", withExtension: "png") {
-            return url
-        }
-
-        let bundledURL = bundle.bundleURL.appendingPathComponent("test_list.png")
-        if FileManager.default.fileExists(atPath: bundledURL.path) {
-            return bundledURL
-        }
-
-        let sourceURL = URL(fileURLWithPath: #filePath)
-            .deletingLastPathComponent()
-            .appendingPathComponent("test_list.png")
-        if FileManager.default.fileExists(atPath: sourceURL.path) {
-            return sourceURL
-        }
-
-        return nil
+        Bundle(for: type(of: self)).url(forResource: "test_list", withExtension: "png")
     }
 
     // MARK: - All screenshots — two launches

@@ -9,8 +9,8 @@ app's metadata-strip pipeline still shows EXIF/TIFF/IPTC badge counts.
 
 Usage:
     python3 scripts/make_fixture.py \
-        --reference PicStripUITests/test_list.png \
-        --out PicStripUITests/test_list.png
+        --reference Tests/Fixtures/test_list.png \
+        --out Tests/Fixtures/test_list.png
 """
 
 import argparse
@@ -300,10 +300,10 @@ def make_fixture(width: int = 1320, height: int = 2340) -> Image.Image:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--reference",
-                        default="PicStripUITests/test_list.png",
+                        default="Tests/Fixtures/test_list.png",
                         help="Reference PNG whose EXIF/XMP blocks to copy.")
     parser.add_argument("--out",
-                        default="PicStripUITests/test_list.png",
+                        default="Tests/Fixtures/test_list.png",
                         help="Output path for the new fixture PNG.")
     parser.add_argument("--width",  type=int, default=1320)
     parser.add_argument("--height", type=int, default=1860)  # snug fit around content
