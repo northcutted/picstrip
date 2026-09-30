@@ -35,16 +35,22 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
 | **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
-| **Take Photo** | An advisory live viewfinder that outlines and names what it would redact, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
+| **Take Photo** | The main action: an advisory live viewfinder that outlines and names what it would redact, with its match strength, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
+| **Partial Covering** | Leave the last four digits of a card, phone or ID number — or an email's domain — readable, per finding |
+| **Always Cover** | Words and phrases (your name, a plate, your street) covered wherever PicStrip reads them: editor, batches and live camera; kept in one protected, non-backed-up file on the device |
+| **Sharing Presets** | Everyday photo, screenshot or document, recognised on import: picks JPEG or PNG and what is covered straight away |
+| **Before and After** | Hold the review preview to see the original; a summary and a confirmation after saving say what was removed |
+| **Screenshots** | A Screenshots tile and a "Clean a Screenshot" shortcut open the photo picker at your screenshots, without library access |
+| **Videos and Live Photos** | Remove a video's location, device and dates without re-encoding (the frames are unchanged); keep a Live Photo's motion when nothing is covered |
 | **Scan Document** | Scan paper into the editor; multi-page scans use batch. Captures are not automatically saved to Photos |
 | **Import Anywhere** | Photos, Files, paste, drag and drop; review the supplied image and metadata |
 | **Batch Processing** | Process sequentially with a shared policy; incomplete visual scans are skipped, successful copies are retained, and cancellation stops future saves |
 | **Try a Sample** | Explore a fictional image without granting library access; compare the original and cleaned output |
 | **Accessible Editing** | Add a centered box and adjust its position and size without drawing; changes remain undoable |
-| **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG (privacy default), JPEG, HEIC, or the original format |
+| **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG for screenshots and documents, JPEG for everyday photos (both chosen by the sharing preset), HEIC, or the original format |
 | **Audit Reports** | Export field names, counts and scan status without original values or detected text |
 | **Share Extension** | Save cleaned copies from the share sheet, or prepare the first original for editing using a protected, expiring handoff |
-| **Shortcuts** | "Clean Photos with PicStrip" opens the picker; "Strip Metadata from Images" removes metadata only in the background |
+| **Shortcuts** | "Clean Photos with PicStrip" opens the picker, "Take a Photo" opens the camera and "Clean a Screenshot" opens your screenshots — all usable from the Action Button or a Control Center shortcut; "Strip Metadata from Images" removes metadata only in the background |
 
 Available in English and 16 more localizations, including separate Spanish for Spain and Latin America.
 

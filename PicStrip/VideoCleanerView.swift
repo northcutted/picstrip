@@ -26,7 +26,7 @@ struct VideoCleanerView: View {
         let source: URL
         let output: URL
         /// Location, device and date findings from the original — all gone from the copy.
-        let removed: [VideoCleaner.Finding]
+        let removed: [VideoFinding]
         /// Whether the original's other metadata is gone from the copy too.
         let removedOther: Bool
     }
@@ -78,7 +78,7 @@ struct VideoCleanerView: View {
                 if kinds.isEmpty && !cleaned.removedOther {
                     Label("No hidden details found", systemImage: "checkmark.seal")
                 } else {
-                    ForEach(VideoCleaner.Finding.Kind.allCases.filter { kinds[$0] != nil && $0 != .other }, id: \.self) { kind in
+                    ForEach(VideoFinding.Kind.allCases.filter { kinds[$0] != nil && $0 != .other }, id: \.self) { kind in
                         removedRow(kind, values: kinds[kind]?.map(\.value) ?? [])
                     }
                     if cleaned.removedOther, kinds[.other] != nil {
@@ -131,7 +131,7 @@ struct VideoCleanerView: View {
         }
     }
 
-    private func removedRow(_ kind: VideoCleaner.Finding.Kind, values: [String]) -> some View {
+    private func removedRow(_ kind: VideoFinding.Kind, values: [String]) -> some View {
         HStack(alignment: .top, spacing: 12) {
             Image(systemName: kind.symbolName)
                 .foregroundStyle(.secondary)

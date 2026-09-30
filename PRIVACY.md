@@ -1,5 +1,5 @@
 # PicStrip Privacy Policy
-**Last updated: September 27, 2026**
+**Last updated: September 30, 2026**
 
 ## Overview
 PicStrip processes photos on your iPhone or iPad. We operate no photo-processing server and collect no photos, metadata, location, face data, recognised text, usage analytics, or advertising identifiers. No account is required.
@@ -23,6 +23,16 @@ PicStrip requests camera access when you choose Take Photo or Scan Document. Tak
 
 Live camera analysis is a guide. Frames and their detections are not recorded. After capture, the full still image is scanned for review. PicStrip saves or shares a copy only when you ask it to. Clearing the session discards the in-memory original.
 
+Screenshots and videos are chosen with Apple's photo picker, which hands PicStrip only the items you pick; PicStrip does not read your photo library.
+
+## Videos and Live Photos
+When you clean a video, PicStrip copies it into protected temporary storage and writes a copy without its location, device, software and date metadata; the frames are not re-encoded or changed, so faces and text in a video stay visible. PicStrip checks the copy and does not keep it if any of those details remain. Both files are deleted when you close the video screen.
+
+If you keep a Live Photo's motion, its video is cleaned the same way, except for a random identifier that pairs it with the still photo. The motion is not covered, so PicStrip offers it only when nothing in the photo is covered.
+
+## Always Cover
+Words and phrases you add to Always Cover — your name or a license plate, for example — are the only information PicStrip keeps between launches. They are stored in one file inside PicStrip's own storage on your device, encrypted while the device is locked and excluded from backups. They are not uploaded, not shared with the Share Extension, and used only to find and cover those words in your images. You can delete them at any time in Always Cover.
+
 ## Names and Apple Intelligence
 On supported devices with Apple Intelligence available, PicStrip uses Apple's on-device language model to suggest people's names found in recognised text. These suggestions are optional to cover. PicStrip does not use Private Cloud Compute for this feature or upload the recognised text. The scan status distinguishes unavailable or incomplete name checks from completed checks.
 
@@ -37,7 +47,7 @@ Temporary export files and reports use neutral filenames, iOS complete file prot
 Copies saved to Photos, Files, or another app are controlled by you and that destination. PicStrip's temporary-file cleanup does not delete those copies.
 
 ## Shortcuts
-The background “Strip Metadata from Images” action removes metadata and returns cleaned files. It does not detect or redact visible text or faces. The action that opens PicStrip lets you review visible content in the app.
+The background “Strip Metadata from Images” action removes metadata and returns cleaned files. It does not detect or redact visible text or faces. The actions that open PicStrip — to clean photos, take a photo or clean a screenshot — let you review visible content in the app.
 
 ## Third-Party Services
 PicStrip includes no third-party analytics, advertising or crash-reporting SDKs. Opening support or source-code links uses your browser. System photo/file providers, Apple model downloads, and destinations you select for sharing may use the network; PicStrip does not send your images to a developer-operated service.
