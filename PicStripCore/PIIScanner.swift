@@ -481,7 +481,7 @@ nonisolated struct PIIScanner {
     /// file building with the iOS 26 SDK, where the case does not exist, and the
     /// simulator is excluded because revision 4 is unimplemented there.  If it
     /// fails on a device, `scanImage` retries with the default revision.
-    nonisolated private static func makeFaceRequest() -> DetectFaceRectanglesRequest {
+    nonisolated static func makeFaceRequest() -> DetectFaceRectanglesRequest {
         #if compiler(>=6.4) && !targetEnvironment(simulator)
         if #available(iOS 27, *) {
             return DetectFaceRectanglesRequest(.revision4)

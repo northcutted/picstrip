@@ -501,7 +501,7 @@ nonisolated struct ImageRedactor {
     }
 
     /// The whole of `ciImage` pixellated — and, for `.blur`, then blurred.
-    nonisolated private static func obscuredLayer(
+    nonisolated static func obscuredLayer(
         _ style: RedactionStyle,
         blockSize: CGFloat,
         of ciImage: CIImage
