@@ -52,11 +52,11 @@ make localization-validate
 make localization-export
 ```
 
-**Pseudo-localization is available for layout smoke testing.** `scripts/translate_xcstrings.js --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries must be replaced with real translations before release (`make audit-localization` does not tell them apart from real ones).
+**Pseudo-localization is available for layout smoke testing.** `bin/ios-release localization-pseudo --languages es fr de` writes `[<lang>] <source>` strings into the missing slots so the UI can be exercised against longer strings, RTL mirroring, and accent-rich glyphs before the real translations land. These pseudo entries must be replaced with real translations before release (`make audit-localization` does not tell them apart from real ones).
 
 ```bash
 # See what's missing in a catalog without writing.
-scripts/translate_xcstrings.js --languages es fr --dry-run
+bin/ios-release localization-pseudo --languages es fr --dry-run
 
 # Pseudo-localize a single catalog for layout smoke testing.
 make localization-pseudo LANGUAGES="es"

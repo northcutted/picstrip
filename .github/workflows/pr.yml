@@ -40,7 +40,7 @@ jobs:
           fetch-depth: 0
       - name: Classify changes conservatively
         id: changes
-        run: node scripts/ci/changes.mjs
+        run: python3 scripts/ci/changes.py
   policy:
     needs: changes
     name: Workflow policy and release regression tests
@@ -54,36 +54,24 @@ jobs:
           fetch-depth: 1
           lfs: ${{ needs.changes.outputs.store == 'true' }}
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
+        uses: northcutted/ios-release-workflows/actions/bootstrap@25ac025ed3faa9934a217bec520cfc07809480d6
         with:
           config: .github/ios-release.json
-          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
-      - name: Set up Node
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: "24"
-          cache: npm
-      - name: Install locked tools
-        run: npm ci --ignore-scripts --no-audit --no-fund
+          revision: 25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Install pinned workflow validator
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" install-actionlint
-      - name: Validate workflows and release guardrails
-        run: |-
-          python3 scripts/validate_store_metadata.py
-          npm run check:workflows
-          npm run check:docs
-          npm run test:ci
-          actionlint
+        run: ios-release install-actionlint
+      - name: Validate workflow policy, documentation and regression tests
+        run: ios-release check --syntax
       - name: Validate changed store asset inventory
         if: needs.changes.outputs.store == 'true'
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-verify fastlane/screenshots/processed --output "$RUNNER_TEMP/screenshots-manifest.json"
+        run: ios-release screenshots-verify fastlane/screenshots/processed --output "$RUNNER_TEMP/screenshots-manifest.json"
   qa:
     needs: changes
     if: needs.changes.outputs.qa == 'true'
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@2619b51c89cb847b273a4389c3226d5039dc627f
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@25ac025ed3faa9934a217bec520cfc07809480d6
     with:
       config: .github/ios-release.json
-      platform_revision: 2619b51c89cb847b273a4389c3226d5039dc627f
+      platform_revision: 25ac025ed3faa9934a217bec520cfc07809480d6
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
@@ -107,16 +95,16 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
+        uses: northcutted/ios-release-workflows/actions/bootstrap@25ac025ed3faa9934a217bec520cfc07809480d6
         with:
           config: .github/ios-release.json
-          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
+          revision: 25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Resolve screenshot simulators
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" toolchain --screenshots
+        run: ios-release toolchain --screenshots
       - name: Install locked platform Ruby
-        uses: northcutted/ios-release-workflows/actions/ruby@2619b51c89cb847b273a4389c3226d5039dc627f
+        uses: northcutted/ios-release-workflows/actions/ruby@25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Capture en-US screenshots
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-capture --languages en-US --devices "$SCREENSHOT_DEVICE"
+        run: ios-release screenshots-capture --languages en-US --devices "$SCREENSHOT_DEVICE"
         env:
           SCREENSHOT_DEVICE: ${{ matrix.device }}
       - name: Upload screenshots for this device
@@ -128,6 +116,17 @@ jobs:
           compression-level: 0
           if-no-files-found: error
         if: always()
+      - name: Retain simulator readiness and recovery evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: simulator-recovery-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
+          path: |
+            fastlane/screenshot_logs/simulator-recovery/
+            build/build-env.json
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: ignore
+        if: always()
       # This secret-free job uses fresh hosted simulators and repository-owned
       # synthetic fixtures only. Preserve the failing device's XCTest evidence.
       - name: Retain screenshot failure diagnostics
@@ -137,6 +136,7 @@ jobs:
           path: |
             fastlane/screenshot_logs/
             fastlane/screenshots/test_output/
+            build/build-env.json
           retention-days: 3
           compression-level: 0
           if-no-files-found: ignore
@@ -158,7 +158,7 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Require selected checks and validate every skip
-        run: node scripts/ci/changes.mjs gate
+        run: python3 scripts/ci/changes.py gate
         env:
           JOBS: ${{ toJSON(needs) }}
           SELECTION: ${{ toJSON(needs.changes.outputs) }}

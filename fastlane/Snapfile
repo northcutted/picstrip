@@ -28,8 +28,8 @@ output_directory("./fastlane/screenshots")
 # Wipe previous screenshots before each run so stale images never ship.
 clear_previous_screenshots(true)
 
-# Let fastlane/xcodebuild boot each simulator only when it is needed. Pre-booting
-# all screenshot devices in CI has been slow and can stall before tests begin.
+# The shared adapter waits for only the selected device, after Fastlane's
+# shutdown/configuration step. Its boot wait is bounded and retained in logs.
 # erase_simulator is intentionally omitted; reinstall_app(true) gives enough
 # cleanliness without triggering a full simulator reset.
 reinstall_app(true)
@@ -47,7 +47,8 @@ concurrent_simulators(false)
 # Stop on the first test failure rather than collecting broken screenshots.
 stop_after_first_error(true)
 
-# Do not retry on failure. The screenshot tests are deterministic; retrying a
-# broken test just burns another full build+test cycle (~12 min) on the macOS
-# runner with no chance of a different outcome.
+# Generic test retries stay disabled. The shared adapter permits one recovery
+# of a recognized XCTest bootstrap failure in a disposable hosted CI job,
+# preserves the first failure, and runs the compiled tests without rebuilding.
+# App assertions and launch failures remain failures.
 number_of_retries(0)

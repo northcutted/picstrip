@@ -25,7 +25,7 @@
       "path": "docs/ci-cd/maintenance.md"
     }
   ],
-  "classifier": "scripts/ci/changes.mjs",
+  "classifier": "scripts/ci/changes.py",
   "change_examples": [
     "docs/release-pipeline.md",
     "fastlane/metadata/en-US/description.txt",
