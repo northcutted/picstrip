@@ -31,4 +31,26 @@ final class IntentRouter {
     func batchPickerPresented() {
         isBatchPickerRequested = false
     }
+
+    /// `true` while an intent is waiting for the live camera to open.
+    private(set) var isCameraRequested = false
+
+    func requestCamera() {
+        isCameraRequested = true
+    }
+
+    func cameraPresented() {
+        isCameraRequested = false
+    }
+
+    /// `true` while an intent is waiting for the screenshot picker to open.
+    private(set) var isScreenshotPickerRequested = false
+
+    func requestScreenshotPicker() {
+        isScreenshotPickerRequested = true
+    }
+
+    func screenshotPickerPresented() {
+        isScreenshotPickerRequested = false
+    }
 }

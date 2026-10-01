@@ -187,6 +187,10 @@ nonisolated enum PIISubtype: String, Hashable, CaseIterable {
 /// `score`       — combined confidence for this occurrence: rule base score ×
 ///                 Vision OCR confidence for the observation it came from.
 ///                 Range 0.0–1.0; multiply by 100 for a percentage.
+/// `partialBoundingBox` — the part to cover when the user leaves the end of the
+///                 text readable: all but the last four digits of a card or phone
+///                 number, or the name before an email's "@".  `nil` when the
+///                 finding cannot be shortened or Vision gave no character geometry.
 ///
 /// `Identifiable` — each instance carries a stable UUID for SwiftUI `ForEach`.
 /// `Equatable` / `Hashable` — deliberately exclude `id` and `score` so two
@@ -197,6 +201,7 @@ nonisolated struct DetectedInstance: Identifiable, Hashable {
     let snippet: String
     let subtype: PIISubtype?
     let boundingBox: CGRect
+    let partialBoundingBox: CGRect?
     /// Rule base score × OCR confidence for this specific observation.
     let score: Double
 
@@ -204,12 +209,22 @@ nonisolated struct DetectedInstance: Identifiable, Hashable {
         snippet: String,
         subtype: PIISubtype? = nil,
         boundingBox: CGRect,
+        partialBoundingBox: CGRect? = nil,
         score: Double
     ) {
         self.snippet = snippet
         self.subtype = subtype
         self.boundingBox = boundingBox
+        self.partialBoundingBox = partialBoundingBox
         self.score = score
+    }
+
+    /// The same finding with a new score — rescoring must not lose the partial box.
+    nonisolated func withScore(_ score: Double) -> DetectedInstance {
+        DetectedInstance(
+            snippet: snippet, subtype: subtype, boundingBox: boundingBox,
+            partialBoundingBox: partialBoundingBox, score: score
+        )
     }
 
     static func == (lhs: DetectedInstance, rhs: DetectedInstance) -> Bool {

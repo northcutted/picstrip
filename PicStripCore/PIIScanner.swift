@@ -1,3 +1,4 @@
+import CoreText
 import CoreVideo
 import Foundation
 import ImageIO
@@ -82,7 +83,29 @@ nonisolated struct ScannedLine: Sendable {
         guard !substring.isEmpty,
               let range = text.range(of: substring, options: [.caseInsensitive, .diacriticInsensitive])
         else { return nil }
+        return boundingBox(for: range)
+    }
 
+    /// Boxes around every occurrence of `word` that stands on its own — not
+    /// "Al" inside "Also" — ignoring case and accents.
+    func boundingBoxes(ofWord word: String) -> [CGRect] {
+        guard !word.isEmpty else { return [] }
+        var boxes: [CGRect] = []
+        var searchStart = text.startIndex
+        while let range = text.range(of: word, options: [.caseInsensitive, .diacriticInsensitive], range: searchStart..<text.endIndex) {
+            let startsWord = range.lowerBound == text.startIndex || !Self.isWordCharacter(text[text.index(before: range.lowerBound)])
+            let endsWord = range.upperBound == text.endIndex || !Self.isWordCharacter(text[range.upperBound])
+            if startsWord, endsWord, let box = boundingBox(for: range) { boxes.append(box) }
+            searchStart = range.upperBound
+        }
+        return boxes
+    }
+
+    private static func isWordCharacter(_ character: Character) -> Bool {
+        character.isLetter || character.isNumber
+    }
+
+    private func boundingBox(for range: Range<String.Index>) -> CGRect? {
         if let quad = candidate?.boundingBox(for: range) {
             return PIIScanner.swiftUIBox(from: quad.boundingBox.cgRect)
         }
@@ -115,6 +138,30 @@ nonisolated struct LiveFrameScan: Sendable, Equatable {
     var detections: [LiveDetection] = []
     /// Every line of text Vision read, sensitive or not.  Normalised, top-left origin.
     var textLines: [CGRect] = []
+}
+
+// MARK: - AlwaysCoverMatcher
+
+/// Finds the user's Always Cover words and phrases in recognised text.
+///
+/// The words come from the user, so every whole-word occurrence counts, with a
+/// fixed strong score: there is no pattern to be unsure about.
+nonisolated enum AlwaysCoverMatcher {
+    static let score = 0.95
+
+    static func results(terms: [String], lines: [ScannedLine]) -> [DetectionResult] {
+        var instances: [DetectedInstance] = []
+        for term in terms {
+            for line in lines {
+                for box in line.boundingBoxes(ofWord: term)
+                where !instances.contains(where: { PIIScanner.representsSameRegion($0.boundingBox, box) }) {
+                    instances.append(DetectedInstance(snippet: term, boundingBox: box, score: score))
+                }
+            }
+        }
+        guard !instances.isEmpty else { return [] }
+        return [DetectionResult(type: .alwaysCover, score: score, instances: instances)]
+    }
 }
 
 /// Everything one scan produced: the findings, and the text they were found in.
@@ -314,7 +361,8 @@ nonisolated struct PIIScanner {
     static func liveScan(
         in pixelBuffer: CVPixelBuffer,
         orientation: CGImagePropertyOrientation = .up,
-        textLevel: RecognizeTextRequest.RecognitionLevel = .accurate
+        textLevel: RecognizeTextRequest.RecognitionLevel = .accurate,
+        alwaysCover: [String] = []
     ) async -> LiveFrameScan {
         let requests: [any VisionRequest] = [
             makeTextRequest(level: textLevel),
@@ -341,7 +389,8 @@ nonisolated struct PIIScanner {
         }
         scan.textLines = observations.map { swiftUIBox(from: $0.boundingBox.cgRect) }
         let textFindings = (try? detectPII(in: observations)) ?? []
-        for finding in textFindings where finding.type.isRedactedByDefault {
+        let userFindings = AlwaysCoverMatcher.results(terms: alwaysCover, lines: scannedLines(from: observations))
+        for finding in textFindings + userFindings where finding.type.isRedactedByDefault {
             scan.detections += finding.instances.map {
                 LiveDetection(type: finding.type, boundingBox: $0.boundingBox, score: $0.score)
             }
@@ -683,6 +732,7 @@ nonisolated struct PIIScanner {
                 snippet: instance.snippet,
                 subtype: subtype ?? instance.subtype,
                 boundingBox: instance.boundingBox,
+                partialBoundingBox: instance.partialBoundingBox,
                 score: instanceScore
             )
 
@@ -804,7 +854,11 @@ nonisolated struct PIIScanner {
                                lineBounds: lineBounds,
                                spatialEvidence: false
                            ),
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                           instance: DetectedInstance(
+                               snippet: snippet, boundingBox: box,
+                               partialBoundingBox: Self.partialBox(for: rule.type, candidate: candidate, text: text, range: valueRange),
+                               score: 0
+                           ))
                 }
             }
 
@@ -834,7 +888,11 @@ nonisolated struct PIIScanner {
                                lineBounds: lineBounds,
                                spatialEvidence: false
                            ),
-                           instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                           instance: DetectedInstance(
+                               snippet: snippet, boundingBox: box,
+                               partialBoundingBox: Self.partialBox(for: .phoneNumber, candidate: candidate, text: text, range: match.range),
+                               score: 0
+                           ))
                 case .address:
                     // Base 0.68: NLP + address grammar; context-dependent.
                     record(.address,
@@ -858,7 +916,11 @@ nonisolated struct PIIScanner {
                                    lineBounds: lineBounds,
                                    spatialEvidence: false
                                ),
-                               instance: DetectedInstance(snippet: snippet, boundingBox: box, score: 0))
+                               instance: DetectedInstance(
+                                   snippet: snippet, boundingBox: box,
+                                   partialBoundingBox: Self.partialBox(for: .email, candidate: candidate, text: text, range: match.range),
+                                   score: 0
+                               ))
                     } else {
                         // Base 0.52: generic link — appears in many non-sensitive contexts.
                         record(.link,
@@ -1084,7 +1146,7 @@ nonisolated struct PIIScanner {
         return (best.line, best.range)
     }
 
-    nonisolated private static func representsSameRegion(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
+    nonisolated static func representsSameRegion(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
         let intersection = lhs.intersection(rhs)
         guard !intersection.isNull else { return false }
         let smallerArea = min(lhs.width * lhs.height, rhs.width * rhs.height)
@@ -1372,12 +1434,7 @@ nonisolated struct PIIScanner {
                 guard inside else { return inst }
                 let newScore = min(0.99, inst.score * documentBoostFactor)
                 if newScore > boostedMax { boostedMax = newScore }
-                return DetectedInstance(
-                    snippet: inst.snippet,
-                    subtype: inst.subtype,
-                    boundingBox: inst.boundingBox,
-                    score: newScore
-                )
+                return inst.withScore(newScore)
             }
 
             return DetectionResult(
@@ -1439,12 +1496,7 @@ nonisolated struct PIIScanner {
                 }
 
                 maxScore = max(maxScore, newScore)
-                return DetectedInstance(
-                    snippet: instance.snippet,
-                    subtype: instance.subtype,
-                    boundingBox: instance.boundingBox,
-                    score: newScore
-                )
+                return instance.withScore(newScore)
             }
 
             let resultScore = adjustedInstances.isEmpty ? result.score : maxScore
@@ -1491,12 +1543,7 @@ nonisolated struct PIIScanner {
 
             let dampenedScore = min(phone.score, max(0.20, phone.score * 0.35))
             guard dampenedScore >= 0.30 else { return nil }
-            return DetectedInstance(
-                snippet: phone.snippet,
-                subtype: phone.subtype,
-                boundingBox: phone.boundingBox,
-                score: dampenedScore
-            )
+            return phone.withScore(dampenedScore)
         }
 
         if adjustedPhoneInstances.isEmpty {
@@ -1772,6 +1819,94 @@ nonisolated struct PIIScanner {
         // RectangleObservation is a quadrilateral in Vision coordinates;
         // convert its bounding rect to SwiftUI coordinates.
         return swiftUIBox(from: visionSubBox.boundingBox.cgRect)
+    }
+
+    // MARK: - Partial covering
+
+    /// Kinds of finding whose end can be left readable: the last four characters
+    /// of a number, or the domain of an email address.
+    nonisolated static let partiallyCoverableTypes: Set<PIIType> = [
+        .creditCard, .phoneNumber, .socialSecurityNumber, .iban, .email
+    ]
+
+    /// The part of the match at `range` to cover when the user leaves its end
+    /// readable — everything before the last four letters or digits (and the
+    /// separators between them), or an email's name before the "@" — or `nil`
+    /// when the finding is too short to shorten.
+    nonisolated static func partialCoverRange(for type: PIIType, in text: String, range: NSRange) -> NSRange? {
+        guard partiallyCoverableTypes.contains(type), let swiftRange = Range(range, in: text) else { return nil }
+        let match = text[swiftRange]
+        if type == .email {
+            guard let at = match.firstIndex(of: "@"), at > match.startIndex else { return nil }
+            return NSRange(match.startIndex..<at, in: text)
+        }
+        let isKept = { (character: Character) in character.isLetter || character.isNumber }
+        var keptCount = 0
+        var firstKept = match.endIndex
+        for index in match.indices.reversed() where isKept(match[index]) {
+            keptCount += 1
+            firstKept = index
+            if keptCount == 4 { break }
+        }
+        guard keptCount == 4 else { return nil }
+        // End the covered part at its last letter or digit, not on a separator.
+        var end = firstKept
+        while end > match.startIndex {
+            let previous = match.index(before: end)
+            if isKept(match[previous]) { break }
+            end = previous
+        }
+        guard end > match.startIndex else { return nil }
+        return NSRange(match.startIndex..<end, in: text)
+    }
+
+    /// `partialCoverRange` as a box.
+    ///
+    /// Vision places whole words, not characters: inside "6185551234" or
+    /// "alex@example.com" every sub-range gets the whole word's box.  When it
+    /// cannot tell the covered part from the kept one, the split is estimated
+    /// from the characters' positions along the match, a third of a character
+    /// wide on the covered side — a sliver of a kept digit may be covered, but
+    /// no covered digit is left half showing.
+    nonisolated private static func partialBox(
+        for type: PIIType, candidate: RecognizedText, text: String, range: NSRange
+    ) -> CGRect? {
+        guard let cover = partialCoverRange(for: type, in: text, range: range),
+              let coverRange = Range(cover, in: text),
+              let matchRange = Range(range, in: text),
+              let matchQuad = candidate.boundingBox(for: matchRange)
+        else { return nil }
+        let matchBox = swiftUIBox(from: matchQuad.boundingBox.cgRect)
+        let keptRange = coverRange.upperBound..<matchRange.upperBound
+        if let coverQuad = candidate.boundingBox(for: coverRange),
+           let keptQuad = candidate.boundingBox(for: keptRange) {
+            let coverBox = swiftUIBox(from: coverQuad.boundingBox.cgRect)
+            let keptBox = swiftUIBox(from: keptQuad.boundingBox.cgRect)
+            if coverBox.maxX <= keptBox.minX + keptBox.width * 0.1 { return coverBox }
+        }
+        return estimatedPartialBox(
+            matchBox: matchBox,
+            covered: String(text[matchRange.lowerBound..<coverRange.upperBound]),
+            whole: String(text[matchRange])
+        )
+    }
+
+    /// The covered part of `matchBox`, from how wide the covered characters are
+    /// in the system font next to the whole match — "alex" is narrower than
+    /// "mmmm" — plus a third of an average character toward covering.
+    nonisolated static func estimatedPartialBox(matchBox: CGRect, covered: String, whole: String) -> CGRect? {
+        guard !covered.isEmpty, covered.count < whole.count else { return nil }
+        let wholeWidth = typographicWidth(whole)
+        guard wholeWidth > 0 else { return nil }
+        let margin = wholeWidth / Double(whole.count) / 3
+        let fraction = min(1, (typographicWidth(covered) + margin) / wholeWidth)
+        return CGRect(x: matchBox.minX, y: matchBox.minY, width: matchBox.width * fraction, height: matchBox.height)
+    }
+
+    nonisolated private static func typographicWidth(_ string: String) -> Double {
+        let font = CTFontCreateUIFontForLanguage(.system, 17, nil)
+        let attributed = NSAttributedString(string: string, attributes: [kCTFontAttributeName as NSAttributedString.Key: font as Any])
+        return CTLineGetTypographicBounds(CTLineCreateWithAttributedString(attributed), nil, nil, nil)
     }
 
     // MARK: - Snippet helpers

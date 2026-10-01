@@ -158,13 +158,14 @@ final class ReleaseReadinessTests: XCTestCase {
         XCTAssertEqual(model.redactionRegions.first?.rect, initial)
     }
 
-    func testSharingPresetsKeepNamesOptIn() {
+    /// Names stay opt-in except for documents, where they are usually the point.
+    func testSharingPresetsKeepNamesOptInExceptForDocuments() {
         let model = ScrubberViewModel(scanImage: { _ in [] })
         model.detectedPII = [DetectionResult(type: .personName, score: 0.8, instances: []),
                              DetectionResult(type: .email, score: 0.9, instances: [])]
         for purpose in SharingPurpose.allCases {
             model.applySharingPurpose(purpose)
-            XCTAssertFalse(model.typesToRedact.contains(.personName))
+            XCTAssertEqual(model.typesToRedact.contains(.personName), purpose == .document)
             XCTAssertTrue(model.typesToRedact.contains(.email))
         }
     }
