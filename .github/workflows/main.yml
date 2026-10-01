@@ -28,10 +28,10 @@ jobs:
   prepare:
     needs: changes
     if: needs.changes.outputs.prepare == 'true'
-    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09
+    uses: northcutted/ios-release-workflows/.github/workflows/prepare.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91
     with:
       config: .github/ios-release.json
-      platform_revision: 57a05675ace160fe9b5c28acdb85ed5625c18a09
+      platform_revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
     permissions:
       contents: write
       actions: read

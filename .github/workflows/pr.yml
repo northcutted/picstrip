@@ -54,10 +54,10 @@ jobs:
           fetch-depth: 1
           lfs: ${{ needs.changes.outputs.store == 'true' }}
       - name: Load pinned platform validation tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@57a05675ace160fe9b5c28acdb85ed5625c18a09
+        uses: northcutted/ios-release-workflows/actions/bootstrap@b3ae65935bc285871b8f4a426d5ec577a080cf91
         with:
           config: .github/ios-release.json
-          revision: 57a05675ace160fe9b5c28acdb85ed5625c18a09
+          revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
       - name: Install pinned workflow validator
         run: ios-release install-actionlint
       - name: Validate workflow policy, documentation and regression tests
@@ -68,10 +68,10 @@ jobs:
   qa:
     needs: changes
     if: needs.changes.outputs.qa == 'true'
-    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09
+    uses: northcutted/ios-release-workflows/.github/workflows/ci.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91
     with:
       config: .github/ios-release.json
-      platform_revision: 57a05675ace160fe9b5c28acdb85ed5625c18a09
+      platform_revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
       source: ${{ github.sha }}
       prefix: ${{ format('{0}-{1}', github.run_id, github.run_attempt) }}
       test_workers: ${{ inputs.test_workers || '1' }}
@@ -95,14 +95,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
       - name: Load pinned screenshot toolchain validator
-        uses: northcutted/ios-release-workflows/actions/bootstrap@57a05675ace160fe9b5c28acdb85ed5625c18a09
+        uses: northcutted/ios-release-workflows/actions/bootstrap@b3ae65935bc285871b8f4a426d5ec577a080cf91
         with:
           config: .github/ios-release.json
-          revision: 57a05675ace160fe9b5c28acdb85ed5625c18a09
+          revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
       - name: Resolve screenshot simulators
         run: ios-release toolchain --screenshots
       - name: Install locked platform Ruby
-        uses: northcutted/ios-release-workflows/actions/ruby@57a05675ace160fe9b5c28acdb85ed5625c18a09
+        uses: northcutted/ios-release-workflows/actions/ruby@b3ae65935bc285871b8f4a426d5ec577a080cf91
       - name: Capture en-US screenshots
         run: ios-release screenshots-capture --languages en-US --devices "$SCREENSHOT_DEVICE"
         env:

@@ -16,7 +16,7 @@
   ],
   "platform": {
     "repository": "northcutted/ios-release-workflows",
-    "revision": "57a05675ace160fe9b5c28acdb85ed5625c18a09"
+    "revision": "b3ae65935bc285871b8f4a426d5ec577a080cf91"
   },
   "settings": {
     "schema_version": 1,
@@ -269,7 +269,7 @@
           ],
           "condition": null,
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/deploy.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/deploy.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -329,7 +329,7 @@
           ],
           "condition": "needs.changes.outputs.prepare == 'true'",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/prepare.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/prepare.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -384,7 +384,7 @@
           "needs": [],
           "condition": "vars.RELEASE_DISTRIBUTION_ENABLED == 'true' && (github.event_name == 'schedule' || inputs.action == 'App Store status')",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/observe.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/observe.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -484,7 +484,7 @@
           ],
           "condition": "needs.changes.outputs.qa == 'true'",
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/ci.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/ci.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
@@ -571,7 +571,7 @@
           "needs": [],
           "condition": null,
           "runner": null,
-          "uses": "northcutted/ios-release-workflows/.github/workflows/release.yml@57a05675ace160fe9b5c28acdb85ed5625c18a09",
+          "uses": "northcutted/ios-release-workflows/.github/workflows/release.yml@b3ae65935bc285871b8f4a426d5ec577a080cf91",
           "environment": null,
           "timeout_minutes": null,
           "permissions": {
