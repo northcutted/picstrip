@@ -258,3 +258,21 @@ final class VideoTextRedactionTests: XCTestCase {
         return total / Double(max(count, 1))
     }
 }
+
+// MARK: - Taking over a picked video
+
+final class PrivateFileStoreAdoptTests: XCTestCase {
+
+    func testAPickedFileIsMovedInNotWrittenTwice() throws {
+        let directory = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAdopt-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: directory) }
+        let store = PrivateFileStore(directory: directory)
+        let picked = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripPicked-\(UUID().uuidString).mov")
+        try Data("movie".utf8).write(to: picked)
+
+        let adopted = try store.adopt(picked, extension: "mov")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: picked.path), "Moved, not copied.")
+        XCTAssertEqual(try Data(contentsOf: adopted), Data("movie".utf8))
+        XCTAssertEqual(adopted.deletingLastPathComponent().standardizedFileURL, directory.standardizedFileURL)
+    }
+}

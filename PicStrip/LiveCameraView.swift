@@ -366,15 +366,7 @@ private struct LiveReadingLayer: View {
     let videoRect: CGRect
 
     var body: some View {
-        Canvas { context, _ in
-            for line in lines {
-                let rect = LiveOverlayGeometry.rect(for: line, in: videoRect).insetBy(dx: -2, dy: -1)
-                let path = Path(roundedRect: rect, cornerRadius: 3)
-                context.fill(path, with: .color(.white.opacity(0.08)))
-                context.stroke(path, with: .color(.white.opacity(0.45)), lineWidth: 1)
-            }
-        }
-        .allowsHitTesting(false)
+        ReadingLines(lines: lines.map { LiveOverlayGeometry.rect(for: $0, in: videoRect) })
     }
 }
 
@@ -439,11 +431,7 @@ private struct LiveDetectionLayer: View {
             if showsRedactionPreview {
                 shape.fill(.black.opacity(0.9))
             } else {
-                let color = track.type.riskLevel.color
-                shape
-                    .fill(color.opacity(0.16))
-                    .strokeBorder(color, style: Self.outline(for: track.confidence))
-                    .shadow(color: color.opacity(0.6), radius: 5)
+                DetectionBox(type: track.type, confidence: track.confidence)
             }
         }
         // A finding that dropped out of the last pass fades until it comes back or goes.
@@ -451,16 +439,6 @@ private struct LiveDetectionLayer: View {
         .frame(width: rect.width, height: rect.height)
         .position(x: rect.midX, y: rect.midY)
         .transition(reduceMotion ? .opacity : .scale(scale: 1.15).combined(with: .opacity))
-    }
-
-    /// Match strength at a glance, even where a finding only has a badge: a
-    /// strong match is outlined solid, a possible one dashed, a tentative one dotted.
-    private static func outline(for confidence: ConfidenceLevel) -> StrokeStyle {
-        switch confidence {
-        case .high:   return StrokeStyle(lineWidth: 2)
-        case .medium: return StrokeStyle(lineWidth: 2, lineCap: .round, dash: [7, 4])
-        case .low:    return StrokeStyle(lineWidth: 2, lineCap: .round, dash: [0.5, 4])
-        }
     }
 
     @ViewBuilder
@@ -472,11 +450,7 @@ private struct LiveDetectionLayer: View {
                     .frame(width: frame.width, height: frame.height)
                     .position(x: frame.midX, y: frame.midY)
             case .badge:
-                Image(systemName: track.type.symbolName)
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white)
-                    .frame(width: 20, height: 20)
-                    .background(track.type.riskLevel.color, in: Circle())
+                DetectionBadge(type: track.type)
                     .position(x: rect.minX, y: rect.minY)
             }
         }

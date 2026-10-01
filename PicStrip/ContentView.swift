@@ -528,7 +528,10 @@ struct ContentView: View {
             .accessibilityIdentifier("selectScreenshotButton")
             .accessibilityLabel("Select a screenshot")
         case .video:
-            PhotosPicker(selection: $selectedVideoItem, matching: .videos, photoLibrary: .shared()) {
+            // `.current`: the video as it is stored.  The default may convert it
+            // (HEVC to H.264) before handing it over, which is most of the wait
+            // when opening a long video; PicStrip reads HEVC itself.
+            PhotosPicker(selection: $selectedVideoItem, matching: .videos, preferredItemEncoding: .current, photoLibrary: .shared()) {
                 ImportTileLabel(icon: "video", text: "Videos", isRow: isRow)
             }
             .accessibilityIdentifier("selectVideoButton")

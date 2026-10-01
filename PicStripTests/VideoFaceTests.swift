@@ -339,7 +339,7 @@ final class VideoFaceRedactionTests: XCTestCase {
         }
         let (glimpses, lastFaceCount) = seen.summary
         XCTAssertGreaterThanOrEqual(glimpses.count, 1, "At least one look at the frame being scanned.")
-        XCTAssertTrue(glimpses.contains { !$0.faces.isEmpty }, "The face is outlined in it.")
+        XCTAssertTrue(glimpses.contains { $0.marks.contains { $0.type == .face } }, "The face is outlined in it.")
         XCTAssertEqual(lastFaceCount, scan.faces.count)
         if let glimpse = glimpses.first {
             XCTAssertLessThanOrEqual(max(glimpse.image.width, glimpse.image.height), 480, "Small: it is only for show.")

@@ -144,6 +144,13 @@ nonisolated struct FrameFinding: Sendable, Equatable {
     let snippet: String
 }
 
+/// What `PIIScanner.frameFindings` read in one video frame.
+nonisolated struct FrameRead: Sendable, Equatable {
+    var findings: [FrameFinding] = []
+    /// Every line of text Vision read, sensitive or not.  Normalised, top-left origin.
+    var lines: [CGRect] = []
+}
+
 /// What `PIIScanner.liveScan` found in one camera frame.
 nonisolated struct LiveFrameScan: Sendable, Equatable {
     var detections: [LiveDetection] = []
@@ -413,7 +420,7 @@ nonisolated struct PIIScanner {
     /// viewfinder's pass without faces (the video scanner looks for those more
     /// often), keeping each finding's snippet for the list.
     @concurrent
-    static func frameFindings(in pixelBuffer: CVPixelBuffer, alwaysCover: [String] = []) async -> [FrameFinding] {
+    static func frameFindings(in pixelBuffer: CVPixelBuffer, alwaysCover: [String] = []) async -> FrameRead {
         let requests: [any VisionRequest] = [
             makeTextRequest(level: .accurate),
             onSimulatorCPU(DetectBarcodesRequest())
@@ -443,7 +450,7 @@ nonisolated struct PIIScanner {
                 FrameFinding(type: finding.type, boundingBox: $0.boundingBox, score: $0.score, snippet: $0.snippet)
             }
         }
-        return findings
+        return FrameRead(findings: findings, lines: observations.map { swiftUIBox(from: $0.boundingBox.cgRect) })
     }
 
     /// `request` as it can run here.  The simulator's GPU cannot create the

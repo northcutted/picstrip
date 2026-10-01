@@ -27678,6 +27678,107 @@
         }
       }
     },
+    "Long videos, and videos kept in iCloud, take a moment to arrive." : {
+      "comment" : "Note while a picked video is being handed over by Photos, before scanning starts.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تستغرق الفيديوهات الطويلة والفيديوهات المحفوظة في iCloud لحظة حتى تصل."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lange Videos und Videos in iCloud brauchen einen Moment, bis sie da sind."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los vídeos largos y los guardados en iCloud tardan un momento en llegar."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Los videos largos y los guardados en iCloud tardan un momento en llegar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les longues vidéos et celles conservées dans iCloud mettent un moment à arriver."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "I video lunghi e quelli conservati su iCloud richiedono un momento per arrivare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "長いビデオやiCloudに保存されたビデオは、届くまで少し時間がかかります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "긴 비디오와 iCloud에 보관된 비디오는 도착하는 데 잠시 시간이 걸립니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lange video's en video's in iCloud hebben even nodig om binnen te komen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Długie wideo i wideo przechowywane w iCloud potrzebują chwili, aby dotrzeć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeos longos e vídeos guardados no iCloud levam um momento para chegar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os vídeos longos e os guardados em iCloud demoram um momento a chegar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Långa videor och videor i iCloud tar en stund att komma fram."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzun videoların ve iCloud’da saklanan videoların gelmesi biraz zaman alır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "较长的视频和存储在 iCloud 中的视频需要一点时间才能载入。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "較長的影片和儲存在 iCloud 中的影片需要一點時間才能載入。"
+          }
+        }
+      }
+    },
     "Looking for faces and text…" : {
       "comment" : "Progress title while a video is scanned for faces, text and codes.",
       "localizations" : {

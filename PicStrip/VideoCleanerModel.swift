@@ -31,6 +31,8 @@ final class VideoCleanerModel {
     }
 
     private(set) var stage = Stage.loading
+    /// How far opening the video has got, 0 … 1, or `nil` while unknown.
+    private(set) var loadProgress: Double?
     /// Seconds.
     private(set) var duration: Double = 0
     private(set) var scanProgress = VideoScanner.Progress(fraction: 0, isCooling: false)
@@ -321,12 +323,36 @@ final class VideoCleanerModel {
     private func load(_ videoSource: VideoSource) async throws -> URL {
         switch videoSource {
         case .picked(let item):
-            guard let video = try await item.loadTransferable(type: IncomingVideo.self) else {
-                throw VideoCleaner.Failure.cannotExport
-            }
-            return video.url
+            return try await loadPicked(item)
         case .file(let url):
             return try PrivateFileStore.exports.copy(url, extension: url.pathExtension.isEmpty ? "mov" : url.pathExtension)
+        }
+    }
+
+    /// The picked video, reporting how far the system has got handing it over —
+    /// downloading it from iCloud, or copying it out of the library.
+    private func loadPicked(_ item: PhotosPickerItem) async throws -> URL {
+        let box = ProgressBox()
+        let watcher = Task { [weak self] in
+            while !Task.isCancelled {
+                if let fraction = box.fraction { self?.loadProgress = fraction }
+                try? await Task.sleep(for: .milliseconds(150))
+            }
+        }
+        defer { watcher.cancel() }
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<URL, Error>) in
+                let progress = item.loadTransferable(type: IncomingVideo.self) { result in
+                    switch result {
+                    case .success(let video?): continuation.resume(returning: video.url)
+                    case .success(nil): continuation.resume(throwing: VideoCleaner.Failure.cannotExport)
+                    case .failure(let error): continuation.resume(throwing: error)
+                    }
+                }
+                box.progress = progress
+            }
+        } onCancel: {
+            box.cancel()
         }
     }
 
@@ -364,4 +390,23 @@ final class VideoCleanerModel {
         }
         return images
     }
+}
+
+/// The system's progress handing over a picked video, read from the main actor
+/// while the hand-over runs elsewhere.
+nonisolated private final class ProgressBox: @unchecked Sendable {
+    private let lock = NSLock()
+    private var stored: Progress?
+
+    var progress: Progress? {
+        get { lock.withLock { stored } }
+        set { lock.withLock { stored = newValue } }
+    }
+
+    var fraction: Double? {
+        guard let progress, progress.totalUnitCount > 0 else { return nil }
+        return progress.fractionCompleted
+    }
+
+    func cancel() { progress?.cancel() }
 }

@@ -26,8 +26,7 @@ struct VideoCleanerView: View {
             Group {
                 switch model.stage {
                 case .loading:
-                    ProgressView("Opening video…")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    loadingView
                 case .scanning:
                     scanningView
                 case .review:
@@ -61,30 +60,42 @@ struct VideoCleanerView: View {
         }
     }
 
+    // MARK: Opening
+
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            LoadingCard()
+                .frame(maxHeight: 340)
+            VStack(spacing: 8) {
+                Text("Opening video…")
+                    .font(.headline)
+                if let fraction = model.loadProgress {
+                    ProgressView(value: fraction)
+                } else {
+                    ProgressView(value: 0)
+                }
+                Text("Long videos, and videos kept in iCloud, take a moment to arrive.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("videoLoading")
+        }
+        .padding(32)
+        .frame(maxWidth: 480, maxHeight: .infinity)
+    }
+
     // MARK: Scanning
 
     private var scanningView: some View {
         VStack(spacing: 20) {
             ScanGlimpseView(glimpse: model.glimpse)
                 .frame(maxHeight: 340)
-            VStack(spacing: 8) {
-                Text(model.scanProgress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…")
-                    .font(.headline)
+            VStack(spacing: 14) {
+                ScanStatusView(progress: model.scanProgress)
                 ProgressView(value: model.scanProgress.fraction)
                     .accessibilityIdentifier("videoScanProgress")
-                HStack(spacing: 20) {
-                    Label("\(model.scanProgress.faceCount)", systemImage: "face.dashed")
-                        .accessibilityLabel(Text("^[\(model.scanProgress.faceCount) face](inflect: true) found so far"))
-                    Label("\(model.scanProgress.textCount)", systemImage: "text.viewfinder")
-                        .accessibilityLabel(Text("Text and codes found so far: \(model.scanProgress.textCount)"))
-                }
-                .font(.subheadline.monospacedDigit())
-                .foregroundStyle(.secondary)
-                .contentTransition(.numericText())
-                .animation(.snappy, value: model.scanProgress.faceCount)
-                .animation(.snappy, value: model.scanProgress.textCount)
-                .accessibilityElement(children: .contain)
-                .accessibilityIdentifier("scanCounts")
             }
             if model.isLong { longVideoNote }
             Button("Skip Covering") { model.skipCovering() }
@@ -517,8 +528,9 @@ struct VideoCleanerView: View {
 
 // MARK: - ScanGlimpseView
 
-/// The frame being scanned, with what was just found in it outlined — faces in
-/// yellow, text and codes in the accent colour — and a scan line sweeping down.
+/// The frame being scanned, drawn as the viewfinder draws what it sees: every
+/// line of text read in a hairline, each finding outlined in its risk colour
+/// with its badge — and a scan line sweeping down.
 private struct ScanGlimpseView: View {
     let glimpse: VideoScanner.Glimpse?
 
@@ -532,11 +544,15 @@ private struct ScanGlimpseView: View {
                     .scaledToFit()
                     .overlay {
                         GeometryReader { geometry in
-                            ForEach(Array(glimpse.faces.enumerated()), id: \.offset) { _, box in
-                                outline(box, in: geometry.size, color: .yellow)
-                            }
-                            ForEach(Array(glimpse.text.enumerated()), id: \.offset) { _, box in
-                                outline(box, in: geometry.size, color: .accentColor)
+                            let size = geometry.size
+                            ReadingLines(lines: glimpse.lines.map { Self.rect(for: $0, in: size) })
+                            ForEach(Array(glimpse.marks.enumerated()), id: \.offset) { _, mark in
+                                let rect = Self.rect(for: mark.box, in: size).insetBy(dx: -3, dy: -3)
+                                DetectionBox(type: mark.type, confidence: mark.confidence)
+                                    .frame(width: rect.width, height: rect.height)
+                                    .position(x: rect.midX, y: rect.midY)
+                                DetectionBadge(type: mark.type)
+                                    .position(x: rect.minX, y: rect.minY)
                             }
                         }
                     }
@@ -547,22 +563,107 @@ private struct ScanGlimpseView: View {
                     .accessibilityElement()
                     .accessibilityLabel("The frame being scanned")
             } else {
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(.fill.tertiary)
-                    .aspectRatio(16 / 9, contentMode: .fit)
-                    .overlay { ProgressView() }
-                    .accessibilityHidden(true)
+                LoadingCard()
             }
         }
         .accessibilityIdentifier("scanGlimpse")
     }
 
-    private func outline(_ box: CGRect, in size: CGSize, color: Color) -> some View {
-        RoundedRectangle(cornerRadius: 5)
-            .stroke(color, lineWidth: 2)
-            .shadow(color: .black.opacity(0.4), radius: 2)
-            .frame(width: box.width * size.width, height: box.height * size.height)
-            .position(x: box.midX * size.width, y: box.midY * size.height)
+    static func rect(for box: CGRect, in size: CGSize) -> CGRect {
+        CGRect(x: box.minX * size.width, y: box.minY * size.height, width: box.width * size.width, height: box.height * size.height)
+    }
+}
+
+/// What the scan has found so far, in the viewfinder's status capsule: the
+/// kinds of finding in their risk colours, with counts.
+private struct ScanStatusView: View {
+    let progress: VideoScanner.Progress
+
+    /// Kinds of text shown as symbols before the rest are counted.
+    private static let maximumSymbols = 4
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if progress.isCooling {
+                Image(systemName: "thermometer.high")
+                Text("Paused while the device cools down")
+            } else {
+                Image(systemName: "text.viewfinder")
+                    .symbolEffect(.pulse)
+                Text("Looking for faces and text…")
+            }
+            HStack(spacing: 6) {
+                if progress.faceCount > 0 {
+                    count(progress.faceCount, of: .face)
+                }
+                ForEach(progress.textKinds.prefix(Self.maximumSymbols), id: \.type) { kind in
+                    count(kind.count, of: kind.type)
+                }
+                if progress.textKinds.count > Self.maximumSymbols {
+                    Text(verbatim: "+" + (progress.textKinds.count - Self.maximumSymbols).formatted())
+                        .font(.caption2.weight(.bold))
+                }
+            }
+            .accessibilityHidden(true)
+        }
+        .font(.footnote.weight(.semibold))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        .glassEffect(in: .capsule)
+        .animation(.snappy, value: progress.faceCount)
+        .animation(.snappy, value: progress.textCount)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(progress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…"))
+        .accessibilityValue(Text("^[\(progress.faceCount) face](inflect: true) found so far") + Text(verbatim: ", ")
+            + Text("Text and codes found so far: \(progress.textCount)"))
+        .accessibilityAddTraits(.updatesFrequently)
+        .accessibilityIdentifier("scanCounts")
+    }
+
+    private func count(_ count: Int, of type: PIIType) -> some View {
+        HStack(spacing: 2) {
+            Image(systemName: type.symbolName)
+                .foregroundStyle(type.riskLevel.color)
+            Text(count, format: .number)
+                .font(.caption2.weight(.bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+        }
+        .transition(.scale.combined(with: .opacity))
+    }
+}
+
+/// Where the frame will be, before the first one arrives: a soft shimmer
+/// across a film frame, so the wait looks like work.
+private struct LoadingCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 14)
+            .fill(.fill.tertiary)
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .overlay {
+                if !reduceMotion {
+                    TimelineView(.animation) { context in
+                        let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.6) / 1.6
+                        GeometryReader { geometry in
+                            LinearGradient(
+                                colors: [.clear, .white.opacity(0.18), .clear],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                            .frame(width: geometry.size.width * 0.4)
+                            .offset(x: geometry.size.width * (phase * 1.4 - 0.4))
+                        }
+                    }
+                }
+            }
+            .overlay {
+                Image(systemName: "film")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(.secondary)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .accessibilityHidden(true)
     }
 }
 

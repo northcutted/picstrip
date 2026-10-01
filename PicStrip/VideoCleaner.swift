@@ -158,7 +158,7 @@ nonisolated struct IncomingVideo: Transferable, Sendable {
     static var transferRepresentation: some TransferRepresentation {
         FileRepresentation(importedContentType: .movie) { received in
             let fileExtension = received.file.pathExtension.isEmpty ? "mov" : received.file.pathExtension
-            return IncomingVideo(url: try PrivateFileStore.exports.copy(received.file, extension: fileExtension))
+            return IncomingVideo(url: try PrivateFileStore.exports.adopt(received.file, extension: fileExtension))
         }
     }
 }

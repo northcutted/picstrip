@@ -48,15 +48,19 @@ nonisolated enum VideoScanner {
         /// Faces and distinct text found so far.
         var faceCount = 0
         var textCount = 0
+        /// The kinds of text and codes found so far, riskiest first, with how
+        /// many of each — shown like the viewfinder's summary.
+        var textKinds: [(type: PIIType, count: Int)] = []
     }
 
     /// The frame being scanned, small, with what was just found in it — for the
-    /// scanning screen to show the work as it happens.
+    /// scanning screen to show the work as it happens, drawn as the viewfinder
+    /// draws it.  Boxes are normalised, top-left origin.
     struct Glimpse: Sendable {
         let image: CGImage
-        /// Normalised, top-left origin.
-        let faces: [CGRect]
-        let text: [CGRect]
+        let marks: [ScanMark]
+        /// Every line of text read in the last read.
+        let lines: [CGRect]
     }
 
     /// Frames are looked for faces in at this size: detection is as good as at
@@ -144,7 +148,7 @@ nonisolated enum VideoScanner {
         let registrationSize = FrameShrinker(longSide: 480)
         let readEvery = max(1, Int((FindingTracking.sampleInterval / FaceTracking.sampleInterval).rounded()))
         var frameIndex = 0
-        var latestText: [CGRect] = []
+        var latestRead = FrameRead()
         var lastGlimpse = ContinuousClock.now - .seconds(1)
         while let buffer = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
@@ -177,23 +181,32 @@ nonisolated enum VideoScanner {
 
                 // Text needs every pixel.
                 if frameIndex.isMultiple(of: readEvery) {
-                    let found = await PIIScanner.frameFindings(in: pixels, alwaysCover: alwaysCover)
-                    findings.add(found, at: time, path: scan.path)
-                    latestText = found.map(\.boundingBox)
+                    let read = await PIIScanner.frameFindings(in: pixels, alwaysCover: alwaysCover)
+                    findings.add(read.findings, at: time, path: scan.path)
+                    latestRead = read
                 }
 
                 if ContinuousClock.now - lastGlimpse >= .milliseconds(250), let image = registrationSize.image(of: small) {
                     lastGlimpse = .now
-                    glimpse = Glimpse(image: image, faces: boxes, text: latestText)
+                    glimpse = Glimpse(
+                        image: image,
+                        marks: boxes.map { ScanMark(type: .face, confidence: .high, box: $0) }
+                            + latestRead.findings.map { ScanMark(type: $0.type, confidence: ConfidenceLevel(score: $0.score), box: $0.boundingBox) },
+                        lines: latestRead.lines
+                    )
                 }
             } catch {
                 // Vision reports a cancelled request as its own error.
                 try Task.checkCancellation()
                 throw error
             }
+            let groups = FindingGroup.groups(of: findings.tracks)
+            let kinds = Dictionary(grouping: groups, by: \.type)
+                .map { (type: $0.key, count: $0.value.count) }
+                .sorted { ($0.type.riskLevel, $0.count) > ($1.type.riskLevel, $1.count) }
             progress(Progress(
                 fraction: min(1, time / duration), isCooling: false, glimpse: glimpse,
-                faceCount: faces.tracks.count, textCount: FindingGroup.groups(of: findings.tracks).count
+                faceCount: faces.tracks.count, textCount: groups.count, textKinds: kinds
             ))
         }
         if reader.status == .failed { throw reader.error ?? VideoCleaner.Failure.cannotExport }
@@ -201,6 +214,15 @@ nonisolated enum VideoScanner {
         scan.findings = findings.tracks
         return scan
     }
+}
+
+// MARK: - ScanMark
+
+/// One thing outlined in a scan glimpse.  Normalised, top-left origin.
+nonisolated struct ScanMark: Sendable {
+    let type: PIIType
+    let confidence: ConfidenceLevel
+    let box: CGRect
 }
 
 // MARK: - FrameShrinker
