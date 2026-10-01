@@ -27,17 +27,17 @@ jobs:
           ref: main
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@b3ae65935bc285871b8f4a426d5ec577a080cf91
+        uses: northcutted/ios-release-workflows/actions/bootstrap@25ac025ed3faa9934a217bec520cfc07809480d6
         with:
           config: .github/ios-release.json
-          revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
+          revision: 25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Record capture source
         id: source
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Resolve exact screenshot toolchain
         run: ios-release toolchain --screenshots
       - name: Install locked platform Ruby
-        uses: northcutted/ios-release-workflows/actions/ruby@b3ae65935bc285871b8f4a426d5ec577a080cf91
+        uses: northcutted/ios-release-workflows/actions/ruby@25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Install locked image tools
         run: ios-release setup --images
       - name: Capture selected locales
@@ -85,10 +85,10 @@ jobs:
           ref: ${{ needs.capture.outputs.source }}
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@b3ae65935bc285871b8f4a426d5ec577a080cf91
+        uses: northcutted/ios-release-workflows/actions/bootstrap@25ac025ed3faa9934a217bec520cfc07809480d6
         with:
           config: .github/ios-release.json
-          revision: b3ae65935bc285871b8f4a426d5ec577a080cf91
+          revision: 25ac025ed3faa9934a217bec520cfc07809480d6
       - name: Download screenshots-${{ github.run_id }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
