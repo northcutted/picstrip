@@ -39,6 +39,9 @@
 
         PicStrip does not read or write UserDefaults. Editing sessions have no
         persistent history; private handoff/export files have bounded lifetimes.
+        The one thing kept between launches is the user's Always Cover list of
+        words to cover: a single file in the app container with complete file
+        protection, excluded from backups, never shared or transmitted.
     -->
     <key>NSPrivacyAccessedAPITypes</key>
     <array>

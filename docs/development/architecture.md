@@ -409,6 +409,28 @@ Concurrent batch processing would hold several decoded images and intermediate b
 
 If the capture session cannot be configured, `LiveCameraView` reports `.unavailable` and the system camera (`CameraCaptureView`) is presented instead. The simulator has no camera: launch with `PICSTRIP_LIVE_CAMERA_FIXTURE=<path to an image>` and the app opens the viewfinder on that still image (`LiveCameraFixture`), which `testLiveViewfinderNamesFindingsAndCaptures` uses. Faces and barcodes are not detected there — those Vision requests fail on the simulator — and focus, zoom, the flashlight and motion need a device.
 
+### Sharing Presets Decide the Format and the First Selection
+
+`SharingPurpose` (photo, screenshot, document) is guessed when an image loads — `SharingPurpose.detect`: a document-camera scan is a document, and iOS writes "Screenshot" into the EXIF user comment of its screenshots — and can be changed in the editor. It sets the export format (JPEG for everyday photos, PNG for text) and which findings are covered as soon as the scan finishes (`coversByDefault`; documents also cover names). Everything stays editable; the regions themselves are never rebuilt by a preset change.
+
+### Partial Covering Uses Word Geometry Where It Can
+
+`DetectedInstance.partialBoundingBox` is the part of a card, phone, SSN or IBAN number before its last four characters, or of an email before its "@" (`PIIScanner.partialCoverRange`). Vision's `boundingBox(for:)` places whole words, not characters, so inside a single token ("6185551234", "alex@example.com") every sub-range gets the whole word's box. When Vision cannot separate the covered and kept parts, `estimatedPartialBox` splits the match by the glyphs' widths in the system font, plus a third of a character toward covering. Rescoring passes must use `withScore(_:)` so the partial box survives. The editor switches a region between its two boxes with undo (`setPartialCover`).
+
+### Always Cover Is the One Thing Kept Between Launches
+
+`AlwaysCoverList` stores the user's words and phrases in `Application Support/AlwaysCover.json` with complete file protection and `isExcludedFromBackup`, never in UserDefaults (the privacy manifest says PicStrip uses none) and never in the App Group, so the Share Extension cannot see it. `AlwaysCoverMatcher` finds whole-word, case- and accent-insensitive occurrences in `ScannedLine`s and reports them as `PIIType.alwaysCover` at a fixed 0.95. The editor adds them to each scan, re-checks the open photo when a term is added (`refreshAlwaysCover`, via `appendDetections`, which merges into an existing kind with unique region ids), batches wrap the scan closure, and the live camera passes the terms to `liveScan`.
+
+### Video Cleaning Replaces Metadata, It Does Not Filter It
+
+`VideoCleaner.clean` exports with `AVAssetExportPresetPassthrough`, so frames are copied, not re-encoded. Two AVFoundation behaviours shape it, both pinned by `VideoCleanerTests`: an **empty** `metadata` array is treated as "keep the source's metadata", and `AVMetadataItemFilter.forSharing()` removes the location but keeps make, model, software and dates. So the session always gets a non-empty list — a new random content identifier for a plain video, the pairing identifier for a Live Photo's video — plus the filter for track-level items, and the output is re-read: any location, device or date left fails the export and deletes the file. Picked videos are copied into `PrivateFileStore.exports` (`copy`, `reserve`) and deleted when the screen closes.
+
+A Live Photo's motion is kept only when nothing is covered and the format is not PNG, because the motion is not redacted. `LivePhotoCleaner` loads the `PHLivePhoto` from the picker, cleans its `.pairedVideo` resource keeping `com.apple.quicktime.content.identifier`, writes that identifier back into the still's Apple maker note (key 17), and saves both resources in one creation request; if Photos refuses the pair, a still is saved and the user is told. This path needs a device to verify.
+
+### Screenshots and the Camera From Shortcuts
+
+`TakePhotoIntent` and `CleanScreenshotIntent` open the app (`.foreground(.immediate)`) and set flags on `IntentRouter`, like `StripImageIntent`; `ContentView` presents the live camera or a `PhotosPicker` filtered to `.screenshots`. "The latest screenshot" would need full photo-library access, which PicStrip never requests, so the picker — newest first — is as close as it gets.
+
 ### The Object-Selection Model Is Never Downloaded Unasked
 
 Tap-to-redact uses `GenerateIterativeSegmentationRequest` (iOS 27), whose model is an asset the OS downloads from Apple on request (`assetStatus` / `downloadAssets()`); it cannot be bundled. It requires separate download consent. `ScrubberViewModel.selectObject(at:)` never calls `downloadModel` itself: a `.needsDownload` status raises the consent alert, and only `downloadObjectModelAndContinue()` — the alert's "Download" button — fetches it. Keep that property when touching this code; `ObjectSelectionFlowTests` pins it. Regions are rectangles, so the mask is reduced to its bounding box (`SegmentationMask.boundingBox`), and a mask covering almost the whole image is rejected as "the background".

@@ -61,6 +61,7 @@ extension PIIType {
         case .barcode:                     return "qrcode"
         case .unstructuredCredential:      return "note.text"
         case .personName:                  return "person.text.rectangle"
+        case .alwaysCover:                 return "pin.fill"
         }
     }
 }

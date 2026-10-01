@@ -192,6 +192,11 @@ struct RedactionEditorDrawer: View {
     let onFit: () -> Void
     let onDone: () -> Void
 
+    /// Covers only part of a finding (`RedactionRegion.partialCover`), or all of it.
+    var onSetPartial: (String, Bool) -> Void = { _, _ in }
+    /// Adds a finding's text to the Always Cover list.
+    var onAlwaysCover: ((String) -> Void)?
+
     // MARK: - Multi-select local state
 
     @State private var showPosition = false
@@ -371,6 +376,31 @@ struct RedactionEditorDrawer: View {
                 .frame(minHeight: 44)
                 .padding(.horizontal, 16)
                 Divider()
+                if let label = selectedRegion.partialCoverLabel {
+                    Toggle(label, isOn: Binding(
+                        get: { selectedRegion.isPartial },
+                        set: { onSetPartial(selectedRegion.id, $0) }
+                    ))
+                    .font(.subheadline)
+                    .frame(minHeight: 44)
+                    .padding(.horizontal, 16)
+                    .accessibilityIdentifier("partialCoverToggle")
+                    Divider()
+                }
+                if let onAlwaysCover, let term = selectedRegion.alwaysCoverCandidate {
+                    Button {
+                        onAlwaysCover(term)
+                    } label: {
+                        Label("Always cover “\(term)”", systemImage: "pin")
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    .font(.subheadline)
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .accessibilityIdentifier("alwaysCoverThisButton")
+                    Divider()
+                }
             } else if isMultiSelectMode && !multiSelectedIDs.isEmpty {
                 Button("Style") { showStyles = true }
                     .frame(maxWidth: .infinity, minHeight: 44)

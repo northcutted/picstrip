@@ -23,4 +23,21 @@ nonisolated enum PhotoLibraryWriter {
             }
         }
     }
+
+    /// Adds the video at `url` to the library as a new video.
+    static func saveVideo(at url: URL) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            PHAssetCreationRequest.forAsset().addResource(with: .video, fileURL: url, options: nil)
+        }
+    }
+
+    /// Adds a Live Photo: the still and its paired video, which must share a
+    /// content identifier or Photos refuses the pair.
+    static func saveLivePhoto(photo: Data, pairedVideo: URL) async throws {
+        try await PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: photo, options: nil)
+            request.addResource(with: .pairedVideo, fileURL: pairedVideo, options: nil)
+        }
+    }
 }

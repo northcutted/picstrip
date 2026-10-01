@@ -160,6 +160,8 @@ final class PicStripUITests: XCTestCase {
                       "The primary share action must remain visible while reviewing the photo")
         snapshot("04_ReviewAndShare")
         attachScreen("04_ReviewAndShare")
+        // The review is a short form sheet on iPad; the button may be below the fold.
+        reveal(app.buttons["inspectFullImageButton"], in: app)
         app.buttons["inspectFullImageButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
         snapshot("01_FullPreview")
@@ -208,7 +210,10 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        let identifiers = ["takePhotoButton", "selectPhotoButton", "scanDocumentButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"]
+        let identifiers = [
+            "takePhotoButton", "selectPhotoButton", "selectScreenshotButton", "scanDocumentButton",
+            "selectVideoButton", "selectMultiplePhotosButton", "browseFilesButton", "tryDemoButton"
+        ]
         for identifier in identifiers {
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be on the first screen.")
         }
@@ -401,12 +406,69 @@ final class PicStripUITests: XCTestCase {
             (allow.exists ? allow : prompt.buttons.element(boundBy: prompt.buttons.count - 1)).tap()
         }
 
-        // A successful save closes the review sheet; a trap kills the app.
+        // A successful save shows a confirmation and closes the review sheet; a
+        // trap kills the app.  The confirmation goes away by itself, so look for
+        // it first.
+        XCTAssertTrue(
+            app.descendants(matching: .any)["savedConfirmation"].waitForExistence(timeout: 20),
+            "A confirmation says what the saved copy left out."
+        )
+        attachScreen("saved_confirmation")
         let sheetClosed = NSPredicate(format: "exists == false")
         expectation(for: sheetClosed, evaluatedWith: saveAsNew)
         waitForExpectations(timeout: 20)
         XCTAssertEqual(app.state, .runningForeground, "PicStrip should survive saving to Photos.")
         XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
+    }
+
+    /// Always Cover terms are added and removed from the home screen.
+    @MainActor
+    func testAlwaysCoverListAddsAndRemovesTerms() throws {
+        let app = englishApp()
+        app.launch()
+        XCTAssertTrue(app.buttons["alwaysCoverButton"].waitForExistence(timeout: 15))
+        app.buttons["alwaysCoverButton"].tap()
+
+        let field = app.textFields["alwaysCoverField"]
+        XCTAssertTrue(field.waitForExistence(timeout: 5))
+        field.tap()
+        field.typeText("Alex Thornton")
+        app.buttons["alwaysCoverAddButton"].tap()
+        let row = app.staticTexts["Alex Thornton"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        attachScreen("always_cover")
+
+        row.swipeLeft()
+        app.buttons["Delete"].firstMatch.tap()
+        XCTAssertFalse(row.waitForExistence(timeout: 2))
+    }
+
+    /// A card, phone or email finding can leave its end visible, and any text
+    /// finding can join Always Cover.
+    @MainActor
+    func testEditorOffersPartialCoverAndAlwaysCover() throws {
+        let app = englishApp()
+        let tmpPath = "/tmp/picstrip_partial_fixture.png"
+        if let srcURL = fixtureImageURL(), let data = try? Data(contentsOf: srcURL) {
+            try? data.write(to: URL(fileURLWithPath: tmpPath))
+        }
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
+        app.launch()
+
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 25))
+        XCTAssertTrue(app.descendants(matching: .any)["sharingPresetButton"].firstMatch.exists, "The sharing purpose is shown.")
+        edit.tap()
+
+        let email = app.descendants(matching: .any)["regionRow-detected-email-0"].firstMatch
+        XCTAssertTrue(email.waitForExistence(timeout: 5))
+        email.tap()
+        let partial = app.switches["partialCoverToggle"].firstMatch
+        XCTAssertTrue(partial.waitForExistence(timeout: 5), "An email can keep its domain visible.")
+        partial.switches.firstMatch.exists ? partial.switches.firstMatch.tap() : partial.tap()
+        XCTAssertTrue(app.buttons["alwaysCoverThisButton"].exists, "A text finding can join Always Cover.")
+        attachScreen("partial_cover")
     }
 
     /// Blur and pixelate offer a strength slider; solid and crosshatch do not.
@@ -548,15 +610,34 @@ final class PicStripUITests: XCTestCase {
                 // A visible disabled Save still needs the manual-review acknowledgement.
                 return
             }
-            let upwards = !element.exists || element.frame.maxY > viewport.maxY
-            let upper = viewport.minY + viewport.height * 0.25
-            let lower = viewport.maxY - 24
             // Use the enclosing list's edge: iPad sheets do not fill the screen,
             // and dragging through the preview image would pan that image.
             let origin = app.coordinate(withNormalizedOffset: .zero)
-            let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
-            let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
-            start.press(forDuration: 0.05, thenDragTo: end)
+            let frame = element.exists ? element.frame : .null
+            let span = viewport.height - 40
+            // Content moves by `distance` (negative = up) to bring the control in.
+            let distance: CGFloat? = (frame.isNull || frame.isEmpty) ? nil
+                : frame.maxY > viewport.maxY ? -(frame.maxY - viewport.maxY + 16)
+                : viewport.minY - frame.minY + 16
+            if list.exists, let distance, abs(distance) < span {
+                // Close, in a list: move exactly that far and hold, so the list
+                // does not coast past it — a fixed stride overshoots a short iPad
+                // sheet at large text sizes every time.  (A held drag does not
+                // scroll a plain scroll view that starts under a button, so the
+                // home screen keeps the quick swipe.)
+                let startY = distance < 0 ? viewport.maxY - 20 : viewport.minY + 20
+                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY))
+                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY + distance))
+                start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .default, thenHoldForDuration: 0.3)
+            } else {
+                // Far, or not created yet: a quick swipe toward it.
+                let upwards = distance.map { $0 < 0 } ?? true
+                let upper = viewport.minY + viewport.height * 0.25
+                let lower = viewport.maxY - 24
+                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
+                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+                start.press(forDuration: 0.05, thenDragTo: end)
+            }
         }
         XCTFail("Could not reveal \(identifier.isEmpty ? "the off-screen control" : identifier) inside the unobscured viewport", file: file, line: line)
     }

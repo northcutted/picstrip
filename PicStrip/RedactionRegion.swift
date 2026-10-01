@@ -60,6 +60,34 @@ struct RedactionRegion: Identifiable, Hashable {
     var color: RedactionColor = .black
     /// How hard `.pixelate` / `.blur` scramble this region; see `RedactionStrength`.
     var strength: Double = RedactionStrength.standard
+    /// The whole finding and the part of it to cover when its end stays
+    /// readable; `nil` for findings that cannot be shortened.
+    var partialCover: PartialCover?
+    /// `true` while only `partialCover.partial` is covered.
+    var isPartial = false
+
+    struct PartialCover: Hashable {
+        let full: CGRect
+        let partial: CGRect
+    }
+
+    /// The text this finding covers, when it is worth adding to Always Cover:
+    /// text the scanner read in full, not a face, a code or a document outline.
+    var alwaysCoverCandidate: String? {
+        guard source == .detected, let type, let snippet,
+              ![.face, .barcode, .alwaysCover].contains(type),
+              ![.creditCardDocument, .identityDocument, .driversLicenseDocument, .passportDocument].contains(subtype),
+              !snippet.hasSuffix("…"),
+              AlwaysCoverList.isValid(snippet)
+        else { return nil }
+        return snippet
+    }
+
+    /// What stays readable when this region covers only part of its finding.
+    var partialCoverLabel: LocalizedStringKey? {
+        guard partialCover != nil else { return nil }
+        return type == .email ? "Leave the domain visible" : "Leave the last 4 visible"
+    }
 
     var displayName: String {
         subtype?.displayName ?? type?.description ?? String(localized: "Custom Redaction")
@@ -84,15 +112,17 @@ struct RedactionRegion: Identifiable, Hashable {
         index: Int,
         isEnabled: Bool = true
     ) -> RedactionRegion {
-        RedactionRegion(
+        let full = Self.clamped(instance.boundingBox)
+        return RedactionRegion(
             id: "detected-\(result.type.id)-\(index)",
-            rect: Self.clamped(instance.boundingBox),
+            rect: full,
             source: .detected,
             type: result.type,
             subtype: instance.subtype,
             score: instance.score,
             snippet: instance.snippet,
-            isEnabled: isEnabled
+            isEnabled: isEnabled,
+            partialCover: instance.partialBoundingBox.map { PartialCover(full: full, partial: Self.clamped($0)) }
         )
     }
 

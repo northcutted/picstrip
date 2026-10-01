@@ -153,6 +153,8 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
     private var generation = 0
     private var hasLoggedFrameSize = false
     private var handlers: Handlers?
+    /// The user's Always Cover words, looked for in every pass.
+    private var alwaysCover: [String] = []
     private let registration = FrameRegistration()
 
     /// Configures and starts the session.  `previewLayer` is needed up front: the
@@ -209,6 +211,10 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         sessionQueue.async { [self] in
             if device != nil, !session.isRunning { session.startRunning() }
         }
+    }
+
+    func setAlwaysCover(_ terms: [String]) {
+        videoQueue.async { [self] in alwaysCover = terms }
     }
 
     /// A hot phone keeps its camera but loses the analysis; a warm one analyses less often.
@@ -444,10 +450,11 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         guard motion.speed <= LiveAnalysisPacing.maximumAnalysisSpeed, analysisThrottle.begin(at: now) else { return }
         let origin = motion.offset
         let passGeneration = generation
+        let terms = alwaysCover
         Task { [self] in
             let signpost = Self.signposter.beginInterval("Live scan")
             let started = ProcessInfo.processInfo.systemUptime
-            let scan = await PIIScanner.liveScan(in: frame)
+            let scan = await PIIScanner.liveScan(in: frame, alwaysCover: terms)
             let duration = ProcessInfo.processInfo.systemUptime - started
             Self.signposter.endInterval("Live scan", signpost)
             videoQueue.async { [self] in
@@ -570,6 +577,7 @@ final class LiveCameraModel {
         }
         previewLayer.session = camera.session
         previewLayer.videoGravity = .resizeAspect
+        camera.setAlwaysCover(AlwaysCoverList.shared.terms)
         do {
             capabilities = try await camera.start(previewLayer: previewLayer, handlers: .init(
                 scan: { [weak self] scan, videoSize, origin in
@@ -737,9 +745,10 @@ final class LiveCameraModel {
         videoSize = CGSize(width: fixture.image.width, height: fixture.image.height)
         state = .running
         nonisolated(unsafe) let frame = buffer
+        let terms = AlwaysCoverList.shared.terms
         tasks.append(Task { [weak self] in
             while !Task.isCancelled {
-                let scan = await PIIScanner.liveScan(in: frame)
+                let scan = await PIIScanner.liveScan(in: frame, alwaysCover: terms)
                 guard let self, !Task.isCancelled else { return }
                 apply(scan, videoSize: videoSize, origin: .zero)
                 try? await Task.sleep(for: .seconds(LiveAnalysisPacing.baseInterval))

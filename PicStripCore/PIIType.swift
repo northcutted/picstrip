@@ -69,6 +69,10 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
     /// from the app's on-device language-model pass (Apple Intelligence devices).
     case personName
 
+    // MARK: - The user's own
+    /// A word or phrase the user asked PicStrip to cover in every photo.
+    case alwaysCover
+
     // MARK: - Risk Level
 
     /// Editorial risk classification for this PII type.
@@ -125,6 +129,10 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
              .barcode,
              .personName:
             return .low
+
+        // The user said it matters.
+        case .alwaysCover:
+            return .high
         }
     }
 
@@ -175,6 +183,7 @@ nonisolated enum PIIType: String, Hashable, Identifiable, CaseIterable {
         // Unstructured / Contextual
         case .unstructuredCredential:   return String(localized: "Physical Credential / Password")
         case .personName:               return String(localized: "Name")
+        case .alwaysCover:              return String(localized: "Always Cover")
         }
     }
 
