@@ -14,15 +14,16 @@ enum VideoSource {
 
 // MARK: - VideoCleanerModel
 
-/// Drives the video screen: copies the video in, finds its faces, previews the
-/// covers, and writes a copy with the faces covered and the hidden details gone.
+/// Drives the video screen: copies the video in, finds its faces, text and
+/// codes, previews the covers, and writes a copy with them covered and the
+/// hidden details gone.
 @Observable
 final class VideoCleanerModel {
 
     enum Stage: Equatable {
         case loading
         case scanning
-        /// Faces were found: the user checks the covers before saving.
+        /// Something to cover was found: the user checks the covers before saving.
         case review
         case saving
         case cleaned
@@ -32,16 +33,32 @@ final class VideoCleanerModel {
     private(set) var stage = Stage.loading
     /// Seconds.
     private(set) var duration: Double = 0
-    private(set) var scanProgress = VideoFaceScanner.Progress(fraction: 0, isCooling: false)
+    private(set) var scanProgress = VideoScanner.Progress(fraction: 0, isCooling: false)
     private(set) var saveProgress: Double = 0
+
     private(set) var faces: [FaceTrack] = []
-    private(set) var thumbnails: [Int: UIImage] = [:]
     /// A face's cover; faces not in here are blurred.
     private(set) var covers: [Int: FaceCover] = [:]
-    /// Off to keep every face visible and only remove the hidden details.
+    /// Faces the user chose to leave showing.
+    private(set) var visibleFaces: Set<Int> = []
+    /// Off to keep every face visible.
     var coversFaces = true {
         didSet { if coversFaces != oldValue { refreshPreview() } }
     }
+
+    /// Sensitive text and codes, one row per distinct reading.
+    private(set) var findingGroups: [FindingGroup] = []
+    /// Groups the user chose to leave showing.
+    private(set) var uncoveredGroups: Set<String> = []
+    /// How text and codes are covered: `.solid`, `.pixelate` or `.blur`.
+    var textStyle = RedactionStyle.solid {
+        didSet { if textStyle != oldValue { refreshPreview() } }
+    }
+
+    /// How each face (by track id) and group (by group id) looks in the list.
+    private(set) var faceThumbnails: [Int: UIImage] = [:]
+    private(set) var findingThumbnails: [String: UIImage] = [:]
+
     let player = AVPlayer()
     /// The covered frame shown when the player cannot play the preview (the
     /// simulator cannot play any video composition).
@@ -52,20 +69,25 @@ final class VideoCleanerModel {
     private(set) var removed: [VideoFinding] = []
     /// Whether the original's other metadata is gone from the copy too.
     private(set) var removedOther = false
-    /// How many faces the saved copy has covered.
+    /// What the saved copy covers.
     private(set) var coveredFaceCount = 0
+    private(set) var coveredFindingCount = 0
     private(set) var output: URL?
 
     private var source: URL?
     private var found: [VideoFinding] = []
-    private var scanTask: Task<[FaceTrack], Error>?
+    private var path = CameraPath()
+    private var scanTask: Task<VideoScan, Error>?
     private var saveTask: Task<Void, Never>?
-    private(set) var skipsFaces = false
+    private(set) var skipsCovering = false
     private var previewGeneration = 0
 
-    var isLong: Bool { duration >= VideoFaceScanner.longVideoDuration }
+    var isLong: Bool { duration >= VideoScanner.longVideoDuration }
+    var hasSomethingToCover: Bool { !faces.isEmpty || !findingGroups.isEmpty }
 
     func cover(for face: FaceTrack) -> FaceCover { covers[face.id] ?? .blur }
+    func isVisible(_ face: FaceTrack) -> Bool { visibleFaces.contains(face.id) }
+    func isCovered(_ group: FindingGroup) -> Bool { !uncoveredGroups.contains(group.id) }
 
     // MARK: Flow
 
@@ -77,33 +99,39 @@ final class VideoCleanerModel {
             found = try await VideoCleaner.findings(in: url)
 
             stage = .scanning
-            let scan = Task {
-                try await VideoFaceScanner.scan(url) { [weak self] progress in
+            let terms = AlwaysCoverList.shared.terms
+            let scanning = Task {
+                try await VideoScanner.scan(url, alwaysCover: terms) { [weak self] progress in
                     Task { @MainActor in self?.scanProgress = progress }
                 }
             }
-            scanTask = scan
+            scanTask = scanning
+            var scan = VideoScan()
             do {
-                faces = try await withTaskCancellationHandler {
-                    try await scan.value
+                scan = try await withTaskCancellationHandler {
+                    try await scanning.value
                 } onCancel: {
-                    scan.cancel()
+                    scanning.cancel()
                 }
-            } catch where skipsFaces {
-                faces = []
+            } catch where skipsCovering {
+                scan = VideoScan()
             }
             scanTask = nil
             try Task.checkCancellation()
             // Skip tapped just as the scan finished.
-            if skipsFaces { faces = [] }
+            if skipsCovering { scan = VideoScan() }
 
-            guard !faces.isEmpty else {
+            faces = scan.faces
+            findingGroups = FindingGroup.groups(of: scan.findings)
+            path = scan.path
+            guard hasSomethingToCover else {
                 // Nothing to cover: straight to the cleaned copy, frames untouched.
                 await save()
                 return
             }
-            thumbnails = await Self.thumbnails(of: faces, in: url)
-            stillTime = faces[0].representativeSample?.time ?? 0
+            await makeThumbnails(from: url)
+            stillTime = faces.first?.representativeSample?.time
+                ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
             refreshPreview()
             stage = .review
         } catch is CancellationError {
@@ -113,19 +141,30 @@ final class VideoCleanerModel {
         }
     }
 
-    /// Stops looking for faces and saves a copy with only the hidden details removed.
-    func skipFaces() {
-        skipsFaces = true
+    /// Stops looking and saves a copy with only the hidden details removed.
+    func skipCovering() {
+        skipsCovering = true
         scanTask?.cancel()
     }
 
     func setCover(_ cover: FaceCover, for face: FaceTrack) {
         covers[face.id] = cover
+        visibleFaces.remove(face.id)
         refreshPreview()
     }
 
     func setCoverForEveryFace(_ cover: FaceCover) {
         for face in faces { covers[face.id] = cover }
+        refreshPreview()
+    }
+
+    func setVisible(_ visible: Bool, for face: FaceTrack) {
+        if visible { visibleFaces.insert(face.id) } else { visibleFaces.remove(face.id) }
+        refreshPreview()
+    }
+
+    func setCovered(_ covered: Bool, for group: FindingGroup) {
+        if covered { uncoveredGroups.remove(group.id) } else { uncoveredGroups.insert(group.id) }
         refreshPreview()
     }
 
@@ -135,7 +174,7 @@ final class VideoCleanerModel {
         saveTask = Task { await save() }
     }
 
-    /// Writes the cleaned copy, covering the faces unless that was turned off.
+    /// Writes the cleaned copy with what is chosen covered.
     private func save() async {
         guard let source else { return }
         stage = .saving
@@ -143,10 +182,10 @@ final class VideoCleanerModel {
         player.pause()
         var reserved: URL?
         do {
-            let covering = coversFaces && !faces.isEmpty
-            let composition = covering
-                ? try await VideoFaceRedactor.composition(for: AVURLAsset(url: source), covers: currentCovers)
-                : nil
+            let plan = currentPlan
+            let composition = plan.isEmpty
+                ? nil
+                : try await VideoRedactor.composition(for: AVURLAsset(url: source), plan: plan)
             let output = try PrivateFileStore.exports.reserve(extension: "mov")
             reserved = output
             try await VideoCleaner.clean(source, to: output, videoComposition: composition) { [weak self] fraction in
@@ -160,7 +199,8 @@ final class VideoCleanerModel {
             self.output = output
             removed = found.filter { $0.kind != .other } + found.filter { $0.kind == .other }.prefix(1)
             removedOther = !otherLeft
-            coveredFaceCount = covering ? faces.count : 0
+            coveredFaceCount = plan.faces.count
+            coveredFindingCount = findingGroups.filter(isCovered).count
             player.replaceCurrentItem(with: AVPlayerItem(url: output))
             stage = .cleaned
         } catch {
@@ -172,7 +212,7 @@ final class VideoCleanerModel {
         }
     }
 
-    /// Back from the cleaned copy to the faces, to change a cover.
+    /// Back from the cleaned copy to the list, to change a cover.
     func changeCovers() {
         PrivateFileStore.exports.remove(output)
         output = nil
@@ -181,10 +221,17 @@ final class VideoCleanerModel {
     }
 
     func seek(to face: FaceTrack) {
-        let start = max(0, face.start - FaceTracking.hold)
-        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
-        if previewStill != nil, let sample = face.representativeSample {
-            stillTime = sample.time
+        seek(start: face.start - FaceTracking.hold, showing: face.representativeSample?.time)
+    }
+
+    func seek(to group: FindingGroup) {
+        seek(start: group.start - FindingTracking.hold, showing: group.tracks.first?.representativeSample?.time)
+    }
+
+    private func seek(start: Double, showing time: Double?) {
+        player.seek(to: CMTime(seconds: max(0, start), preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        if previewStill != nil, let time {
+            stillTime = time
             refreshPreview()
         }
     }
@@ -201,8 +248,15 @@ final class VideoCleanerModel {
 
     // MARK: Helpers
 
-    private var currentCovers: [VideoFaceRedactor.Cover] {
-        faces.map { VideoFaceRedactor.Cover(track: $0, style: cover(for: $0)) }
+    private var currentPlan: VideoRedactor.Plan {
+        var plan = VideoRedactor.Plan(path: path)
+        if coversFaces {
+            plan.faces = faces.filter { !isVisible($0) }.map { VideoRedactor.FaceCoverage(track: $0, style: cover(for: $0)) }
+        }
+        plan.findings = findingGroups.filter(isCovered).flatMap { group in
+            group.tracks.map { VideoRedactor.FindingCoverage(track: $0, style: textStyle) }
+        }
+        return plan
     }
 
     /// Plays the original with the current covers drawn through the same
@@ -211,15 +265,15 @@ final class VideoCleanerModel {
         guard let source else { return }
         previewGeneration += 1
         let generation = previewGeneration
-        let covers = coversFaces ? currentCovers : []
+        let plan = currentPlan
         Task {
             let item = player.currentItem.flatMap { ($0.asset as? AVURLAsset)?.url == source ? $0 : nil }
                 ?? AVPlayerItem(url: source)
-            let composition = covers.isEmpty
+            let composition = plan.isEmpty
                 ? nil
-                : try? await VideoFaceRedactor.composition(for: item.asset, covers: covers)
+                : try? await VideoRedactor.composition(for: item.asset, plan: plan)
             // Covers that cannot be drawn are never replaced by the bare video.
-            guard generation == previewGeneration, stage == .review, covers.isEmpty || composition != nil else { return }
+            guard generation == previewGeneration, stage == .review, plan.isEmpty || composition != nil else { return }
             item.videoComposition = composition
             if player.currentItem !== item {
                 player.replaceCurrentItem(with: item)
@@ -267,23 +321,38 @@ final class VideoCleanerModel {
         }
     }
 
-    /// Each face as it looks in the middle of its track, for the list.
-    nonisolated private static func thumbnails(of faces: [FaceTrack], in url: URL) async -> [Int: UIImage] {
+    /// Each face and each group as it looks in the middle of its first track.
+    private func makeThumbnails(from url: URL) async {
+        let faceCrops = faces.compactMap { face in
+            face.representativeSample.map { (time: $0.time, box: FaceTracking.padded($0.box)) }
+        }
+        let groupCrops = findingGroups.compactMap { group in
+            group.tracks.first?.representativeSample.map { (time: $0.time, box: FindingTracking.padded($0.box)) }
+        }
+        let images = await Self.crops(faceCrops + groupCrops, from: url)
+        var faceImages: [Int: UIImage] = [:]
+        for (index, face) in faces.enumerated() { faceImages[face.id] = images[index] }
+        var groupImages: [String: UIImage] = [:]
+        for (index, group) in findingGroups.enumerated() { groupImages[group.id] = images[faces.count + index] }
+        faceThumbnails = faceImages
+        findingThumbnails = groupImages
+    }
+
+    /// The frame at each `time`, cropped to `box` (normalised, top-left origin).
+    nonisolated private static func crops(_ items: [(time: Double, box: CGRect)], from url: URL) async -> [Int: UIImage] {
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 1280, height: 1280)
-        var thumbnails: [Int: UIImage] = [:]
-        for face in faces {
-            guard let sample = face.representativeSample,
-                  let frame = try? await generator.image(at: CMTime(seconds: sample.time, preferredTimescale: 600)).image
-            else { continue }
-            let box = FaceTracking.padded(sample.box).intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
+        var images: [Int: UIImage] = [:]
+        for (index, item) in items.enumerated() {
+            guard let frame = try? await generator.image(at: CMTime(seconds: item.time, preferredTimescale: 600)).image else { continue }
+            let box = item.box.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
             let crop = CGRect(
                 x: box.minX * CGFloat(frame.width), y: box.minY * CGFloat(frame.height),
                 width: box.width * CGFloat(frame.width), height: box.height * CGFloat(frame.height)
             ).integral
-            if let cropped = frame.cropping(to: crop) { thumbnails[face.id] = UIImage(cgImage: cropped) }
+            if let cropped = frame.cropping(to: crop) { images[index] = UIImage(cgImage: cropped) }
         }
-        return thumbnails
+        return images
     }
 }

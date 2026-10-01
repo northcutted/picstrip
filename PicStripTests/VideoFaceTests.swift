@@ -171,7 +171,7 @@ struct FaceMovie {
 /// Stands in for Vision: the box around the frame's yellow pixels, which in a
 /// `FaceMovie` are 👨's face and hair.  Runs on the same upright frames.
 enum YellowFaceDetector {
-    static let detect: VideoFaceScanner.Detector = { pixels in
+    static let detect: VideoScanner.FaceDetector = { pixels in
         CVPixelBufferLockBaseAddress(pixels, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixels, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(pixels) else { return [] }
@@ -262,7 +262,7 @@ final class VideoFaceRedactionTests: XCTestCase {
 
     func testTheFaceIsFoundAndFollowed() async throws {
         let movie = try await movie()
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertEqual(tracks.count, 1, "One face, one track: \(tracks.map(\.samples.count))")
         let track = try XCTUnwrap(tracks.first)
         XCTAssertGreaterThanOrEqual(track.samples.count, 15, "About ten looks a second over two seconds.")
@@ -275,7 +275,7 @@ final class VideoFaceRedactionTests: XCTestCase {
 
     func testAPortraitVideosFaceIsFoundWhereItIsShown() async throws {
         let movie = try await movie(rotated: true)
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         let track = try XCTUnwrap(tracks.max { $0.samples.count < $1.samples.count })
         XCTAssertGreaterThanOrEqual(track.samples.count, 15)
         let sample = try XCTUnwrap(track.representativeSample)
@@ -287,7 +287,7 @@ final class VideoFaceRedactionTests: XCTestCase {
     func testVisionFindsAFaceInTheVideo() async throws {
         let movie = try await FaceMovie.make(face: "🧑🏽", fontSize: 220)
         cleanup.append(movie.url)
-        let tracks = try await VideoFaceScanner.scan(movie.url) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url) { _ in }.faces
         let track = try XCTUnwrap(tracks.max { $0.samples.count < $1.samples.count }, "Vision found no face.")
         XCTAssertGreaterThanOrEqual(track.samples.count, 10)
         let sample = try XCTUnwrap(track.representativeSample)
@@ -297,16 +297,16 @@ final class VideoFaceRedactionTests: XCTestCase {
     func testABlankVideoHasNoFaces() async throws {
         let movie = try await FaceMovie.make(seconds: 1, face: " ")
         cleanup.append(movie.url)
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertTrue(tracks.isEmpty)
     }
 
     private func coveredCopy(of movie: FaceMovie, style: FaceCover) async throws -> URL {
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertFalse(tracks.isEmpty)
-        let composition = try await VideoFaceRedactor.composition(
+        let composition = try await VideoRedactor.composition(
             for: AVURLAsset(url: movie.url),
-            covers: tracks.map { VideoFaceRedactor.Cover(track: $0, style: style) }
+            plan: VideoRedactor.Plan(faces: tracks.map { VideoRedactor.FaceCoverage(track: $0, style: style) })
         )
         let output = scratchURL()
         try await VideoCleaner.clean(movie.url, to: output, videoComposition: composition)

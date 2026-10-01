@@ -70,16 +70,16 @@ struct VideoCleanerView: View {
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
             VStack(spacing: 8) {
-                Text(model.scanProgress.isCooling ? "Paused while the device cools down" : "Looking for faces…")
+                Text(model.scanProgress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…")
                     .font(.headline)
                 ProgressView(value: model.scanProgress.fraction)
                     .accessibilityIdentifier("videoScanProgress")
             }
             if model.isLong { longVideoNote }
-            Button("Skip Face Covering") { model.skipFaces() }
+            Button("Skip Covering") { model.skipCovering() }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("skipFacesButton")
-            Text("Skipping keeps every face visible and only removes the hidden details.")
+            Text("Skipping keeps everything in the video visible and only removes the hidden details.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -89,7 +89,7 @@ struct VideoCleanerView: View {
     }
 
     private var longVideoNote: some View {
-        Label("This is a long video, so finding faces and saving the copy can take several minutes. Keep PicStrip open until it finishes.", systemImage: "clock")
+        Label("This is a long video, so scanning it and saving the copy can take several minutes. Keep PicStrip open until it finishes.", systemImage: "clock")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .accessibilityIdentifier("longVideoNote")
@@ -107,32 +107,52 @@ struct VideoCleanerView: View {
                         .frame(maxWidth: .infinity, maxHeight: 260)
                         .background(.black)
                         .listRowInsets(EdgeInsets())
-                        .accessibilityLabel("Preview with faces covered")
+                        .accessibilityLabel("Preview with covers")
                         .accessibilityIdentifier("videoPreviewStill")
                 } else {
                     VideoPlayer(player: model.player)
                         .frame(height: 260)
                         .listRowInsets(EdgeInsets())
-                        .accessibilityLabel("Preview with faces covered")
+                        .accessibilityLabel("Preview with covers")
                 }
             } footer: {
                 if model.previewStill != nil {
-                    Text("This device cannot play the preview, so it shows one frame. Tap a face to see it covered.")
+                    Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
                 }
             }
 
-            Section {
-                Toggle("Cover faces", isOn: $model.coversFaces)
-                    .accessibilityIdentifier("coverFacesToggle")
-                if model.coversFaces {
-                    ForEach(Array(model.faces.enumerated()), id: \.element.id) { index, face in
-                        faceRow(face, number: index + 1)
+            if !model.faces.isEmpty {
+                Section {
+                    Toggle("Cover faces", isOn: $model.coversFaces)
+                        .accessibilityIdentifier("coverFacesToggle")
+                    if model.coversFaces {
+                        ForEach(Array(model.faces.enumerated()), id: \.element.id) { index, face in
+                            faceRow(face, number: index + 1)
+                        }
                     }
+                } header: {
+                    Text("Faces")
+                } footer: {
+                    Text("Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share.")
                 }
-            } header: {
-                Text("Faces")
-            } footer: {
-                Text("Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share. Text in the video stays visible.")
+            }
+
+            if !model.findingGroups.isEmpty {
+                Section {
+                    Picker("Cover with", selection: $model.textStyle) {
+                        ForEach([RedactionStyle.solid, .pixelate, .blur], id: \.self) { style in
+                            Label(style.displayName, systemImage: style.symbolName).tag(style)
+                        }
+                    }
+                    .accessibilityIdentifier("textStylePicker")
+                    ForEach(Array(model.findingGroups.enumerated()), id: \.element.id) { index, group in
+                        findingRow(group, number: index + 1)
+                    }
+                } header: {
+                    Text("Text and codes")
+                } footer: {
+                    Text("Text is read twice a second, so text that is small, blurred by movement, or on screen only briefly can be missed.")
+                }
             }
 
             if model.isLong {
@@ -189,19 +209,68 @@ struct VideoCleanerView: View {
                 } label: {
                     Label("Emoji…", systemImage: "face.smiling")
                 }
+                Divider()
+                Button {
+                    model.setVisible(true, for: face)
+                } label: {
+                    Label("Leave Visible", systemImage: "eye")
+                }
             } label: {
-                coverLabel(model.cover(for: face))
+                coverLabel(model.isVisible(face) ? nil : model.cover(for: face))
             }
             .accessibilityLabel("Cover for face \(number)")
-            .accessibilityValue(coverName(model.cover(for: face)))
+            .accessibilityValue(coverName(model.isVisible(face) ? nil : model.cover(for: face)))
             .accessibilityIdentifier("faceCoverMenu-\(number)")
+        }
+    }
+
+    private func findingRow(_ group: FindingGroup, number: Int) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                model.seek(to: group)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: group.type.symbolName)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(group.type.description)
+                            .foregroundStyle(.primary)
+                        Text(group.snippet)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(group.tracks.prefix(3).map(timeRange).joined(separator: ", "))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Shows it in the preview")
+            .accessibilityIdentifier("findingRow-\(number)")
+
+            Toggle(isOn: Binding(
+                get: { model.isCovered(group) },
+                set: { model.setCovered($0, for: group) }
+            )) {
+                Text("Cover \(group.type.description)")
+            }
+            .labelsHidden()
+            .accessibilityIdentifier("findingToggle-\(number)")
         }
     }
 
     @ViewBuilder
     private func faceThumbnail(_ face: FaceTrack) -> some View {
         Group {
-            if let image = model.thumbnails[face.id] {
+            if let image = model.faceThumbnails[face.id] {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -216,9 +285,13 @@ struct VideoCleanerView: View {
         .accessibilityHidden(true)
     }
 
-    private func coverLabel(_ cover: FaceCover) -> some View {
+    /// `nil` for a face left visible.
+    private func coverLabel(_ cover: FaceCover?) -> some View {
         HStack(spacing: 4) {
             switch cover {
+            case nil:
+                Image(systemName: "eye")
+                Text("Visible")
             case .blur:
                 Image(systemName: "drop.fill")
                 Text("Blur")
@@ -232,15 +305,24 @@ struct VideoCleanerView: View {
         .frame(minHeight: 44)
     }
 
-    private func coverName(_ cover: FaceCover) -> String {
+    private func coverName(_ cover: FaceCover?) -> String {
         switch cover {
+        case nil: String(localized: "Visible")
         case .blur: String(localized: "Blur")
         case .emoji(let emoji): emoji
         }
     }
 
     private func timeRange(_ face: FaceTrack) -> String {
-        "\(Self.clock(face.start)) – \(Self.clock(max(face.end, face.start)))"
+        Self.timeRange(face.start, face.end)
+    }
+
+    private func timeRange(_ track: FindingTrack) -> String {
+        Self.timeRange(track.start, track.end)
+    }
+
+    static func timeRange(_ start: Double, _ end: Double) -> String {
+        clock(start) == clock(end) ? clock(start) : "\(clock(start)) – \(clock(end))"
     }
 
     static func clock(_ seconds: Double) -> String {
@@ -251,7 +333,7 @@ struct VideoCleanerView: View {
 
     private var savingView: some View {
         VStack(spacing: 16) {
-            Text(model.coversFaces && !model.faces.isEmpty ? "Covering faces and saving a copy…" : "Cleaning video…")
+            Text(model.hasSomethingToCover ? "Covering and saving a copy…" : "Cleaning video…")
                 .font(.headline)
             ProgressView(value: model.saveProgress)
                 .accessibilityIdentifier("videoSaveProgress")
@@ -279,8 +361,16 @@ struct VideoCleanerView: View {
                         symbol: "face.dashed.fill", values: []
                     )
                     .accessibilityIdentifier("facesCoveredRow")
-                } else if model.faces.isEmpty && !model.skipsFaces {
-                    Label("No faces found", systemImage: "face.dashed")
+                }
+                if model.coveredFindingCount > 0 {
+                    resultRow(
+                        title: Text("Text and codes covered: \(model.coveredFindingCount)"),
+                        symbol: "text.viewfinder", values: []
+                    )
+                    .accessibilityIdentifier("textCoveredRow")
+                }
+                if !model.hasSomethingToCover && !model.skipsCovering {
+                    Label("No faces or sensitive text found", systemImage: "face.dashed")
                         .accessibilityIdentifier("noFacesFoundRow")
                 }
                 let kinds = Dictionary(grouping: model.removed, by: \.kind)
@@ -298,13 +388,13 @@ struct VideoCleanerView: View {
                 Text("Removed from the copy")
             }
 
-            if !model.faces.isEmpty {
+            if model.hasSomethingToCover {
                 Section {
                     Button {
                         saveState = .idle
                         model.changeCovers()
                     } label: {
-                        Label("Change Face Covers", systemImage: "face.smiling")
+                        Label("Change What’s Covered", systemImage: "face.smiling")
                     }
                     .accessibilityIdentifier("changeCoversButton")
                 }
@@ -312,8 +402,8 @@ struct VideoCleanerView: View {
 
             Section {
                 Label(
-                    model.coveredFaceCount > 0
-                        ? "Faces were covered automatically. Watch the copy before you share it. Text in the video stays visible."
+                    model.coveredFaceCount + model.coveredFindingCount > 0
+                        ? "Faces and text were covered automatically, and some can be missed. Watch the copy before you share it."
                         : "Faces and text in the video stay visible: PicStrip removes hidden details only.",
                     systemImage: "info.circle"
                 )

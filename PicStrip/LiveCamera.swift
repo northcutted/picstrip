@@ -64,7 +64,7 @@ nonisolated enum LiveOverlayGeometry {
 /// Stateful: each call compares a frame with the one before it.  One call at a
 /// time; `CameraSession` gates it with a throttle of its own.
 nonisolated final class FrameRegistration: @unchecked Sendable {
-    private var request = TrackTranslationalImageRegistrationRequest()
+    private var request = PIIScanner.onSimulatorCPU(TrackTranslationalImageRegistrationRequest())
     private var frameSize: CGSize = .zero
 
     /// The displacement of the content since the previous frame, normalised
@@ -74,7 +74,7 @@ nonisolated final class FrameRegistration: @unchecked Sendable {
         let size = CGSize(width: CVPixelBufferGetWidth(pixelBuffer), height: CVPixelBufferGetHeight(pixelBuffer))
         let isFirst = restart || size != frameSize
         if isFirst {
-            request = TrackTranslationalImageRegistrationRequest()
+            request = PIIScanner.onSimulatorCPU(TrackTranslationalImageRegistrationRequest())
             frameSize = size
         }
         guard let observation = try? await ImageRequestHandler(pixelBuffer).perform(request), !isFirst else { return nil }
