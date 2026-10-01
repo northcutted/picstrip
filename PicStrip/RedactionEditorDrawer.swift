@@ -61,8 +61,6 @@ private struct RedactionEmojiPicker: View {
     let selection: String?
     let onSelect: (String) -> Void
 
-    @State private var other = ""
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 6)], spacing: 6) {
@@ -88,22 +86,73 @@ private struct RedactionEmojiPicker: View {
                     .accessibilityIdentifier("emojiChoice-\(emoji)")
                 }
             }
-            HStack(spacing: 10) {
+            HStack(spacing: 8) {
                 if let selection, !EmojiCover.choices.contains(selection) {
                     Text(selection)
                         .font(.title2)
                         .accessibilityAddTraits(.isSelected)
+                } else {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
                 }
-                TextField("Any other emoji", text: $other)
-                    .textFieldStyle(.roundedBorder)
-                    .onChange(of: other) { _, text in
-                        guard let emoji = EmojiCover.firstEmoji(in: text) else { return }
-                        onSelect(emoji)
-                        other = ""
-                    }
-                    .accessibilityIdentifier("otherEmojiField")
+                EmojiKeyboardField(placeholder: String(localized: "Search all emoji"), onPick: onSelect)
+                    .frame(maxWidth: .infinity, minHeight: 44)
             }
+            .padding(.horizontal, 12)
+            .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 10))
         }
+    }
+}
+
+/// A field that opens straight onto the emoji keyboard — whose own search finds
+/// any emoji, in the user's language — and hands back the first emoji chosen.
+/// Without the emoji keyboard installed it falls back to the usual keyboard.
+private struct EmojiKeyboardField: UIViewRepresentable {
+    let placeholder: String
+    let onPick: (String) -> Void
+
+    final class Field: UITextField {
+        override var textInputMode: UITextInputMode? {
+            UITextInputMode.activeInputModes.first { $0.primaryLanguage == "emoji" } ?? super.textInputMode
+        }
+    }
+
+    final class Coordinator: NSObject {
+        var onPick: (String) -> Void
+
+        init(onPick: @escaping (String) -> Void) {
+            self.onPick = onPick
+        }
+
+        @objc func changed(_ field: UITextField) {
+            guard let emoji = EmojiCover.firstEmoji(in: field.text ?? "") else { return }
+            field.text = ""
+            field.resignFirstResponder()
+            onPick(emoji)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    func makeUIView(context: Context) -> Field {
+        let field = Field()
+        field.placeholder = placeholder
+        field.font = .preferredFont(forTextStyle: .body)
+        field.adjustsFontForContentSizeCategory = true
+        field.autocorrectionType = .no
+        field.returnKeyType = .done
+        field.accessibilityIdentifier = "otherEmojiField"
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
+        field.addTarget(field, action: #selector(UIResponder.resignFirstResponder), for: .editingDidEndOnExit)
+        return field
+    }
+
+    func updateUIView(_ field: Field, context: Context) {
+        field.placeholder = placeholder
+        context.coordinator.onPick = onPick
     }
 }
 
