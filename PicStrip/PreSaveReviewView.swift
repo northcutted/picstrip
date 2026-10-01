@@ -264,6 +264,9 @@ struct PreSaveReviewView: View {
                 if original != nil, !showsOriginal {
                     Text("Touch and hold to compare with the original")
                         .font(.caption2.weight(.medium))
+                        // A hint on top of the preview must not hide it at large sizes;
+                        // VoiceOver reads the same words from the accessibility hint.
+                        .dynamicTypeSize(...DynamicTypeSize.xLarge)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(.thinMaterial, in: Capsule())

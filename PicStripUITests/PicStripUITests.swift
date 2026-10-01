@@ -406,17 +406,19 @@ final class PicStripUITests: XCTestCase {
             (allow.exists ? allow : prompt.buttons.element(boundBy: prompt.buttons.count - 1)).tap()
         }
 
-        // A successful save closes the review sheet; a trap kills the app.
+        // A successful save shows a confirmation and closes the review sheet; a
+        // trap kills the app.  The confirmation goes away by itself, so look for
+        // it first.
+        XCTAssertTrue(
+            app.descendants(matching: .any)["savedConfirmation"].waitForExistence(timeout: 20),
+            "A confirmation says what the saved copy left out."
+        )
+        attachScreen("saved_confirmation")
         let sheetClosed = NSPredicate(format: "exists == false")
         expectation(for: sheetClosed, evaluatedWith: saveAsNew)
         waitForExpectations(timeout: 20)
         XCTAssertEqual(app.state, .runningForeground, "PicStrip should survive saving to Photos.")
         XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
-        XCTAssertTrue(
-            app.descendants(matching: .any)["savedConfirmation"].waitForExistence(timeout: 5),
-            "A confirmation says what the saved copy left out."
-        )
-        attachScreen("saved_confirmation")
     }
 
     /// Always Cover terms are added and removed from the home screen.
@@ -608,15 +610,34 @@ final class PicStripUITests: XCTestCase {
                 // A visible disabled Save still needs the manual-review acknowledgement.
                 return
             }
-            let upwards = !element.exists || element.frame.maxY > viewport.maxY
-            let upper = viewport.minY + viewport.height * 0.25
-            let lower = viewport.maxY - 24
             // Use the enclosing list's edge: iPad sheets do not fill the screen,
             // and dragging through the preview image would pan that image.
             let origin = app.coordinate(withNormalizedOffset: .zero)
-            let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
-            let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
-            start.press(forDuration: 0.05, thenDragTo: end)
+            let frame = element.exists ? element.frame : .null
+            let span = viewport.height - 40
+            // Content moves by `distance` (negative = up) to bring the control in.
+            let distance: CGFloat? = (frame.isNull || frame.isEmpty) ? nil
+                : frame.maxY > viewport.maxY ? -(frame.maxY - viewport.maxY + 16)
+                : viewport.minY - frame.minY + 16
+            if list.exists, let distance, abs(distance) < span {
+                // Close, in a list: move exactly that far and hold, so the list
+                // does not coast past it — a fixed stride overshoots a short iPad
+                // sheet at large text sizes every time.  (A held drag does not
+                // scroll a plain scroll view that starts under a button, so the
+                // home screen keeps the quick swipe.)
+                let startY = distance < 0 ? viewport.maxY - 20 : viewport.minY + 20
+                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY))
+                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY + distance))
+                start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .default, thenHoldForDuration: 0.3)
+            } else {
+                // Far, or not created yet: a quick swipe toward it.
+                let upwards = distance.map { $0 < 0 } ?? true
+                let upper = viewport.minY + viewport.height * 0.25
+                let lower = viewport.maxY - 24
+                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
+                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+                start.press(forDuration: 0.05, thenDragTo: end)
+            }
         }
         XCTFail("Could not reveal \(identifier.isEmpty ? "the off-screen control" : identifier) inside the unobscured viewport", file: file, line: line)
     }

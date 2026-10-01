@@ -1303,7 +1303,7 @@ private struct SavedConfirmationBanner: View {
                     ? String(localized: "Original replaced in Photos")
                     : String(localized: "Saved to Photos")
             ).post()
-            try? await Task.sleep(for: .seconds(5))
+            try? await Task.sleep(for: .seconds(8))
             guard !Task.isCancelled else { return }
             onDismiss()
         }
