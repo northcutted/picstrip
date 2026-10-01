@@ -93,6 +93,9 @@ nonisolated enum VideoScanner {
         // duration hands back only the frames that are looked at.
         var configuration = try await AVVideoComposition.Configuration(for: asset)
         configuration.frameDuration = CMTime(seconds: FaceTracking.sampleInterval, preferredTimescale: 600)
+        // Otherwise frames follow the video track's timing and every frame
+        // comes back: six times the work on a 60 fps video.
+        configuration.sourceTrackIDForFrameTiming = kCMPersistentTrackID_Invalid
         let reader = try AVAssetReader(asset: asset)
         let output = AVAssetReaderVideoCompositionOutput(videoTracks: [track], videoSettings: [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
@@ -111,7 +114,30 @@ nonisolated enum VideoScanner {
         let newest = PIIScanner.makeFaceRequest()
         let standard = DetectFaceRectanglesRequest()
         let faceRequests = (newest.revision == standard.revision ? [standard] : [newest, standard]).map(PIIScanner.onSimulatorCPU)
-        func visionFaces(in pixels: CVPixelBuffer) async throws -> [CGRect] {
+        // Small faces — a crowd, a photo within the picture — are missed in the
+        // whole frame and found in overlapping tiles of the full-size frame.
+        func tiledFaces(in pixels: CVPixelBuffer) async -> [[CGRect]] {
+            let handler = ImageRequestHandler(pixels)
+            var found: [[CGRect]] = []
+            for tile in FaceTracking.tiles {
+                for request in faceRequests {
+                    var tiled = request
+                    tiled.regionOfInterest = NormalizedRect(x: tile.minX, y: tile.minY, width: tile.width, height: tile.height)
+                    guard let faces = try? await handler.perform(tiled) else { continue }
+                    // Results are relative to the tile.
+                    found.append(faces.map { face in
+                        let box = face.boundingBox.cgRect
+                        return PIIScanner.swiftUIBox(from: CGRect(
+                            x: tile.minX + box.minX * tile.width, y: tile.minY + box.minY * tile.height,
+                            width: box.width * tile.width, height: box.height * tile.height
+                        ))
+                    })
+                }
+            }
+            return found
+        }
+
+        func visionFaces(in pixels: CVPixelBuffer, tiles fullSize: CVPixelBuffer?) async throws -> [CGRect] {
             let handler = ImageRequestHandler(pixels)
             var found: [[CGRect]] = []
             for request in faceRequests {
@@ -123,6 +149,7 @@ nonisolated enum VideoScanner {
                 // Neither ran: report why.
                 _ = try await handler.perform(PIIScanner.onSimulatorCPU(DetectFaceRectanglesRequest()))
             }
+            if let fullSize { found += await tiledFaces(in: fullSize) }
             let boxes = FaceTracking.union(found)
             let poses = (try? await handler.perform(PIIScanner.onSimulatorCPU(DetectHumanBodyPoseRequest()))) ?? []
             let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
@@ -148,12 +175,16 @@ nonisolated enum VideoScanner {
         let registrationSize = FrameShrinker(longSide: 480)
         let readEvery = max(1, Int((FindingTracking.sampleInterval / FaceTracking.sampleInterval).rounded()))
         var frameIndex = 0
+        var nextSample = -Double.infinity
         var latestRead = FrameRead()
         var lastGlimpse = ContinuousClock.now - .seconds(1)
         while let buffer = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(buffer) else { continue }
             let time = CMSampleBufferGetPresentationTimeStamp(buffer).seconds
+            // Should the composition still hand back every frame, skip to the next sample.
+            guard time >= nextSample else { continue }
+            nextSample = time + FaceTracking.sampleInterval * 0.9
             defer { frameIndex += 1 }
 
             while LiveAnalysisPacing.isTooHot(ProcessInfo.processInfo.thermalState) {
@@ -168,7 +199,10 @@ nonisolated enum VideoScanner {
                 if let faceDetector {
                     boxes = try await faceDetector(pixels)
                 } else {
-                    boxes = try await visionFaces(in: detection)
+                    boxes = try await visionFaces(
+                        in: detection,
+                        tiles: frameIndex.isMultiple(of: FaceTracking.tileEvery) ? pixels : nil
+                    )
                 }
                 faces.add(boxes, at: time)
 

@@ -62,6 +62,14 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
 nonisolated struct FaceTracking {
     /// How often frames are looked at, in seconds.
     static let sampleInterval = 0.1
+    /// Every this many looks, faces are also looked for in `tiles`.
+    static let tileEvery = 3
+    /// Overlapping 60% tiles of the frame (Vision's normalised space): a face
+    /// too small to find in the whole frame — someone in the background, a
+    /// photo within the picture — is found in a tile.
+    static let tiles: [CGRect] = [(0.0, 0.0), (0.4, 0.0), (0.0, 0.4), (0.4, 0.4)].map {
+        CGRect(x: $0.0, y: $0.1, width: 0.6, height: 0.6)
+    }
     /// Added on every side of a found face, as a share of its size: a face box
     /// stops short of the ears and chin, and the face moves between samples.
     static let padding: CGFloat = 0.15
@@ -147,8 +155,7 @@ nonisolated struct FaceTracking {
     }
 
     /// The faces in several detectors' results, each face once: a box that is
-    /// the same face as one already kept — overlapping it well, or holding its
-    /// centre — is dropped.
+    /// the same face as one already kept is dropped.
     static func union(_ lists: [[CGRect]]) -> [CGRect] {
         var kept: [CGRect] = []
         for box in lists.joined() where !kept.contains(where: { isSameFace($0, box) }) {
@@ -157,10 +164,13 @@ nonisolated struct FaceTracking {
         return kept
     }
 
+    /// Two detections of one face overlap well and share a centre.  Two faces
+    /// cheek to cheek — a kiss, a selfie — overlap too, so overlap alone, or
+    /// one centre inside the other box, is not enough.
     static func isSameFace(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
-        lhs.contains(CGPoint(x: rhs.midX, y: rhs.midY))
-            || rhs.contains(CGPoint(x: lhs.midX, y: lhs.midY))
-            || matchScore(lhs, rhs) >= 1.3
+        let distance = hypot(lhs.midX - rhs.midX, lhs.midY - rhs.midY)
+        let size = max(lhs.width, lhs.height, rhs.width, rhs.height)
+        return matchScore(lhs, rhs) >= 1.45 || distance < size * 0.25
     }
 
     /// `box` (top-left origin) grown by `padding`, and by `foreheadPadding` above.

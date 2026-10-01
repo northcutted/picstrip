@@ -100,6 +100,11 @@ final class FaceTrackingTests: XCTestCase {
         XCTAssertEqual(FaceTracking.union([[shared, onlyNewest], [sharedAgain, onlyOlder]]), [shared, onlyNewest, onlyOlder])
         let neighbour = CGRect(x: 0.31, y: 0.2, width: 0.1, height: 0.1)
         XCTAssertEqual(FaceTracking.union([[shared], [neighbour]]).count, 2, "Two people side by side stay two.")
+        // A kiss, from the collage that showed it: the second face's centre is
+        // inside the first face's box.
+        let kisser = CGRect(x: 563, y: 551, width: 112, height: 112).applying(CGAffineTransform(scaleX: 1 / 1280, y: 1 / 1280))
+        let kissed = CGRect(x: 614, y: 598, width: 81, height: 81).applying(CGAffineTransform(scaleX: 1 / 1280, y: 1 / 1280))
+        XCTAssertEqual(FaceTracking.union([[kisser], [kissed]]).count, 2, "Cheek to cheek is still two faces.")
     }
 
     func testFarApartFacesDoNotMatch() {
@@ -303,6 +308,7 @@ final class VideoFaceRedactionTests: XCTestCase {
         XCTAssertEqual(tracks.count, 1, "One face, one track: \(tracks.map(\.samples.count))")
         let track = try XCTUnwrap(tracks.first)
         XCTAssertGreaterThanOrEqual(track.samples.count, 15, "About ten looks a second over two seconds.")
+        XCTAssertLessThanOrEqual(track.samples.count, 22, "Not every frame of the 30 fps movie: ten a second.")
         for sample in track.samples {
             let expected = movie.faceCenter(at: sample.time)
             XCTAssertEqual(sample.box.midX, expected.x, accuracy: 0.06, "at \(sample.time)")
