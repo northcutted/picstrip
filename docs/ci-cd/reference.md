@@ -10,14 +10,14 @@ Generated from checked-in workflow interfaces and configuration. This reference 
 
 ## Platform guides
 
-[Setup](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/docs/setup.md)
-[Operations](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/docs/operations.md)
-[Architecture](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/docs/architecture.md)
-[Maintenance](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/docs/maintenance.md)
+[Setup](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/docs/setup.md)
+[Operations](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/docs/operations.md)
+[Architecture](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/docs/architecture.md)
+[Maintenance](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/docs/maintenance.md)
 
 ## Platform and configuration
 
-Platform: [northcutted/ios-release-workflows at a3263909aaf9](https://github.com/northcutted/ios-release-workflows/tree/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65).
+Platform: [northcutted/ios-release-workflows at a74e9644b07e](https://github.com/northcutted/ios-release-workflows/tree/a74e9644b07efbc3e1b2857e00499743915176f6).
 
 Source: [app configuration](../../.github/ios-release.json), [platform pin](../../.github/ios-release-platform.json).
 
@@ -95,7 +95,7 @@ Concurrency: <code>{"group":"app-store-deploy-${{ github.ref }}","cancel-in-prog
 | Job | Needs | Execution | Condition |
 | --- | --- | --- | --- |
 | <code>resolve</code> | — | <code>ubuntu-24.04</code>; 5 min | <code>github.event_name != 'create' &#124;&#124; (github.event.ref_type == 'tag' &amp;&amp; contains(github.ref_name, '-deploy-'))</code> |
-| <code>deploy</code> | <code>resolve</code> | [deploy.yml](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/.github/workflows/deploy.yml) | — |
+| <code>deploy</code> | <code>resolve</code> | [deploy.yml](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/.github/workflows/deploy.yml) | — |
 
 ### Release Prep
 
@@ -119,7 +119,7 @@ Concurrency: <code>{"group":"release-prep-main","cancel-in-progress":false}</cod
 | Job | Needs | Execution | Condition |
 | --- | --- | --- | --- |
 | <code>changes</code><br>Select release inputs | — | <code>ubuntu-24.04</code>; 5 min | — |
-| <code>prepare</code> | <code>changes</code> | [prepare.yml](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/.github/workflows/prepare.yml) | <code>needs.changes.outputs.prepare == 'true'</code> |
+| <code>prepare</code> | <code>changes</code> | [prepare.yml](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/.github/workflows/prepare.yml) | <code>needs.changes.outputs.prepare == 'true'</code> |
 
 ### Release Maintenance
 
@@ -146,7 +146,7 @@ Concurrency: <code>{"group":"app-store-observe","cancel-in-progress":false}</cod
 
 | Job | Needs | Execution | Condition |
 | --- | --- | --- | --- |
-| <code>observe</code> | — | [observe.yml](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/.github/workflows/observe.yml) | <code>vars.RELEASE_DISTRIBUTION_ENABLED == 'true' &amp;&amp; (github.event_name == 'schedule' &#124;&#124; inputs.action == 'App Store status')</code> |
+| <code>observe</code> | — | [observe.yml](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/.github/workflows/observe.yml) | <code>vars.RELEASE_DISTRIBUTION_ENABLED == 'true' &amp;&amp; (github.event_name == 'schedule' &#124;&#124; inputs.action == 'App Store status')</code> |
 | <code>inspect</code> | — | <code>ubuntu-24.04</code>; 5 min<br>Environment: <code>release-publishing</code> | <code>github.ref == 'refs/heads/main' &amp;&amp; github.event_name == 'workflow_dispatch' &amp;&amp; inputs.action == 'Inspect release controls'</code> |
 
 ### PR Checks
@@ -182,7 +182,7 @@ Concurrency: <code>{"group":"pr-${{ github.event.pull_request.number &#124;&#124
 | --- | --- | --- | --- |
 | <code>changes</code><br>Select required checks | — | <code>ubuntu-24.04</code>; 5 min | — |
 | <code>policy</code><br>Workflow policy and release regression tests | <code>changes</code> | <code>ubuntu-24.04</code>; 30 min | — |
-| <code>qa</code> | <code>changes</code> | [ci.yml](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/.github/workflows/ci.yml) | <code>needs.changes.outputs.qa == 'true'</code> |
+| <code>qa</code> | <code>changes</code> | [ci.yml](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/.github/workflows/ci.yml) | <code>needs.changes.outputs.qa == 'true'</code> |
 | <code>screenshots</code><br>UI and screenshot smoke (${{ matrix.device }}) | <code>changes</code> | <code>xcode-27</code>; 60 min | <code>needs.changes.outputs.screenshots == 'true'</code> |
 | <code>gate</code><br>CI Gate | <code>changes</code>, <code>policy</code>, <code>qa</code>, <code>screenshots</code> | <code>ubuntu-24.04</code>; 30 min | <code>always()</code> |
 
@@ -208,7 +208,7 @@ Concurrency: <code>{"group":"promote-main","cancel-in-progress":false}</code>. D
 
 | Job | Needs | Execution | Condition |
 | --- | --- | --- | --- |
-| <code>promote</code> | — | [release.yml](https://github.com/northcutted/ios-release-workflows/blob/a3263909aaf9b71e9b4c5b92fbb5ef1728644b65/.github/workflows/release.yml) | — |
+| <code>promote</code> | — | [release.yml](https://github.com/northcutted/ios-release-workflows/blob/a74e9644b07efbc3e1b2857e00499743915176f6/.github/workflows/release.yml) | — |
 
 ### Capture Screenshots
 
