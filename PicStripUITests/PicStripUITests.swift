@@ -474,9 +474,17 @@ final class PicStripUITests: XCTestCase {
         XCTAssertEqual(cover.value as? String, "🐸")
         attachScreen("video_emoji_preview")
 
+        // The email in the corner is listed and covered by default.
+        let email = app.switches["findingToggle-1"]
+        reveal(email, in: app)
+        XCTAssertEqual(email.value as? String, "1", "Text is covered unless the user turns it off.")
+        XCTAssertTrue(app.buttons["findingRow-1"].label.contains("Email"), app.buttons["findingRow-1"].label)
+        attachScreen("video_text_row")
+
         app.buttons["makeCleanedCopyButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["facesCoveredRow"].waitForExistence(timeout: 120),
                       "The cleaned copy says its face was covered.")
+        XCTAssertTrue(app.descendants(matching: .any)["textCoveredRow"].exists, "…and its text.")
         XCTAssertTrue(app.buttons["shareCleanedVideoButton"].exists)
         attachScreen("video_cleaned")
 
@@ -742,7 +750,7 @@ final class PicStripUITests: XCTestCase {
     }
 
     /// A movie of 🧑🏽 drifting across a pale frame — a face Vision finds, even
-    /// on the simulator.
+    /// on the simulator — with an email address on a label in the corner.
     private func writeFaceMovie(to url: URL, seconds: Double = 2.5) async throws {
         try? FileManager.default.removeItem(at: url)
         let size = CGSize(width: 640, height: 360)
@@ -770,6 +778,12 @@ final class PicStripUITests: XCTestCase {
                 UIColor(red: 0.82, green: 0.86, blue: 0.9, alpha: 1).setFill()
                 context.fill(CGRect(origin: .zero, size: size))
                 face.draw(at: CGPoint(x: x - glyph.width / 2, y: size.height / 2 - glyph.height / 2), withAttributes: [.font: font])
+                UIColor.white.setFill()
+                context.fill(CGRect(x: 6, y: 4, width: 196, height: 30))
+                ("alex@example.com" as NSString).draw(
+                    at: CGPoint(x: 12, y: 8),
+                    withAttributes: [.font: UIFont.systemFont(ofSize: 18, weight: .medium), .foregroundColor: UIColor.black]
+                )
             }
             var made: CVPixelBuffer?
             CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA, nil, &made)
