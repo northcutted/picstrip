@@ -63,8 +63,11 @@ nonisolated struct FaceTracking {
     /// How often frames are looked at, in seconds.
     static let sampleInterval = 0.1
     /// Added on every side of a found face, as a share of its size: a face box
-    /// stops short of the hair and ears, and the face moves between samples.
+    /// stops short of the ears and chin, and the face moves between samples.
     static let padding: CGFloat = 0.15
+    /// Added above instead: a face box starts at the eyebrows, so this takes in
+    /// the forehead and hairline.
+    static let foreheadPadding: CGFloat = 0.35
     /// How long a face stays covered before it is first found and after it is last seen.
     static let hold = 0.5
     /// A face unseen for longer than this starts a new track when it is found again.
@@ -139,7 +142,13 @@ nonisolated struct FaceTracking {
         )
     }
 
+    /// `box` (top-left origin) grown by `padding`, and by `foreheadPadding` above.
     static func padded(_ box: CGRect) -> CGRect {
-        box.insetBy(dx: -box.width * padding, dy: -box.height * padding)
+        CGRect(
+            x: box.minX - box.width * padding,
+            y: box.minY - box.height * foreheadPadding,
+            width: box.width * (1 + 2 * padding),
+            height: box.height * (1 + padding + foreheadPadding)
+        )
     }
 }

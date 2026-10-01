@@ -1,3 +1,4 @@
+import AVFoundation
 import Synchronization
 import UIKit
 import XCTest
@@ -447,6 +448,63 @@ final class PicStripUITests: XCTestCase {
         attachScreen("emoji_cover")
     }
 
+    /// A video's face is found, given an emoji, and covered in the saved copy.
+    @MainActor
+    func testAVideosFacesAreFoundAndCovered() async throws {
+        let path = "/tmp/picstrip_video_fixture.mov"
+        try await writeFaceMovie(to: URL(fileURLWithPath: path))
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = path
+        app.launch()
+
+        let face = app.buttons["faceRow-1"]
+        XCTAssertTrue(face.waitForExistence(timeout: 90), "The face in the fixture is found.")
+        attachScreen("video_review")
+        let cover = app.buttons["faceCoverMenu-1"]
+        XCTAssertEqual(cover.value as? String, "Blur", "Faces are blurred unless the user picks an emoji.")
+        cover.tap()
+        let emoji = app.buttons["Emoji…"]
+        XCTAssertTrue(emoji.waitForExistence(timeout: 5))
+        emoji.tap()
+        let frog = app.buttons["emojiChoice-🐸"]
+        XCTAssertTrue(frog.waitForExistence(timeout: 5))
+        frog.tap()
+        app.buttons["emojiDoneButton"].tap()
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        XCTAssertEqual(cover.value as? String, "🐸")
+        attachScreen("video_emoji_preview")
+
+        app.buttons["makeCleanedCopyButton"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["facesCoveredRow"].waitForExistence(timeout: 120),
+                      "The cleaned copy says its face was covered.")
+        XCTAssertTrue(app.buttons["shareCleanedVideoButton"].exists)
+        attachScreen("video_cleaned")
+
+        // Back to the faces: the chosen cover is kept.
+        app.buttons["changeCoversButton"].tap()
+        XCTAssertTrue(cover.waitForExistence(timeout: 10))
+        XCTAssertEqual(cover.value as? String, "🐸")
+    }
+
+    /// Skipping face covering still saves a cleaned copy, with every face as it was.
+    @MainActor
+    func testFaceCoveringCanBeSkipped() async throws {
+        let path = "/tmp/picstrip_video_skip_fixture.mov"
+        try await writeFaceMovie(to: URL(fileURLWithPath: path), seconds: 30)
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = path
+        app.launch()
+
+        let skip = app.buttons["skipFacesButton"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 30))
+        attachScreen("video_scanning")
+        skip.tap()
+        XCTAssertTrue(app.buttons["shareCleanedVideoButton"].waitForExistence(timeout: 60))
+        XCTAssertFalse(app.descendants(matching: .any)["facesCoveredRow"].exists)
+        XCTAssertFalse(app.descendants(matching: .any)["noFacesFoundRow"].exists, "Skipped is not the same as none found.")
+        XCTAssertFalse(app.buttons["changeCoversButton"].exists)
+    }
+
     /// Always Cover terms are added and removed from the home screen.
     @MainActor
     func testAlwaysCoverListAddsAndRemovesTerms() throws {
@@ -681,6 +739,54 @@ final class PicStripUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.6)
         let url = URL(fileURLWithPath: folder).appendingPathComponent("\(name).png")
         try? XCUIScreen.main.screenshot().pngRepresentation.write(to: url)
+    }
+
+    /// A movie of 🧑🏽 drifting across a pale frame — a face Vision finds, even
+    /// on the simulator.
+    private func writeFaceMovie(to url: URL, seconds: Double = 2.5) async throws {
+        try? FileManager.default.removeItem(at: url)
+        let size = CGSize(width: 640, height: 360)
+        let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
+            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: Int(size.width), AVVideoHeightKey: Int(size.height)
+        ])
+        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ])
+        writer.add(input)
+        XCTAssertTrue(writer.startWriting())
+        writer.startSession(atSourceTime: .zero)
+        let fps = 30
+        let frames = Int(seconds * Double(fps))
+        let font = UIFont.systemFont(ofSize: 220)
+        let face = "🧑🏽" as NSString
+        let glyph = face.size(withAttributes: [.font: font])
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = 1
+        for frame in 0..<frames {
+            while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
+            let x = size.width * (0.4 + 0.2 * CGFloat(frame) / CGFloat(max(frames - 1, 1)))
+            let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
+                UIColor(red: 0.82, green: 0.86, blue: 0.9, alpha: 1).setFill()
+                context.fill(CGRect(origin: .zero, size: size))
+                face.draw(at: CGPoint(x: x - glyph.width / 2, y: size.height / 2 - glyph.height / 2), withAttributes: [.font: font])
+            }
+            var made: CVPixelBuffer?
+            CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA, nil, &made)
+            let buffer = try XCTUnwrap(made)
+            CVPixelBufferLockBaseAddress(buffer, [])
+            let context = CGContext(
+                data: CVPixelBufferGetBaseAddress(buffer), width: Int(size.width), height: Int(size.height),
+                bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+            )
+            context?.draw(try XCTUnwrap(image.cgImage), in: CGRect(origin: .zero, size: size))
+            CVPixelBufferUnlockBaseAddress(buffer, [])
+            XCTAssertTrue(adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: CMTimeScale(fps))))
+        }
+        input.markAsFinished()
+        await writer.finishWriting()
+        XCTAssertEqual(writer.status, .completed, "\(String(describing: writer.error))")
     }
 
     private func makeCleanPNG() throws -> Data {

@@ -95,10 +95,16 @@ nonisolated enum VideoFaceScanner {
             }
 
             let boxes: [CGRect]
-            if let detector {
-                boxes = try await detector(pixels)
-            } else {
-                boxes = try await visionFaces(in: pixels)
+            do {
+                if let detector {
+                    boxes = try await detector(pixels)
+                } else {
+                    boxes = try await visionFaces(in: pixels)
+                }
+            } catch {
+                // Vision reports a cancelled request as its own error.
+                try Task.checkCancellation()
+                throw error
             }
             tracking.add(boxes, at: time)
             progress(Progress(fraction: min(1, time / duration), isCooling: false))
