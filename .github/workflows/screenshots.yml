@@ -27,31 +27,28 @@ jobs:
           ref: main
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
+        uses: northcutted/ios-release-workflows/actions/bootstrap@a3263909aaf9b71e9b4c5b92fbb5ef1728644b65
         with:
           config: .github/ios-release.json
-          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
+          revision: a3263909aaf9b71e9b4c5b92fbb5ef1728644b65
       - name: Record capture source
         id: source
         run: echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Resolve exact screenshot toolchain
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" toolchain --screenshots
+        run: ios-release toolchain --screenshots
       - name: Install locked platform Ruby
-        uses: northcutted/ios-release-workflows/actions/ruby@2619b51c89cb847b273a4389c3226d5039dc627f
-      - name: Install locked compositor dependencies
-        run: |-
-          python3 -m venv "$RUNNER_TEMP/compositor"
-          "$RUNNER_TEMP/compositor/bin/pip" install --require-hashes -r scripts/requirements.txt
-          echo "$RUNNER_TEMP/compositor/bin" >> "$GITHUB_PATH"
+        uses: northcutted/ios-release-workflows/actions/ruby@a3263909aaf9b71e9b4c5b92fbb5ef1728644b65
+      - name: Install locked image tools
+        run: ios-release setup --images
       - name: Capture selected locales
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-capture --languages "$LANGUAGES"
+        run: ios-release screenshots-capture --languages "$LANGUAGES"
         env:
           LANGUAGES: ${{ inputs.languages }}
       - name: Compose and validate complete release coverage
         run: >-
-          python3 scripts/compose_screenshots.py
+          ios-release screenshots-compose
 
-          python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-verify fastlane/screenshots/processed --output
+          ios-release screenshots-verify fastlane/screenshots/processed --output
           build/screenshots-manifest.json
       - name: Upload screenshots-${{ github.run_id }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
@@ -85,17 +82,17 @@ jobs:
           ref: ${{ needs.capture.outputs.source }}
           lfs: true
       - name: Load pinned screenshot validation and publishing tools
-        uses: northcutted/ios-release-workflows/actions/bootstrap@2619b51c89cb847b273a4389c3226d5039dc627f
+        uses: northcutted/ios-release-workflows/actions/bootstrap@a3263909aaf9b71e9b4c5b92fbb5ef1728644b65
         with:
           config: .github/ios-release.json
-          revision: 2619b51c89cb847b273a4389c3226d5039dc627f
+          revision: a3263909aaf9b71e9b4c5b92fbb5ef1728644b65
       - name: Download screenshots-${{ github.run_id }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: screenshots-${{ github.run_id }}
           path: incoming
       - name: Validate candidate images
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-verify incoming --output build/screenshots-manifest.json
+        run: ios-release screenshots-verify incoming --output build/screenshots-manifest.json
       - name: Mint screenshot PR token
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1
         with:
@@ -106,7 +103,7 @@ jobs:
           repositories: picstrip
         id: token
       - name: Open a PR without changing main
-        run: python3 "$IOS_RELEASE_ROOT/bin/ios-release" screenshots-publish
+        run: ios-release screenshots-publish
         env:
           GH_TOKEN: ${{ steps.token.outputs.token }}
     environment: screenshot-publishing

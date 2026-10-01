@@ -43,7 +43,7 @@ def platform_root(sync=False):
 def main():
     args = sys.argv[1:]
     sync = args == ['sync']
-    platform = platform_root(sync)
+    platform = platform_root(sync or (args[:1] == ['setup'] and not os.environ.get('IOS_RELEASE_ROOT')))
     if sync:
         print(f'Pinned platform ready: {platform}')
         return 0

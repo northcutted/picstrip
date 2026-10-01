@@ -7,18 +7,15 @@ Keep app policy and operating instructions here. Change reusable code, dependenc
 ## Quick edit loop
 
 ```sh
-npm ci --ignore-scripts
-make platform-sync
+brew install uv # first time on macOS
+make setup
 make docs
-make check-docs
-npm run check:workflows
-npm run test:ci
-actionlint
+make check
 ```
 
-`platform-sync` fetches the reviewed commit once into ignored `build/ios-release-platform/`; subsequent documentation commands are offline. The cached checkout must remain clean and at the exact pin. CI already has the pinned platform from its bootstrap Action. `make docs` writes the local Markdown/JSON reference. `make check-docs` rejects drift and broken maintained local links without writing files.
+`setup` fetches the reviewed commit into ignored `build/ios-release-platform/` and prepares its hash-locked Python package. The cached checkout must remain clean and at the exact pin; subsequent commands reuse the prepared environment. CI uses the same package through the pinned bootstrap Action. `make docs` writes the local Markdown/JSON reference. `make check` validates workflow policy, documentation, regression tests and actionlint. `make check-docs` checks only reference drift and maintained local links.
 
-For local analysis/tests, use `make analyze` and `make test` with the configured Xcode builds installed. They require no Fastlane. For screenshots or local archives, use the Ruby version in [.ruby-version](../../.ruby-version), run `make platform-gems`, then `make screenshots` or `make build MARKETING_VERSION=X.Y.Z BUILD_NUMBER=N.ATTEMPT`. Archive output is `build/application.ipa`; local builds do not constitute authenticated release candidates.
+For local analysis/tests, use `make analyze` and `make test` with the configured Xcode builds installed. For screenshots or local archives, run `bin/ios-release setup --apple`, then `make screenshots` or `make build MARKETING_VERSION=X.Y.Z BUILD_NUMBER=N.ATTEMPT`. Setup uses the exact platform Ruby version and can install it with mise without changing your active Ruby. For screenshot composition and OCR fixture regeneration, run `bin/ios-release setup --images` first. `bin/ios-release doctor --apple --xcode` reports missing tools and mismatches. Archive output is `build/application.ipa`; local builds do not constitute authenticated release candidates.
 
 ## Where to edit
 
@@ -26,7 +23,8 @@ For local analysis/tests, use `make analyze` and `make test` with the configured
 | --- | --- | --- |
 | App identity/toolchains/store policy | `.github/ios-release.json` | Regenerate; check affected native/store behavior |
 | Entry events or manual inputs | `.github/workflows/` | Regenerate; workflow policy and CI |
-| Which changes select checks | `scripts/ci/changes.mjs` | Classifier/gate tests; regenerate examples |
+| Which changes select checks | `scripts/ci/changes.py` | Classifier/gate tests; regenerate examples |
+| Version decisions and release notes | `.github/ios-version.json` | Platform compatibility fixtures and Release Prep |
 | Doc example paths or page navigation | `.github/ios-release-docs.json` | `make docs` and `make check-docs` |
 | App operating instructions | The relevant page here | Check links and commands |
 | Shared tools, dependency locks or generator | Actions repository | Platform checks and a consumer run before adopting |

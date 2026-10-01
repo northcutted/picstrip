@@ -1,4 +1,4 @@
-PLATFORM = python3 scripts/ios_release.py
+PLATFORM = bin/ios-release
 DEVICE ?=
 DEVICES ?=
 LANGUAGES ?=
@@ -8,11 +8,16 @@ SUBMIT_FOR_REVIEW ?= false
 RELEASE_TAG ?=
 METADATA_COMMIT ?=
 
-.PHONY: help platform-sync platform-gems docs check-docs lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
+.PHONY: help setup doctor check platform-sync platform-gems docs check-docs lint analyze test build metadata-only audit-localization localization-export localization-pseudo localization-validate test-fixture screenshots process-screenshots clean-screenshots
 
 help:
 	@echo "PicStrip helper commands"
 	@echo ""
+	@echo "  make setup                        Prepare the pinned Python toolkit (requires uv)"
+	@echo "  bin/ios-release setup --apple      Also prepare locked Ruby tools for Apple operations"
+	@echo "  bin/ios-release setup --images     Also prepare locked screenshot image tools"
+	@echo "  make doctor                       Inspect the toolkit; add --apple or --xcode to the CLI"
+	@echo "  make check                        Validate workflows, docs and regression tests"
 	@echo "  make platform-sync                Fetch the reviewed platform pin (once per upgrade)"
 	@echo "  make platform-gems                Install Ruby tools for screenshots/local archives"
 	@echo "  make docs                         Regenerate the CI/CD reference (offline after sync)"
@@ -40,14 +45,23 @@ help:
 platform-sync:
 	$(PLATFORM) sync
 
+setup:
+	$(PLATFORM) setup
+
+doctor:
+	$(PLATFORM) doctor
+
+check:
+	$(PLATFORM) check --syntax
+
 platform-gems:
-	$(PLATFORM) gems-install
+	$(PLATFORM) setup --apple
 
 docs:
-	npm run docs
+	$(PLATFORM) docs
 
 check-docs:
-	npm run check:docs
+	$(PLATFORM) docs --check
 
 lint:
 	$(PLATFORM) qa lint
@@ -61,10 +75,9 @@ test:
 # Regenerates the OCR test fixture (Tests/Fixtures/test_list.png) from
 # scripts/make_fixture.py. The fixture image is committed; this target only
 # needs to run when the fixture itself is being changed (e.g. to add a new
-# PII type to the OCR-detection scenarios). Requires Pillow:
-#   pip3 install --user -r scripts/requirements.txt
+# PII type to the OCR-detection scenarios). Run bin/ios-release setup --images first.
 test-fixture:
-	python3 scripts/make_fixture.py \
+	build/ios-release-images/bin/python scripts/make_fixture.py \
 		--reference Tests/Fixtures/test_list.png \
 		--out Tests/Fixtures/test_list.png
 
@@ -97,7 +110,7 @@ localization-pseudo:
 		echo "Set LANGUAGES, for example: make localization-pseudo LANGUAGES=\"es fr de\""; \
 		exit 1; \
 	fi
-	scripts/translate_xcstrings.js --languages $(LANGUAGES)
+	$(PLATFORM) localization-pseudo --files PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings --languages $(LANGUAGES)
 
 localization-validate:
 	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings \
@@ -110,7 +123,7 @@ screenshots:
 	$(PLATFORM) screenshots-capture --devices "$(if $(DEVICE),$(DEVICE),$(DEVICES))" --languages "$(LANGUAGES)"
 
 process-screenshots:
-	python3 scripts/compose_screenshots.py
+	$(PLATFORM) screenshots-compose
 
 clean-screenshots:
 	rm -rf fastlane/screenshots fastlane/screenshot_logs

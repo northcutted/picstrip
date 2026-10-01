@@ -2,6 +2,8 @@
 
 Start with [README](README.md#run-it) to build PicStrip and `make help` for local commands.
 
+For command-line tooling, install uv and run `make setup`, then `make check`. The pinned Python toolkit is shared with CI. Add `bin/ios-release setup --apple` for screenshots/signing or `bin/ios-release setup --images` for marketing image composition and OCR fixtures. Xcode must already be installed; `bin/ios-release doctor --apple --xcode` checks your toolchain.
+
 | Task | Guide |
 | --- | --- |
 | Understand targets, state, privacy and app flows | [App architecture](docs/development/architecture.md) |

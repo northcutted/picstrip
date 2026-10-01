@@ -11,12 +11,12 @@ PicStrip owns its app and release policy. Shared architecture, security, SLSA sc
 | App identity, Xcode/runtime choices, targets, QA, locales and store policy | [App configuration](../../.github/ios-release.json) |
 | Reviewed platform revision | [Platform pin](../../.github/ios-release-platform.json) |
 | GitHub events, manual release choices and required gate | [Caller workflows](../../.github/workflows) |
-| Conservative path selection | [Classifier](../../scripts/ci/changes.mjs) |
-| Version policy | [.releaserc.json](../../.releaserc.json) |
+| Conservative path selection | [Classifier](../../scripts/ci/changes.py) |
+| Version policy | [Version configuration](../../.github/ios-version.json) |
 | Store content, UI scenarios and screenshot composition | [fastlane](../../fastlane), [UI tests](../../PicStripUITests), [compositor](../../scripts/process_screenshots.py) |
 | App operating guide, example paths and generated reference | [Docs profile](../../.github/ios-release-docs.json) |
 
-The platform owns the generator, command implementation and Ruby lockfile. The [local launcher](../../scripts/ios_release.py) uses the reviewed pin; Actions supplies it through the pinned bootstrap action. Ordinary QA uses native Xcode commands. App-owned Fastlane code is limited to screenshot scenarios; privileged release jobs use platform-owned code.
+The platform owns the Python package, generator, command implementation, Python lockfile and Ruby lockfile. [bin/ios-release](../../bin/ios-release) uses the [local launcher](../../scripts/ios_release.py) and reviewed pin; Actions installs the same package through its pinned bootstrap action. Ordinary QA uses native Xcode commands. App-owned Fastlane code is limited to screenshot scenarios; privileged release jobs use platform-owned code. Screenshot composition keeps its app-owned, hash-locked Python dependencies in a separate environment.
 
 ## PR checks and performance
 
