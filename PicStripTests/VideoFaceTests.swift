@@ -41,12 +41,12 @@ final class FaceTrackingTests: XCTestCase {
     func testAShortMissIsFilledAndALongOneStartsANewTrack() {
         var tracking = FaceTracking()
         tracking.add([box(0.2)], at: 0)
-        tracking.add([box(0.22)], at: 0.6)     // missed for 0.6 s: same face
-        tracking.add([box(0.24)], at: 2.0)     // missed for 1.4 s: a new track
+        tracking.add([box(0.22)], at: 1.6)     // missed for 1.6 s: same face
+        tracking.add([box(0.24)], at: 4.0)     // missed for 2.4 s: a new track
         let tracks = tracking.tracks
         XCTAssertEqual(tracks.map(\.samples.count), [2, 1])
 
-        let filled = try? XCTUnwrap(tracks.first?.coverBox(at: 0.3))
+        let filled = try? XCTUnwrap(tracks.first?.coverBox(at: 0.8))
         XCTAssertEqual(filled?.midX ?? 0, FaceTracking.padded(box(0.21)).midX, accuracy: 0.001,
                        "Between sightings the cover moves in a straight line.")
     }

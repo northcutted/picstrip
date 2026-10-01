@@ -69,9 +69,13 @@ nonisolated struct FaceTracking {
     /// the forehead and hairline.
     static let foreheadPadding: CGFloat = 0.35
     /// How long a face stays covered before it is first found and after it is last seen.
-    static let hold = 0.5
-    /// A face unseen for longer than this starts a new track when it is found again.
-    static let maximumGap = 1.0
+    /// Generous on purpose: a face is often on screen before it is found, and a
+    /// small one in the background is found only now and then.
+    static let hold = 1.0
+    /// A face unseen for longer than this starts a new track when it is found
+    /// again; within it, the cover is carried across.  Linking too much only
+    /// covers a little more; splitting leaves the face bare in the gap.
+    static let maximumGap = 2.0
 
     private var finished: [FaceTrack] = []
     private var active: [FaceTrack] = []
