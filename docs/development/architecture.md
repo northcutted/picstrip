@@ -413,6 +413,10 @@ If the capture session cannot be configured, `LiveCameraView` reports `.unavaila
 
 `SharingPurpose` (photo, screenshot, document) is guessed when an image loads — `SharingPurpose.detect`: a document-camera scan is a document, and iOS writes "Screenshot" into the EXIF user comment of its screenshots — and can be changed in the editor. It sets the export format (JPEG for everyday photos, PNG for text) and which findings are covered as soon as the scan finishes (`coversByDefault`; documents also cover names). Everything stays editable; the regions themselves are never rebuilt by a preset change.
 
+### An Emoji Cover Always Sits on a Blur
+
+`RedactionStyle.emoji` draws the region's emoji (`RedactionRegion.emoji`, so every face can have its own) at `EmojiCover.coverage` × the box's longer side, centred. Emoji are not opaque rectangles — round faces leave the box's corners bare, and shapes like 🙈 have gaps — so the region is first put through the blur pass at full strength (`scramblePass`, `passStrength`), and only then is the glyph drawn. If the blur cannot run, the box is painted solid before the emoji goes on. The editor's preview draws the glyph with the same `fontSize(for:covering:)`, so what is previewed is what is saved.
+
 ### Partial Covering Uses Word Geometry Where It Can
 
 `DetectedInstance.partialBoundingBox` is the part of a card, phone, SSN or IBAN number before its last four characters, or of an email before its "@" (`PIIScanner.partialCoverRange`). Vision's `boundingBox(for:)` places whole words, not characters, so inside a single token ("6185551234", "alex@example.com") every sub-range gets the whole word's box. When Vision cannot separate the covered and kept parts, `estimatedPartialBox` splits the match by the glyphs' widths in the system font, plus a third of a character toward covering. Rescoring passes must use `withScore(_:)` so the partial box survives. The editor switches a region between its two boxes with undo (`setPartialCover`).

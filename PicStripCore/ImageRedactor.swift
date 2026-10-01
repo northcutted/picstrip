@@ -18,6 +18,9 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
     case pixelate
     /// Smoothly blurs the underlying image region. The `color` property is ignored.
     case blur
+    /// An emoji over the region (`RedactionSpec.emoji`), on the strongest blur:
+    /// emoji have transparent corners and gaps, and those must not show a face.
+    case emoji
 
     var displayName: String {
         switch self {
@@ -25,6 +28,7 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
         case .crosshatch: return String(localized: "Crosshatch")
         case .pixelate:   return String(localized: "Pixelate")
         case .blur:       return String(localized: "Blur")
+        case .emoji:      return String(localized: "Emoji")
         }
     }
 
@@ -34,6 +38,7 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
         case .crosshatch: return "grid"
         case .pixelate:   return "square.grid.3x3.middle.filled"
         case .blur:       return "drop.fill"
+        case .emoji:      return "face.smiling"
         }
     }
 
@@ -42,10 +47,20 @@ nonisolated enum RedactionStyle: String, CaseIterable, Equatable, Hashable, Coda
 
     /// `true` for styles that scramble the pixels underneath (Core Image pass)
     /// instead of painting over them.
-    var obscuresSourcePixels: Bool { self == .pixelate || self == .blur }
+    var obscuresSourcePixels: Bool { scramblePass != nil }
 
-    /// Whether `RedactionSpec.strength` changes the rendered output.
-    var supportsStrength: Bool { obscuresSourcePixels }
+    /// The Core Image pass that scrambles this style's region: an emoji sits on a blur.
+    var scramblePass: RedactionStyle? {
+        switch self {
+        case .pixelate:      return .pixelate
+        case .blur, .emoji:  return .blur
+        case .solid, .crosshatch: return nil
+        }
+    }
+
+    /// Whether `RedactionSpec.strength` changes the rendered output.  The blur
+    /// under an emoji is always the strongest.
+    var supportsStrength: Bool { self == .pixelate || self == .blur }
 }
 
 // MARK: - RedactionStrength
@@ -203,6 +218,63 @@ nonisolated struct RedactionSpec {
     let isEnabled: Bool
     /// See `RedactionStrength`.  Ignored unless the style `supportsStrength`.
     var strength: Double = RedactionStrength.standard
+    /// The emoji drawn by `.emoji`; ignored by every other style.
+    var emoji: String = EmojiCover.defaultEmoji
+
+    /// The strength of this region's scramble pass.
+    var passStrength: Double {
+        style == .emoji ? RedactionStrength.range.upperBound : RedactionStrength.clamped(strength)
+    }
+}
+
+// MARK: - EmojiCover
+
+/// The emoji that `.emoji` draws, and how large.
+nonisolated enum EmojiCover {
+    static let defaultEmoji = "🙂"
+
+    /// Offered in the editor; any other single emoji can be typed.
+    static let choices = [
+        "🙂", "😀", "😎", "🤓", "🥸", "😺", "🐶", "🐱", "🐼", "🦊", "🐸", "🐵",
+        "🙈", "🤖", "👽", "👻", "🤡", "🎃", "🌝", "⭐️", "🌸", "🍩", "🎈", "❤️"
+    ]
+
+    /// How much larger than the region's longer side the glyph is drawn, so a
+    /// round emoji still reaches the box's corners.
+    static let coverage: CGFloat = 1.2
+
+    /// The first emoji in `text`, or `nil` when it has none — what the "other"
+    /// field keeps of whatever is typed or pasted into it.
+    static func firstEmoji(in text: String) -> String? {
+        text.first(where: isEmoji).map(String.init)
+    }
+
+    static func isEmoji(_ character: Character) -> Bool {
+        guard let first = character.unicodeScalars.first else { return false }
+        // Digits and "#" are emoji-capable but only emoji with a keycap sequence.
+        return first.properties.isEmojiPresentation
+            || (first.properties.isEmoji && character.unicodeScalars.count > 1)
+    }
+
+    /// The point size that draws `emoji` `coverage` times the longer side of `size`.
+    static func fontSize(for emoji: String, covering size: CGSize) -> CGFloat {
+        let reference: CGFloat = 100
+        let glyph = (emoji as NSString).size(withAttributes: [.font: UIFont.systemFont(ofSize: reference)])
+        let glyphSide = max(glyph.width, glyph.height)
+        guard glyphSide > 0 else { return max(size.width, size.height) }
+        return reference * max(size.width, size.height) * coverage / glyphSide
+    }
+
+    /// Draws `emoji` centred on `rect` in the current UIKit context.
+    static func draw(_ emoji: String, covering rect: CGRect) {
+        let font = UIFont.systemFont(ofSize: fontSize(for: emoji, covering: rect.size))
+        let text = emoji as NSString
+        let glyph = text.size(withAttributes: [.font: font])
+        text.draw(
+            at: CGPoint(x: rect.midX - glyph.width / 2, y: rect.midY - glyph.height / 2),
+            withAttributes: [.font: font]
+        )
+    }
 }
 
 // MARK: - ImageRedactor
@@ -241,10 +313,10 @@ nonisolated struct ImageRedactor {
         var workingImage = image
         var paintedSolidInstead: [RedactionSpec] = []
         for style in [RedactionStyle.pixelate, .blur] {
-            let styled = enabled.filter { $0.style == style }
+            let styled = enabled.filter { $0.style.scramblePass == style }
             // One pass per strength in use: a pass has a single block size.
-            for strength in Set(styled.map { RedactionStrength.clamped($0.strength) }).sorted() {
-                let group = styled.filter { RedactionStrength.clamped($0.strength) == strength }
+            for strength in Set(styled.map(\.passStrength)).sorted() {
+                let group = styled.filter { $0.passStrength == strength }
                 if let obscured = Self.applyObscuring(style, strength: strength, to: workingImage, specs: group) {
                     workingImage = obscured
                 } else {
@@ -276,10 +348,21 @@ nonisolated struct ImageRedactor {
                     Self.renderSolid(color: spec.color.uiColor, rect: rect)
                 case .crosshatch:
                     Self.renderCrosshatch(color: spec.color, rect: rect, imageSize: size, in: ctx)
-                case .pixelate, .blur:
+                case .pixelate, .blur, .emoji:
                     // Only reached when the Core Image pass failed.
                     Self.renderSolid(color: RedactionColor.black.uiColor, rect: rect)
                 }
+            }
+
+            // The emoji go on last, over their blur (or the solid fill that
+            // replaced it), and may reach past their box.
+            for spec in enabled where spec.style == .emoji {
+                let rect = CGRect(
+                    x: spec.rect.minX * size.width, y: spec.rect.minY * size.height,
+                    width: spec.rect.width * size.width, height: spec.rect.height * size.height
+                )
+                guard rect.width > 0, rect.height > 0 else { continue }
+                EmojiCover.draw(spec.emoji, covering: rect)
             }
         }
     }
@@ -291,9 +374,9 @@ nonisolated struct ImageRedactor {
     /// real effect while it is being dragged.  `nil` for the painted styles.
     @concurrent
     func previewLayer(_ style: RedactionStyle, blockSize: CGFloat, of image: UIImage) async -> UIImage? {
-        guard style.obscuresSourcePixels,
+        guard let pass = style.scramblePass,
               let ciImage = Self.uprightCIImage(image),
-              let layer = Self.obscuredLayer(style, blockSize: max(1, blockSize), of: ciImage),
+              let layer = Self.obscuredLayer(pass, blockSize: max(1, blockSize), of: ciImage),
               let cgImage = Self.ciContext.createCGImage(layer, from: ciImage.extent) else { return nil }
         return UIImage(cgImage: cgImage, scale: image.scale, orientation: .up)
     }

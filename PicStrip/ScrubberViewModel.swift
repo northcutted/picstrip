@@ -1161,8 +1161,6 @@ final class ScrubberViewModel {
         redactedUIImage = nil
     }
 
-    /// Changes how hard a `.pixelate` / `.blur` region scrambles what is under it.
-    /// The mutation is undoable and clears any cached redacted image.
     /// Covers only part of a finding — all but the last four digits, or the
     /// name before an email's "@" — or the whole of it again.  Switching resets
     /// the box to the one the scanner found.
@@ -1177,6 +1175,36 @@ final class ScrubberViewModel {
         redactedUIImage = nil
     }
 
+    /// Changes the emoji an `.emoji` region is covered with — per region, so
+    /// every face can have its own.  Undoable.
+    func changeRedactionEmoji(id: String, emoji: String) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }),
+              redactionRegions[index].emoji != emoji
+        else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].emoji = emoji
+        redactedUIImage = nil
+    }
+
+    /// Gives every face the style — and, for `.emoji`, the emoji — of the face
+    /// `id`, in one undoable step.
+    func applyStyleToAllFaces(from id: String) {
+        guard let source = redactionRegions.first(where: { $0.id == id }) else { return }
+        let indices = redactionRegions.indices.filter {
+            redactionRegions[$0].type == .face
+                && (redactionRegions[$0].style != source.style || redactionRegions[$0].emoji != source.emoji)
+        }
+        guard !indices.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indices {
+            redactionRegions[index].style = source.style
+            redactionRegions[index].emoji = source.emoji
+        }
+        redactedUIImage = nil
+    }
+
+    /// Changes how hard a `.pixelate` / `.blur` region scrambles what is under it.
+    /// The mutation is undoable and clears any cached redacted image.
     func changeRedactionStrength(id: String, strength: Double) {
         bulkChangeRedactionStrength(ids: [id], strength: strength)
     }
@@ -1221,6 +1249,18 @@ final class ScrubberViewModel {
     ///
     /// Regions whose style has no colour (`.pixelate`, `.blur`) are silently skipped.
     /// A single undo snapshot is pushed for the batch.
+    func bulkChangeRedactionEmoji(ids: Set<String>, emoji: String) {
+        let indices = redactionRegions.indices.filter {
+            ids.contains(redactionRegions[$0].id) && redactionRegions[$0].emoji != emoji
+        }
+        guard !indices.isEmpty else { return }
+        pushUndoSnapshot()
+        for index in indices {
+            redactionRegions[index].emoji = emoji
+        }
+        redactedUIImage = nil
+    }
+
     func bulkChangeRedactionColor(ids: Set<String>, color: RedactionColor) {
         let indicesToChange = redactionRegions.indices.filter {
             ids.contains(redactionRegions[$0].id)

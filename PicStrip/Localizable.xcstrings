@@ -4879,6 +4879,107 @@
         }
       }
     },
+    "Any other emoji" : {
+      "comment" : "Placeholder of the field where the user types any emoji not in the grid.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أي إيموجي آخر"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein anderes Emoji"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquier otro emoji"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cualquier otro emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un autre emoji"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un’altra emoji"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ほかの絵文字"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 이모티콘"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een andere emoji"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inne emoji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outro emoji"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Outro emoji"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "En annan emoji"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Başka bir emoji"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他表情符号"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "其他表情符號"
+          }
+        }
+      }
+    },
     "Apply %@ color to selected regions" : {
       "localizations" : {
         "ar" : {
@@ -18892,6 +18993,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "電子郵件地址"
+          }
+        }
+      }
+    },
+    "Emoji" : {
+      "comment" : "Redaction style that covers a region with an emoji, and the heading of its emoji picker.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إيموجي"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "絵文字"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이모티콘"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Emoji"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表情符号"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表情符號"
           }
         }
       }
@@ -51166,6 +51368,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "使用較小拷貝"
+          }
+        }
+      }
+    },
+    "Use this cover for every face" : {
+      "comment" : "Button: give every face region the style (and emoji) of the selected face.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم هذا الحجب لكل الوجوه"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Diese Abdeckung für alle Gesichter verwenden"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar esta censura en todas las caras"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar esta censura en todas las caras"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser ce masquage pour tous les visages"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa questa copertura per tutti i volti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "すべての顔にこのマスクを使用"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "모든 얼굴에 이 가리기 사용"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze afdekking voor alle gezichten gebruiken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj tego zamazania dla wszystkich twarzy"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar esta ocultação em todos os rostos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usar esta ocultação em todos os rostos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd den här maskeringen för alla ansikten"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu karartmayı tüm yüzlere uygula"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对所有面孔使用此遮盖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "對所有臉孔使用此遮蓋"
           }
         }
       }
