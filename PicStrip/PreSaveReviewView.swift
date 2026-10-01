@@ -220,13 +220,6 @@ struct PreSaveReviewView: View {
                         .accessibilityIdentifier("savePreviewLabel")
 
                     comparablePreview(previewImage)
-                    if viewModel.sourceUIImage != nil {
-                        Text("Touch and hold to compare with the original")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity)
-                            .accessibilityHidden(true)
-                    }
                     Button {
                         showFullPreview = true
                     } label: {
@@ -264,6 +257,18 @@ struct PreSaveReviewView: View {
                         .background(.orange, in: Capsule())
                         .foregroundStyle(.white)
                         .padding(8)
+                }
+            }
+            .overlay(alignment: .bottom) {
+                // On the preview rather than under it: the review sheet is short on iPad.
+                if original != nil, !showsOriginal {
+                    Text("Touch and hold to compare with the original")
+                        .font(.caption2.weight(.medium))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(.thinMaterial, in: Capsule())
+                        .padding(6)
+                        .accessibilityHidden(true)
                 }
             }
             .contentShape(Rectangle())

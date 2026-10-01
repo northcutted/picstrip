@@ -160,6 +160,8 @@ final class PicStripUITests: XCTestCase {
                       "The primary share action must remain visible while reviewing the photo")
         snapshot("04_ReviewAndShare")
         attachScreen("04_ReviewAndShare")
+        // The review is a short form sheet on iPad; the button may be below the fold.
+        reveal(app.buttons["inspectFullImageButton"], in: app)
         app.buttons["inspectFullImageButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
         snapshot("01_FullPreview")
