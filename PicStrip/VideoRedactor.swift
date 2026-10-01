@@ -37,12 +37,31 @@ nonisolated struct VideoScan: Sendable {
 /// and Always Cover words.  Between frames it measures how the picture moved.
 nonisolated enum VideoScanner {
 
-    struct Progress: Equatable, Sendable {
+    struct Progress: Sendable {
         /// How much of the video has been looked at, 0 … 1.
         var fraction: Double
         /// Waiting for the phone to cool down before looking further.
         var isCooling: Bool
+        /// A fresh look at the frame being scanned, a few times a second; `nil`
+        /// between them.
+        var glimpse: Glimpse?
+        /// Faces and distinct text found so far.
+        var faceCount = 0
+        var textCount = 0
     }
+
+    /// The frame being scanned, small, with what was just found in it — for the
+    /// scanning screen to show the work as it happens.
+    struct Glimpse: Sendable {
+        let image: CGImage
+        /// Normalised, top-left origin.
+        let faces: [CGRect]
+        let text: [CGRect]
+    }
+
+    /// Frames are looked for faces in at this size: detection is as good as at
+    /// full size (checked from 388 to 2173 pixels) and much quicker.
+    static let detectionLongSide: CGFloat = 1280
 
     /// Videos longer than this get a warning that scanning and saving take a while.
     static let longVideoDuration: Double = 180
@@ -81,20 +100,26 @@ nonisolated enum VideoScanner {
         guard reader.startReading() else { throw reader.error ?? VideoCleaner.Failure.cannotExport }
         defer { reader.cancelReading() }
 
-        // As for photos: the newest face detector, or the OS default where it
-        // fails.  Body pose adds the heads it misses — turned or looking down.
-        var newestRevisionFailed = false
+        // Both face detectors where the OS has two: on real frames each finds
+        // faces the other misses (revision 4 lost a face in a collage that
+        // revision 3 found, and the reverse), so a face either finds is covered.
+        // Body pose then adds the heads both miss — turned or looking down.
+        let newest = PIIScanner.makeFaceRequest()
+        let standard = DetectFaceRectanglesRequest()
+        let faceRequests = (newest.revision == standard.revision ? [standard] : [newest, standard]).map(PIIScanner.onSimulatorCPU)
         func visionFaces(in pixels: CVPixelBuffer) async throws -> [CGRect] {
             let handler = ImageRequestHandler(pixels)
-            var faces: [FaceObservation]?
-            if !newestRevisionFailed {
-                faces = try? await handler.perform(PIIScanner.onSimulatorCPU(PIIScanner.makeFaceRequest()))
-                newestRevisionFailed = faces == nil
+            var found: [[CGRect]] = []
+            for request in faceRequests {
+                if let faces = try? await handler.perform(request) {
+                    found.append(faces.map { PIIScanner.swiftUIBox(from: $0.boundingBox.cgRect) })
+                }
             }
-            if faces == nil {
-                faces = try await handler.perform(PIIScanner.onSimulatorCPU(DetectFaceRectanglesRequest()))
+            if found.isEmpty {
+                // Neither ran: report why.
+                _ = try await handler.perform(PIIScanner.onSimulatorCPU(DetectFaceRectanglesRequest()))
             }
-            let boxes = (faces ?? []).map { PIIScanner.swiftUIBox(from: $0.boundingBox.cgRect) }
+            let boxes = FaceTracking.union(found)
             let poses = (try? await handler.perform(PIIScanner.onSimulatorCPU(DetectHumanBodyPoseRequest()))) ?? []
             let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
             let heads = poses.compactMap { pose -> CGRect? in
@@ -115,9 +140,12 @@ nonisolated enum VideoScanner {
         var findings = FindingTracking()
         var scan = VideoScan()
         let registration = FrameRegistration()
-        let shrinker = FrameShrinker()
+        let detectionSize = FrameShrinker(longSide: detectionLongSide)
+        let registrationSize = FrameShrinker(longSide: 480)
         let readEvery = max(1, Int((FindingTracking.sampleInterval / FaceTracking.sampleInterval).rounded()))
         var frameIndex = 0
+        var latestText: [CGRect] = []
+        var lastGlimpse = ContinuousClock.now - .seconds(1)
         while let buffer = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(buffer) else { continue }
@@ -129,32 +157,44 @@ nonisolated enum VideoScanner {
                 try await Task.sleep(for: .seconds(2))
             }
 
+            var glimpse: Glimpse?
             do {
+                let detection = detectionSize.shrink(pixels) ?? pixels
                 let boxes: [CGRect]
                 if let faceDetector {
                     boxes = try await faceDetector(pixels)
                 } else {
-                    boxes = try await visionFaces(in: pixels)
+                    boxes = try await visionFaces(in: detection)
                 }
                 faces.add(boxes, at: time)
 
                 // A small copy is plenty to see how the picture moved.  A jump of
                 // over a quarter of the frame in a tenth of a second is a cut or a
                 // misreading, not the camera.
-                let small = shrinker.shrink(pixels) ?? pixels
+                let small = registrationSize.shrink(detection) ?? detection
                 let shift = await registration.shift(to: small, restart: frameIndex == 0)
                 scan.path.add(shift.flatMap { hypot($0.dx, $0.dy) <= 0.25 ? $0 : nil }, at: time)
 
+                // Text needs every pixel.
                 if frameIndex.isMultiple(of: readEvery) {
                     let found = await PIIScanner.frameFindings(in: pixels, alwaysCover: alwaysCover)
                     findings.add(found, at: time, path: scan.path)
+                    latestText = found.map(\.boundingBox)
+                }
+
+                if ContinuousClock.now - lastGlimpse >= .milliseconds(250), let image = registrationSize.image(of: small) {
+                    lastGlimpse = .now
+                    glimpse = Glimpse(image: image, faces: boxes, text: latestText)
                 }
             } catch {
                 // Vision reports a cancelled request as its own error.
                 try Task.checkCancellation()
                 throw error
             }
-            progress(Progress(fraction: min(1, time / duration), isCooling: false))
+            progress(Progress(
+                fraction: min(1, time / duration), isCooling: false, glimpse: glimpse,
+                faceCount: faces.tracks.count, textCount: FindingGroup.groups(of: findings.tracks).count
+            ))
         }
         if reader.status == .failed { throw reader.error ?? VideoCleaner.Failure.cannotExport }
         scan.faces = faces.tracks
@@ -188,6 +228,12 @@ nonisolated final class FrameShrinker: @unchecked Sendable {
         let image = CIImage(cvPixelBuffer: pixels).transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         context.render(image, to: small)
         return small
+    }
+
+    /// `pixels` as an image, for showing.
+    func image(of pixels: CVPixelBuffer) -> CGImage? {
+        let image = CIImage(cvPixelBuffer: pixels)
+        return context.createCGImage(image, from: image.extent)
     }
 }
 

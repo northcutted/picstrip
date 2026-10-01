@@ -505,6 +505,12 @@ final class PicStripUITests: XCTestCase {
 
         let skip = app.buttons["skipFacesButton"]
         XCTAssertTrue(skip.waitForExistence(timeout: 30))
+        // The frame being scanned shows up with the face outlined, and the count rises.
+        let glimpse = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "The frame being scanned")).firstMatch
+        XCTAssertTrue(glimpse.waitForExistence(timeout: 20), "The scan shows the frame it is looking at.")
+        let counted = expectation(for: NSPredicate(format: "label BEGINSWITH %@", "1 face"),
+                                  evaluatedWith: app.descendants(matching: .any).matching(NSPredicate(format: "label ENDSWITH %@", "found so far")).firstMatch)
+        await fulfillment(of: [counted], timeout: 20)
         attachScreen("video_scanning")
         skip.tap()
         XCTAssertTrue(app.buttons["shareCleanedVideoButton"].waitForExistence(timeout: 60))

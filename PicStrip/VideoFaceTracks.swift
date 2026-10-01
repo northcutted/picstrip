@@ -146,6 +146,23 @@ nonisolated struct FaceTracking {
         )
     }
 
+    /// The faces in several detectors' results, each face once: a box that is
+    /// the same face as one already kept — overlapping it well, or holding its
+    /// centre — is dropped.
+    static func union(_ lists: [[CGRect]]) -> [CGRect] {
+        var kept: [CGRect] = []
+        for box in lists.joined() where !kept.contains(where: { isSameFace($0, box) }) {
+            kept.append(box)
+        }
+        return kept
+    }
+
+    static func isSameFace(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
+        lhs.contains(CGPoint(x: rhs.midX, y: rhs.midY))
+            || rhs.contains(CGPoint(x: lhs.midX, y: lhs.midY))
+            || matchScore(lhs, rhs) >= 1.3
+    }
+
     /// `box` (top-left origin) grown by `padding`, and by `foreheadPadding` above.
     static func padded(_ box: CGRect) -> CGRect {
         CGRect(

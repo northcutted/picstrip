@@ -92,6 +92,16 @@ final class FaceTrackingTests: XCTestCase {
         XCTAssertEqual(HeadEstimate.merged(faces: [face], heads: [sameHead, otherHead]), [face, otherHead])
     }
 
+    func testTwoDetectorsFindEachFaceOnce() {
+        let shared = CGRect(x: 0.2, y: 0.2, width: 0.1, height: 0.1)
+        let sharedAgain = CGRect(x: 0.21, y: 0.19, width: 0.1, height: 0.11)
+        let onlyNewest = CGRect(x: 0.6, y: 0.2, width: 0.1, height: 0.1)
+        let onlyOlder = CGRect(x: 0.4, y: 0.7, width: 0.08, height: 0.08)
+        XCTAssertEqual(FaceTracking.union([[shared, onlyNewest], [sharedAgain, onlyOlder]]), [shared, onlyNewest, onlyOlder])
+        let neighbour = CGRect(x: 0.31, y: 0.2, width: 0.1, height: 0.1)
+        XCTAssertEqual(FaceTracking.union([[shared], [neighbour]]).count, 2, "Two people side by side stay two.")
+    }
+
     func testFarApartFacesDoNotMatch() {
         XCTAssertEqual(FaceTracking.matchScore(box(0.0), box(0.7)), 0)
         XCTAssertGreaterThan(FaceTracking.matchScore(box(0.2), box(0.25)), 1, "Overlapping boxes beat near ones.")
@@ -321,6 +331,21 @@ final class VideoFaceRedactionTests: XCTestCase {
         XCTAssertEqual(sample.box.midX, movie.faceCenter(at: sample.time).x, accuracy: 0.1)
     }
 
+    func testTheScanShowsItsWorkAsItGoes() async throws {
+        let movie = try await movie()
+        let seen = Glimpses()
+        let scan = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { progress in
+            seen.add(progress)
+        }
+        let (glimpses, lastFaceCount) = seen.summary
+        XCTAssertGreaterThanOrEqual(glimpses.count, 1, "At least one look at the frame being scanned.")
+        XCTAssertTrue(glimpses.contains { !$0.faces.isEmpty }, "The face is outlined in it.")
+        XCTAssertEqual(lastFaceCount, scan.faces.count)
+        if let glimpse = glimpses.first {
+            XCTAssertLessThanOrEqual(max(glimpse.image.width, glimpse.image.height), 480, "Small: it is only for show.")
+        }
+    }
+
     func testABlankVideoHasNoFaces() async throws {
         let movie = try await FaceMovie.make(seconds: 1, face: " ")
         cleanup.append(movie.url)
@@ -386,4 +411,24 @@ final class VideoFaceRedactionTests: XCTestCase {
         XCTAssertTrue(left.allSatisfy { $0.kind == .other }, "Left: \(left)")
     }
 
+}
+
+/// Collects the scanner's progress reports, which arrive off the main actor.
+private final class Glimpses: @unchecked Sendable {
+    private let lock = NSLock()
+    private var glimpses: [VideoScanner.Glimpse] = []
+    private var faceCount = 0
+
+    func add(_ progress: VideoScanner.Progress) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let glimpse = progress.glimpse { glimpses.append(glimpse) }
+        faceCount = progress.faceCount
+    }
+
+    var summary: ([VideoScanner.Glimpse], Int) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (glimpses, faceCount)
+    }
 }

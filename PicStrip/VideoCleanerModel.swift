@@ -34,6 +34,8 @@ final class VideoCleanerModel {
     /// Seconds.
     private(set) var duration: Double = 0
     private(set) var scanProgress = VideoScanner.Progress(fraction: 0, isCooling: false)
+    /// The latest look at the frame being scanned, kept between glimpses.
+    private(set) var glimpse: VideoScanner.Glimpse?
     private(set) var saveProgress: Double = 0
 
     private(set) var faces: [FaceTrack] = []
@@ -102,7 +104,7 @@ final class VideoCleanerModel {
             let terms = AlwaysCoverList.shared.terms
             let scanning = Task {
                 try await VideoScanner.scan(url, alwaysCover: terms) { [weak self] progress in
-                    Task { @MainActor in self?.scanProgress = progress }
+                    Task { @MainActor in self?.receive(progress) }
                 }
             }
             scanTask = scanning
@@ -117,6 +119,7 @@ final class VideoCleanerModel {
                 scan = VideoScan()
             }
             scanTask = nil
+            glimpse = nil
             try Task.checkCancellation()
             // Skip tapped just as the scan finished.
             if skipsCovering { scan = VideoScan() }
@@ -139,6 +142,12 @@ final class VideoCleanerModel {
         } catch {
             stage = .failed(error.localizedDescription)
         }
+    }
+
+    private func receive(_ progress: VideoScanner.Progress) {
+        guard stage == .scanning else { return }
+        scanProgress = progress
+        if let fresh = progress.glimpse { glimpse = fresh }
     }
 
     /// Stops looking and saves a copy with only the hidden details removed.

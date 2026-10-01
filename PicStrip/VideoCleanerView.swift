@@ -65,15 +65,26 @@ struct VideoCleanerView: View {
 
     private var scanningView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "face.dashed")
-                .font(.system(size: 44))
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
+            ScanGlimpseView(glimpse: model.glimpse)
+                .frame(maxHeight: 340)
             VStack(spacing: 8) {
                 Text(model.scanProgress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…")
                     .font(.headline)
                 ProgressView(value: model.scanProgress.fraction)
                     .accessibilityIdentifier("videoScanProgress")
+                HStack(spacing: 20) {
+                    Label("\(model.scanProgress.faceCount)", systemImage: "face.dashed")
+                        .accessibilityLabel(Text("^[\(model.scanProgress.faceCount) face](inflect: true) found so far"))
+                    Label("\(model.scanProgress.textCount)", systemImage: "text.viewfinder")
+                        .accessibilityLabel(Text("Text and codes found so far: \(model.scanProgress.textCount)"))
+                }
+                .font(.subheadline.monospacedDigit())
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+                .animation(.snappy, value: model.scanProgress.faceCount)
+                .animation(.snappy, value: model.scanProgress.textCount)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("scanCounts")
             }
             if model.isLong { longVideoNote }
             Button("Skip Covering") { model.skipCovering() }
@@ -501,6 +512,78 @@ struct VideoCleanerView: View {
         } catch {
             saveState = .failed(String(localized: "Could not save to Photos: \(error.localizedDescription)"))
         }
+    }
+}
+
+// MARK: - ScanGlimpseView
+
+/// The frame being scanned, with what was just found in it outlined — faces in
+/// yellow, text and codes in the accent colour — and a scan line sweeping down.
+private struct ScanGlimpseView: View {
+    let glimpse: VideoScanner.Glimpse?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if let glimpse {
+                Image(decorative: glimpse.image, scale: 1)
+                    .resizable()
+                    .scaledToFit()
+                    .overlay {
+                        GeometryReader { geometry in
+                            ForEach(Array(glimpse.faces.enumerated()), id: \.offset) { _, box in
+                                outline(box, in: geometry.size, color: .yellow)
+                            }
+                            ForEach(Array(glimpse.text.enumerated()), id: \.offset) { _, box in
+                                outline(box, in: geometry.size, color: .accentColor)
+                            }
+                        }
+                    }
+                    .overlay {
+                        if !reduceMotion { ScanSweep() }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .accessibilityElement()
+                    .accessibilityLabel("The frame being scanned")
+            } else {
+                RoundedRectangle(cornerRadius: 14)
+                    .fill(.fill.tertiary)
+                    .aspectRatio(16 / 9, contentMode: .fit)
+                    .overlay { ProgressView() }
+                    .accessibilityHidden(true)
+            }
+        }
+        .accessibilityIdentifier("scanGlimpse")
+    }
+
+    private func outline(_ box: CGRect, in size: CGSize, color: Color) -> some View {
+        RoundedRectangle(cornerRadius: 5)
+            .stroke(color, lineWidth: 2)
+            .shadow(color: .black.opacity(0.4), radius: 2)
+            .frame(width: box.width * size.width, height: box.height * size.height)
+            .position(x: box.midX * size.width, y: box.midY * size.height)
+    }
+}
+
+/// A soft line moving down the frame, two seconds a pass.  Driven by the
+/// timeline, not a repeating animation, so nothing else on screen is caught up
+/// in it.
+private struct ScanSweep: View {
+    var body: some View {
+        TimelineView(.animation) { context in
+            let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 2) / 2
+            GeometryReader { geometry in
+                LinearGradient(
+                    colors: [.clear, Color.accentColor.opacity(0.35), .clear],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .frame(height: geometry.size.height * 0.18)
+                .offset(y: geometry.size.height * (phase * 1.18 - 0.18))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 
