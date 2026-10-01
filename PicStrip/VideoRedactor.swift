@@ -51,7 +51,7 @@ nonisolated enum VideoScanner {
     typealias FaceDetector = @Sendable (CVPixelBuffer) async throws -> [CGRect]
 
     /// The faces, text and codes in the video at `url`.  `faceDetector`
-    /// replaces Vision's face detector in tests.
+    /// replaces Vision's face and head detection in tests.
     @concurrent
     static func scan(
         _ url: URL,
@@ -81,7 +81,8 @@ nonisolated enum VideoScanner {
         guard reader.startReading() else { throw reader.error ?? VideoCleaner.Failure.cannotExport }
         defer { reader.cancelReading() }
 
-        // As for photos: the newest face detector, or the OS default where it fails.
+        // As for photos: the newest face detector, or the OS default where it
+        // fails.  Body pose adds the heads it misses — turned or looking down.
         var newestRevisionFailed = false
         func visionFaces(in pixels: CVPixelBuffer) async throws -> [CGRect] {
             let handler = ImageRequestHandler(pixels)
@@ -93,7 +94,21 @@ nonisolated enum VideoScanner {
             if faces == nil {
                 faces = try await handler.perform(PIIScanner.onSimulatorCPU(DetectFaceRectanglesRequest()))
             }
-            return (faces ?? []).map { PIIScanner.swiftUIBox(from: $0.boundingBox.cgRect) }
+            let boxes = (faces ?? []).map { PIIScanner.swiftUIBox(from: $0.boundingBox.cgRect) }
+            let poses = (try? await handler.perform(PIIScanner.onSimulatorCPU(DetectHumanBodyPoseRequest()))) ?? []
+            let size = CGSize(width: CVPixelBufferGetWidth(pixels), height: CVPixelBufferGetHeight(pixels))
+            let heads = poses.compactMap { pose -> CGRect? in
+                func point(_ name: HumanBodyPoseObservation.JointName) -> CGPoint? {
+                    guard let joint = pose.joint(for: name), joint.confidence >= HeadEstimate.minimumConfidence else { return nil }
+                    return CGPoint(x: joint.location.x, y: 1 - joint.location.y)
+                }
+                return HeadEstimate.box(
+                    head: [.nose, .leftEye, .rightEye, .leftEar, .rightEar].compactMap(point),
+                    neck: point(.neck),
+                    frameSize: size
+                )
+            }
+            return HeadEstimate.merged(faces: boxes, heads: heads)
         }
 
         var faces = FaceTracking()

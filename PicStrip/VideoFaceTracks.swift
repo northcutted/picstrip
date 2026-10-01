@@ -156,3 +156,50 @@ nonisolated struct FaceTracking {
         )
     }
 }
+
+// MARK: - HeadEstimate
+
+/// Heads found from body pose, for the faces the face detector misses: turned
+/// to the side, looking down, or away from the camera.  The pose still places
+/// the nose, eyes, ears and neck, and the head is drawn around them.
+nonisolated enum HeadEstimate {
+    /// Joints below this confidence are ignored.
+    static let minimumConfidence: Float = 0.3
+
+    /// A square head box (normalised, top-left origin) around the head joints
+    /// found, sized by how far apart they are and by the neck — or `nil` with
+    /// too little to go on.  Points are normalised with a top-left origin;
+    /// `frameSize` keeps the box square in pixels.
+    static func box(head: [CGPoint], neck: CGPoint?, frameSize: CGSize) -> CGRect? {
+        guard frameSize.width > 0, frameSize.height > 0, !head.isEmpty, head.count >= 2 || neck != nil else { return nil }
+        let points = head.map { CGPoint(x: $0.x * frameSize.width, y: $0.y * frameSize.height) }
+        let center = CGPoint(
+            x: points.map(\.x).reduce(0, +) / CGFloat(points.count),
+            y: points.map(\.y).reduce(0, +) / CGFloat(points.count)
+        )
+        var spread: CGFloat = 0
+        for first in points {
+            for second in points { spread = max(spread, hypot(first.x - second.x, first.y - second.y)) }
+        }
+        let neckLength = neck.map { hypot($0.x * frameSize.width - center.x, $0.y * frameSize.height - center.y) } ?? 0
+        // Ear to ear is about a head's width; centre to neck about two thirds of its height.
+        let side = max(spread * 1.6, neckLength * 1.5)
+        guard side > 0 else { return nil }
+        return CGRect(
+            x: (center.x - side / 2) / frameSize.width,
+            y: (center.y - side * 0.55) / frameSize.height,
+            width: side / frameSize.width,
+            height: side / frameSize.height
+        )
+    }
+
+    /// `faces`, plus the `heads` no face was found in: where both see the same
+    /// person, the face detector's tighter box wins.
+    static func merged(faces: [CGRect], heads: [CGRect]) -> [CGRect] {
+        faces + heads.filter { head in
+            !faces.contains { face in
+                head.contains(CGPoint(x: face.midX, y: face.midY)) || face.contains(CGPoint(x: head.midX, y: head.midY))
+            }
+        }
+    }
+}

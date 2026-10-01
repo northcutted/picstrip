@@ -65,6 +65,33 @@ final class FaceTrackingTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(track.coverBox(at: 1.5)).midX, FaceTracking.padded(box(0.3)).midX, accuracy: 0.0001)
     }
 
+    func testAHeadIsDrawnAroundTheJointsOfATurnedFace() throws {
+        // A profile: nose, one eye and one ear, then the neck below — in a portrait frame.
+        let size = CGSize(width: 1080, height: 1920)
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: x / size.width, y: y / size.height) }
+        let head = try XCTUnwrap(HeadEstimate.box(
+            head: [point(500, 600), point(540, 580), point(620, 590)],
+            neck: point(600, 720),
+            frameSize: size
+        ))
+        let pixels = CGRect(x: head.minX * size.width, y: head.minY * size.height,
+                            width: head.width * size.width, height: head.height * size.height)
+        XCTAssertEqual(pixels.width, pixels.height, accuracy: 0.5, "Square in pixels, whatever the frame.")
+        XCTAssertGreaterThan(pixels.width, 180, "About a head: wider than nose to ear, taller than to the neck.")
+        XCTAssertLessThan(pixels.width, 320)
+        for joint in [CGPoint(x: 500, y: 600), CGPoint(x: 620, y: 590)] {
+            XCTAssertTrue(pixels.contains(joint), "\(joint) is inside \(pixels)")
+        }
+        XCTAssertNil(HeadEstimate.box(head: [point(500, 600)], neck: nil, frameSize: size), "One point is not a head.")
+    }
+
+    func testAHeadOnlyAddsWhatTheFaceDetectorMissed() {
+        let face = CGRect(x: 0.4, y: 0.2, width: 0.1, height: 0.06)
+        let sameHead = CGRect(x: 0.38, y: 0.17, width: 0.15, height: 0.09)
+        let otherHead = CGRect(x: 0.7, y: 0.3, width: 0.12, height: 0.07)
+        XCTAssertEqual(HeadEstimate.merged(faces: [face], heads: [sameHead, otherHead]), [face, otherHead])
+    }
+
     func testFarApartFacesDoNotMatch() {
         XCTAssertEqual(FaceTracking.matchScore(box(0.0), box(0.7)), 0)
         XCTAssertGreaterThan(FaceTracking.matchScore(box(0.2), box(0.25)), 1, "Overlapping boxes beat near ones.")
