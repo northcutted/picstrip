@@ -116,6 +116,17 @@ jobs:
           compression-level: 0
           if-no-files-found: error
         if: always()
+      - name: Retain simulator readiness and recovery evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: simulator-recovery-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
+          path: |
+            fastlane/screenshot_logs/simulator-recovery/
+            build/build-env.json
+          retention-days: 3
+          compression-level: 0
+          if-no-files-found: ignore
+        if: always()
       # This secret-free job uses fresh hosted simulators and repository-owned
       # synthetic fixtures only. Preserve the failing device's XCTest evidence.
       - name: Retain screenshot failure diagnostics
