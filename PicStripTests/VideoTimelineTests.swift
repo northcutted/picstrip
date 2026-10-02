@@ -43,6 +43,70 @@ final class CoverTimingTests: XCTestCase {
     }
 }
 
+// MARK: - Zooming the timeline
+
+final class TimelineZoomTests: XCTestCase {
+
+    func testZoomKeepsTheTimeUnderTheFingers() {
+        let whole = TimelineWindow(duration: 60)
+        XCTAssertFalse(whole.isZoomed)
+        XCTAssertEqual(whole.length, 60)
+        // Pinched three quarters of the way across, at 45 s.
+        let zoomed = whole.zoomed(to: 4, keeping: 0.75)
+        XCTAssertEqual(zoomed.length, 15)
+        XCTAssertEqual(zoomed.start + 0.75 * zoomed.length, 45, accuracy: 0.0001)
+        XCTAssertTrue(zoomed.isZoomed)
+    }
+
+    func testZoomStaysWithinItsLimitsAndTheVideo() {
+        let window = TimelineWindow(duration: 10)
+        XCTAssertEqual(window.zoomed(to: 0.2, keeping: 0.5).zoom, 1, "No further out than the whole video.")
+        XCTAssertEqual(window.zoomed(to: 100, keeping: 0.5).length, TimelineWindow.shortest, "No closer than two seconds.")
+        XCTAssertEqual(window.zoomed(to: 4, keeping: 1).end, 10, accuracy: 0.0001, "Zoomed at the end, it ends with the video.")
+        XCTAssertEqual(window.zoomed(to: 4, keeping: 0).moved(to: -3).start, 0, "It cannot be moved before the start.")
+        XCTAssertEqual(window.zoomed(to: 4, keeping: 0).moved(to: 30).end, 10, accuracy: 0.0001, "…or past the end.")
+        XCTAssertEqual(TimelineWindow.maximumZoom(for: 1), 1, "A video shorter than two seconds does not zoom.")
+    }
+
+    func testTheWindowFollowsThePlayhead() {
+        let window = TimelineWindow(duration: 60, zoom: 6, start: 0)
+        XCTAssertEqual(window.revealing(5), window, "In view: it stays put.")
+        let moved = window.revealing(30)
+        XCTAssertTrue(moved.contains(30))
+        XCTAssertEqual(moved.start, 29, accuracy: 0.0001, "The playhead sits a tenth of the way in.")
+        let whole = TimelineWindow(duration: 60)
+        XCTAssertEqual(whole.revealing(59), whole)
+    }
+
+    func testTimesAndPlacesMatchAcrossATrack() {
+        let window = TimelineWindow(duration: 60, zoom: 4, start: 20)
+        XCTAssertEqual(window.x(20, width: 300), 0)
+        XCTAssertEqual(window.x(35, width: 300), 300)
+        XCTAssertEqual(window.time(at: 150, width: 300), 27.5, accuracy: 0.0001)
+        XCTAssertEqual(window.visiblePart(of: 10...25), 20...25)
+        XCTAssertNil(window.visiblePart(of: 40...50))
+    }
+
+    func testASelectedStretchIsAtLeastATenthOfASecondWithinTheVideo() {
+        XCTAssertEqual(EditorTimeline.selection(from: 4, to: 2, duration: 10), 2...4, "Dragged backwards.")
+        XCTAssertEqual(EditorTimeline.selection(from: 3, to: 3, duration: 10).upperBound, 3.1, accuracy: 0.0001)
+        XCTAssertEqual(EditorTimeline.selection(from: 9.5, to: 10.5, duration: 10), 9.5...10)
+        let atEnd = EditorTimeline.selection(from: 10, to: 10, duration: 10)
+        XCTAssertEqual(atEnd.upperBound, 10)
+        XCTAssertEqual(atEnd.lowerBound, 9.9, accuracy: 0.0001)
+    }
+
+    func testZoomedInDetail() {
+        XCTAssertEqual(VideoCleanerModel.filmstripCount(for: 4), 10)
+        XCTAssertEqual(VideoCleanerModel.filmstripCount(for: 45), 45, "About a frame a second.")
+        XCTAssertEqual(VideoCleanerModel.filmstripCount(for: 3_600), 120)
+        XCTAssertEqual(VideoCleanerModel.levelCount(for: 30), 600, "Twenty readings a second.")
+        XCTAssertEqual(VideoCleanerModel.levelCount(for: 3_600), 4_000)
+        XCTAssertEqual(EditorTimeline.zoomLabel(2), "2×")
+        XCTAssertEqual(EditorTimeline.zoomLabel(2.5), "2.5×")
+    }
+}
+
 // MARK: - Following a drawn box
 
 final class VideoObjectFollowerTests: XCTestCase {

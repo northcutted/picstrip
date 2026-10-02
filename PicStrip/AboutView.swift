@@ -388,17 +388,17 @@ struct AboutView: View {
                         instructionRow(
                             icon: "viewfinder",
                             color: .green,
-                            text: "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and draw a box around it. PicStrip tracks it through the whole video, forwards and back."
+                            text: "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and tap \u{201C}Cover an Object\u{201D}. Draw a box around it, drag it into place or drag its corner to resize it, and PicStrip tracks it through the whole video, forwards and back."
                         )
                         instructionRow(
                             icon: "timeline.selection",
                             color: .purple,
-                            text: "**The timeline** shows every cover as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and drag across the frames to move through the video."
+                            text: "**The timeline** shows every cover and sound edit as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and hold it for its options. Drag across the frames to move through the video, and pinch to zoom in."
                         )
                         instructionRow(
                             icon: "waveform.badge.exclamationmark",
                             color: .pink,
-                            text: "**Bleep or mute the sound.** Add a bleep or a mute at the playhead, then drag its ends on the Audio lane to cover exactly what was said."
+                            text: "**Bleep or mute the sound.** Hold on the Audio lane and drag across what was said, then choose Bleep or Mute — or Play to hear it first. Drag the clip\u{2019}s ends to cover exactly the words."
                         )
                         instructionRow(
                             icon: "play.rectangle",
