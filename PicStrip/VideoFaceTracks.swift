@@ -64,11 +64,20 @@ nonisolated struct FaceTracking {
     static let sampleInterval = 0.1
     /// Every this many looks, faces are also looked for in `tiles`.
     static let tileEvery = 3
-    /// Overlapping 60% tiles of the frame (Vision's normalised space): a face
+    /// Overlapping 60% tiles of the frame (normalised, top-left origin): a face
     /// too small to find in the whole frame — someone in the background, a
     /// photo within the picture — is found in a tile.
     static let tiles: [CGRect] = [(0.0, 0.0), (0.4, 0.0), (0.0, 0.4), (0.4, 0.4)].map {
         CGRect(x: $0.0, y: $0.1, width: 0.6, height: 0.6)
+    }
+
+    /// `box`, found in an image cut from `tile`, in the whole frame.  Both
+    /// normalised, top-left origin.
+    static func box(_ box: CGRect, inTile tile: CGRect) -> CGRect {
+        CGRect(
+            x: tile.minX + box.minX * tile.width, y: tile.minY + box.minY * tile.height,
+            width: box.width * tile.width, height: box.height * tile.height
+        )
     }
     /// Added on every side of a found face, as a share of its size: a face box
     /// stops short of the ears and chin, and the face moves between samples.

@@ -107,6 +107,42 @@ final class FaceTrackingTests: XCTestCase {
         XCTAssertEqual(FaceTracking.union([[kisser], [kissed]]).count, 2, "Cheek to cheek is still two faces.")
     }
 
+    func testAFaceFoundInATileLandsWhereItIsInTheFrame() {
+        // The bottom-right tile, top-left origin: x 0.4…1.0, y 0.4…1.0.
+        let tile = CGRect(x: 0.4, y: 0.4, width: 0.6, height: 0.6)
+        let inTile = CGRect(x: 0.5, y: 0.5, width: 0.1, height: 0.1)
+        let inFrame = FaceTracking.box(inTile, inTile: tile)
+        XCTAssertEqual(inFrame.minX, 0.7, accuracy: 1e-9)
+        XCTAssertEqual(inFrame.minY, 0.7, accuracy: 1e-9)
+        XCTAssertEqual(inFrame.width, 0.06, accuracy: 1e-9)
+    }
+
+    func testATileIsCutFromTheRightPlace() throws {
+        // A frame white on top, black below: the bottom tiles are mostly black.
+        let size = CGSize(width: 200, height: 100)
+        var made: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA, nil, &made)
+        let pixels = try XCTUnwrap(made)
+        CVPixelBufferLockBaseAddress(pixels, [])
+        let base = try XCTUnwrap(CVPixelBufferGetBaseAddress(pixels)).assumingMemoryBound(to: UInt8.self)
+        let rowBytes = CVPixelBufferGetBytesPerRow(pixels)
+        for y in 0..<Int(size.height) {
+            memset(base + y * rowBytes, y < 50 ? 255 : 0, rowBytes)
+        }
+        CVPixelBufferUnlockBaseAddress(pixels, [])
+
+        let shrinker = FrameShrinker()
+        let bottom = try XCTUnwrap(shrinker.crop(pixels, to: CGRect(x: 0.4, y: 0.4, width: 0.6, height: 0.6)))
+        XCTAssertEqual(CVPixelBufferGetWidth(bottom), 120)
+        XCTAssertEqual(CVPixelBufferGetHeight(bottom), 60)
+        CVPixelBufferLockBaseAddress(bottom, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(bottom, .readOnly) }
+        let cut = try XCTUnwrap(CVPixelBufferGetBaseAddress(bottom)).assumingMemoryBound(to: UInt8.self)
+        let cutRow = CVPixelBufferGetBytesPerRow(bottom)
+        XCTAssertGreaterThan(cut[0], 200, "Its top rows (frame rows 40…49) are white.")
+        XCTAssertLessThan(cut[(59 * cutRow)], 50, "Its bottom row (frame row 99) is black.")
+    }
+
     func testFarApartFacesDoNotMatch() {
         XCTAssertEqual(FaceTracking.matchScore(box(0.0), box(0.7)), 0)
         XCTAssertGreaterThan(FaceTracking.matchScore(box(0.2), box(0.25)), 1, "Overlapping boxes beat near ones.")

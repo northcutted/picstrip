@@ -116,22 +116,17 @@ nonisolated enum VideoScanner {
         let faceRequests = (newest.revision == standard.revision ? [standard] : [newest, standard]).map(PIIScanner.onSimulatorCPU)
         // Small faces — a crowd, a photo within the picture — are missed in the
         // whole frame and found in overlapping tiles of the full-size frame.
+        // Each tile is cut out as its own image: with `regionOfInterest`,
+        // revision 3 reports boxes relative to the region and revision 4
+        // relative to the whole frame, and mixing the two put covers on a bench.
         func tiledFaces(in pixels: CVPixelBuffer) async -> [[CGRect]] {
-            let handler = ImageRequestHandler(pixels)
             var found: [[CGRect]] = []
             for tile in FaceTracking.tiles {
+                guard let cut = detectionSize.crop(pixels, to: tile) else { continue }
+                let handler = ImageRequestHandler(cut)
                 for request in faceRequests {
-                    var tiled = request
-                    tiled.regionOfInterest = NormalizedRect(x: tile.minX, y: tile.minY, width: tile.width, height: tile.height)
-                    guard let faces = try? await handler.perform(tiled) else { continue }
-                    // Results are relative to the tile.
-                    found.append(faces.map { face in
-                        let box = face.boundingBox.cgRect
-                        return PIIScanner.swiftUIBox(from: CGRect(
-                            x: tile.minX + box.minX * tile.width, y: tile.minY + box.minY * tile.height,
-                            width: box.width * tile.width, height: box.height * tile.height
-                        ))
-                    })
+                    guard let faces = try? await handler.perform(request) else { continue }
+                    found.append(faces.map { FaceTracking.box(PIIScanner.swiftUIBox(from: $0.boundingBox.cgRect), inTile: tile) })
                 }
             }
             return found
@@ -284,6 +279,27 @@ nonisolated final class FrameShrinker: @unchecked Sendable {
         let image = CIImage(cvPixelBuffer: pixels).transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         context.render(image, to: small)
         return small
+    }
+
+    /// The part of `pixels` in `rect` (normalised, top-left origin), at full size,
+    /// as an image of its own.
+    func crop(_ pixels: CVPixelBuffer, to rect: CGRect) -> CVPixelBuffer? {
+        let width = CGFloat(CVPixelBufferGetWidth(pixels))
+        let height = CGFloat(CVPixelBufferGetHeight(pixels))
+        // Core Image counts up from the bottom.
+        let region = CGRect(
+            x: rect.minX * width, y: (1 - rect.maxY) * height, width: rect.width * width, height: rect.height * height
+        ).integral
+        guard region.width >= 1, region.height >= 1 else { return nil }
+        var made: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(region.width), Int(region.height), kCVPixelFormatType_32BGRA,
+                            [kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any]()] as CFDictionary, &made)
+        guard let cut = made else { return nil }
+        let image = CIImage(cvPixelBuffer: pixels)
+            .cropped(to: region)
+            .transformed(by: CGAffineTransform(translationX: -region.minX, y: -region.minY))
+        context.render(image, to: cut)
+        return cut
     }
 
     /// `pixels` as an image, for showing.
