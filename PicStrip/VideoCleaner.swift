@@ -110,12 +110,30 @@ nonisolated enum VideoCleaner {
         videoComposition: AVVideoComposition? = nil,
         progress: (@Sendable (Double) -> Void)? = nil
     ) async throws {
-        let asset = AVURLAsset(url: source)
-        let preset = videoComposition == nil ? AVAssetExportPresetPassthrough : await reencodingPreset(for: asset)
+        try await clean(
+            AVURLAsset(url: source), audioMix: nil, to: output,
+            keeping: keeping, videoComposition: videoComposition, progress: progress
+        )
+    }
+
+    /// `clean` for an asset with its sound edited (`VideoAudioEditor`): `audioMix`
+    /// silences the edited stretches, and the whole is encoded again — a mix
+    /// cannot be applied to copied samples.
+    static func clean(
+        _ asset: AVAsset,
+        audioMix: AVAudioMix?,
+        to output: URL,
+        keeping: [AVMetadataItem] = [],
+        videoComposition: AVVideoComposition? = nil,
+        progress: (@Sendable (Double) -> Void)? = nil
+    ) async throws {
+        let copiesFrames = videoComposition == nil && audioMix == nil
+        let preset = copiesFrames ? AVAssetExportPresetPassthrough : await reencodingPreset(for: asset)
         guard let session = AVAssetExportSession(asset: asset, presetName: preset) else {
             throw Failure.cannotExport
         }
         session.videoComposition = videoComposition
+        session.audioMix = audioMix
         // A non-empty list replaces the file's own metadata — an empty one is
         // read as "keep it all" — so a plain video gets a new random identifier,
         // tied to nothing.  The filter drops identifying items from the tracks.

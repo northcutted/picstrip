@@ -9,6 +9,8 @@ import Vision
 nonisolated enum FaceCover: Hashable, Sendable {
     /// A strong blur — the default.
     case blur
+    /// A black box.
+    case solid
     /// The emoji on top of the strong blur, as in photos.
     case emoji(String)
 
@@ -88,23 +90,7 @@ nonisolated enum VideoScanner {
         }
         let duration = max(try await asset.load(.duration).seconds, FaceTracking.sampleInterval)
 
-        // Read through a plain composition: it turns every frame upright, as the
-        // video is shown — the space the covers are drawn in — and its frame
-        // duration hands back only the frames that are looked at.
-        var configuration = try await AVVideoComposition.Configuration(for: asset)
-        configuration.frameDuration = CMTime(seconds: FaceTracking.sampleInterval, preferredTimescale: 600)
-        // Otherwise frames follow the video track's timing and every frame
-        // comes back: six times the work on a 60 fps video.
-        configuration.sourceTrackIDForFrameTiming = kCMPersistentTrackID_Invalid
-        let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderVideoCompositionOutput(videoTracks: [track], videoSettings: [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-        ])
-        output.videoComposition = AVVideoComposition(configuration: configuration)
-        output.alwaysCopiesSampleData = false
-        guard reader.canAdd(output) else { throw VideoCleaner.Failure.cannotExport }
-        reader.add(output)
-        guard reader.startReading() else { throw reader.error ?? VideoCleaner.Failure.cannotExport }
+        let (reader, output) = try await uprightReader(for: asset, track: track)
         defer { reader.cancelReading() }
 
         // Both face detectors where the OS has two: on real frames each finds
@@ -254,6 +240,35 @@ nonisolated struct ScanMark: Sendable {
     let box: CGRect
 }
 
+// MARK: - Upright frames
+
+extension VideoScanner {
+    /// A reader handing back `asset`'s frames upright, as the video is shown —
+    /// the space covers are drawn in — at ten a second, within `timeRange`.
+    nonisolated static func uprightReader(
+        for asset: AVURLAsset,
+        track: AVAssetTrack,
+        timeRange: CMTimeRange? = nil
+    ) async throws -> (AVAssetReader, AVAssetReaderVideoCompositionOutput) {
+        var configuration = try await AVVideoComposition.Configuration(for: asset)
+        configuration.frameDuration = CMTime(seconds: FaceTracking.sampleInterval, preferredTimescale: 600)
+        // Otherwise frames follow the video track's timing and every frame
+        // comes back: six times the work on a 60 fps video.
+        configuration.sourceTrackIDForFrameTiming = kCMPersistentTrackID_Invalid
+        let reader = try AVAssetReader(asset: asset)
+        if let timeRange { reader.timeRange = timeRange }
+        let output = AVAssetReaderVideoCompositionOutput(videoTracks: [track], videoSettings: [
+            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        ])
+        output.videoComposition = AVVideoComposition(configuration: configuration)
+        output.alwaysCopiesSampleData = false
+        guard reader.canAdd(output) else { throw VideoCleaner.Failure.cannotExport }
+        reader.add(output)
+        guard reader.startReading() else { throw reader.error ?? VideoCleaner.Failure.cannotExport }
+        return (reader, output)
+    }
+}
+
 // MARK: - FrameShrinker
 
 /// Scales frames down for image registration, which needs the picture's
@@ -318,6 +333,8 @@ nonisolated enum VideoRedactor {
     struct FaceCoverage: Sendable {
         let track: FaceTrack
         let style: FaceCover
+        /// Set on the timeline; otherwise the track's own.
+        var range: ClosedRange<Double>?
     }
 
     struct FindingCoverage: Sendable {
@@ -394,9 +411,9 @@ nonisolated enum VideoRedactor {
             obscure(pixels(box), style: finding.style)
         }
         for face in plan.faces {
-            guard let box = face.track.coverBox(at: time) else { continue }
+            guard let box = face.track.coverBox(at: time, within: face.range) else { continue }
             let full = pixels(box)
-            obscure(full, style: .blur)
+            obscure(full, style: face.style == .solid ? .solid : .blur)
             if let emoji = face.style.emoji, let glyph = glyphs[emoji] {
                 let scale = max(full.width, full.height) * EmojiCover.coverage / max(glyph.extent.width, glyph.extent.height)
                 let sized = glyph.transformed(by: CGAffineTransform(scaleX: scale, y: scale))

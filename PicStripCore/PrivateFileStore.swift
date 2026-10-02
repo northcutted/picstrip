@@ -30,7 +30,7 @@ nonisolated struct PrivateFileStore: Sendable {
     func reserve(extension fileExtension: String, now: Date = Date()) throws -> URL {
         let allowed = Set([
             "png", "jpg", "jpeg", "heic", "heif", "tif", "tiff", "gif", "bmp", "webp", "avif", "dng", "json", "data",
-            "mov", "mp4", "m4v"
+            "mov", "mp4", "m4v", "caf"
         ])
         let suffix = allowed.contains(fileExtension.lowercased()) ? fileExtension.lowercased() : "data"
         try FileManager.default.createDirectory(

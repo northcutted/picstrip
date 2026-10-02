@@ -494,6 +494,56 @@ final class PicStripUITests: XCTestCase {
         XCTAssertEqual(cover.value as? String, "🐸")
     }
 
+    /// A cover drawn on the paused frame is followed, timed on the timeline, and saved.
+    @MainActor
+    func testACoverCanBeDrawnFollowedAndTimed() async throws {
+        let path = "/tmp/picstrip_video_draw_fixture.mov"
+        try await writeFaceMovie(to: URL(fileURLWithPath: path))
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = path
+        app.launch()
+
+        let add = app.buttons["addCoverButton"]
+        XCTAssertTrue(add.waitForExistence(timeout: 90), "The review shows Add a Cover.")
+        add.tap()
+        let area = app.descendants(matching: .any)["drawingArea"]
+        XCTAssertTrue(area.waitForExistence(timeout: 15))
+        // Around the face, which moves: the cover follows it.
+        let from = area.coordinate(withNormalizedOffset: CGVector(dx: 0.27, dy: 0.2))
+        let to = area.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.85))
+        from.press(forDuration: 0.1, thenDragTo: to)
+        attachScreen("draw_cover")
+        let follow = app.buttons["followButton"]
+        XCTAssertTrue(follow.isEnabled, "A drawn box can be followed.")
+        follow.tap()
+
+        let row = app.buttons["drawnRow-1"]
+        XCTAssertTrue(row.waitForExistence(timeout: 60), "The followed cover is listed.")
+        let end = app.descendants(matching: .any)["coverEndHandle"]
+        XCTAssertTrue(end.waitForExistence(timeout: 5), "The new cover is picked, with handles on the timeline.")
+        let start = app.descendants(matching: .any)["coverStartHandle"]
+        // Start it at the very beginning of the video.
+        start.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.1,
+            thenDragTo: app.descendants(matching: .any)["coverTimelineTrack"].coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
+        )
+        XCTAssertTrue(app.buttons["resetTimingButton"].waitForExistence(timeout: 5), "A changed timing can be reset.")
+        attachScreen("cover_timeline")
+
+        // A bleep at the playhead shows as a clip on the audio lane, selected.
+        let bleep = app.buttons["addBleepButton"]
+        XCTAssertTrue(bleep.waitForExistence(timeout: 5), "The video has sound, so it can be bleeped.")
+        bleep.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["clip-audio-0"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["coverEndHandle"].exists, "The new bleep can be trimmed.")
+        attachScreen("bleep_timeline")
+
+        app.buttons["makeCleanedCopyButton"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["drawnCoveredRow"].waitForExistence(timeout: 120),
+                      "The cleaned copy lists the cover that was added.")
+        XCTAssertTrue(app.descendants(matching: .any)["audioEditedRow"].exists, "…and the bleep.")
+    }
+
     /// Skipping face covering still saves a cleaned copy, with every face as it was.
     @MainActor
     func testFaceCoveringCanBeSkipped() async throws {
@@ -695,9 +745,11 @@ final class PicStripUITests: XCTestCase {
         let containerFrame = container.frame.intersection(app.frame)
         let navigationBottom = app.navigationBars.allElementsBoundByIndex
             .map(\.frame).filter { $0.intersects(containerFrame) }.map(\.maxY).max() ?? containerFrame.minY
-        let share = app.buttons["shareCleanedImageButton"]
+        // A bar fixed over the bottom of the list: the photo review's Share, or
+        // the video screen's Make Cleaned Copy.
+        let footer = [app.buttons["shareCleanedImageButton"], app.buttons["makeCleanedCopyButton"]].first { $0.exists }
         let top = max(containerFrame.minY, navigationBottom) + 4
-        let bottom = min(containerFrame.maxY, share.exists ? share.frame.minY - 12 : containerFrame.maxY) - 4
+        let bottom = min(containerFrame.maxY, footer.map { $0.frame.minY - 12 } ?? containerFrame.maxY) - 4
         let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
         XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
 
@@ -756,8 +808,47 @@ final class PicStripUITests: XCTestCase {
     }
 
     /// A movie of 🧑🏽 drifting across a pale frame — a face Vision finds, even
-    /// on the simulator — with an email address on a label in the corner.
+    /// on the simulator — with an email address on a label in the corner, and a
+    /// tone for its sound.  The picture and the sound are written separately and
+    /// put together: one writer with both inputs stalls waiting on itself.
     private func writeFaceMovie(to url: URL, seconds: Double = 2.5) async throws {
+        let picture = url.deletingLastPathComponent().appendingPathComponent("picture-\(url.lastPathComponent)")
+        let sound = url.deletingLastPathComponent().appendingPathComponent("sound-\(UUID().uuidString).caf")
+        defer {
+            try? FileManager.default.removeItem(at: picture)
+            try? FileManager.default.removeItem(at: sound)
+        }
+        try await writeSilentFaceMovie(to: picture, seconds: seconds)
+
+        let rate = 44_100.0
+        let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: rate, channels: 1))
+        let frames = AVAudioFrameCount(seconds * rate)
+        let tone = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames))
+        tone.frameLength = frames
+        let samples = try XCTUnwrap(tone.floatChannelData?[0])
+        for index in 0..<Int(frames) { samples[index] = 0.3 * Float(sin(2 * Double.pi * 440 * Double(index) / rate)) }
+        let file = try AVAudioFile(forWriting: sound, settings: format.settings)
+        try file.write(from: tone)
+        file.close()
+
+        let composition = AVMutableComposition()
+        let pictureAsset = AVURLAsset(url: picture)
+        let soundAsset = AVURLAsset(url: sound)
+        let videoTracks = try await pictureAsset.loadTracks(withMediaType: .video)
+        let audioTracks = try await soundAsset.loadTracks(withMediaType: .audio)
+        let videoTrack = try XCTUnwrap(videoTracks.first)
+        let audioTrack = try XCTUnwrap(audioTracks.first)
+        let duration = try await pictureAsset.load(.duration)
+        try composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)?
+            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: videoTrack, at: .zero)
+        try composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)?
+            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: audioTrack, at: .zero)
+        try? FileManager.default.removeItem(at: url)
+        let session = try XCTUnwrap(AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality))
+        try await session.export(to: url, as: .mov)
+    }
+
+    private func writeSilentFaceMovie(to url: URL, seconds: Double) async throws {
         try? FileManager.default.removeItem(at: url)
         let size = CGSize(width: 640, height: 360)
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
@@ -771,6 +862,12 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(writer.startWriting())
         writer.startSession(atSourceTime: .zero)
         let fps = 30
+        func waitFor(_ writerInput: AVAssetWriterInput) async throws {
+            while !writerInput.isReadyForMoreMediaData {
+                guard writer.status == .writing else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
+                try await Task.sleep(for: .milliseconds(5))
+            }
+        }
         let frames = Int(seconds * Double(fps))
         let font = UIFont.systemFont(ofSize: 220)
         let face = "🧑🏽" as NSString
@@ -778,7 +875,7 @@ final class PicStripUITests: XCTestCase {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         for frame in 0..<frames {
-            while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
+            try await waitFor(input)
             let x = size.width * (0.4 + 0.2 * CGFloat(frame) / CGFloat(max(frames - 1, 1)))
             let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
                 UIColor(red: 0.82, green: 0.86, blue: 0.9, alpha: 1).setFill()
