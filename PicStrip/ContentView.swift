@@ -721,6 +721,9 @@ struct ContentView: View {
                         }
                     },
                     onSetPartial: { id, isPartial in viewModel.setPartialCover(id: id, isPartial) },
+                    onChangeEmoji: { id, emoji in viewModel.changeRedactionEmoji(id: id, emoji: emoji) },
+                    onBulkChangeEmoji: { ids, emoji in viewModel.bulkChangeRedactionEmoji(ids: ids, emoji: emoji) },
+                    onApplyToAllFaces: { id in viewModel.applyStyleToAllFaces(from: id) },
                     onAlwaysCover: { term in viewModel.alwaysCover(term) }
                 )
                 .background(Color(.systemBackground))

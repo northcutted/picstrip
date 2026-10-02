@@ -290,6 +290,96 @@ final class RedactionStyleRenderingTests: XCTestCase {
         return format
     }
 
+    // MARK: - Emoji
+
+    /// An emoji's transparent corners must not show what is under the box: a
+    /// 2 px checkerboard (full contrast) has to come out smooth there.
+    func testEmojiLeavesNoDetailInTheBoxCornersItDoesNotDraw() async throws {
+        let spec = RedactionSpec(rect: region, style: .emoji, color: .black, isEnabled: true, emoji: "🙂")
+        let rendered = try await render(spec, over: checkerboardImage())
+        for (left, top) in [(51, 51), (143, 51), (51, 143), (143, 143)] {
+            var levels: [UInt8] = []
+            for y in top..<(top + 6) { for x in left..<(left + 6) { levels.append(rendered.pixel(x, y)[0]) } }
+            let contrast = Int(levels.max() ?? 0) - Int(levels.min() ?? 0)
+            XCTAssertLessThan(contrast, 40, "The checkerboard is still readable near (\(left), \(top)): contrast \(contrast).")
+        }
+    }
+
+    func testEmojiIsDrawnOverTheBox() async throws {
+        let spec = RedactionSpec(rect: region, style: .emoji, color: .black, isEnabled: true, emoji: "🙂")
+        let centre = try await render(spec, over: flatImage(.blue)).pixel(100, 100)
+        XCTAssertGreaterThan(centre[0], 180, "The smiley's yellow, not the blue photo: \(centre)")
+        XCTAssertLessThan(centre[2], 120, "The smiley's yellow, not the blue photo: \(centre)")
+    }
+
+    func testEmojiIsDrawnLargerThanItsBox() {
+        let size = CGSize(width: 100, height: 60)
+        let font = UIFont.systemFont(ofSize: EmojiCover.fontSize(for: "🙂", covering: size))
+        let glyph = ("🙂" as NSString).size(withAttributes: [.font: font])
+        XCTAssertEqual(max(glyph.width, glyph.height), 100 * EmojiCover.coverage, accuracy: 2)
+    }
+
+    func testEmojiStyleSitsOnTheStrongestBlurAndTakesNoColourOrStrength() {
+        XCTAssertEqual(RedactionStyle.emoji.scramblePass, .blur)
+        XCTAssertTrue(RedactionStyle.emoji.obscuresSourcePixels)
+        XCTAssertFalse(RedactionStyle.emoji.supportsColor)
+        XCTAssertFalse(RedactionStyle.emoji.supportsStrength)
+        let spec = RedactionSpec(rect: region, style: .emoji, color: .black, isEnabled: true, strength: 0)
+        XCTAssertEqual(spec.passStrength, RedactionStrength.range.upperBound)
+    }
+
+    func testOnlyAnEmojiIsTakenFromTypedText() {
+        XCTAssertEqual(EmojiCover.firstEmoji(in: "abc🦄x"), "🦄")
+        XCTAssertEqual(EmojiCover.firstEmoji(in: "👍🏽"), "👍🏽", "Skin tones stay with their emoji.")
+        XCTAssertEqual(EmojiCover.firstEmoji(in: "❤️"), "❤️")
+        XCTAssertEqual(EmojiCover.firstEmoji(in: "1️⃣"), "1️⃣")
+        XCTAssertNil(EmojiCover.firstEmoji(in: "123 #abc"), "Plain digits and symbols are not emoji.")
+        XCTAssertTrue(EmojiCover.choices.allSatisfy { EmojiCover.firstEmoji(in: $0) == $0 })
+    }
+
+    /// Each face keeps its own emoji, and one tap can give them all the same cover.
+    func testEveryFaceCanHaveItsOwnEmojiOrShareOne() throws {
+        let model = ScrubberViewModel(scanImage: { _ in [] })
+        model.typesToRedact = [.face, .email]
+        model.detectedPII = [
+            DetectionResult(type: .face, score: 0.99, instances: [
+                DetectedInstance(snippet: "Face", boundingBox: CGRect(x: 0.1, y: 0.1, width: 0.2, height: 0.2), score: 0.99),
+                DetectedInstance(snippet: "Face", boundingBox: CGRect(x: 0.5, y: 0.1, width: 0.2, height: 0.2), score: 0.99)
+            ]),
+            DetectionResult(type: .email, score: 0.9, instances: [
+                DetectedInstance(snippet: "a@b.co", boundingBox: CGRect(x: 0.1, y: 0.6, width: 0.4, height: 0.05), score: 0.9)
+            ])
+        ]
+        let faces = model.redactionRegions.filter { $0.type == .face }.map(\.id)
+        model.changeRedactionStyle(id: faces[0], style: .emoji)
+        model.changeRedactionEmoji(id: faces[0], emoji: "🐶")
+        XCTAssertEqual(model.redactionRegions.first { $0.id == faces[0] }?.emoji, "🐶")
+        XCTAssertEqual(model.redactionRegions.first { $0.id == faces[1] }?.style, .solid, "Only that face changed.")
+
+        model.applyStyleToAllFaces(from: faces[0])
+        for region in model.redactionRegions where region.type == .face {
+            XCTAssertEqual(region.style, .emoji)
+            XCTAssertEqual(region.emoji, "🐶")
+        }
+        XCTAssertEqual(model.redactionRegions.first { $0.type == .email }?.style, .solid, "Text keeps its own style.")
+
+        model.undoRedaction()
+        XCTAssertEqual(model.redactionRegions.first { $0.id == faces[1] }?.style, .solid, "One undo step.")
+    }
+
+    private func checkerboardImage() -> UIImage {
+        UIGraphicsImageRenderer(size: CGSize(width: 200, height: 200), format: format).image { ctx in
+            UIColor.white.setFill()
+            ctx.fill(CGRect(x: 0, y: 0, width: 200, height: 200))
+            UIColor.black.setFill()
+            for y in stride(from: 0, to: 200, by: 2) {
+                for x in stride(from: (y / 2).isMultiple(of: 2) ? 0 : 2, to: 200, by: 4) {
+                    ctx.fill(CGRect(x: x, y: y, width: 2, height: 2))
+                }
+            }
+        }
+    }
+
     private func flatImage(_ color: UIColor) -> UIImage {
         UIGraphicsImageRenderer(size: CGSize(width: 200, height: 200), format: format).image { ctx in
             color.setFill()

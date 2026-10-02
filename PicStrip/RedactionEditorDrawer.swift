@@ -54,6 +54,108 @@ private struct RedactionStylePicker: View {
     }
 }
 
+/// The emoji an `.emoji` region is covered with: a grid of favourites and a
+/// field that takes any other emoji, typed or pasted.
+private struct RedactionEmojiPicker: View {
+    /// `nil` when the selected regions do not share one emoji.
+    let selection: String?
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 44), spacing: 6)], spacing: 6) {
+                ForEach(EmojiCover.choices, id: \.self) { emoji in
+                    let isActive = selection == emoji
+                    Button {
+                        onSelect(emoji)
+                    } label: {
+                        Text(emoji)
+                            .font(.title2)
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(
+                                isActive ? AnyShapeStyle(Color.accentColor.opacity(0.15)) : AnyShapeStyle(Color(.tertiarySystemFill)),
+                                in: RoundedRectangle(cornerRadius: 8)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .strokeBorder(isActive ? Color.accentColor.opacity(0.6) : .clear, lineWidth: 1.5)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityAddTraits(isActive ? .isSelected : [])
+                    .accessibilityIdentifier("emojiChoice-\(emoji)")
+                }
+            }
+            HStack(spacing: 8) {
+                if let selection, !EmojiCover.choices.contains(selection) {
+                    Text(selection)
+                        .font(.title2)
+                        .accessibilityAddTraits(.isSelected)
+                } else {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                }
+                EmojiKeyboardField(placeholder: String(localized: "Search all emoji"), onPick: onSelect)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .padding(.horizontal, 12)
+            .background(Color(.tertiarySystemFill), in: RoundedRectangle(cornerRadius: 10))
+        }
+    }
+}
+
+/// A field that opens straight onto the emoji keyboard — whose own search finds
+/// any emoji, in the user's language — and hands back the first emoji chosen.
+/// Without the emoji keyboard installed it falls back to the usual keyboard.
+private struct EmojiKeyboardField: UIViewRepresentable {
+    let placeholder: String
+    let onPick: (String) -> Void
+
+    final class Field: UITextField {
+        override var textInputMode: UITextInputMode? {
+            UITextInputMode.activeInputModes.first { $0.primaryLanguage == "emoji" } ?? super.textInputMode
+        }
+    }
+
+    final class Coordinator: NSObject {
+        var onPick: (String) -> Void
+
+        init(onPick: @escaping (String) -> Void) {
+            self.onPick = onPick
+        }
+
+        @objc func changed(_ field: UITextField) {
+            guard let emoji = EmojiCover.firstEmoji(in: field.text ?? "") else { return }
+            field.text = ""
+            field.resignFirstResponder()
+            onPick(emoji)
+        }
+    }
+
+    func makeCoordinator() -> Coordinator { Coordinator(onPick: onPick) }
+
+    func makeUIView(context: Context) -> Field {
+        let field = Field()
+        field.placeholder = placeholder
+        field.font = .preferredFont(forTextStyle: .body)
+        field.adjustsFontForContentSizeCategory = true
+        field.autocorrectionType = .no
+        field.returnKeyType = .done
+        field.accessibilityIdentifier = "otherEmojiField"
+        field.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        field.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        field.addTarget(context.coordinator, action: #selector(Coordinator.changed(_:)), for: .editingChanged)
+        field.addTarget(field, action: #selector(UIResponder.resignFirstResponder), for: .editingDidEndOnExit)
+        return field
+    }
+
+    func updateUIView(_ field: Field, context: Context) {
+        field.placeholder = placeholder
+        context.coordinator.onPick = onPick
+    }
+}
+
 /// The colour swatches, shared by the single-region panel and the bulk panel.
 /// The swatch art is 28 pt; its button is a full 44 pt touch target.
 private struct RedactionColorPicker: View {
@@ -194,6 +296,10 @@ struct RedactionEditorDrawer: View {
 
     /// Covers only part of a finding (`RedactionRegion.partialCover`), or all of it.
     var onSetPartial: (String, Bool) -> Void = { _, _ in }
+    var onChangeEmoji: (String, String) -> Void = { _, _ in }
+    var onBulkChangeEmoji: (Set<String>, String) -> Void = { _, _ in }
+    /// Gives every face the style and emoji of this one.
+    var onApplyToAllFaces: ((String) -> Void)?
     /// Adds a finding's text to the Always Cover list.
     var onAlwaysCover: ((String) -> Void)?
 
@@ -552,10 +658,32 @@ struct RedactionEditorDrawer: View {
                 }
             }
 
-            if region.style.obscuresSourcePixels {
+            if region.style.supportsStrength {
                 Text("Blur and pixelation can leave details recognizable. Use Solid for secrets and identifying text.")
                     .font(.caption)
                     .foregroundStyle(.orange)
+            }
+
+            // ── Emoji row ─────────────────────────────────────────────────
+            if region.style == .emoji {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Emoji")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    RedactionEmojiPicker(selection: region.emoji) { emoji in
+                        onChangeEmoji(region.id, emoji)
+                    }
+                }
+            }
+            if region.type == .face, let onApplyToAllFaces,
+               regions.contains(where: { $0.type == .face && $0.id != region.id }) {
+                Button {
+                    onApplyToAllFaces(region.id)
+                } label: {
+                    Label("Use this cover for every face", systemImage: "face.smiling")
+                        .frame(minHeight: 44)
+                }
+                .accessibilityIdentifier("applyToAllFacesButton")
             }
             // ── Colour row (suppressed for pixelate / blur) ───────────────
             if region.style.supportsColor {
@@ -642,10 +770,24 @@ struct RedactionEditorDrawer: View {
                 }
             }
 
-            if selectedRegions.contains(where: { $0.style.obscuresSourcePixels }) {
+            if selectedRegions.contains(where: { $0.style.supportsStrength }) {
                 Text("Blur and pixelation can leave details recognizable. Use Solid for secrets and identifying text.")
                     .font(.caption)
                     .foregroundStyle(.orange)
+            }
+
+            // ── Emoji row ─────────────────────────────────────────────────
+            let emojiRegions = selectedRegions.filter { $0.style == .emoji }
+            if !emojiRegions.isEmpty {
+                let emojis = Set(emojiRegions.map(\.emoji))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Emoji")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                    RedactionEmojiPicker(selection: emojis.count == 1 ? emojis.first : nil) { emoji in
+                        onBulkChangeEmoji(Set(emojiRegions.map(\.id)), emoji)
+                    }
+                }
             }
 
             // ── Colour row ────────────────────────────────────────────────

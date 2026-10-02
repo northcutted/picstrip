@@ -60,6 +60,8 @@ struct RedactionRegion: Identifiable, Hashable {
     var color: RedactionColor = .black
     /// How hard `.pixelate` / `.blur` scramble this region; see `RedactionStrength`.
     var strength: Double = RedactionStrength.standard
+    /// The emoji an `.emoji` region is covered with; each region has its own.
+    var emoji: String = EmojiCover.defaultEmoji
     /// The whole finding and the part of it to cover when its end stays
     /// readable; `nil` for findings that cannot be shortened.
     var partialCover: PartialCover?
@@ -103,7 +105,7 @@ struct RedactionRegion: Identifiable, Hashable {
 
     /// Converts this region into a `RedactionSpec` suitable for the rendering pipeline.
     var spec: RedactionSpec {
-        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled, strength: strength)
+        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled, strength: strength, emoji: emoji)
     }
 
     static func detected(

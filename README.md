@@ -33,7 +33,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Metadata Stripping** | Removes GPS, EXIF, EXIF Auxiliary, TIFF, IPTC, and Apple Maker Note metadata, with per-field control over what to keep |
 | **Visual PII Detection** | On-device OCR and Vision find 31 kinds of sensitive data across 4 risk tiers (Critical, High, Medium, Low) |
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
-| **Redaction Editor** | Solid, crosshatch, pixelate, or blur in 12 colors, with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
+| **Redaction Editor** | Solid, crosshatch, pixelate, blur in 12 colors, or an emoji (each face its own, on a strong blur), with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
 | **Take Photo** | The main action: an advisory live viewfinder that outlines and names what it would redact, with its match strength, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
 | **Partial Covering** | Leave the last four digits of a card, phone or ID number — or an email's domain — readable, per finding |

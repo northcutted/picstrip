@@ -376,8 +376,9 @@ struct ZoomableImagePreview: View {
         let previewPixels = CGSize(width: image.size.width * image.scale, height: image.size.height * image.scale)
         let exportPixels = CGSize(width: previewPixels.width * exportScale, height: previewPixels.height * exportScale)
         let regions = redactionRegions.filter { $0.isEnabled && $0.style.obscuresSourcePixels }
+        // An emoji sits on the strongest blur, so it shares the blur passes.
         let grouped = Dictionary(grouping: regions) {
-            ObscuredPass(style: $0.style, strength: RedactionStrength.clamped($0.strength))
+            ObscuredPass(style: $0.style.scramblePass ?? $0.style, strength: $0.spec.passStrength)
         }
         return grouped
             .map { pass, members in
@@ -454,6 +455,17 @@ struct ZoomableImagePreview: View {
                         with: .color(Color(uiColor: region.color.latticeColor)),
                         lineWidth: lattice.lineWidth * pointsPerExportPixel
                     )
+                }
+
+                // Emoji over their blur, at the size the export draws them.
+                for region in redactionRegions where region.isEnabled && region.style == .emoji {
+                    let rect = displayRect(liveRect(of: region), in: size)
+                    guard rect.width > 0, rect.height > 0 else { continue }
+                    var layer = context
+                    let isMoving = isDraggingRedaction && selectedRedactionRegionID?.wrappedValue == region.id
+                    layer.opacity = isMoving ? 0.55 : 1
+                    let fontSize = EmojiCover.fontSize(for: region.emoji, covering: rect.size)
+                    layer.draw(Text(region.emoji).font(.system(size: fontSize)), at: CGPoint(x: rect.midX, y: rect.midY))
                 }
             }
             .frame(width: size.width, height: size.height)

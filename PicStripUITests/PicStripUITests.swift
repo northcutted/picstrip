@@ -421,6 +421,32 @@ final class PicStripUITests: XCTestCase {
         XCTAssertFalse(app.alerts.firstMatch.exists, "Saving to Photos should not report an error.")
     }
 
+    /// A region can be covered with an emoji chosen from the grid.
+    @MainActor
+    func testARegionCanBeCoveredWithAnEmoji() throws {
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launch()
+        XCTAssertTrue(app.buttons["tryDemoButton"].waitForExistence(timeout: 15))
+        app.buttons["tryDemoButton"].tap()
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30))
+        edit.tap()
+        XCTAssertTrue(app.buttons["addCenteredRedactionButton"].waitForExistence(timeout: 5))
+        app.buttons["addCenteredRedactionButton"].tap()
+        app.buttons["editRegionStyleButton"].tap()
+        let emojiStyle = app.buttons["styleButton-emoji"]
+        XCTAssertTrue(emojiStyle.waitForExistence(timeout: 5))
+        emojiStyle.tap()
+        let dog = app.buttons["emojiChoice-🐶"]
+        XCTAssertTrue(dog.waitForExistence(timeout: 5), "Choosing Emoji shows the emoji grid.")
+        dog.tap()
+        XCTAssertTrue(dog.isSelected)
+        attachScreen("emoji_picker")
+        app.buttons["doneStyleButton"].tap()
+        attachScreen("emoji_cover")
+    }
+
     /// Always Cover terms are added and removed from the home screen.
     @MainActor
     func testAlwaysCoverListAddsAndRemovesTerms() throws {
