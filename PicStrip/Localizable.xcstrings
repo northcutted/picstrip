@@ -305,6 +305,107 @@
         }
       }
     },
+    "%@ to %@" : {
+      "comment" : "VoiceOver value: a stretch of a video between two times, such as 0:10 to 0:20.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "من %1$@ إلى %2$@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ bis %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De %1$@ a %2$@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De %1$@ a %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De %1$@ à %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Da %1$@ a %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@から%2$@まで"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@부터 %2$@까지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ tot %2$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Od %1$@ do %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ a %2$@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ a %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ till %2$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ ile %2$@ arası"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 至 %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ 至 %2$@"
+          }
+        }
+      }
+    },
     "%@ – %@" : {
       "comment" : "VoiceOver value of a clip on the video timeline: when it starts and ends.",
       "localizations" : {
@@ -1154,103 +1255,103 @@
         }
       }
     },
-    "**Bleep or mute the sound.** Add a bleep or a mute at the playhead, then drag its ends on the Audio lane to cover exactly what was said." : {
+    "**Bleep or mute the sound.** Hold on the Audio lane and drag across what was said, then choose Bleep or Mute — or Play to hear it first. Drag the clip’s ends to cover exactly the words." : {
       "comment" : "Help page, Videos section.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**أضف صفيرًا أو اكتم الصوت.** أضف صفيرًا أو كتمًا عند مؤشر التشغيل، ثم اسحب طرفيه في مسار الصوت ليغطي ما قيل بالضبط."
+            "value" : "**أضف صفيرًا أو اكتم الصوت.** المس مسار الصوت مع الاستمرار واسحب على ما قيل، ثم اختر ”صفير“ أو ”كتم“ — أو ”تشغيل“ لسماعه أولًا. اسحب طرفي المقطع ليغطي الكلمات بالضبط."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Ton überpiepen oder stummschalten.** Füge an der Abspielposition einen Piepton oder eine Stummschaltung hinzu und zieh dann die Enden in der Audiospur, damit genau das Gesagte abgedeckt ist."
+            "value" : "**Ton überpiepen oder stummschalten.** Halte die Audiospur gedrückt und zieh über das Gesagte. Wähle dann „Piepton“ oder „Stumm“ – oder „Wiedergabe“, um es vorher anzuhören. Zieh die Enden des Clips, damit genau die Wörter abgedeckt sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Pon un pitido o silencia el sonido.** Añade un pitido o un silencio en el cursor de reproducción y luego arrastra sus extremos en la pista de audio para cubrir exactamente lo que se dijo."
+            "value" : "**Pon un pitido o silencia el sonido.** Mantén pulsada la pista de audio y arrastra sobre lo que se dijo; luego elige «Pitido» o «Silenciar» (o «Reproducir» para escucharlo antes). Arrastra los extremos del clip para cubrir exactamente las palabras."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Pon un pitido o silencia el sonido.** Agrega un pitido o un silencio en el cursor de reproducción y luego arrastra sus extremos en la pista de audio para cubrir exactamente lo que se dijo."
+            "value" : "**Pon un pitido o silencia el sonido.** Mantén presionada la pista de audio y arrastra sobre lo que se dijo; luego elige “Pitido” o “Silenciar” (o “Reproducir” para escucharlo antes). Arrastra los extremos del clip para cubrir exactamente las palabras."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Bipez ou coupez le son.** Ajoutez un bip ou un silence à la tête de lecture, puis faites glisser ses extrémités sur la piste Audio pour couvrir exactement ce qui a été dit."
+            "value" : "**Bipez ou coupez le son.** Maintenez le doigt sur la piste Audio et faites glisser sur ce qui a été dit, puis choisissez Bip ou Couper le son (ou Lire pour l’écouter d’abord). Faites glisser les extrémités du clip pour couvrir exactement les mots."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Metti un bip o silenzia l’audio.** Aggiungi un bip o un silenzio all’indicatore di riproduzione, poi trascina le sue estremità sulla traccia Audio per coprire esattamente ciò che è stato detto."
+            "value" : "**Metti un bip o silenzia l’audio.** Tieni premuto sulla traccia Audio e trascina su ciò che è stato detto, poi scegli Bip o Silenzia, oppure Riproduci per ascoltarlo prima. Trascina le estremità della clip per coprire esattamente le parole."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**音声にピー音を入れる・ミュートする。** 再生ヘッドの位置にピー音またはミュートを追加し、オーディオトラックで端をドラッグして、話した内容にぴったり合わせます。"
+            "value" : "**音声にピー音を入れる・ミュートする。** オーディオトラックを長押しして、話した内容の上をドラッグし、「ピー音」または「ミュート」を選択します。先に聞きたい場合は「再生」を選択します。クリップの端をドラッグして、言葉にぴったり合わせます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**소리에 삐 소리를 넣거나 음소거하십시오.** 재생 헤드 위치에 삐 소리나 음소거를 추가한 다음 오디오 트랙에서 끝을 드래그하여 말한 내용을 정확히 덮으십시오."
+            "value" : "**소리에 삐 소리를 넣거나 음소거하십시오.** 오디오 트랙을 길게 누른 채 말한 부분을 드래그한 다음 ‘삐 소리’ 또는 ‘음소거’를 선택하거나, 먼저 들어 보려면 ‘재생’을 선택하십시오. 클립의 끝을 드래그하여 해당 단어를 정확히 덮으십시오."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Laat geluid piepen of demp het.** Voeg op de afspeelkop een piep of demping toe en sleep de uiteinden op het Audio-spoor zodat precies het gezegde wordt bedekt."
+            "value" : "**Laat geluid piepen of demp het.** Houd het Audio-spoor ingedrukt en sleep over wat er gezegd is. Kies dan Piep of Dempen, of Speel af om het eerst te horen. Sleep de uiteinden van de clip zodat precies de woorden worden bedekt."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Zagłusz lub wycisz dźwięk.** Dodaj pisk lub wyciszenie w miejscu głowicy odtwarzania, a potem przeciągnij jego końce na ścieżce Dźwięk, aby objąć dokładnie to, co zostało powiedziane."
+            "value" : "**Zagłusz lub wycisz dźwięk.** Przytrzymaj palec na ścieżce Dźwięk i przeciągnij po tym, co zostało powiedziane, a potem wybierz Pisk lub Wycisz – albo Odtwórz, aby najpierw to odsłuchać. Przeciągnij końce klipu, aby objąć dokładnie te słowa."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Coloque um bipe ou silencie o som.** Adicione um bipe ou um silêncio no indicador de reprodução e arraste as extremidades na faixa Áudio para cobrir exatamente o que foi dito."
+            "value" : "**Coloque um bipe ou silencie o som.** Toque e segure na faixa Áudio e arraste sobre o que foi dito; depois, escolha Bipe ou Silenciar — ou Reproduzir para ouvir antes. Arraste as extremidades do clipe para cobrir exatamente as palavras."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Ponha um bipe ou silencie o som.** Adicione um bipe ou um silêncio na cabeça de reprodução e arraste as extremidades na faixa Áudio para cobrir exatamente o que foi dito."
+            "value" : "**Ponha um bipe ou silencie o som.** Mantenha premida a faixa Áudio e arraste sobre o que foi dito; depois, escolha Bipe ou Silenciar — ou Reproduzir para ouvir primeiro. Arraste as extremidades do clipe para cobrir exatamente as palavras."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Lägg pip över eller tysta ljudet.** Lägg till ett pip eller en tystnad vid uppspelningshuvudet och dra sedan i ändarna på ljudspåret så att exakt det som sades täcks."
+            "value" : "**Lägg pip över eller tysta ljudet.** Håll ned fingret på spåret Ljud och dra över det som sades, och välj sedan Pip eller Tysta – eller Spela upp för att lyssna först. Dra i klippets ändar så att exakt orden täcks."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Sese bip sesi ekleyin veya sessize alın.** Oynatma imlecinde bir bip sesi veya sessizlik ekleyin, ardından söyleneni tam olarak kapsaması için Ses kanalında uçlarını sürükleyin."
+            "value" : "**Sese bip sesi ekleyin veya sessize alın.** Ses kanalında basılı tutun ve söylenen kısmın üzerinde sürükleyin, ardından Bip veya Sessize al seçeneğini belirleyin (önce dinlemek için Oynat seçeneğini de kullanabilirsiniz). Klibin uçlarını tam olarak sözcükleri kapsayacak şekilde sürükleyin."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**为声音加哔声或静音。** 在播放头处添加哔声或静音，然后在“音频”轨道上拖动两端，准确盖住所说的内容。"
+            "value" : "**为声音加哔声或静音。** 在“音频”轨道上按住并拖过所说的内容，然后选择“哔声”或“静音”，或者先选择“播放”试听。拖动片段的两端，让它正好盖住那些字词。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**為聲音加嗶聲或靜音。** 在播放頭處加入嗶聲或靜音，然後在「音訊」軌道上拖移兩端，準確蓋住所說的內容。"
+            "value" : "**為聲音加嗶聲或靜音。** 在「音訊」軌道上按住並拖移過所說的內容，然後選擇「嗶聲」或「靜音」，或先選擇「播放」試聽。拖移片段的兩端，讓它正好蓋住那些字詞。"
           }
         }
       }
@@ -1356,103 +1457,103 @@
         }
       }
     },
-    "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and draw a box around it. PicStrip tracks it through the whole video, forwards and back." : {
+    "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and tap “Cover an Object”. Draw a box around it, drag it into place or drag its corner to resize it, and PicStrip tracks it through the whole video, forwards and back." : {
       "comment" : "Help page, Videos section.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**احجب أي عنصر.** أوقف الفيديو حيث يظهر شيء — شخص أو سيارة أو شاشة أو لافتة — وارسم مربعًا حوله. يتتبعه PicStrip عبر الفيديو كله، للأمام وللخلف."
+            "value" : "**احجب أي عنصر.** أوقف الفيديو حيث يظهر شيء — شخص أو سيارة أو شاشة أو لافتة — واضغط على ”حجب عنصر“. ارسم مربعًا حوله، واسحبه إلى مكانه أو اسحب زاويته لتغيير حجمه، وسيتتبعه PicStrip عبر الفيديو كله، للأمام وللخلف."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Beliebige Objekte verdecken.** Halte an, wo etwas zu sehen ist – eine Person, ein Auto, ein Bildschirm, ein Schild –, und zieh einen Rahmen darum. PicStrip verfolgt es durch das ganze Video, vorwärts und rückwärts."
+            "value" : "**Beliebige Objekte verdecken.** Halte an, wo etwas zu sehen ist – eine Person, ein Auto, ein Bildschirm, ein Schild –, und tippe auf „Objekt verdecken“. Zieh einen Rahmen darum, schieb ihn an die richtige Stelle oder zieh an seiner Ecke, um die Größe zu ändern, und PicStrip verfolgt es durch das ganze Video, vorwärts und rückwärts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un coche, una pantalla, un letrero) y dibuja un recuadro alrededor. PicStrip lo sigue por todo el vídeo, hacia delante y hacia atrás."
+            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un coche, una pantalla, un letrero) y toca «Censurar un objeto». Dibuja un recuadro alrededor, arrástralo a su sitio o arrastra su esquina para redimensionarlo, y PicStrip lo sigue por todo el vídeo, hacia delante y hacia atrás."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un auto, una pantalla, un letrero) y dibuja un recuadro alrededor. PicStrip lo sigue por todo el video, hacia adelante y hacia atrás."
+            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un auto, una pantalla, un letrero) y toca “Censurar un objeto”. Dibuja un recuadro alrededor, arrástralo a su lugar o arrastra su esquina para redimensionarlo, y PicStrip lo sigue por todo el video, hacia adelante y hacia atrás."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Masquez n’importe quel objet.** Mettez en pause là où quelque chose apparaît (une personne, une voiture, un écran, un panneau) et tracez un cadre autour. PicStrip le suit dans toute la vidéo, en avant et en arrière."
+            "value" : "**Masquez n’importe quel objet.** Mettez en pause là où quelque chose apparaît (une personne, une voiture, un écran, un panneau) et touchez « Masquer un objet ». Tracez un cadre autour, faites-le glisser pour le placer ou faites glisser son coin pour le redimensionner. PicStrip suit l’objet dans toute la vidéo, en avant et en arrière."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Copri qualsiasi oggetto.** Metti in pausa dove compare qualcosa (una persona, un’auto, uno schermo, un cartello) e disegna un riquadro intorno. PicStrip lo segue in tutto il video, in avanti e indietro."
+            "value" : "**Copri qualsiasi oggetto.** Metti in pausa dove compare qualcosa (una persona, un’auto, uno schermo, un cartello) e tocca “Copri un oggetto”. Disegna un riquadro intorno, trascinalo in posizione o trascinane l’angolo per ridimensionarlo, e PicStrip lo segue in tutto il video, in avanti e indietro."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**どんなオブジェクトでもマスク。** 人、車、画面、看板などが映っているところで一時停止し、枠で囲みます。PicStripはビデオ全体の前後にわたってそれを追跡します。"
+            "value" : "**どんなオブジェクトでもマスク。** 人、車、画面、看板などが映っているところで一時停止し、「オブジェクトをマスク」をタップします。枠で囲んだら、ドラッグして位置を合わせたり、角をドラッグしてサイズを変更したりします。PicStripはビデオ全体の前後にわたってそれを追跡します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**어떤 개체든 가리십시오.** 사람, 자동차, 화면, 표지판 등이 보이는 곳에서 일시 정지하고 상자로 둘러싸면 PicStrip이 비디오 전체에서 앞뒤로 추적합니다."
+            "value" : "**어떤 개체든 가리십시오.** 사람, 자동차, 화면, 표지판 등이 보이는 곳에서 일시 정지하고 ‘개체 가리기’를 탭하십시오. 상자로 둘러싼 다음 상자를 드래그하여 위치를 맞추거나 모서리를 드래그하여 크기를 조절하면 PicStrip이 비디오 전체에서 앞뒤로 추적합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Dek elk object af.** Pauzeer waar iets te zien is — een persoon, een auto, een scherm, een bord — en teken er een kader omheen. PicStrip volgt het door de hele video, vooruit en terug."
+            "value" : "**Dek elk object af.** Pauzeer waar iets te zien is — een persoon, een auto, een scherm, een bord — en tik op ‘Object afdekken’. Teken er een kader omheen, sleep het op zijn plaats of sleep de hoek om het formaat aan te passen, en PicStrip volgt het door de hele video, vooruit en terug."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Zamaż dowolny obiekt.** Zatrzymaj tam, gdzie coś widać – osobę, samochód, ekran, znak – i narysuj wokół tego ramkę. PicStrip śledzi to w całym wideo, do przodu i do tyłu."
+            "value" : "**Zamaż dowolny obiekt.** Zatrzymaj tam, gdzie coś widać – osobę, samochód, ekran, znak – i stuknij „Zamaż obiekt”. Narysuj wokół tego ramkę, przeciągnij ją na miejsce lub przeciągnij jej róg, aby zmienić rozmiar, a PicStrip śledzi to w całym wideo, do przodu i do tyłu."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, uma tela, uma placa — e desenhe um retângulo em volta. O PicStrip acompanha isso pelo vídeo inteiro, para a frente e para trás."
+            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, uma tela, uma placa — e toque em “Ocultar um objeto”. Desenhe um retângulo em volta, arraste-o até o lugar certo ou arraste o canto dele para redimensioná-lo, e o PicStrip acompanha o objeto pelo vídeo inteiro, para a frente e para trás."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, um ecrã, uma placa — e desenhe um retângulo à volta. O PicStrip segue-o pelo vídeo inteiro, para a frente e para trás."
+            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, um ecrã, uma placa — e toque em “Ocultar um objeto”. Desenhe um retângulo à volta, arraste-o para o sítio certo ou arraste o canto para o redimensionar, e o PicStrip segue-o pelo vídeo inteiro, para a frente e para trás."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Maskera vilket objekt som helst.** Pausa där något syns – en person, en bil, en skärm, en skylt – och rita en ruta runt det. PicStrip följer det genom hela videon, framåt och bakåt."
+            "value" : "**Maskera vilket objekt som helst.** Pausa där något syns – en person, en bil, en skärm, en skylt – och tryck på ”Maskera ett objekt”. Rita en ruta runt det, dra rutan på plats eller dra i hörnet för att ändra storlek, så följer PicStrip det genom hela videon, framåt och bakåt."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Herhangi bir nesneyi karartın.** Bir şeyin göründüğü yerde (bir kişi, bir araba, bir ekran, bir tabela) duraklatın ve çevresine bir kutu çizin. PicStrip onu tüm video boyunca ileri ve geri takip eder."
+            "value" : "**Herhangi bir nesneyi karartın.** Bir şeyin göründüğü yerde (bir kişi, bir araba, bir ekran, bir tabela) duraklatın ve “Nesne karart” düğmesine dokunun. Çevresine bir kutu çizin, sürükleyerek yerine taşıyın veya köşesini sürükleyerek yeniden boyutlandırın; PicStrip onu tüm video boyunca ileri ve geri takip eder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**遮盖任何物体。** 在某样东西（人、汽车、屏幕、标牌）出现的地方暂停，并在它周围画一个框。PicStrip 会在整个视频中向前向后跟踪它。"
+            "value" : "**遮盖任何物体。** 在某样东西（人、汽车、屏幕、标牌）出现的地方暂停，然后轻点“遮盖物体”。在它周围画一个框，拖动方框可调整位置，拖动其角可调整大小。PicStrip 会在整个视频中向前向后跟踪它。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**遮蓋任何物體。** 在某樣東西（人、汽車、螢幕、招牌）出現的地方暫停，並在它周圍畫一個框。PicStrip 會在整部影片中向前向後追蹤它。"
+            "value" : "**遮蓋任何物體。** 在某樣東西（人、汽車、螢幕、招牌）出現的地方暫停，然後點一下「遮蓋物體」。在它周圍畫一個框，拖移方框可調整位置，拖移其角可調整大小。PicStrip 會在整部影片中向前向後追蹤它。"
           }
         }
       }
@@ -3363,103 +3464,103 @@
         }
       }
     },
-    "**The timeline** shows every cover as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and drag across the frames to move through the video." : {
+    "**The timeline** shows every cover and sound edit as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and hold it for its options. Drag across the frames to move through the video, and pinch to zoom in." : {
       "comment" : "Help page, Videos section.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**يُظهر المخطط الزمني** كل حجب كمقطع في مساره. اضغط على مقطع لتحديده، واسحب طرفيه الأصفرين لبدئه أبكر أو إنهائه لاحقًا، واسحب عبر الإطارات للتنقل في الفيديو."
+            "value" : "**يُظهر المخطط الزمني** كل حجب وكل تعديل صوتي كمقطع في مساره. اضغط على مقطع لتحديده، واسحب طرفيه الأصفرين لبدئه أبكر أو إنهائه لاحقًا، والمسه مع الاستمرار لعرض خياراته. اسحب عبر الإطارات للتنقل في الفيديو، وباعد إصبعيك للتكبير."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Die Zeitleiste** zeigt jede Abdeckung als Clip in ihrer Spur. Tippe auf einen Clip, um ihn auszuwählen, zieh seine gelben Enden, damit er früher beginnt oder später endet, und zieh über die Bilder, um dich durch das Video zu bewegen."
+            "value" : "**Die Zeitleiste** zeigt jede Abdeckung und jede Tonbearbeitung als Clip in ihrer Spur. Tippe auf einen Clip, um ihn auszuwählen, zieh seine gelben Enden, damit er früher beginnt oder später endet, und halte ihn gedrückt, um seine Optionen anzuzeigen. Zieh über die Bilder, um dich durch das Video zu bewegen, und zoome mit zwei Fingern hinein."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**La línea de tiempo** muestra cada censura como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y arrastra por los fotogramas para moverte por el vídeo."
+            "value" : "**La línea de tiempo** muestra cada censura y cada edición de sonido como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y mantenlo pulsado para ver sus opciones. Arrastra por los fotogramas para moverte por el vídeo y pellizca para acercar."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**La línea de tiempo** muestra cada censura como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y arrastra por los cuadros para moverte por el video."
+            "value" : "**La línea de tiempo** muestra cada censura y cada edición de sonido como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y mantenlo presionado para ver sus opciones. Arrastra por los cuadros para moverte por el video y pellizca para acercar."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**La chronologie** affiche chaque masquage sous forme de clip dans sa piste. Touchez un clip pour le sélectionner, faites glisser ses extrémités jaunes pour qu’il commence plus tôt ou finisse plus tard, et faites glisser sur les images pour parcourir la vidéo."
+            "value" : "**La chronologie** affiche chaque masquage et chaque modification du son sous forme de clip dans sa piste. Touchez un clip pour le sélectionner, faites glisser ses extrémités jaunes pour qu’il commence plus tôt ou finisse plus tard, et maintenez le doigt dessus pour afficher ses options. Faites glisser sur les images pour parcourir la vidéo, et pincez pour zoomer."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**La timeline** mostra ogni copertura come una clip nella sua traccia. Tocca una clip per selezionarla, trascina le sue estremità gialle per farla iniziare prima o finire dopo, e trascina sui fotogrammi per spostarti nel video."
+            "value" : "**La timeline** mostra ogni copertura e ogni modifica dell’audio come una clip nella sua traccia. Tocca una clip per selezionarla, trascina le sue estremità gialle per farla iniziare prima o finire dopo, e tienila premuta per vederne le opzioni. Trascina sui fotogrammi per spostarti nel video e pizzica per ingrandire."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**タイムライン**には、各マスクがトラック上のクリップとして表示されます。クリップをタップして選択し、黄色い端をドラッグして開始を早めたり終了を遅らせたりできます。コマの上をドラッグするとビデオ内を移動できます。"
+            "value" : "**タイムライン**には、各マスクと音声の編集がトラック上のクリップとして表示されます。クリップをタップして選択し、黄色い端をドラッグして開始を早めたり終了を遅らせたりできます。長押しするとオプションが表示されます。コマの上をドラッグするとビデオ内を移動でき、ピンチすると拡大できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**타임라인**에는 각 가리기가 트랙의 클립으로 표시됩니다. 클립을 탭하여 선택하고, 노란색 끝을 드래그하여 더 일찍 시작하거나 더 늦게 끝내고, 프레임 위를 드래그하여 비디오를 이동하십시오."
+            "value" : "**타임라인**에는 각 가리기와 소리 편집이 트랙의 클립으로 표시됩니다. 클립을 탭하여 선택하고, 노란색 끝을 드래그하여 더 일찍 시작하거나 더 늦게 끝내고, 길게 눌러 옵션을 확인하십시오. 프레임 위를 드래그하여 비디오를 이동하고, 핀치하여 확대하십시오."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**De tijdbalk** toont elke afdekking als een clip in zijn spoor. Tik op een clip om die te selecteren, sleep de gele uiteinden om hem eerder te laten beginnen of later te laten eindigen, en sleep over de beelden om door de video te gaan."
+            "value" : "**De tijdbalk** toont elke afdekking en geluidsbewerking als een clip in zijn spoor. Tik op een clip om die te selecteren, sleep de gele uiteinden om hem eerder te laten beginnen of later te laten eindigen, en houd hem ingedrukt voor de opties. Sleep over de beelden om door de video te gaan en knijp om in te zoomen."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Oś czasu** pokazuje każde zamazanie jako klip na jego ścieżce. Stuknij klip, aby go zaznaczyć, przeciągnij jego żółte końce, aby zaczynał się wcześniej lub kończył później, i przeciągnij po klatkach, aby poruszać się po wideo."
+            "value" : "**Oś czasu** pokazuje każde zamazanie i każdą edycję dźwięku jako klip na jego ścieżce. Stuknij klip, aby go zaznaczyć, przeciągnij jego żółte końce, aby zaczynał się wcześniej lub kończył później, i przytrzymaj go, aby zobaczyć jego opcje. Przeciągnij po klatkach, aby poruszać się po wideo, i rozsuń palce, aby powiększyć."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**A linha do tempo** mostra cada ocultação como um clipe na sua faixa. Toque em um clipe para selecioná-lo, arraste as extremidades amarelas para começar antes ou terminar depois e arraste pelos quadros para se mover pelo vídeo."
+            "value" : "**A linha do tempo** mostra cada ocultação e edição de som como um clipe na sua faixa. Toque em um clipe para selecioná-lo, arraste as extremidades amarelas para começar antes ou terminar depois e toque e segure para ver as opções. Arraste pelos quadros para se mover pelo vídeo e afaste os dedos para ampliar."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**A linha temporal** mostra cada ocultação como um clipe na sua faixa. Toque num clipe para o selecionar, arraste as extremidades amarelas para começar mais cedo ou terminar mais tarde e arraste pelas imagens para percorrer o vídeo."
+            "value" : "**A linha temporal** mostra cada ocultação e edição de som como um clipe na sua faixa. Toque num clipe para o selecionar, arraste as extremidades amarelas para começar mais cedo ou terminar mais tarde e mantenha-o premido para ver as opções. Arraste pelas imagens para percorrer o vídeo e afaste os dedos para ampliar."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Tidslinjen** visar varje maskering som ett klipp i sitt spår. Tryck på ett klipp för att markera det, dra i de gula ändarna för att börja tidigare eller sluta senare, och dra över bildrutorna för att röra dig genom videon."
+            "value" : "**Tidslinjen** visar varje maskering och ljudredigering som ett klipp i sitt spår. Tryck på ett klipp för att markera det, dra i de gula ändarna för att börja tidigare eller sluta senare, och håll ned fingret på det för att visa alternativ. Dra över bildrutorna för att röra dig genom videon och nyp för att zooma in."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Zaman çizelgesi** her karartmayı kendi kanalında bir klip olarak gösterir. Seçmek için bir klibe dokunun, daha erken başlatmak veya daha geç bitirmek için sarı uçlarını sürükleyin ve videoda ilerlemek için kareler üzerinde sürükleyin."
+            "value" : "**Zaman çizelgesi** her karartmayı ve ses düzenlemesini kendi kanalında bir klip olarak gösterir. Seçmek için bir klibe dokunun, daha erken başlatmak veya daha geç bitirmek için sarı uçlarını sürükleyin ve seçeneklerini görmek için basılı tutun. Videoda ilerlemek için kareler üzerinde sürükleyin, yakınlaştırmak için kıstırın."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**时间线**会将每个遮盖显示为其轨道中的片段。轻点片段即可选中，拖动黄色两端可让它提前开始或延后结束，在画面上拖动可在视频中移动。"
+            "value" : "**时间线**会将每个遮盖和声音编辑显示为其轨道中的片段。轻点片段即可选中，拖动黄色两端可让它提前开始或延后结束，按住片段可查看其选项。在画面上拖动可在视频中移动，双指开合可放大。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**時間列**會將每個遮蓋顯示為其軌道中的片段。點一下片段即可選取，拖移黃色兩端可讓它提早開始或延後結束，在畫面上拖移可在影片中移動。"
+            "value" : "**時間列**會將每個遮蓋和聲音編輯顯示為其軌道中的片段。點一下片段即可選取，拖移黃色兩端可讓它提早開始或延後結束，按住片段可查看其選項。在畫面上拖移可在影片中移動，兩指開合可放大。"
           }
         }
       }
@@ -5373,6 +5474,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "新增區域"
+          }
+        }
+      }
+    },
+    "Add a Box in the Middle" : {
+      "comment" : "Button on the Cover an Object screen: puts a box in the middle of the frame without drawing.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة مربع في الوسط"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rahmen in der Mitte hinzufügen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Añadir un recuadro en el centro"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agregar un recuadro en el centro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter un cadre au centre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aggiungi un riquadro al centro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "中央に枠を追加"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "중앙에 상자 추가"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kader in het midden toevoegen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj ramkę na środku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar um retângulo no centro"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Adicionar um retângulo ao centro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg till en ruta i mitten"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ortaya bir kutu ekle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在中央添加方框"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在中央加入方框"
           }
         }
       }
@@ -7769,6 +7971,107 @@
         }
       }
     },
+    "Bleep a second from the playhead" : {
+      "comment" : "VoiceOver action on the timeline's audio lane: adds a one-second bleep at the playhead.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إضافة صفير لثانية بدءًا من مؤشر التشغيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Sekunde ab der Abspielposition überpiepen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poner un pitido de un segundo desde el cursor de reproducción"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Poner un pitido de un segundo desde el cursor de reproducción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Biper une seconde à partir de la tête de lecture"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metti un bip di un secondo a partire dall’indicatore di riproduzione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生ヘッドから1秒間ピー音を入れる"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "재생 헤드부터 1초간 삐 소리 넣기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eén seconde laten piepen vanaf de afspeelkop"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodaj sekundowy pisk od głowicy odtwarzania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Colocar um bipe de um segundo a partir do indicador de reprodução"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pôr um bipe de um segundo a partir da cabeça de reprodução"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lägg pip över en sekund från uppspelningshuvudet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oynatma imlecinden itibaren bir saniyelik bip ekle"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从播放头起添加 1 秒哔声"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從播放頭起加入 1 秒嗶聲"
+          }
+        }
+      }
+    },
     "Blue" : {
       "localizations" : {
         "ar" : {
@@ -8172,6 +8475,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "機器人、使用者和 App 權杖（xox... 前綴）"
+          }
+        }
+      }
+    },
+    "Box to cover" : {
+      "comment" : "VoiceOver label of the box drawn around an object to cover.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مربع الحجب"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rahmen zum Verdecken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuadro de censura"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recuadro de censura"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cadre de masquage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riquadro da coprire"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスクする枠"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가릴 상자"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Af te dekken kader"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ramka do zamazania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retângulo a ocultar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retângulo a ocultar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruta att maskera"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartılacak kutu"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要遮盖的方框"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要遮蓋的方框"
           }
         }
       }
@@ -14579,6 +14983,107 @@
         }
       }
     },
+    "Cover an Object…" : {
+      "comment" : "Row in the video editor's Objects list: opens the screen to draw a box around something to cover.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجب عنصر…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt verdecken…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar un objeto…"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar un objeto…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer un objet…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copri un oggetto…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクトをマスク…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개체 가리기…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object afdekken…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamaż obiekt…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar um objeto…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar um objeto…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskera ett objekt…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne karart…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遮盖物体…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遮蓋物體…"
+          }
+        }
+      }
+    },
     "Cover ends" : {
       "comment" : "VoiceOver label of the handle at the end of a cover on the video timeline.",
       "localizations" : {
@@ -19742,6 +20247,208 @@
         }
       }
     },
+    "Drag across the frames to move through the video, and pinch to zoom. Tap a clip to select it, or hold it for options." : {
+      "comment" : "Hint under the video editor timeline.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب عبر الإطارات للتنقل في الفيديو، وباعد إصبعيك للتكبير. اضغط على مقطع لتحديده، أو المسه مع الاستمرار لعرض خياراته."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zieh über die Bilder, um dich durch das Video zu bewegen, und zoome mit zwei Fingern. Tippe auf einen Clip, um ihn auszuwählen, oder halte ihn gedrückt, um seine Optionen anzuzeigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra por los fotogramas para moverte por el vídeo y pellizca para hacer zoom. Toca un clip para seleccionarlo o mantenlo pulsado para ver sus opciones."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra por los cuadros para moverte por el video y pellizca para hacer zoom. Toca un clip para seleccionarlo o mantenlo presionado para ver sus opciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser sur les images pour parcourir la vidéo, et pincez pour zoomer. Touchez un clip pour le sélectionner, ou maintenez le doigt dessus pour afficher ses options."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina sui fotogrammi per spostarti nel video e pizzica per ingrandire. Tocca una clip per selezionarla o tienila premuta per le opzioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマの上をドラッグするとビデオ内を移動でき、ピンチするとズームできます。クリップをタップすると選択でき、長押しするとオプションが表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프레임 위를 드래그하면 비디오를 이동할 수 있고, 핀치하면 확대/축소할 수 있습니다. 클립을 탭하면 선택되고, 길게 누르면 옵션이 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep over de beelden om door de video te gaan en knijp om te zoomen. Tik op een clip om die te selecteren, of houd hem ingedrukt voor opties."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij po klatkach, aby poruszać się po wideo, i rozsuń palce, aby powiększyć. Stuknij klip, aby go zaznaczyć, lub przytrzymaj go, aby zobaczyć opcje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste pelos quadros para se mover pelo vídeo e afaste os dedos para ampliar. Toque em um clipe para selecioná-lo ou toque e segure para ver as opções."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste pelas imagens para percorrer o vídeo e afaste os dedos para ampliar. Toque num clipe para o selecionar ou mantenha-o premido para ver as opções."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra över bildrutorna för att röra dig genom videon och nyp för att zooma. Tryck på ett klipp för att markera det, eller håll ned fingret på det för att visa alternativ."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoda ilerlemek için kareler üzerinde sürükleyin, yakınlaştırmak için kıstırın. Seçmek için bir klibe dokunun veya seçeneklerini görmek için basılı tutun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在画面上拖动可在视频中移动，双指开合可缩放。轻点片段可选中它，按住片段可查看选项。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在畫面上拖移可在影片中移動，兩指開合可縮放。點一下片段可選取它，按住片段可查看選項。"
+          }
+        }
+      }
+    },
+    "Drag across the frames to move through the video, and pinch to zoom. Tap a clip to select it, or hold it for options. Hold and drag along Audio to bleep or mute a stretch." : {
+      "comment" : "Hint under the video editor timeline when the video has sound.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب عبر الإطارات للتنقل في الفيديو، وباعد إصبعيك للتكبير. اضغط على مقطع لتحديده، أو المسه مع الاستمرار لعرض خياراته. المس مسار الصوت مع الاستمرار واسحب على طوله لإضافة صفير إلى جزء منه أو كتمه."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zieh über die Bilder, um dich durch das Video zu bewegen, und zoome mit zwei Fingern. Tippe auf einen Clip, um ihn auszuwählen, oder halte ihn gedrückt, um seine Optionen anzuzeigen. Halte die Audiospur gedrückt und zieh, um einen Abschnitt zu überpiepen oder stummzuschalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra por los fotogramas para moverte por el vídeo y pellizca para hacer zoom. Toca un clip para seleccionarlo o mantenlo pulsado para ver sus opciones. Mantén pulsada la pista de audio y arrastra para poner un pitido a un fragmento o silenciarlo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra por los cuadros para moverte por el video y pellizca para hacer zoom. Toca un clip para seleccionarlo o mantenlo presionado para ver sus opciones. Mantén presionada la pista de audio y arrastra para poner un pitido a un fragmento o silenciarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser sur les images pour parcourir la vidéo, et pincez pour zoomer. Touchez un clip pour le sélectionner, ou maintenez le doigt dessus pour afficher ses options. Maintenez le doigt sur la piste Audio et faites glisser pour biper ou couper le son d’un passage."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina sui fotogrammi per spostarti nel video e pizzica per ingrandire. Tocca una clip per selezionarla o tienila premuta per le opzioni. Tieni premuto sulla traccia Audio e trascina per mettere un bip su un tratto o silenziarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "コマの上をドラッグするとビデオ内を移動でき、ピンチするとズームできます。クリップをタップすると選択でき、長押しするとオプションが表示されます。オーディオトラックを長押ししてドラッグすると、その区間にピー音を入れたりミュートしたりできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프레임 위를 드래그하면 비디오를 이동할 수 있고, 핀치하면 확대/축소할 수 있습니다. 클립을 탭하면 선택되고, 길게 누르면 옵션이 표시됩니다. 오디오 트랙을 길게 누른 채 드래그하면 일부 구간에 삐 소리를 넣거나 음소거할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep over de beelden om door de video te gaan en knijp om te zoomen. Tik op een clip om die te selecteren, of houd hem ingedrukt voor opties. Houd het Audio-spoor ingedrukt en sleep erlangs om een stuk te laten piepen of te dempen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij po klatkach, aby poruszać się po wideo, i rozsuń palce, aby powiększyć. Stuknij klip, aby go zaznaczyć, lub przytrzymaj go, aby zobaczyć opcje. Przytrzymaj palec na ścieżce Dźwięk i przeciągnij wzdłuż niej, aby zagłuszyć fragment piskiem lub go wyciszyć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste pelos quadros para se mover pelo vídeo e afaste os dedos para ampliar. Toque em um clipe para selecioná-lo ou toque e segure para ver as opções. Toque e segure na faixa Áudio e arraste para colocar um bipe ou silenciar um trecho."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste pelas imagens para percorrer o vídeo e afaste os dedos para ampliar. Toque num clipe para o selecionar ou mantenha-o premido para ver as opções. Mantenha premida a faixa Áudio e arraste para pôr um bipe ou silenciar um excerto."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra över bildrutorna för att röra dig genom videon och nyp för att zooma. Tryck på ett klipp för att markera det, eller håll ned fingret på det för att visa alternativ. Håll ned fingret på spåret Ljud och dra för att lägga pip över eller tysta ett avsnitt."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoda ilerlemek için kareler üzerinde sürükleyin, yakınlaştırmak için kıstırın. Seçmek için bir klibe dokunun veya seçeneklerini görmek için basılı tutun. Bir bölüme bip sesi eklemek veya onu sessize almak için Ses kanalında basılı tutup sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在画面上拖动可在视频中移动，双指开合可缩放。轻点片段可选中它，按住片段可查看选项。在“音频”轨道上按住并拖动，可为一段声音加哔声或静音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在畫面上拖移可在影片中移動，兩指開合可縮放。點一下片段可選取它，按住片段可查看選項。在「音訊」軌道上按住並拖移，可為一段聲音加嗶聲或靜音。"
+          }
+        }
+      }
+    },
     "Drag boxes to adjust" : {
       "localizations" : {
         "ar" : {
@@ -20042,103 +20749,204 @@
         }
       }
     },
-    "Drag the yellow ends of the selected clip to change when it applies. Drag across the frames to move through the video." : {
-      "comment" : "Hint under the video timeline when a clip that can be trimmed is selected.",
+    "Drag the box to move it, or its corner to resize it. Then tap Track, and PicStrip follows it through the video, forwards and back." : {
+      "comment" : "Instructions on the Cover an Object screen once a box is drawn.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "اسحب الطرفين الأصفرين للمقطع المحدد لتغيير توقيت تطبيقه. اسحب عبر الإطارات للتنقل في الفيديو."
+            "value" : "اسحب المربع لنقله، أو اسحب زاويته لتغيير حجمه. ثم اضغط على ”تتبّع“، وسيتتبعه PicStrip عبر الفيديو، للأمام وللخلف."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zieh die gelben Enden des ausgewählten Clips, um zu ändern, wann er gilt. Zieh über die Bilder, um dich durch das Video zu bewegen."
+            "value" : "Zieh den Rahmen, um ihn zu bewegen, oder seine Ecke, um die Größe zu ändern. Tippe dann auf „Verfolgen“, und PicStrip verfolgt ihn durch das Video, vorwärts und rückwärts."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Arrastra por los fotogramas para moverte por el vídeo."
+            "value" : "Arrastra el recuadro para moverlo o su esquina para redimensionarlo. Luego toca «Seguir» y PicStrip lo seguirá por el vídeo, hacia delante y hacia atrás."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Arrastra por los cuadros para moverte por el video."
+            "value" : "Arrastra el recuadro para moverlo o su esquina para redimensionarlo. Luego toca “Seguir” y PicStrip lo seguirá por el video, hacia adelante y hacia atrás."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Faites glisser les extrémités jaunes du clip sélectionné pour changer quand il s’applique. Faites glisser sur les images pour parcourir la vidéo."
+            "value" : "Faites glisser le cadre pour le déplacer, ou son coin pour le redimensionner. Touchez ensuite Suivre et PicStrip le suivra dans la vidéo, en avant et en arrière."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trascina le estremità gialle della clip selezionata per cambiare quando si applica. Trascina sui fotogrammi per spostarti nel video."
+            "value" : "Trascina il riquadro per spostarlo o il suo angolo per ridimensionarlo. Poi tocca Traccia e PicStrip lo seguirà nel video, in avanti e indietro."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "選択したクリップの黄色い端をドラッグすると、適用するタイミングを変更できます。コマの上をドラッグすると、ビデオ内を移動できます。"
+            "value" : "枠をドラッグすると移動でき、角をドラッグするとサイズを変更できます。次に「追跡」をタップすると、PicStripがビデオの前後にわたってそれを追跡します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "선택한 클립의 노란색 끝을 드래그하면 적용 시점을 바꿀 수 있습니다. 프레임 위를 드래그하면 비디오를 이동할 수 있습니다."
+            "value" : "상자를 드래그하면 이동할 수 있고, 모서리를 드래그하면 크기를 조절할 수 있습니다. 그런 다음 ‘추적’을 탭하면 PicStrip이 비디오 앞뒤로 추적합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sleep de gele uiteinden van de geselecteerde clip om te wijzigen wanneer die geldt. Sleep over de beelden om door de video te gaan."
+            "value" : "Sleep het kader om het te verplaatsen, of de hoek ervan om het formaat aan te passen. Tik daarna op Volgen en PicStrip volgt het door de video, vooruit en terug."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przeciągnij żółte końce zaznaczonego klipu, aby zmienić, kiedy działa. Przeciągnij po klatkach, aby poruszać się po wideo."
+            "value" : "Przeciągnij ramkę, aby ją przesunąć, lub jej róg, aby zmienić jej rozmiar. Następnie stuknij Śledź, a PicStrip będzie śledzić obiekt w wideo, do przodu i do tyłu."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando ele se aplica. Arraste pelos quadros para se mover pelo vídeo."
+            "value" : "Arraste o retângulo para movê-lo ou o canto dele para redimensioná-lo. Depois, toque em Acompanhar e o PicStrip o acompanha pelo vídeo, para a frente e para trás."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando se aplica. Arraste pelas imagens para percorrer o vídeo."
+            "value" : "Arraste o retângulo para o mover ou o canto para o redimensionar. Depois, toque em Seguir e o PicStrip segue-o pelo vídeo, para a frente e para trás."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dra de gula ändarna på det markerade klippet för att ändra när det gäller. Dra över bildrutorna för att röra dig genom videon."
+            "value" : "Dra rutan för att flytta den, eller dess hörn för att ändra storlek. Tryck sedan på Följ, så följer PicStrip den genom videon, framåt och bakåt."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ne zaman uygulanacağını değiştirmek için seçili klibin sarı uçlarını sürükleyin. Videoda ilerlemek için kareler üzerinde sürükleyin."
+            "value" : "Taşımak için kutuyu, yeniden boyutlandırmak için köşesini sürükleyin. Ardından Takip et düğmesine dokunun; PicStrip onu video boyunca ileri ve geri takip eder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖动所选片段的黄色两端，可更改它的生效时间。在画面上拖动，可在视频中移动。"
+            "value" : "拖动方框可移动它，拖动其角可调整大小。然后轻点“跟踪”，PicStrip 会在视频中向前向后跟踪它。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖移所選片段的黃色兩端，可更改它的生效時間。在畫面上拖移，可在影片中移動。"
+            "value" : "拖移方框可移動它，拖移其角可調整大小。然後點一下「追蹤」，PicStrip 會在影片中向前向後追蹤它。"
+          }
+        }
+      }
+    },
+    "Drag the yellow ends of the selected clip to change when it applies. Hold any clip for its options." : {
+      "comment" : "Hint under the video editor timeline while a clip is selected.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب الطرفين الأصفرين للمقطع المحدد لتغيير توقيت تطبيقه. المس أي مقطع مع الاستمرار لعرض خياراته."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zieh die gelben Enden des ausgewählten Clips, um zu ändern, wann er gilt. Halte einen Clip gedrückt, um seine Optionen anzuzeigen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Mantén pulsado cualquier clip para ver sus opciones."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Mantén presionado cualquier clip para ver sus opciones."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Faites glisser les extrémités jaunes du clip sélectionné pour changer quand il s’applique. Maintenez le doigt sur un clip pour afficher ses options."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trascina le estremità gialle della clip selezionata per cambiare quando si applica. Tieni premuta una clip qualsiasi per vederne le opzioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択したクリップの黄色い端をドラッグすると、適用するタイミングを変更できます。どのクリップも、長押しするとオプションが表示されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 클립의 노란색 끝을 드래그하면 적용 시점을 바꿀 수 있습니다. 아무 클립이나 길게 누르면 옵션이 표시됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sleep de gele uiteinden van de geselecteerde clip om te wijzigen wanneer die geldt. Houd een clip ingedrukt voor de opties."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przeciągnij żółte końce zaznaczonego klipu, aby zmienić, kiedy działa. Przytrzymaj dowolny klip, aby zobaczyć jego opcje."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando ele se aplica. Toque e segure qualquer clipe para ver as opções dele."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando se aplica. Mantenha premido qualquer clipe para ver as respetivas opções."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dra de gula ändarna på det markerade klippet för att ändra när det gäller. Håll ned fingret på ett klipp för att visa dess alternativ."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ne zaman uygulanacağını değiştirmek için seçili klibin sarı uçlarını sürükleyin. Seçeneklerini görmek için herhangi bir klibi basılı tutun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖动所选片段的黄色两端，可更改它的生效时间。按住任一片段可查看其选项。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拖移所選片段的黃色兩端，可更改它的生效時間。按住任一片段可查看其選項。"
           }
         }
       }
@@ -20544,6 +21352,107 @@
         }
       }
     },
+    "Draw on the frame at %@" : {
+      "comment" : "Under Cover an Object…: the paused frame that will be drawn on. %@ is a time such as 0:12.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ارسم على الإطار عند %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf dem Bild bei %@ zeichnen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dibuja sobre el fotograma en %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dibuja sobre el cuadro en %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dessinez sur l’image à %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Disegna sul fotogramma a %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@のフレームに描画"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 프레임에 그리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Teken op het beeld bij %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Narysuj na klatce z %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desenhe no quadro em %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desenhe na imagem em %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rita på bildrutan vid %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ anındaki kareye çizin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 %@ 的画面上绘制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 %@ 的畫面上繪製"
+          }
+        }
+      }
+    },
     "Driver License" : {
       "localizations" : {
         "ar" : {
@@ -20840,107 +21749,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "匯出格式"
-          }
-        }
-      }
-    },
-    "Each lane shows when something is covered. Tap a clip to select it, or drag across the frames to move through the video." : {
-      "comment" : "Hint under the video timeline when nothing is selected.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "يُظهر كل مسار متى يُحجب شيء. اضغط على مقطع لتحديده، أو اسحب عبر الإطارات للتنقل في الفيديو."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Jede Spur zeigt, wann etwas verdeckt ist. Tippe auf einen Clip, um ihn auszuwählen, oder zieh über die Bilder, um dich durch das Video zu bewegen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada pista muestra cuándo hay algo censurado. Toca un clip para seleccionarlo o arrastra por los fotogramas para moverte por el vídeo."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada pista muestra cuándo hay algo censurado. Toca un clip para seleccionarlo o arrastra por los cuadros para moverte por el video."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chaque piste montre quand quelque chose est masqué. Touchez un clip pour le sélectionner, ou faites glisser sur les images pour parcourir la vidéo."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ogni traccia mostra quando qualcosa è coperto. Tocca una clip per selezionarla, o trascina sui fotogrammi per spostarti nel video."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "各トラックには、何かがマスクされている時間が表示されます。クリップをタップして選択するか、コマの上をドラッグしてビデオ内を移動します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "각 트랙에는 무언가가 가려지는 시간이 표시됩니다. 클립을 탭하여 선택하거나 프레임 위를 드래그하여 비디오를 이동하십시오."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Elk spoor toont wanneer iets is afgedekt. Tik op een clip om die te selecteren, of sleep over de beelden om door de video te gaan."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Każda ścieżka pokazuje, kiedy coś jest zamazane. Stuknij klip, aby go zaznaczyć, lub przeciągnij po klatkach, aby poruszać się po wideo."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada faixa mostra quando algo está oculto. Toque em um clipe para selecioná-lo ou arraste pelos quadros para se mover pelo vídeo."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cada faixa mostra quando algo está oculto. Toque num clipe para o selecionar ou arraste pelas imagens para percorrer o vídeo."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Varje spår visar när något är maskerat. Tryck på ett klipp för att markera det, eller dra över bildrutorna för att röra dig genom videon."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Her kanal bir şeyin ne zaman karartıldığını gösterir. Seçmek için bir klibe dokunun veya videoda ilerlemek için kareler üzerinde sürükleyin."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每条轨道都会显示何时有内容被遮盖。轻点片段可选中它，或在画面上拖动以在视频中移动。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "每條軌道都會顯示何時有內容被遮蓋。點一下片段可選取它，或在畫面上拖移以在影片中移動。"
           }
         }
       }
@@ -25967,6 +26775,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "高效率，Apple 原生"
+          }
+        }
+      }
+    },
+    "Hold and drag to select a stretch of sound." : {
+      "comment" : "VoiceOver hint of the timeline's audio lane.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "المس مع الاستمرار واسحب لتحديد جزء من الصوت."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gedrückt halten und ziehen, um einen Tonabschnitt auszuwählen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén pulsado y arrastra para seleccionar un fragmento de sonido."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantén presionado y arrastra para seleccionar un fragmento de sonido."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenez le doigt et faites glisser pour sélectionner un passage audio."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tieni premuto e trascina per selezionare un tratto di audio."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "長押ししてドラッグすると、音声の区間を選択できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "길게 누른 채 드래그하면 소리 구간을 선택할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Houd ingedrukt en sleep om een stuk geluid te selecteren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przytrzymaj i przeciągnij, aby zaznaczyć fragment dźwięku."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque, segure e arraste para selecionar um trecho do som."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mantenha premido e arraste para selecionar um excerto do som."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Håll ned och dra för att markera ett ljudavsnitt."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sesin bir bölümünü seçmek için basılı tutup sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住并拖动可选择一段声音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "按住並拖移可選取一段聲音。"
           }
         }
       }
@@ -32832,6 +33741,107 @@
         }
       }
     },
+    "Mute a second from the playhead" : {
+      "comment" : "VoiceOver action on the timeline's audio lane: adds a one-second mute at the playhead.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كتم ثانية بدءًا من مؤشر التشغيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eine Sekunde ab der Abspielposition stummschalten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar un segundo desde el cursor de reproducción"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar un segundo desde el cursor de reproducción"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couper le son une seconde à partir de la tête de lecture"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenzia un secondo a partire dall’indicatore di riproduzione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生ヘッドから1秒間ミュート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "재생 헤드부터 1초간 음소거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eén seconde dempen vanaf de afspeelkop"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycisz sekundę od głowicy odtwarzania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar um segundo a partir do indicador de reprodução"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar um segundo a partir da cabeça de reprodução"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tysta en sekund från uppspelningshuvudet"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oynatma imlecinden itibaren bir saniyeyi sessize al"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从播放头起静音 1 秒"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "從播放頭起靜音 1 秒"
+          }
+        }
+      }
+    },
     "Name" : {
       "comment" : "A kind of detected sensitive data: a person's name found in the photo's text (listed beside Email Address, Phone Number, Face).",
       "localizations" : {
@@ -37574,6 +38584,107 @@
         }
       }
     },
+    "Part of the video in view" : {
+      "comment" : "VoiceOver label of the bar showing which part of the video the zoomed-in timeline shows.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الجزء المعروض من الفيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichtbarer Teil des Videos"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte visible del vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte visible del video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Partie de la vidéo affichée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte del video visualizzata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示中のビデオの範囲"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 보이는 비디오 구간"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zichtbaar deel van de video"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widoczna część wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte visível do vídeo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parte visível do vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visad del av videon"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videonun görünen kısmı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "当前显示的视频部分"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前顯示的影片部分"
+          }
+        }
+      }
+    },
     "Partly checked" : {
       "localizations" : {
         "ar" : {
@@ -39802,6 +40913,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "像素化"
+          }
+        }
+      }
+    },
+    "Play" : {
+      "comment" : "Menu item: plays the selected stretch of a video's sound.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تشغيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wiedergabe"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproducir"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproducir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lire"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riproduci"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "재생"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Speel af"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odtwórz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproduzir"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reproduzir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spela upp"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oynat"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "播放"
           }
         }
       }
@@ -44617,6 +45829,107 @@
         }
       }
     },
+    "Resize the box" : {
+      "comment" : "VoiceOver label of the dot at the drawn box's corner that resizes it.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيير حجم المربع"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Größe des Rahmens ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar el recuadro"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar el recuadro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionner le cadre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ridimensiona il riquadro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "枠のサイズを変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상자 크기 조절"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formaat van kader aanpassen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmień rozmiar ramki"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar o retângulo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redimensionar o retângulo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändra rutans storlek"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kutuyu yeniden boyutlandır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调整方框大小"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調整方框大小"
+          }
+        }
+      }
+    },
     "Reveal original" : {
       "localizations" : {
         "ar" : {
@@ -49099,6 +50412,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "顯示處理後的影像"
+          }
+        }
+      }
+    },
+    "Show the whole video" : {
+      "comment" : "VoiceOver label of the button that zooms the timeline out to the whole video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عرض الفيديو كاملًا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ganzes Video anzeigen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar todo el vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar todo el video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher toute la vidéo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra tutto il video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオ全体を表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 전체 보기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toon de hele video"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokaż całe wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar o vídeo inteiro"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostrar o vídeo inteiro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visa hela videon"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videonun tamamını göster"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "显示整个视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顯示整部影片"
           }
         }
       }
@@ -57838,6 +59252,107 @@
         }
       }
     },
+    "Use Position & size to move or resize it." : {
+      "comment" : "VoiceOver hint on the drawn box.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "استخدم ”الموضع والحجم“ لنقله أو تغيير حجمه."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwende „Position & Größe“, um ihn zu bewegen oder seine Größe zu ändern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa «Posición y tamaño» para moverlo o redimensionarlo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa “Posición y tamaño” para moverlo o redimensionarlo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utilisez Position et taille pour le déplacer ou le redimensionner."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usa Posizione e dimensioni per spostarlo o ridimensionarlo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「位置とサイズ」で移動やサイズ変更ができます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "‘위치 및 크기’를 사용하여 이동하거나 크기를 조절할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebruik Positie en grootte om het te verplaatsen of het formaat aan te passen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Użyj opcji Pozycja i rozmiar, aby ją przesunąć lub zmienić jej rozmiar."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Posição e tamanho para movê-lo ou redimensioná-lo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Use Posição e tamanho para o mover ou redimensionar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Använd Position och storlek för att flytta den eller ändra dess storlek."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taşımak veya yeniden boyutlandırmak için Konum ve boyut düğmesini kullanın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用“位置与大小”可移动它或调整其大小。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用「位置與大小」可移動它或調整其大小。"
+          }
+        }
+      }
+    },
     "Use a smaller copy?" : {
       "localizations" : {
         "ar" : {
@@ -60258,6 +61773,309 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "縮放"
+          }
+        }
+      }
+    },
+    "Zoom In" : {
+      "comment" : "VoiceOver action on the video editor timeline.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تكبير"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vergrößern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acercar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acercar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom avant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingrandisci"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拡大"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확대"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom in"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiększ"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zooma in"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yakınlaştır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "放大"
+          }
+        }
+      }
+    },
+    "Zoom Out" : {
+      "comment" : "VoiceOver action on the video editor timeline.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تصغير"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verkleinern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alejar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alejar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom arrière"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Riduci"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮小"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "축소"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom uit"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pomniejsz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reduzir"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reduzir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zooma ut"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzaklaştır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缩小"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮小"
+          }
+        }
+      }
+    },
+    "Zoomed in %@" : {
+      "comment" : "VoiceOver value of the timeline's zoom button. %@ is a factor such as 2×.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مكبَّر %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auf %@ vergrößert"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom de %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom de %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ingrandimento %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@に拡大"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 확대됨"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ ingezoomd"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Powiększenie %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliado em %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ampliado em %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inzoomat %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yakınlaştırma: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已放大 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已放大 %@"
           }
         }
       }

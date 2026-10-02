@@ -457,9 +457,12 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = path
         app.launch()
 
-        let face = app.buttons["faceRow-1"]
-        XCTAssertTrue(face.waitForExistence(timeout: 90), "The face in the fixture is found.")
+        XCTAssertTrue(app.buttons["addCoverButton"].waitForExistence(timeout: 90), "The review opens.")
         attachScreen("video_review")
+        // Under the timeline and Objects: scrolled to.
+        let face = app.buttons["faceRow-1"]
+        reveal(face, in: app)
+        XCTAssertTrue(face.waitForExistence(timeout: 5), "The face in the fixture is found.")
         let cover = app.buttons["faceCoverMenu-1"]
         XCTAssertEqual(cover.value as? String, "Blur", "Faces are blurred unless the user picks an emoji.")
         cover.tap()
@@ -490,11 +493,15 @@ final class PicStripUITests: XCTestCase {
 
         // Back to the faces: the chosen cover is kept.
         app.buttons["changeCoversButton"].tap()
-        XCTAssertTrue(cover.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.buttons["addCoverButton"].waitForExistence(timeout: 10))
+        reveal(cover, in: app)
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
         XCTAssertEqual(cover.value as? String, "🐸")
     }
 
-    /// A cover drawn on the paused frame is followed, timed on the timeline, and saved.
+    /// A cover drawn on the paused frame is moved and resized, followed, timed
+    /// on a zoomed-in timeline, and saved — with a stretch of sound bleeped
+    /// from the audio lane's edit menu.
     @MainActor
     func testACoverCanBeDrawnFollowedAndTimed() async throws {
         let path = "/tmp/picstrip_video_draw_fixture.mov"
@@ -504,14 +511,28 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         let add = app.buttons["addCoverButton"]
-        XCTAssertTrue(add.waitForExistence(timeout: 90), "The review shows Add a Cover.")
+        XCTAssertTrue(add.waitForExistence(timeout: 90), "The review offers Cover an Object.")
+        XCTAssertFalse(app.buttons["addBleepButton"].exists, "Bleep and mute are in the audio lane's menu, not buttons.")
         add.tap()
         let area = app.descendants(matching: .any)["drawingArea"]
         XCTAssertTrue(area.waitForExistence(timeout: 15))
-        // Around the face, which moves: the cover follows it.
-        let from = area.coordinate(withNormalizedOffset: CGVector(dx: 0.27, dy: 0.2))
-        let to = area.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.85))
-        from.press(forDuration: 0.1, thenDragTo: to)
+        // Too small at first, then moved and resized around the face, which moves:
+        // the cover follows it.
+        area.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.15))
+            .press(forDuration: 0.1, thenDragTo: area.coordinate(withNormalizedOffset: CGVector(dx: 0.4, dy: 0.45)))
+        let box = app.descendants(matching: .any)["drawnBox"]
+        XCTAssertTrue(box.waitForExistence(timeout: 5), "The drawn box stays to be adjusted.")
+        let before = box.frame
+        box.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.1, thenDragTo: area.coordinate(withNormalizedOffset: CGVector(dx: 0.37, dy: 0.35))
+        )
+        XCTAssertGreaterThan(box.frame.midX, before.midX + 10, "Dragging the box moves it.")
+        let handle = app.descendants(matching: .any)["drawnBoxResizeHandle"]
+        handle.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.1, thenDragTo: area.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.85))
+        )
+        XCTAssertGreaterThan(box.frame.width, before.width + 20, "Dragging the corner makes it bigger.")
+        XCTAssertTrue(app.buttons["coverPositionButton"].exists, "Its position and size can be set without dragging.")
         attachScreen("draw_cover")
         let follow = app.buttons["followButton"]
         XCTAssertTrue(follow.isEnabled, "A drawn box can be followed.")
@@ -521,27 +542,53 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(row.waitForExistence(timeout: 60), "The followed cover is listed.")
         let end = app.descendants(matching: .any)["coverEndHandle"]
         XCTAssertTrue(end.waitForExistence(timeout: 5), "The new cover is picked, with handles on the timeline.")
+        let track = app.descendants(matching: .any)["coverTimelineTrack"]
         let start = app.descendants(matching: .any)["coverStartHandle"]
         // Start it at the very beginning of the video.
         start.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
-            forDuration: 0.1,
-            thenDragTo: app.descendants(matching: .any)["coverTimelineTrack"].coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
+            forDuration: 0.1, thenDragTo: track.coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
         )
         XCTAssertTrue(app.buttons["resetTimingButton"].waitForExistence(timeout: 5), "A changed timing can be reset.")
         attachScreen("cover_timeline")
 
-        // A bleep at the playhead shows as a clip on the audio lane, selected.
-        let bleep = app.buttons["addBleepButton"]
-        XCTAssertTrue(bleep.waitForExistence(timeout: 5), "The video has sound, so it can be bleeped.")
+        // Pinching zooms in; the zoom button shows the whole video again.
+        track.pinch(withScale: 3, velocity: 3)
+        let zoomOut = app.buttons["timelineZoomButton"]
+        XCTAssertTrue(zoomOut.waitForExistence(timeout: 5), "Zoomed in, the timeline says how far.")
+        XCTAssertTrue(app.descendants(matching: .any)["timelineOverview"].exists, "…and shows the part in view.")
+        attachScreen("timeline_zoomed")
+        zoomOut.tap()
+        XCTAssertFalse(zoomOut.waitForExistence(timeout: 2), "Zoomed out to the whole video.")
+
+        // Holding and dragging along the audio lane selects a stretch, with a menu over it.
+        let audio = app.descendants(matching: .any)["audioLane"]
+        XCTAssertTrue(audio.exists, "The video has sound, so it has an audio lane.")
+        audio.coordinate(withNormalizedOffset: CGVector(dx: 0.3, dy: 0.5)).press(
+            forDuration: 0.8, thenDragTo: audio.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.5))
+        )
+        let bleep = menuItem("Bleep", in: app)
+        XCTAssertTrue(bleep.waitForExistence(timeout: 5), "The selected stretch offers Bleep.")
+        XCTAssertTrue(menuItem("Mute", in: app).exists, "…and Mute.")
+        attachScreen("audio_selection_menu")
         bleep.tap()
-        XCTAssertTrue(app.descendants(matching: .any)["clip-audio-0"].waitForExistence(timeout: 5))
+        let clip = app.descendants(matching: .any)["clip-audio-0"]
+        XCTAssertTrue(clip.waitForExistence(timeout: 5), "The bleep is a clip on the audio lane.")
         XCTAssertTrue(app.descendants(matching: .any)["coverEndHandle"].exists, "The new bleep can be trimmed.")
+        let lane = audio.frame
+        XCTAssertGreaterThan(clip.frame.width, lane.width * 0.2, "It covers the stretch dragged across, not a fixed second.")
         attachScreen("bleep_timeline")
 
         app.buttons["makeCleanedCopyButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["drawnCoveredRow"].waitForExistence(timeout: 120),
                       "The cleaned copy lists the cover that was added.")
         XCTAssertTrue(app.descendants(matching: .any)["audioEditedRow"].exists, "…and the bleep.")
+    }
+
+    /// An item of the system edit menu, which shows as a menu item or a button.
+    @MainActor
+    private func menuItem(_ title: String, in app: XCUIApplication) -> XCUIElement {
+        let item = app.menuItems[title]
+        return item.waitForExistence(timeout: 2) ? item : app.buttons.matching(identifier: title).firstMatch
     }
 
     /// Skipping face covering still saves a cleaned copy, with every face as it was.

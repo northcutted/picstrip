@@ -120,6 +120,9 @@ final class VideoCleanerModel {
     private(set) var skipsCovering = false
     private var previewGeneration = 0
     private var timeObserver: Any?
+    /// Pauses the preview at the end of a stretch being played.
+    private var boundaryObserver: Any?
+    private var filmstripTask: Task<Void, Never>?
     private var nextDrawnID = 1_000_000
 
     var isLong: Bool { duration >= VideoScanner.longVideoDuration }
@@ -185,11 +188,21 @@ final class VideoCleanerModel {
             // and sound bleeped by hand.
             await makeThumbnails(from: url)
             hasAudio = !((try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []).isEmpty
-            if hasAudio { audioLevels = await VideoAudioEditor.levels(of: url, count: 160) }
+            // Enough detail for the timeline zoomed all the way in.
+            if hasAudio { audioLevels = await VideoAudioEditor.levels(of: url, count: Self.levelCount(for: duration)) }
             filmstrip = await Self.filmstrip(of: url, duration: duration, count: 10)
             stillTime = faces.first?.representativeSample?.time
                 ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
+            usePlaybackAudio(true)
             observePlayhead()
+            // A frame about every second, for the zoomed-in timeline, once the
+            // editor is open.
+            let duration = duration
+            filmstripTask = Task { [weak self] in
+                let frames = await Self.filmstrip(of: url, duration: duration, count: Self.filmstripCount(for: duration))
+                guard !Task.isCancelled, !frames.isEmpty else { return }
+                self?.filmstrip = frames
+            }
             refreshPreview()
             stage = .review
         } catch is CancellationError {
@@ -298,14 +311,58 @@ final class VideoCleanerModel {
 
     /// Adds a bleep or mute at the playhead, a second long, and selects it.
     func addAudioEdit(_ kind: AudioEdit.Kind) {
-        player.pause()
         let length = min(1, duration)
         let start = min(max(0, currentTime), max(0, duration - length))
-        let edit = AudioEdit(id: nextAudioID, kind: kind, range: start...(start + length))
+        addAudioEdit(kind, over: start...(start + length))
+    }
+
+    /// Adds a bleep or mute over `range` — a stretch selected on the timeline —
+    /// and selects it.
+    func addAudioEdit(_ kind: AudioEdit.Kind, over range: ClosedRange<Double>) {
+        player.pause()
+        let edit = AudioEdit(id: nextAudioID, kind: kind, range: clamped(range))
         nextAudioID += 1
         audioEdits.append(edit)
         selection = .audio(edit.id)
         refreshPreview()
+    }
+
+    /// Plays `range` once from its start, with the edits so far, and stops at its end.
+    func play(_ range: ClosedRange<Double>) {
+        stopAtBoundary()
+        let range = clamped(range)
+        boundaryObserver = player.addBoundaryTimeObserver(
+            forTimes: [NSValue(time: CMTime(seconds: range.upperBound, preferredTimescale: 600))], queue: .main
+        ) { [weak self] in
+            MainActor.assumeIsolated {
+                self?.player.pause()
+                self?.stopAtBoundary()
+            }
+        }
+        currentTime = range.lowerBound
+        Task {
+            _ = await player.seek(
+                to: CMTime(seconds: range.lowerBound, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero
+            )
+            player.play()
+        }
+    }
+
+    private func stopAtBoundary() {
+        if let boundaryObserver { player.removeTimeObserver(boundaryObserver) }
+        boundaryObserver = nil
+    }
+
+    /// The preview's sound plays with the Ring/Silent switch set to silent, as
+    /// in any video player; music paused for it resumes when the screen closes.
+    private func usePlaybackAudio(_ playing: Bool) {
+        let session = AVAudioSession.sharedInstance()
+        if playing {
+            try? session.setCategory(.playback, mode: .moviePlayback)
+        } else {
+            try? session.setActive(false, options: .notifyOthersOnDeactivation)
+            try? session.setCategory(.soloAmbient)
+        }
     }
 
     func setKind(_ kind: AudioEdit.Kind, of edit: AudioEdit) {
@@ -429,10 +486,13 @@ final class VideoCleanerModel {
     func discard() {
         scanTask?.cancel()
         saveTask?.cancel()
+        filmstripTask?.cancel()
+        stopAtBoundary()
         if let timeObserver { player.removeTimeObserver(timeObserver) }
         timeObserver = nil
         player.pause()
         player.replaceCurrentItem(with: nil)
+        usePlaybackAudio(false)
         PrivateFileStore.exports.remove(source)
         PrivateFileStore.exports.remove(output)
         toneFiles.forEach { PrivateFileStore.exports.remove($0) }
@@ -561,6 +621,16 @@ final class VideoCleanerModel {
         } onCancel: {
             box.cancel()
         }
+    }
+
+    /// About one frame a second, from 10 for a short video to 120 for a long one.
+    nonisolated static func filmstripCount(for duration: Double) -> Int {
+        min(120, max(10, Int(duration.rounded(.up))))
+    }
+
+    /// Twenty loudness readings a second, from 160 to 4,000.
+    nonisolated static func levelCount(for duration: Double) -> Int {
+        min(4_000, max(160, Int((duration * 20).rounded(.up))))
     }
 
     /// `count` small frames spread evenly along the video.

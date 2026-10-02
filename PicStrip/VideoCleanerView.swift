@@ -156,30 +156,16 @@ struct VideoCleanerView: View {
                     clips: timelineClips,
                     selected: selectedClipIDs,
                     trimmable: trimmableClipID,
+                    selectionActions: soundActions,
                     onSeek: { model.scrub(to: $0) },
                     onSelect: { select($0) },
-                    onTrim: { trim($0, to: $1) }
+                    onTrim: { trim($0, to: $1) },
+                    clipMenu: { clipMenu($0) }
                 )
                 .padding(.vertical, 8)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("coverTimeline")
 
-                HStack(spacing: 8) {
-                    editButton("Cover an Object", systemImage: "viewfinder", identifier: "addCoverButton") {
-                        model.player.pause()
-                        drawingAt = DrawingTime(time: model.currentTime)
-                    }
-                    if model.hasAudio {
-                        editButton("Bleep", systemImage: "waveform.badge.exclamationmark", identifier: "addBleepButton") {
-                            model.addAudioEdit(.bleep)
-                        }
-                        editButton("Mute", systemImage: "speaker.slash", identifier: "addMuteButton") {
-                            model.addAudioEdit(.mute)
-                        }
-                    }
-                }
-                .buttonStyle(.bordered)
-                .listRowSeparator(.hidden)
                 if let track = selectedTrack, model.ranges[track.id] != nil {
                     Button("Reset Timing") { model.resetRange(for: track) }
                         .buttonStyle(.borderless)
@@ -194,16 +180,31 @@ struct VideoCleanerView: View {
                 }
             }
 
-            if !model.drawnCovers.isEmpty {
-                Section {
-                    ForEach(Array(model.drawnCovers.enumerated()), id: \.element.id) { index, cover in
-                        drawnRow(cover, number: index + 1)
-                    }
-                } header: {
-                    Text("Objects")
-                } footer: {
-                    Text("Anything you draw around — a person, a car, a screen, a sign — is tracked as it moves, forwards and back.")
+            Section {
+                ForEach(Array(model.drawnCovers.enumerated()), id: \.element.id) { index, cover in
+                    drawnRow(cover, number: index + 1)
                 }
+                Button {
+                    model.player.pause()
+                    drawingAt = DrawingTime(time: model.currentTime)
+                } label: {
+                    Label {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Cover an Object…")
+                            Text("Draw on the frame at \(Self.clock(model.currentTime))")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .monospacedDigit()
+                        }
+                    } icon: {
+                        Image(systemName: "plus.viewfinder")
+                    }
+                }
+                .accessibilityIdentifier("addCoverButton")
+            } header: {
+                Text("Objects")
+            } footer: {
+                Text("Anything you draw around — a person, a car, a screen, a sign — is tracked as it moves, forwards and back.")
             }
 
             if !model.audioEdits.isEmpty {
@@ -305,27 +306,7 @@ struct VideoCleanerView: View {
             .accessibilityIdentifier("faceRow-\(number)")
 
             Menu {
-                Button {
-                    model.setCover(.blur, for: face)
-                } label: {
-                    Label("Blur", systemImage: "drop.fill")
-                }
-                Button {
-                    model.setCover(.solid, for: face)
-                } label: {
-                    Label("Solid", systemImage: "rectangle.fill")
-                }
-                Button {
-                    emojiFace = face
-                } label: {
-                    Label("Emoji…", systemImage: "face.smiling")
-                }
-                Divider()
-                Button {
-                    model.setVisible(true, for: face)
-                } label: {
-                    Label("Leave Visible", systemImage: "eye")
-                }
+                faceMenu(face)
             } label: {
                 coverLabel(model.isVisible(face) ? nil : model.cover(for: face))
             }
@@ -360,27 +341,7 @@ struct VideoCleanerView: View {
             .accessibilityIdentifier("drawnRow-\(number)")
 
             Menu {
-                Button {
-                    model.setCover(.blur, for: cover)
-                } label: {
-                    Label("Blur", systemImage: "drop.fill")
-                }
-                Button {
-                    model.setCover(.solid, for: cover)
-                } label: {
-                    Label("Solid", systemImage: "rectangle.fill")
-                }
-                Button {
-                    emojiFace = cover
-                } label: {
-                    Label("Emoji…", systemImage: "face.smiling")
-                }
-                Divider()
-                Button(role: .destructive) {
-                    model.deleteDrawnCover(cover)
-                } label: {
-                    Label("Remove", systemImage: "trash")
-                }
+                drawnMenu(cover)
             } label: {
                 coverLabel(model.cover(for: cover))
             }
@@ -391,25 +352,118 @@ struct VideoCleanerView: View {
         .listRowBackground(model.selection == .drawn(cover.id) ? Color.accentColor.opacity(0.12) : nil)
     }
 
+    // MARK: Menus
+
+    /// A face's covers, in its row and when its clip is held.
+    @ViewBuilder
+    private func faceMenu(_ face: FaceTrack) -> some View {
+        coverChoices(for: face)
+        Divider()
+        Button {
+            model.setVisible(true, for: face)
+        } label: {
+            Label("Leave Visible", systemImage: "eye")
+        }
+    }
+
+    @ViewBuilder
+    private func drawnMenu(_ cover: FaceTrack) -> some View {
+        coverChoices(for: cover)
+        Divider()
+        Button(role: .destructive) {
+            model.deleteDrawnCover(cover)
+        } label: {
+            Label("Remove", systemImage: "trash")
+        }
+    }
+
+    @ViewBuilder
+    private func coverChoices(for track: FaceTrack) -> some View {
+        Button {
+            model.setCover(.blur, for: track)
+        } label: {
+            Label("Blur", systemImage: "drop.fill")
+        }
+        Button {
+            model.setCover(.solid, for: track)
+        } label: {
+            Label("Solid", systemImage: "rectangle.fill")
+        }
+        Button {
+            emojiFace = track
+        } label: {
+            Label("Emoji…", systemImage: "face.smiling")
+        }
+    }
+
+    @ViewBuilder
+    private func audioMenu(_ edit: AudioEdit) -> some View {
+        Button {
+            model.setKind(.bleep, of: edit)
+        } label: {
+            Label("Bleep", systemImage: "waveform.badge.exclamationmark")
+        }
+        Button {
+            model.setKind(.mute, of: edit)
+        } label: {
+            Label("Mute", systemImage: "speaker.slash")
+        }
+        Button {
+            model.play(edit.range)
+        } label: {
+            Label("Play", systemImage: "play.fill")
+        }
+        Divider()
+        Button(role: .destructive) {
+            model.deleteAudioEdit(edit)
+        } label: {
+            Label("Remove", systemImage: "trash")
+        }
+    }
+
+    /// What holding a clip on the timeline offers: the menu of its row.
+    private func clipMenu(_ clip: EditorTimeline.Clip) -> AnyView {
+        let parts = clip.id.split(separator: "-", maxSplits: 1)
+        guard parts.count == 2, let number = Int(parts[1]) else { return AnyView(EmptyView()) }
+        switch parts[0] {
+        case "face":
+            if let track = model.track(number) {
+                return track.isDrawn ? AnyView(drawnMenu(track)) : AnyView(faceMenu(track))
+            }
+        case "text":
+            if let group = model.findingGroups.first(where: { $0.tracks.contains { $0.id == number } }) {
+                return AnyView(Button {
+                    model.setCovered(false, for: group)
+                } label: {
+                    Label("Leave Visible", systemImage: "eye")
+                })
+            }
+        case "audio":
+            if let edit = model.audioEdit(number) { return AnyView(audioMenu(edit)) }
+        default:
+            break
+        }
+        return AnyView(EmptyView())
+    }
+
     // MARK: Timeline
 
-    /// An action under the timeline: its symbol over a short title, the
-    /// buttons sharing the width.
-    private func editButton(
-        _ title: LocalizedStringKey, systemImage: String, identifier: String, action: @escaping () -> Void
-    ) -> some View {
-        Button(action: action) {
-            VStack(spacing: 4) {
-                Image(systemName: systemImage)
-                    .font(.body.weight(.semibold))
-                Text(title)
-                    .font(.caption.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.75)
+    /// What can be done with a stretch of sound selected on the timeline.
+    private var soundActions: [EditorTimeline.SelectionAction] {
+        guard model.hasAudio else { return [] }
+        return [
+            .init(
+                id: "bleep", title: String(localized: "Bleep"), systemImage: "waveform.badge.exclamationmark",
+                playheadTitle: String(localized: "Bleep a second from the playhead")
+            ) { model.addAudioEdit(.bleep, over: $0) },
+            .init(
+                id: "mute", title: String(localized: "Mute"), systemImage: "speaker.slash",
+                playheadTitle: String(localized: "Mute a second from the playhead")
+            ) { model.addAudioEdit(.mute, over: $0) },
+            .init(id: "play", title: String(localized: "Play"), systemImage: "play.fill", keepsSelection: true) {
+                model.play($0)
             }
-            .frame(maxWidth: .infinity, minHeight: 44)
-        }
-        .accessibilityIdentifier(identifier)
+        ]
     }
 
     private var timelineLanes: [EditorTimeline.Lane] {
@@ -489,9 +543,12 @@ struct VideoCleanerView: View {
     }
 
     private var timelineHint: String {
-        trimmableClipID != nil
-            ? String(localized: "Drag the yellow ends of the selected clip to change when it applies. Drag across the frames to move through the video.")
-            : String(localized: "Each lane shows when something is covered. Tap a clip to select it, or drag across the frames to move through the video.")
+        if trimmableClipID != nil {
+            return String(localized: "Drag the yellow ends of the selected clip to change when it applies. Hold any clip for its options.")
+        }
+        return model.hasAudio
+            ? String(localized: "Drag across the frames to move through the video, and pinch to zoom. Tap a clip to select it, or hold it for options. Hold and drag along Audio to bleep or mute a stretch.")
+            : String(localized: "Drag across the frames to move through the video, and pinch to zoom. Tap a clip to select it, or hold it for options.")
     }
 
     private func select(_ clip: EditorTimeline.Clip) {
@@ -552,22 +609,7 @@ struct VideoCleanerView: View {
             .accessibilityIdentifier("audioRow-\(number)")
 
             Menu {
-                Button {
-                    model.setKind(.bleep, of: edit)
-                } label: {
-                    Label("Bleep", systemImage: "waveform.badge.exclamationmark")
-                }
-                Button {
-                    model.setKind(.mute, of: edit)
-                } label: {
-                    Label("Mute", systemImage: "speaker.slash")
-                }
-                Divider()
-                Button(role: .destructive) {
-                    model.deleteAudioEdit(edit)
-                } label: {
-                    Label("Remove", systemImage: "trash")
-                }
+                audioMenu(edit)
             } label: {
                 Image(systemName: "ellipsis.circle")
                     .font(.title3)
@@ -1043,25 +1085,31 @@ private struct ScanSweep: View {
 // MARK: - DrawCoverSheet
 
 /// The paused frame, with the covers already on it, to draw a box around
-/// something the scan missed.  PicStrip then follows it through the video.
+/// something the scan missed.  The box can be moved and resized — like a
+/// redaction on a photo — before PicStrip follows it through the video.
 private struct DrawCoverSheet: View {
     let model: VideoCleanerModel
     let time: Double
 
     @Environment(\.dismiss) private var dismiss
     @State private var frame: UIImage?
-    @State private var start: CGPoint?
-    @State private var end: CGPoint?
+    /// Normalised, top-left origin.
+    @State private var box: CGRect?
+    /// A box being drawn, until the finger lifts.
+    @State private var draft: CGRect?
+    /// The box as a move or resize began.
+    @State private var dragStart: CGRect?
+    @State private var showsPosition = false
     @State private var following: Task<Void, Never>?
 
-    /// The drawn box, normalised, top-left origin; `nil` until it is big enough.
-    private var box: CGRect? {
-        guard let start, let end else { return nil }
-        let rect = CGRect(
-            x: min(start.x, end.x), y: min(start.y, end.y),
-            width: abs(end.x - start.x), height: abs(end.y - start.y)
-        )
-        return rect.width >= 0.02 && rect.height >= 0.02 ? rect : nil
+    /// The smallest box that can be followed, as a share of the frame.
+    private static let minimumSize: CGFloat = 0.02
+    private static let space = "drawingArea"
+
+    /// The box to follow, once it is big enough.
+    private var followable: CGRect? {
+        guard let box, box.width >= Self.minimumSize, box.height >= Self.minimumSize else { return nil }
+        return box
     }
 
     var body: some View {
@@ -1091,7 +1139,21 @@ private struct DrawCoverSheet: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("followProgress")
                 } else {
-                    Text("Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it.")
+                    Group {
+                        if box == nil {
+                            Button("Add a Box in the Middle") {
+                                box = CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3)
+                            }
+                            .accessibilityIdentifier("addCenteredCoverButton")
+                        } else {
+                            Button("Position & size") { showsPosition = true }
+                                .accessibilityIdentifier("coverPositionButton")
+                        }
+                    }
+                    .frame(minHeight: 44)
+                    Text(box == nil
+                         ? "Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it."
+                         : "Drag the box to move it, or its corner to resize it. Then tap Track, and PicStrip follows it through the video, forwards and back.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -1110,18 +1172,25 @@ private struct DrawCoverSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Track") {
-                        guard let box else { return }
+                        guard let followable else { return }
                         following = Task {
-                            await model.addDrawnCover(box, at: time)
+                            await model.addDrawnCover(followable, at: time)
                             if !Task.isCancelled { dismiss() }
                         }
                     }
-                    .disabled(box == nil || following != nil)
+                    .disabled(followable == nil || following != nil)
                     .accessibilityIdentifier("followButton")
                 }
             }
             .task { frame = await model.coveredFrame(at: time) }
             .interactiveDismissDisabled(following != nil)
+            .sheet(isPresented: $showsPosition) {
+                if let box {
+                    RegionPositionView(region: .custom(rect: box)) { _, rect in
+                        self.box = RedactionRegion.clamped(rect, minimumSize: Self.minimumSize)
+                    }
+                }
+            }
         }
     }
 
@@ -1129,31 +1198,110 @@ private struct DrawCoverSheet: View {
         GeometryReader { geometry in
             let size = geometry.size
             ZStack(alignment: .topLeading) {
+                // Dragging anywhere off the box draws a new one in its place.
                 Color.clear
                     .contentShape(Rectangle())
-                    .gesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { drag in
-                                guard following == nil, size.width > 0, size.height > 0 else { return }
-                                func normalised(_ point: CGPoint) -> CGPoint {
-                                    CGPoint(x: min(max(point.x / size.width, 0), 1), y: min(max(point.y / size.height, 0), 1))
-                                }
-                                if drag.translation == .zero || start == nil { start = normalised(drag.startLocation) }
-                                end = normalised(drag.location)
-                            }
-                    )
+                    .gesture(drawGesture(in: size))
                     .accessibilityIdentifier("drawingArea")
-                if let box {
+                if let draft {
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.accentColor.opacity(0.18))
+                        .fill(Color.accentColor.opacity(0.24))
                         .strokeBorder(Color.accentColor, lineWidth: 2)
-                        .frame(width: box.width * size.width, height: box.height * size.height)
-                        .offset(x: box.minX * size.width, y: box.minY * size.height)
+                        .frame(width: draft.width * size.width, height: draft.height * size.height)
+                        .position(x: draft.midX * size.width, y: draft.midY * size.height)
                         .allowsHitTesting(false)
                         .accessibilityHidden(true)
+                } else if let box {
+                    boxView(box, in: size)
+                    resizeHandle(box, in: size)
                 }
             }
+            .coordinateSpace(.named(Self.space))
         }
+    }
+
+    /// The box, outlined like a selected redaction on a photo: drag it to move it.
+    private func boxView(_ box: CGRect, in size: CGSize) -> some View {
+        RoundedRectangle(cornerRadius: 4)
+            .fill(Color.accentColor.opacity(0.18))
+            .overlay {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(Color.white.opacity(0.9), lineWidth: 1)
+                    .padding(-4)
+                RoundedRectangle(cornerRadius: 5)
+                    .strokeBorder(Color.accentColor, lineWidth: 3)
+                    .padding(-3)
+            }
+            .frame(width: box.width * size.width, height: box.height * size.height)
+            .contentShape(Rectangle())
+            .gesture(
+                DragGesture(minimumDistance: 2, coordinateSpace: .named(Self.space))
+                    .onChanged { drag in
+                        guard following == nil, size.width > 0, size.height > 0 else { return }
+                        let start = dragStart ?? box
+                        dragStart = start
+                        self.box = RedactionRegion.moved(start, by: CGSize(
+                            width: drag.translation.width / size.width, height: drag.translation.height / size.height
+                        ))
+                    }
+                    .onEnded { _ in dragStart = nil }
+            )
+            .position(x: box.midX * size.width, y: box.midY * size.height)
+            .accessibilityElement()
+            .accessibilityLabel("Box to cover")
+            .accessibilityHint("Use Position & size to move or resize it.")
+            .accessibilityIdentifier("drawnBox")
+    }
+
+    /// The red dot at the box's bottom-right corner — the photo editor's — to resize it.
+    private func resizeHandle(_ box: CGRect, in size: CGSize) -> some View {
+        Circle()
+            .fill(Color.red)
+            .frame(width: 18, height: 18)
+            .overlay(Circle().strokeBorder(Color.white, lineWidth: 2))
+            .frame(width: 44, height: 44)
+            .contentShape(Circle())
+            .gesture(
+                DragGesture(minimumDistance: 2, coordinateSpace: .named(Self.space))
+                    .onChanged { drag in
+                        guard following == nil, size.width > 0, size.height > 0 else { return }
+                        let start = dragStart ?? box
+                        dragStart = start
+                        let resized = RedactionRegion.resized(start, by: CGSize(
+                            width: drag.translation.width / size.width, height: drag.translation.height / size.height
+                        ))
+                        self.box = RedactionRegion.clamped(resized, minimumSize: Self.minimumSize)
+                    }
+                    .onEnded { _ in dragStart = nil }
+            )
+            .position(x: box.maxX * size.width, y: box.maxY * size.height)
+            .accessibilityLabel("Resize the box")
+            .accessibilityIdentifier("drawnBoxResizeHandle")
+    }
+
+    private func drawGesture(in size: CGSize) -> some Gesture {
+        DragGesture(minimumDistance: 4, coordinateSpace: .named(Self.space))
+            .onChanged { drag in
+                guard following == nil, size.width > 0, size.height > 0 else { return }
+                draft = Self.rect(from: drag.startLocation, to: drag.location, in: size)
+            }
+            .onEnded { drag in
+                defer { draft = nil }
+                guard following == nil, size.width > 0, size.height > 0 else { return }
+                let drawn = Self.rect(from: drag.startLocation, to: drag.location, in: size)
+                // A slip of a finger leaves the box there was.
+                if drawn.width >= Self.minimumSize, drawn.height >= Self.minimumSize { box = drawn }
+            }
+    }
+
+    /// The normalised box between two points on the frame.
+    private static func rect(from start: CGPoint, to end: CGPoint, in size: CGSize) -> CGRect {
+        func normalised(_ point: CGPoint) -> CGPoint {
+            CGPoint(x: min(max(point.x / size.width, 0), 1), y: min(max(point.y / size.height, 0), 1))
+        }
+        let from = normalised(start)
+        let to = normalised(end)
+        return CGRect(x: min(from.x, to.x), y: min(from.y, to.y), width: abs(to.x - from.x), height: abs(to.y - from.y))
     }
 }
 
