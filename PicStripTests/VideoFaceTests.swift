@@ -364,6 +364,7 @@ final class VideoFaceRedactionTests: XCTestCase {
     }
 
     func testVisionFindsAFaceInTheVideo() async throws {
+        try skipUnlessVisionModelsRunHere()
         let movie = try await FaceMovie.make(face: "🧑🏽", fontSize: 220)
         cleanup.append(movie.url)
         let tracks = try await VideoScanner.scan(movie.url) { _ in }.faces
@@ -502,4 +503,13 @@ private final class Glimpses: @unchecked Sendable {
         defer { lock.unlock() }
         return (glimpses, faceCount)
     }
+}
+
+/// On the simulator, Vision's detection and tracking models run only once they
+/// are moved to its CPU, which needs the iOS 27 SDK; the compatibility build
+/// (Xcode 26) cannot, so tests that need the real models skip there.
+func skipUnlessVisionModelsRunHere() throws {
+    #if targetEnvironment(simulator) && !compiler(>=6.4)
+    throw XCTSkip("Vision's models need the iOS 27 SDK to run on the simulator.")
+    #endif
 }
