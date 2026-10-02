@@ -458,6 +458,9 @@ nonisolated struct PIIScanner {
     /// the device needs the iOS 27 SDK (`compiler(>=6.4)`, as in `makeFaceRequest`).
     nonisolated static func onSimulatorCPU<Request: VisionRequest>(_ request: Request) -> Request {
         #if targetEnvironment(simulator) && compiler(>=6.4)
+        // The SDK does not mark it, but the property is new in iOS 27: an iOS 26
+        // simulator stops the app at launch over the missing symbol.
+        guard #available(iOS 27, *) else { return request }
         var request = request
         let cpu = request.supportedComputeStageDevices[.main]?.first {
             if case .cpu = $0 { return true }
