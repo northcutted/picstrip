@@ -62,6 +62,23 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
 nonisolated struct FaceTracking {
     /// How often frames are looked at, in seconds.
     static let sampleInterval = 0.1
+    /// Every this many looks, faces are also looked for in `tiles`.
+    static let tileEvery = 3
+    /// Overlapping 60% tiles of the frame (normalised, top-left origin): a face
+    /// too small to find in the whole frame — someone in the background, a
+    /// photo within the picture — is found in a tile.
+    static let tiles: [CGRect] = [(0.0, 0.0), (0.4, 0.0), (0.0, 0.4), (0.4, 0.4)].map {
+        CGRect(x: $0.0, y: $0.1, width: 0.6, height: 0.6)
+    }
+
+    /// `box`, found in an image cut from `tile`, in the whole frame.  Both
+    /// normalised, top-left origin.
+    static func box(_ box: CGRect, inTile tile: CGRect) -> CGRect {
+        CGRect(
+            x: tile.minX + box.minX * tile.width, y: tile.minY + box.minY * tile.height,
+            width: box.width * tile.width, height: box.height * tile.height
+        )
+    }
     /// Added on every side of a found face, as a share of its size: a face box
     /// stops short of the ears and chin, and the face moves between samples.
     static let padding: CGFloat = 0.15
@@ -146,6 +163,25 @@ nonisolated struct FaceTracking {
         )
     }
 
+    /// The faces in several detectors' results, each face once: a box that is
+    /// the same face as one already kept is dropped.
+    static func union(_ lists: [[CGRect]]) -> [CGRect] {
+        var kept: [CGRect] = []
+        for box in lists.joined() where !kept.contains(where: { isSameFace($0, box) }) {
+            kept.append(box)
+        }
+        return kept
+    }
+
+    /// Two detections of one face overlap well and share a centre.  Two faces
+    /// cheek to cheek — a kiss, a selfie — overlap too, so overlap alone, or
+    /// one centre inside the other box, is not enough.
+    static func isSameFace(_ lhs: CGRect, _ rhs: CGRect) -> Bool {
+        let distance = hypot(lhs.midX - rhs.midX, lhs.midY - rhs.midY)
+        let size = max(lhs.width, lhs.height, rhs.width, rhs.height)
+        return matchScore(lhs, rhs) >= 1.45 || distance < size * 0.25
+    }
+
     /// `box` (top-left origin) grown by `padding`, and by `foreheadPadding` above.
     static func padded(_ box: CGRect) -> CGRect {
         CGRect(
@@ -154,5 +190,52 @@ nonisolated struct FaceTracking {
             width: box.width * (1 + 2 * padding),
             height: box.height * (1 + padding + foreheadPadding)
         )
+    }
+}
+
+// MARK: - HeadEstimate
+
+/// Heads found from body pose, for the faces the face detector misses: turned
+/// to the side, looking down, or away from the camera.  The pose still places
+/// the nose, eyes, ears and neck, and the head is drawn around them.
+nonisolated enum HeadEstimate {
+    /// Joints below this confidence are ignored.
+    static let minimumConfidence: Float = 0.3
+
+    /// A square head box (normalised, top-left origin) around the head joints
+    /// found, sized by how far apart they are and by the neck — or `nil` with
+    /// too little to go on.  Points are normalised with a top-left origin;
+    /// `frameSize` keeps the box square in pixels.
+    static func box(head: [CGPoint], neck: CGPoint?, frameSize: CGSize) -> CGRect? {
+        guard frameSize.width > 0, frameSize.height > 0, !head.isEmpty, head.count >= 2 || neck != nil else { return nil }
+        let points = head.map { CGPoint(x: $0.x * frameSize.width, y: $0.y * frameSize.height) }
+        let center = CGPoint(
+            x: points.map(\.x).reduce(0, +) / CGFloat(points.count),
+            y: points.map(\.y).reduce(0, +) / CGFloat(points.count)
+        )
+        var spread: CGFloat = 0
+        for first in points {
+            for second in points { spread = max(spread, hypot(first.x - second.x, first.y - second.y)) }
+        }
+        let neckLength = neck.map { hypot($0.x * frameSize.width - center.x, $0.y * frameSize.height - center.y) } ?? 0
+        // Ear to ear is about a head's width; centre to neck about two thirds of its height.
+        let side = max(spread * 1.6, neckLength * 1.5)
+        guard side > 0 else { return nil }
+        return CGRect(
+            x: (center.x - side / 2) / frameSize.width,
+            y: (center.y - side * 0.55) / frameSize.height,
+            width: side / frameSize.width,
+            height: side / frameSize.height
+        )
+    }
+
+    /// `faces`, plus the `heads` no face was found in: where both see the same
+    /// person, the face detector's tighter box wins.
+    static func merged(faces: [CGRect], heads: [CGRect]) -> [CGRect] {
+        faces + heads.filter { head in
+            !faces.contains { face in
+                head.contains(CGPoint(x: face.midX, y: face.midY)) || face.contains(CGPoint(x: head.midX, y: head.midY))
+            }
+        }
     }
 }

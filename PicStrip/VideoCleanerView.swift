@@ -26,8 +26,7 @@ struct VideoCleanerView: View {
             Group {
                 switch model.stage {
                 case .loading:
-                    ProgressView("Opening video…")
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    loadingView
                 case .scanning:
                     scanningView
                 case .review:
@@ -61,25 +60,48 @@ struct VideoCleanerView: View {
         }
     }
 
+    // MARK: Opening
+
+    private var loadingView: some View {
+        VStack(spacing: 20) {
+            LoadingCard()
+                .frame(maxHeight: 340)
+            VStack(spacing: 8) {
+                Text("Opening video…")
+                    .font(.headline)
+                if let fraction = model.loadProgress {
+                    ProgressView(value: fraction)
+                } else {
+                    ProgressView(value: 0)
+                }
+                Text("Long videos, and videos kept in iCloud, take a moment to arrive.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("videoLoading")
+        }
+        .padding(32)
+        .frame(maxWidth: 480, maxHeight: .infinity)
+    }
+
     // MARK: Scanning
 
     private var scanningView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "face.dashed")
-                .font(.system(size: 44))
-                .foregroundStyle(.secondary)
-                .accessibilityHidden(true)
-            VStack(spacing: 8) {
-                Text(model.scanProgress.isCooling ? "Paused while the device cools down" : "Looking for faces…")
-                    .font(.headline)
+            ScanGlimpseView(glimpse: model.glimpse)
+                .frame(maxHeight: 340)
+            VStack(spacing: 14) {
+                ScanStatusView(progress: model.scanProgress)
                 ProgressView(value: model.scanProgress.fraction)
                     .accessibilityIdentifier("videoScanProgress")
             }
             if model.isLong { longVideoNote }
-            Button("Skip Face Covering") { model.skipFaces() }
+            Button("Skip Covering") { model.skipCovering() }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("skipFacesButton")
-            Text("Skipping keeps every face visible and only removes the hidden details.")
+            Text("Skipping keeps everything in the video visible and only removes the hidden details.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -89,7 +111,7 @@ struct VideoCleanerView: View {
     }
 
     private var longVideoNote: some View {
-        Label("This is a long video, so finding faces and saving the copy can take several minutes. Keep PicStrip open until it finishes.", systemImage: "clock")
+        Label("This is a long video, so scanning it and saving the copy can take several minutes. Keep PicStrip open until it finishes.", systemImage: "clock")
             .font(.footnote)
             .foregroundStyle(.secondary)
             .accessibilityIdentifier("longVideoNote")
@@ -107,32 +129,52 @@ struct VideoCleanerView: View {
                         .frame(maxWidth: .infinity, maxHeight: 260)
                         .background(.black)
                         .listRowInsets(EdgeInsets())
-                        .accessibilityLabel("Preview with faces covered")
+                        .accessibilityLabel("Preview with covers")
                         .accessibilityIdentifier("videoPreviewStill")
                 } else {
                     VideoPlayer(player: model.player)
                         .frame(height: 260)
                         .listRowInsets(EdgeInsets())
-                        .accessibilityLabel("Preview with faces covered")
+                        .accessibilityLabel("Preview with covers")
                 }
             } footer: {
                 if model.previewStill != nil {
-                    Text("This device cannot play the preview, so it shows one frame. Tap a face to see it covered.")
+                    Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
                 }
             }
 
-            Section {
-                Toggle("Cover faces", isOn: $model.coversFaces)
-                    .accessibilityIdentifier("coverFacesToggle")
-                if model.coversFaces {
-                    ForEach(Array(model.faces.enumerated()), id: \.element.id) { index, face in
-                        faceRow(face, number: index + 1)
+            if !model.faces.isEmpty {
+                Section {
+                    Toggle("Cover faces", isOn: $model.coversFaces)
+                        .accessibilityIdentifier("coverFacesToggle")
+                    if model.coversFaces {
+                        ForEach(Array(model.faces.enumerated()), id: \.element.id) { index, face in
+                            faceRow(face, number: index + 1)
+                        }
                     }
+                } header: {
+                    Text("Faces")
+                } footer: {
+                    Text("Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share.")
                 }
-            } header: {
-                Text("Faces")
-            } footer: {
-                Text("Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share. Text in the video stays visible.")
+            }
+
+            if !model.findingGroups.isEmpty {
+                Section {
+                    Picker("Cover with", selection: $model.textStyle) {
+                        ForEach([RedactionStyle.solid, .pixelate, .blur], id: \.self) { style in
+                            Label(style.displayName, systemImage: style.symbolName).tag(style)
+                        }
+                    }
+                    .accessibilityIdentifier("textStylePicker")
+                    ForEach(Array(model.findingGroups.enumerated()), id: \.element.id) { index, group in
+                        findingRow(group, number: index + 1)
+                    }
+                } header: {
+                    Text("Text and codes")
+                } footer: {
+                    Text("Text is read twice a second, so text that is small, blurred by movement, or on screen only briefly can be missed.")
+                }
             }
 
             if model.isLong {
@@ -189,19 +231,68 @@ struct VideoCleanerView: View {
                 } label: {
                     Label("Emoji…", systemImage: "face.smiling")
                 }
+                Divider()
+                Button {
+                    model.setVisible(true, for: face)
+                } label: {
+                    Label("Leave Visible", systemImage: "eye")
+                }
             } label: {
-                coverLabel(model.cover(for: face))
+                coverLabel(model.isVisible(face) ? nil : model.cover(for: face))
             }
             .accessibilityLabel("Cover for face \(number)")
-            .accessibilityValue(coverName(model.cover(for: face)))
+            .accessibilityValue(coverName(model.isVisible(face) ? nil : model.cover(for: face)))
             .accessibilityIdentifier("faceCoverMenu-\(number)")
+        }
+    }
+
+    private func findingRow(_ group: FindingGroup, number: Int) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                model.seek(to: group)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: group.type.symbolName)
+                        .font(.title3)
+                        .foregroundStyle(.secondary)
+                        .frame(width: 44, height: 44)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(group.type.description)
+                            .foregroundStyle(.primary)
+                        Text(group.snippet)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                        Text(group.tracks.prefix(3).map(timeRange).joined(separator: ", "))
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Shows it in the preview")
+            .accessibilityIdentifier("findingRow-\(number)")
+
+            Toggle(isOn: Binding(
+                get: { model.isCovered(group) },
+                set: { model.setCovered($0, for: group) }
+            )) {
+                Text("Cover \(group.type.description)")
+            }
+            .labelsHidden()
+            .accessibilityIdentifier("findingToggle-\(number)")
         }
     }
 
     @ViewBuilder
     private func faceThumbnail(_ face: FaceTrack) -> some View {
         Group {
-            if let image = model.thumbnails[face.id] {
+            if let image = model.faceThumbnails[face.id] {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()
@@ -216,9 +307,13 @@ struct VideoCleanerView: View {
         .accessibilityHidden(true)
     }
 
-    private func coverLabel(_ cover: FaceCover) -> some View {
+    /// `nil` for a face left visible.
+    private func coverLabel(_ cover: FaceCover?) -> some View {
         HStack(spacing: 4) {
             switch cover {
+            case nil:
+                Image(systemName: "eye")
+                Text("Visible")
             case .blur:
                 Image(systemName: "drop.fill")
                 Text("Blur")
@@ -232,15 +327,24 @@ struct VideoCleanerView: View {
         .frame(minHeight: 44)
     }
 
-    private func coverName(_ cover: FaceCover) -> String {
+    private func coverName(_ cover: FaceCover?) -> String {
         switch cover {
+        case nil: String(localized: "Visible")
         case .blur: String(localized: "Blur")
         case .emoji(let emoji): emoji
         }
     }
 
     private func timeRange(_ face: FaceTrack) -> String {
-        "\(Self.clock(face.start)) – \(Self.clock(max(face.end, face.start)))"
+        Self.timeRange(face.start, face.end)
+    }
+
+    private func timeRange(_ track: FindingTrack) -> String {
+        Self.timeRange(track.start, track.end)
+    }
+
+    static func timeRange(_ start: Double, _ end: Double) -> String {
+        clock(start) == clock(end) ? clock(start) : "\(clock(start)) – \(clock(end))"
     }
 
     static func clock(_ seconds: Double) -> String {
@@ -251,7 +355,7 @@ struct VideoCleanerView: View {
 
     private var savingView: some View {
         VStack(spacing: 16) {
-            Text(model.coversFaces && !model.faces.isEmpty ? "Covering faces and saving a copy…" : "Cleaning video…")
+            Text(model.hasSomethingToCover ? "Covering and saving a copy…" : "Cleaning video…")
                 .font(.headline)
             ProgressView(value: model.saveProgress)
                 .accessibilityIdentifier("videoSaveProgress")
@@ -279,8 +383,16 @@ struct VideoCleanerView: View {
                         symbol: "face.dashed.fill", values: []
                     )
                     .accessibilityIdentifier("facesCoveredRow")
-                } else if model.faces.isEmpty && !model.skipsFaces {
-                    Label("No faces found", systemImage: "face.dashed")
+                }
+                if model.coveredFindingCount > 0 {
+                    resultRow(
+                        title: Text("Text and codes covered: \(model.coveredFindingCount)"),
+                        symbol: "text.viewfinder", values: []
+                    )
+                    .accessibilityIdentifier("textCoveredRow")
+                }
+                if !model.hasSomethingToCover && !model.skipsCovering {
+                    Label("No faces or sensitive text found", systemImage: "face.dashed")
                         .accessibilityIdentifier("noFacesFoundRow")
                 }
                 let kinds = Dictionary(grouping: model.removed, by: \.kind)
@@ -298,13 +410,13 @@ struct VideoCleanerView: View {
                 Text("Removed from the copy")
             }
 
-            if !model.faces.isEmpty {
+            if model.hasSomethingToCover {
                 Section {
                     Button {
                         saveState = .idle
                         model.changeCovers()
                     } label: {
-                        Label("Change Face Covers", systemImage: "face.smiling")
+                        Label("Change What’s Covered", systemImage: "face.smiling")
                     }
                     .accessibilityIdentifier("changeCoversButton")
                 }
@@ -312,8 +424,8 @@ struct VideoCleanerView: View {
 
             Section {
                 Label(
-                    model.coveredFaceCount > 0
-                        ? "Faces were covered automatically. Watch the copy before you share it. Text in the video stays visible."
+                    model.coveredFaceCount + model.coveredFindingCount > 0
+                        ? "Faces and text were covered automatically, and some can be missed. Watch the copy before you share it."
                         : "Faces and text in the video stay visible: PicStrip removes hidden details only.",
                     systemImage: "info.circle"
                 )
@@ -411,6 +523,168 @@ struct VideoCleanerView: View {
         } catch {
             saveState = .failed(String(localized: "Could not save to Photos: \(error.localizedDescription)"))
         }
+    }
+}
+
+// MARK: - ScanGlimpseView
+
+/// The frame being scanned, drawn as the viewfinder draws what it sees: every
+/// line of text read in a hairline, each finding outlined in its risk colour
+/// with its badge — and a scan line sweeping down.
+private struct ScanGlimpseView: View {
+    let glimpse: VideoScanner.Glimpse?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        Group {
+            if let glimpse {
+                Image(decorative: glimpse.image, scale: 1)
+                    .resizable()
+                    .scaledToFit()
+                    .overlay {
+                        GeometryReader { geometry in
+                            let size = geometry.size
+                            ReadingLines(lines: glimpse.lines.map { Self.rect(for: $0, in: size) })
+                            ForEach(Array(glimpse.marks.enumerated()), id: \.offset) { _, mark in
+                                let rect = Self.rect(for: mark.box, in: size).insetBy(dx: -3, dy: -3)
+                                DetectionBox(type: mark.type, confidence: mark.confidence)
+                                    .frame(width: rect.width, height: rect.height)
+                                    .position(x: rect.midX, y: rect.midY)
+                                DetectionBadge(type: mark.type)
+                                    .position(x: rect.minX, y: rect.minY)
+                            }
+                        }
+                    }
+                    .overlay {
+                        if !reduceMotion { ScanSweep() }
+                    }
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .accessibilityElement()
+                    .accessibilityLabel("The frame being scanned")
+            } else {
+                LoadingCard()
+            }
+        }
+        .accessibilityIdentifier("scanGlimpse")
+    }
+
+    static func rect(for box: CGRect, in size: CGSize) -> CGRect {
+        CGRect(x: box.minX * size.width, y: box.minY * size.height, width: box.width * size.width, height: box.height * size.height)
+    }
+}
+
+/// What the scan has found so far, in the viewfinder's status capsule: the
+/// kinds of finding in their risk colours, with counts.
+private struct ScanStatusView: View {
+    let progress: VideoScanner.Progress
+
+    /// Kinds of text shown as symbols before the rest are counted.
+    private static let maximumSymbols = 4
+
+    var body: some View {
+        HStack(spacing: 8) {
+            if progress.isCooling {
+                Image(systemName: "thermometer.high")
+                Text("Paused while the device cools down")
+            } else {
+                Image(systemName: "text.viewfinder")
+                    .symbolEffect(.pulse)
+                Text("Looking for faces and text…")
+            }
+            HStack(spacing: 6) {
+                if progress.faceCount > 0 {
+                    count(progress.faceCount, of: .face)
+                }
+                ForEach(progress.textKinds.prefix(Self.maximumSymbols), id: \.type) { kind in
+                    count(kind.count, of: kind.type)
+                }
+                if progress.textKinds.count > Self.maximumSymbols {
+                    Text(verbatim: "+" + (progress.textKinds.count - Self.maximumSymbols).formatted())
+                        .font(.caption2.weight(.bold))
+                }
+            }
+            .accessibilityHidden(true)
+        }
+        .font(.footnote.weight(.semibold))
+        .padding(.horizontal, 14)
+        .padding(.vertical, 9)
+        .glassEffect(in: .capsule)
+        .animation(.snappy, value: progress.faceCount)
+        .animation(.snappy, value: progress.textCount)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(progress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…"))
+        .accessibilityValue(Text("^[\(progress.faceCount) face](inflect: true) found so far") + Text(verbatim: ", ")
+            + Text("Text and codes found so far: \(progress.textCount)"))
+        .accessibilityAddTraits(.updatesFrequently)
+        .accessibilityIdentifier("scanCounts")
+    }
+
+    private func count(_ count: Int, of type: PIIType) -> some View {
+        HStack(spacing: 2) {
+            Image(systemName: type.symbolName)
+                .foregroundStyle(type.riskLevel.color)
+            Text(count, format: .number)
+                .font(.caption2.weight(.bold))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+        }
+        .transition(.scale.combined(with: .opacity))
+    }
+}
+
+/// Where the frame will be, before the first one arrives: a soft shimmer
+/// across a film frame, so the wait looks like work.
+private struct LoadingCard: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 14)
+            .fill(.fill.tertiary)
+            .aspectRatio(16 / 9, contentMode: .fit)
+            .overlay {
+                if !reduceMotion {
+                    TimelineView(.animation) { context in
+                        let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 1.6) / 1.6
+                        GeometryReader { geometry in
+                            LinearGradient(
+                                colors: [.clear, .white.opacity(0.18), .clear],
+                                startPoint: .leading, endPoint: .trailing
+                            )
+                            .frame(width: geometry.size.width * 0.4)
+                            .offset(x: geometry.size.width * (phase * 1.4 - 0.4))
+                        }
+                    }
+                }
+            }
+            .overlay {
+                Image(systemName: "film")
+                    .font(.system(size: 40, weight: .light))
+                    .foregroundStyle(.secondary)
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .accessibilityHidden(true)
+    }
+}
+
+/// A soft line moving down the frame, two seconds a pass.  Driven by the
+/// timeline, not a repeating animation, so nothing else on screen is caught up
+/// in it.
+private struct ScanSweep: View {
+    var body: some View {
+        TimelineView(.animation) { context in
+            let phase = context.date.timeIntervalSinceReferenceDate.truncatingRemainder(dividingBy: 2) / 2
+            GeometryReader { geometry in
+                LinearGradient(
+                    colors: [.clear, Color.accentColor.opacity(0.35), .clear],
+                    startPoint: .top, endPoint: .bottom
+                )
+                .frame(height: geometry.size.height * 0.18)
+                .offset(y: geometry.size.height * (phase * 1.18 - 0.18))
+            }
+        }
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
     }
 }
 

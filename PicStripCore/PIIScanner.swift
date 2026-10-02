@@ -1,3 +1,4 @@
+import CoreML
 import CoreText
 import CoreVideo
 import Foundation
@@ -131,6 +132,23 @@ nonisolated struct LiveDetection: Sendable, Equatable {
     let boundingBox: CGRect
     /// The same heuristic as `DetectedInstance.score`; show it as a `ConfidenceLevel`.
     let score: Double
+}
+
+/// One finding in a video frame: like `LiveDetection`, plus what it says, for
+/// the video screen's list.  Kept only while that screen is open.
+nonisolated struct FrameFinding: Sendable, Equatable {
+    let type: PIIType
+    /// Normalised, top-left origin.
+    let boundingBox: CGRect
+    let score: Double
+    let snippet: String
+}
+
+/// What `PIIScanner.frameFindings` read in one video frame.
+nonisolated struct FrameRead: Sendable, Equatable {
+    var findings: [FrameFinding] = []
+    /// Every line of text Vision read, sensitive or not.  Normalised, top-left origin.
+    var lines: [CGRect] = []
 }
 
 /// What `PIIScanner.liveScan` found in one camera frame.
@@ -396,6 +414,63 @@ nonisolated struct PIIScanner {
             }
         }
         return scan
+    }
+
+    /// Text, codes and Always Cover words in one upright video frame: the
+    /// viewfinder's pass without faces (the video scanner looks for those more
+    /// often), keeping each finding's snippet for the list.
+    @concurrent
+    static func frameFindings(in pixelBuffer: CVPixelBuffer, alwaysCover: [String] = []) async -> FrameRead {
+        let requests: [any VisionRequest] = [
+            makeTextRequest(level: .accurate),
+            onSimulatorCPU(DetectBarcodesRequest())
+        ]
+        var observations: [RecognizedTextObservation] = []
+        var findings: [FrameFinding] = []
+        for await result in ImageRequestHandler(pixelBuffer).performAll(requests) {
+            switch result {
+            case .recognizeText(_, let found):
+                observations = found
+            case .detectBarcodes(_, let found):
+                findings += found.map {
+                    FrameFinding(
+                        type: .barcode, boundingBox: swiftUIBox(from: $0.boundingBox.cgRect),
+                        score: visualDetectionScore,
+                        snippet: snippet($0.payloadString ?? String(localized: "Encoded barcode"), max: 60)
+                    )
+                }
+            default:
+                break
+            }
+        }
+        let textFindings = (try? detectPII(in: observations)) ?? []
+        let userFindings = AlwaysCoverMatcher.results(terms: alwaysCover, lines: scannedLines(from: observations))
+        for finding in textFindings + userFindings where finding.type.isRedactedByDefault && finding.type != .face {
+            findings += finding.instances.map {
+                FrameFinding(type: finding.type, boundingBox: $0.boundingBox, score: $0.score, snippet: $0.snippet)
+            }
+        }
+        return FrameRead(findings: findings, lines: observations.map { swiftUIBox(from: $0.boundingBox.cgRect) })
+    }
+
+    /// `request` as it can run here.  The simulator's GPU cannot create the
+    /// inference context of Vision's detection models; its CPU can.  Choosing
+    /// the device needs the iOS 27 SDK (`compiler(>=6.4)`, as in `makeFaceRequest`).
+    nonisolated static func onSimulatorCPU<Request: VisionRequest>(_ request: Request) -> Request {
+        #if targetEnvironment(simulator) && compiler(>=6.4)
+        // The SDK does not mark it, but the property is new in iOS 27: an iOS 26
+        // simulator stops the app at launch over the missing symbol.
+        guard #available(iOS 27, *) else { return request }
+        var request = request
+        let cpu = request.supportedComputeStageDevices[.main]?.first {
+            if case .cpu = $0 { return true }
+            return false
+        }
+        if let cpu { request.setComputeDevice(cpu, for: .main) }
+        return request
+        #else
+        return request
+        #endif
     }
 
     /// Highest score first, alphabetical tiebreak.

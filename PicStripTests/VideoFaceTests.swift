@@ -65,6 +65,84 @@ final class FaceTrackingTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(track.coverBox(at: 1.5)).midX, FaceTracking.padded(box(0.3)).midX, accuracy: 0.0001)
     }
 
+    func testAHeadIsDrawnAroundTheJointsOfATurnedFace() throws {
+        // A profile: nose, one eye and one ear, then the neck below — in a portrait frame.
+        let size = CGSize(width: 1080, height: 1920)
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint { CGPoint(x: x / size.width, y: y / size.height) }
+        let head = try XCTUnwrap(HeadEstimate.box(
+            head: [point(500, 600), point(540, 580), point(620, 590)],
+            neck: point(600, 720),
+            frameSize: size
+        ))
+        let pixels = CGRect(x: head.minX * size.width, y: head.minY * size.height,
+                            width: head.width * size.width, height: head.height * size.height)
+        XCTAssertEqual(pixels.width, pixels.height, accuracy: 0.5, "Square in pixels, whatever the frame.")
+        XCTAssertGreaterThan(pixels.width, 180, "About a head: wider than nose to ear, taller than to the neck.")
+        XCTAssertLessThan(pixels.width, 320)
+        for joint in [CGPoint(x: 500, y: 600), CGPoint(x: 620, y: 590)] {
+            XCTAssertTrue(pixels.contains(joint), "\(joint) is inside \(pixels)")
+        }
+        XCTAssertNil(HeadEstimate.box(head: [point(500, 600)], neck: nil, frameSize: size), "One point is not a head.")
+    }
+
+    func testAHeadOnlyAddsWhatTheFaceDetectorMissed() {
+        let face = CGRect(x: 0.4, y: 0.2, width: 0.1, height: 0.06)
+        let sameHead = CGRect(x: 0.38, y: 0.17, width: 0.15, height: 0.09)
+        let otherHead = CGRect(x: 0.7, y: 0.3, width: 0.12, height: 0.07)
+        XCTAssertEqual(HeadEstimate.merged(faces: [face], heads: [sameHead, otherHead]), [face, otherHead])
+    }
+
+    func testTwoDetectorsFindEachFaceOnce() {
+        let shared = CGRect(x: 0.2, y: 0.2, width: 0.1, height: 0.1)
+        let sharedAgain = CGRect(x: 0.21, y: 0.19, width: 0.1, height: 0.11)
+        let onlyNewest = CGRect(x: 0.6, y: 0.2, width: 0.1, height: 0.1)
+        let onlyOlder = CGRect(x: 0.4, y: 0.7, width: 0.08, height: 0.08)
+        XCTAssertEqual(FaceTracking.union([[shared, onlyNewest], [sharedAgain, onlyOlder]]), [shared, onlyNewest, onlyOlder])
+        let neighbour = CGRect(x: 0.31, y: 0.2, width: 0.1, height: 0.1)
+        XCTAssertEqual(FaceTracking.union([[shared], [neighbour]]).count, 2, "Two people side by side stay two.")
+        // A kiss, from the collage that showed it: the second face's centre is
+        // inside the first face's box.
+        let kisser = CGRect(x: 563, y: 551, width: 112, height: 112).applying(CGAffineTransform(scaleX: 1 / 1280, y: 1 / 1280))
+        let kissed = CGRect(x: 614, y: 598, width: 81, height: 81).applying(CGAffineTransform(scaleX: 1 / 1280, y: 1 / 1280))
+        XCTAssertEqual(FaceTracking.union([[kisser], [kissed]]).count, 2, "Cheek to cheek is still two faces.")
+    }
+
+    func testAFaceFoundInATileLandsWhereItIsInTheFrame() {
+        // The bottom-right tile, top-left origin: x 0.4…1.0, y 0.4…1.0.
+        let tile = CGRect(x: 0.4, y: 0.4, width: 0.6, height: 0.6)
+        let inTile = CGRect(x: 0.5, y: 0.5, width: 0.1, height: 0.1)
+        let inFrame = FaceTracking.box(inTile, inTile: tile)
+        XCTAssertEqual(inFrame.minX, 0.7, accuracy: 1e-9)
+        XCTAssertEqual(inFrame.minY, 0.7, accuracy: 1e-9)
+        XCTAssertEqual(inFrame.width, 0.06, accuracy: 1e-9)
+    }
+
+    func testATileIsCutFromTheRightPlace() throws {
+        // A frame white on top, black below: the bottom tiles are mostly black.
+        let size = CGSize(width: 200, height: 100)
+        var made: CVPixelBuffer?
+        CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA, nil, &made)
+        let pixels = try XCTUnwrap(made)
+        CVPixelBufferLockBaseAddress(pixels, [])
+        let base = try XCTUnwrap(CVPixelBufferGetBaseAddress(pixels)).assumingMemoryBound(to: UInt8.self)
+        let rowBytes = CVPixelBufferGetBytesPerRow(pixels)
+        for y in 0..<Int(size.height) {
+            memset(base + y * rowBytes, y < 50 ? 255 : 0, rowBytes)
+        }
+        CVPixelBufferUnlockBaseAddress(pixels, [])
+
+        let shrinker = FrameShrinker()
+        let bottom = try XCTUnwrap(shrinker.crop(pixels, to: CGRect(x: 0.4, y: 0.4, width: 0.6, height: 0.6)))
+        XCTAssertEqual(CVPixelBufferGetWidth(bottom), 120)
+        XCTAssertEqual(CVPixelBufferGetHeight(bottom), 60)
+        CVPixelBufferLockBaseAddress(bottom, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(bottom, .readOnly) }
+        let cut = try XCTUnwrap(CVPixelBufferGetBaseAddress(bottom)).assumingMemoryBound(to: UInt8.self)
+        let cutRow = CVPixelBufferGetBytesPerRow(bottom)
+        XCTAssertGreaterThan(cut[0], 200, "Its top rows (frame rows 40…49) are white.")
+        XCTAssertLessThan(cut[(59 * cutRow)], 50, "Its bottom row (frame row 99) is black.")
+    }
+
     func testFarApartFacesDoNotMatch() {
         XCTAssertEqual(FaceTracking.matchScore(box(0.0), box(0.7)), 0)
         XCTAssertGreaterThan(FaceTracking.matchScore(box(0.2), box(0.25)), 1, "Overlapping boxes beat near ones.")
@@ -171,7 +249,7 @@ struct FaceMovie {
 /// Stands in for Vision: the box around the frame's yellow pixels, which in a
 /// `FaceMovie` are 👨's face and hair.  Runs on the same upright frames.
 enum YellowFaceDetector {
-    static let detect: VideoFaceScanner.Detector = { pixels in
+    static let detect: VideoScanner.FaceDetector = { pixels in
         CVPixelBufferLockBaseAddress(pixels, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(pixels, .readOnly) }
         guard let base = CVPixelBufferGetBaseAddress(pixels) else { return [] }
@@ -262,10 +340,11 @@ final class VideoFaceRedactionTests: XCTestCase {
 
     func testTheFaceIsFoundAndFollowed() async throws {
         let movie = try await movie()
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertEqual(tracks.count, 1, "One face, one track: \(tracks.map(\.samples.count))")
         let track = try XCTUnwrap(tracks.first)
         XCTAssertGreaterThanOrEqual(track.samples.count, 15, "About ten looks a second over two seconds.")
+        XCTAssertLessThanOrEqual(track.samples.count, 22, "Not every frame of the 30 fps movie: ten a second.")
         for sample in track.samples {
             let expected = movie.faceCenter(at: sample.time)
             XCTAssertEqual(sample.box.midX, expected.x, accuracy: 0.06, "at \(sample.time)")
@@ -275,7 +354,7 @@ final class VideoFaceRedactionTests: XCTestCase {
 
     func testAPortraitVideosFaceIsFoundWhereItIsShown() async throws {
         let movie = try await movie(rotated: true)
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         let track = try XCTUnwrap(tracks.max { $0.samples.count < $1.samples.count })
         XCTAssertGreaterThanOrEqual(track.samples.count, 15)
         let sample = try XCTUnwrap(track.representativeSample)
@@ -288,26 +367,70 @@ final class VideoFaceRedactionTests: XCTestCase {
         try skipUnlessVisionModelsRunHere()
         let movie = try await FaceMovie.make(face: "🧑🏽", fontSize: 220)
         cleanup.append(movie.url)
-        let tracks = try await VideoFaceScanner.scan(movie.url) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url) { _ in }.faces
         let track = try XCTUnwrap(tracks.max { $0.samples.count < $1.samples.count }, "Vision found no face.")
         XCTAssertGreaterThanOrEqual(track.samples.count, 10)
         let sample = try XCTUnwrap(track.representativeSample)
         XCTAssertEqual(sample.box.midX, movie.faceCenter(at: sample.time).x, accuracy: 0.1)
     }
 
+    func testTheScanShowsItsWorkAsItGoes() async throws {
+        let movie = try await movie()
+        let seen = Glimpses()
+        let scan = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { progress in
+            seen.add(progress)
+        }
+        let (glimpses, lastFaceCount) = seen.summary
+        XCTAssertGreaterThanOrEqual(glimpses.count, 1, "At least one look at the frame being scanned.")
+        XCTAssertTrue(glimpses.contains { $0.marks.contains { $0.type == .face } }, "The face is outlined in it.")
+        XCTAssertEqual(lastFaceCount, scan.faces.count)
+        if let glimpse = glimpses.first {
+            XCTAssertLessThanOrEqual(max(glimpse.image.width, glimpse.image.height), 480, "Small: it is only for show.")
+        }
+    }
+
+    func testCoversStackInOrderAndManyFacesStillRender() async throws {
+        // Layers combine in pairs, but the later layer is still on top.
+        let red = CIImage(color: .red).cropped(to: CGRect(x: 0, y: 0, width: 10, height: 10))
+        let blue = CIImage(color: .blue).cropped(to: CGRect(x: 5, y: 0, width: 10, height: 10))
+        let green = CIImage(color: .green).cropped(to: CGRect(x: 8, y: 0, width: 10, height: 10))
+        let stack = try XCTUnwrap(VideoRedactor.stacked([red, blue, green, red.transformed(by: .init(translationX: 30, y: 0))]))
+        let context = CIContext()
+        var pixel = [UInt8](repeating: 0, count: 4)
+        context.render(stack, toBitmap: &pixel, rowBytes: 4, bounds: CGRect(x: 9, y: 1, width: 1, height: 1), format: .RGBA8, colorSpace: nil)
+        XCTAssertGreaterThan(pixel[1], 200, "Green, the last of the three overlapping, is on top: \(pixel)")
+        XCTAssertNil(VideoRedactor.stacked([]))
+
+        // A crowd: a hundred faces in one frame render, off the main thread,
+        // with every face covered.
+        let frame = CIImage(color: CIColor(red: 0.3, green: 0.6, blue: 0.9)).cropped(to: CGRect(x: 0, y: 0, width: 1280, height: 1280))
+            .composited(over: CIImage(color: .white))
+            .cropped(to: CGRect(x: 0, y: 0, width: 1280, height: 1280))
+        let faces = (0..<100).map { index in
+            FaceTrack(id: index, samples: [.init(time: 0, box: CGRect(x: CGFloat(index % 10) * 0.1 + 0.02, y: CGFloat(index / 10) * 0.1 + 0.02, width: 0.05, height: 0.05))])
+        }
+        let plan = VideoRedactor.Plan(faces: faces.map { .init(track: $0, style: .emoji("🙂")) })
+        let glyphs = ["🙂": try XCTUnwrap(VideoRedactor.glyphImage("🙂"))]
+        let rendered = await Task.detached {
+            let image = VideoRedactor.render(frame, at: 0, plan: plan, glyphs: glyphs)
+            return CIContext().createCGImage(image, from: image.extent)
+        }.value
+        XCTAssertNotNil(rendered)
+    }
+
     func testABlankVideoHasNoFaces() async throws {
         let movie = try await FaceMovie.make(seconds: 1, face: " ")
         cleanup.append(movie.url)
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertTrue(tracks.isEmpty)
     }
 
     private func coveredCopy(of movie: FaceMovie, style: FaceCover) async throws -> URL {
-        let tracks = try await VideoFaceScanner.scan(movie.url, detector: YellowFaceDetector.detect) { _ in }
+        let tracks = try await VideoScanner.scan(movie.url, faceDetector: YellowFaceDetector.detect) { _ in }.faces
         XCTAssertFalse(tracks.isEmpty)
-        let composition = try await VideoFaceRedactor.composition(
+        let composition = try await VideoRedactor.composition(
             for: AVURLAsset(url: movie.url),
-            covers: tracks.map { VideoFaceRedactor.Cover(track: $0, style: style) }
+            plan: VideoRedactor.Plan(faces: tracks.map { VideoRedactor.FaceCoverage(track: $0, style: style) })
         )
         let output = scratchURL()
         try await VideoCleaner.clean(movie.url, to: output, videoComposition: composition)
@@ -360,6 +483,26 @@ final class VideoFaceRedactionTests: XCTestCase {
         XCTAssertTrue(left.allSatisfy { $0.kind == .other }, "Left: \(left)")
     }
 
+}
+
+/// Collects the scanner's progress reports, which arrive off the main actor.
+private final class Glimpses: @unchecked Sendable {
+    private let lock = NSLock()
+    private var glimpses: [VideoScanner.Glimpse] = []
+    private var faceCount = 0
+
+    func add(_ progress: VideoScanner.Progress) {
+        lock.lock()
+        defer { lock.unlock() }
+        if let glimpse = progress.glimpse { glimpses.append(glimpse) }
+        faceCount = progress.faceCount
+    }
+
+    var summary: ([VideoScanner.Glimpse], Int) {
+        lock.lock()
+        defer { lock.unlock() }
+        return (glimpses, faceCount)
+    }
 }
 
 /// On the simulator, Vision's detection and tracking models run only once they

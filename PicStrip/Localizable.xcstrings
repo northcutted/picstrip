@@ -8373,103 +8373,103 @@
         }
       }
     },
-    "Change Face Covers" : {
-      "comment" : "Button on the cleaned-video screen: go back and change how each face is covered.",
+    "Change What’s Covered" : {
+      "comment" : "Button on the cleaned-video screen: go back and change which faces, text and codes are covered, and how.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تغيير حجب الوجوه"
+            "value" : "تغيير ما يُحجب"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abdeckung der Gesichter ändern"
+            "value" : "Ändern, was verdeckt wird"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cambiar la censura de las caras"
+            "value" : "Cambiar lo que se censura"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cambiar la censura de las caras"
+            "value" : "Cambiar lo que se censura"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Modifier le masquage des visages"
+            "value" : "Modifier ce qui est masqué"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cambia la copertura dei volti"
+            "value" : "Cambia cosa coprire"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔のマスクを変更"
+            "value" : "マスクする内容を変更"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴 가리기 변경"
+            "value" : "가릴 항목 변경"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afdekking van gezichten wijzigen"
+            "value" : "Wijzigen wat wordt afgedekt"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zmień zamazanie twarzy"
+            "value" : "Zmień, co jest zamazane"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alterar a ocultação dos rostos"
+            "value" : "Alterar o que é ocultado"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Alterar a ocultação dos rostos"
+            "value" : "Alterar o que é ocultado"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ändra maskering av ansikten"
+            "value" : "Ändra vad som maskeras"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüz karartmalarını değiştir"
+            "value" : "Karartılanları değiştir"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更改面孔遮盖"
+            "value" : "更改遮盖内容"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "更改臉孔遮蓋"
+            "value" : "更改遮蓋內容"
           }
         }
       }
@@ -12660,6 +12660,107 @@
         }
       }
     },
+    "Cover %@" : {
+      "comment" : "VoiceOver label of the switch that covers one finding in a video. %@ is its kind, e.g. “Email Address”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجب %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ verdecken"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurar %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquer %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copri %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@をマスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ 가리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ afdekken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamazuj: %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultar %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskera %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ öğesini karart"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遮盖%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "遮蓋%@"
+          }
+        }
+      }
+    },
     "Cover faces" : {
       "comment" : "Toggle on the video screen: cover the faces found in the video.",
       "localizations" : {
@@ -12862,103 +12963,204 @@
         }
       }
     },
-    "Covering faces and saving a copy…" : {
-      "comment" : "Progress title while the video copy with covered faces is written.",
+    "Cover with" : {
+      "comment" : "Picker label: the style that covers all text and codes in a video (Solid, Pixelate, Blur).",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "جارٍ حجب الوجوه وحفظ نسخة…"
+            "value" : "الحجب بواسطة"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gesichter werden verdeckt und eine Kopie wird gesichert…"
+            "value" : "Verdecken mit"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Censurando caras y guardando una copia…"
+            "value" : "Censurar con"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Censurando caras y guardando una copia…"
+            "value" : "Censurar con"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Masquage des visages et enregistrement d’une copie…"
+            "value" : "Masquer avec"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copertura dei volti e salvataggio di una copia…"
+            "value" : "Copri con"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔をマスクしてコピーを保存中…"
+            "value" : "マスクの方法"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴을 가리고 사본을 저장하는 중…"
+            "value" : "가리기 방식"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gezichten afdekken en kopie bewaren…"
+            "value" : "Afdekken met"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zamazywanie twarzy i zachowywanie kopii…"
+            "value" : "Zamazuj stylem"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocultando rostos e salvando uma cópia…"
+            "value" : "Ocultar com"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A ocultar rostos e a guardar uma cópia…"
+            "value" : "Ocultar com"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maskerar ansikten och sparar en kopia…"
+            "value" : "Maskera med"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüzler karartılıyor ve kopya kaydediliyor…"
+            "value" : "Karartma biçimi"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在遮盖面孔并存储副本…"
+            "value" : "遮盖方式"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在遮蓋臉孔並儲存拷貝…"
+            "value" : "遮蓋方式"
+          }
+        }
+      }
+    },
+    "Covering and saving a copy…" : {
+      "comment" : "Progress title while the video copy with covers is written.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ الحجب وحفظ نسخة…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird verdeckt und als Kopie gesichert…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurando y guardando una copia…"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censurando y guardando una copia…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquage et enregistrement d’une copie…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copertura e salvataggio di una copia…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスクしてコピーを保存中…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가리고 사본을 저장하는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afdekken en kopie bewaren…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamazywanie i zachowywanie kopii…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultando e salvando uma cópia…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A ocultar e a guardar uma cópia…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskerar och sparar en kopia…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartılıyor ve kopya kaydediliyor…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在遮盖并存储副本…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在遮蓋並儲存拷貝…"
           }
         }
       }
@@ -21210,204 +21412,204 @@
         }
       }
     },
-    "Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share. Text in the video stays visible." : {
+    "Faces and text were covered automatically, and some can be missed. Watch the copy before you share it." : {
+      "comment" : "Note on the cleaned-video screen when something was covered.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حُجبت الوجوه والنصوص تلقائيًا، وقد يفوت بعضها. شاهد النسخة قبل مشاركتها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichter und Text wurden automatisch verdeckt, dabei kann etwas übersehen werden. Sieh dir die Kopie an, bevor du sie teilst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las caras y el texto se han censurado automáticamente y algo puede pasarse por alto. Mira la copia antes de compartirla."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las caras y el texto se censuraron automáticamente y algo puede pasarse por alto. Mira la copia antes de compartirla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les visages et le texte ont été masqués automatiquement, et certains peuvent avoir été manqués. Regardez la copie avant de la partager."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volti e testo sono stati coperti automaticamente e qualcosa può sfuggire. Guarda la copia prima di condividerla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顔と文字は自動的にマスクされましたが、見逃しがある場合があります。共有する前にコピーを確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "얼굴과 텍스트가 자동으로 가려졌지만 일부를 놓쳤을 수 있습니다. 공유하기 전에 사본을 확인하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gezichten en tekst zijn automatisch afgedekt en er kan iets zijn gemist. Bekijk de kopie voordat je deze deelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Twarze i tekst zostały zamazane automatycznie, a coś mogło zostać pominięte. Obejrzyj kopię przed udostępnieniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rostos e textos foram ocultados automaticamente, e algo pode ter passado despercebido. Assista à cópia antes de compartilhá-la."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Os rostos e o texto foram ocultados automaticamente, e algo pode ter escapado. Veja a cópia antes de a partilhar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ansikten och text maskerades automatiskt, och något kan ha missats. Titta på kopian innan du delar den."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yüzler ve metinler otomatik olarak karartıldı; bazıları gözden kaçmış olabilir. Paylaşmadan önce kopyayı izleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "面孔和文字已自动遮盖，但可能有遗漏。共享前请先观看副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "臉孔和文字已自動遮蓋，但可能有遺漏。分享前請先觀看拷貝。"
+          }
+        }
+      }
+    },
+    "Faces are found automatically and one can be missed — small, turned away, or on screen for a moment. Watch the preview before you share." : {
       "comment" : "Footer under the list of faces found in a video.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يُعثر على الوجوه تلقائيًا وقد يفوت أحدها — إن كان صغيرًا أو مُشاحًا أو ظهر للحظة. شاهد المعاينة قبل المشاركة. يبقى النص في الفيديو ظاهرًا."
+            "value" : "يُعثر على الوجوه تلقائيًا وقد يفوت أحدها — إن كان صغيرًا أو مُشاحًا أو ظهر للحظة. شاهد المعاينة قبل المشاركة."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gesichter werden automatisch gefunden, und eines kann übersehen werden – wenn es klein ist, abgewandt oder nur kurz zu sehen. Sieh dir die Vorschau an, bevor du teilst. Text im Video bleibt sichtbar."
+            "value" : "Gesichter werden automatisch gefunden, und eines kann übersehen werden – wenn es klein ist, abgewandt oder nur kurz zu sehen. Sieh dir die Vorschau an, bevor du teilst."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las caras se detectan automáticamente y alguna puede pasarse por alto: si es pequeña, está de lado o aparece un instante. Mira la vista previa antes de compartir. El texto del vídeo sigue visible."
+            "value" : "Las caras se detectan automáticamente y alguna puede pasarse por alto: si es pequeña, está de lado o aparece un instante. Mira la vista previa antes de compartir."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Las caras se detectan automáticamente y alguna puede pasarse por alto: si es pequeña, está de lado o aparece un instante. Mira la vista previa antes de compartir. El texto del video sigue visible."
+            "value" : "Las caras se detectan automáticamente y alguna puede pasarse por alto: si es pequeña, está de lado o aparece un instante. Mira la vista previa antes de compartir."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Les visages sont détectés automatiquement et l’un d’eux peut être manqué : petit, de profil ou visible un instant. Regardez l’aperçu avant de partager. Le texte de la vidéo reste visible."
+            "value" : "Les visages sont détectés automatiquement et l’un d’eux peut être manqué : petit, de profil ou visible un instant. Regardez l’aperçu avant de partager."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "I volti vengono trovati automaticamente e qualcuno può sfuggire: se è piccolo, girato o visibile solo per un istante. Guarda l’anteprima prima di condividere. Il testo nel video resta visibile."
+            "value" : "I volti vengono trovati automaticamente e qualcuno può sfuggire: se è piccolo, girato o visibile solo per un istante. Guarda l’anteprima prima di condividere."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔は自動的に検出されますが、小さい顔、横を向いた顔、一瞬だけ映る顔は見逃されることがあります。共有する前にプレビューを確認してください。ビデオ内の文字はそのまま見えます。"
+            "value" : "顔は自動的に検出されますが、小さい顔、横を向いた顔、一瞬だけ映る顔は見逃されることがあります。共有する前にプレビューを確認してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴은 자동으로 찾으며, 작거나 고개를 돌렸거나 잠깐만 보이는 얼굴은 놓칠 수 있습니다. 공유하기 전에 미리보기를 확인하십시오. 비디오 속 텍스트는 그대로 보입니다."
+            "value" : "얼굴은 자동으로 찾으며, 작거나 고개를 돌렸거나 잠깐만 보이는 얼굴은 놓칠 수 있습니다. 공유하기 전에 미리보기를 확인하십시오."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gezichten worden automatisch gevonden en er kan er een worden gemist: klein, afgewend of maar even in beeld. Bekijk de voorvertoning voordat je deelt. Tekst in de video blijft zichtbaar."
+            "value" : "Gezichten worden automatisch gevonden en er kan er een worden gemist: klein, afgewend of maar even in beeld. Bekijk de voorvertoning voordat je deelt."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Twarze są wykrywane automatycznie i któraś może zostać pominięta — mała, odwrócona lub widoczna tylko przez chwilę. Obejrzyj podgląd przed udostępnieniem. Tekst w wideo pozostaje widoczny."
+            "value" : "Twarze są wykrywane automatycznie i któraś może zostać pominięta — mała, odwrócona lub widoczna tylko przez chwilę. Obejrzyj podgląd przed udostępnieniem."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os rostos são encontrados automaticamente e algum pode passar despercebido: pequeno, virado ou na tela só por um instante. Assista à pré-visualização antes de compartilhar. O texto no vídeo continua visível."
+            "value" : "Os rostos são encontrados automaticamente e algum pode passar despercebido: pequeno, virado ou na tela só por um instante. Assista à pré-visualização antes de compartilhar."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Os rostos são encontrados automaticamente e algum pode escapar: pequeno, de lado ou no ecrã só por um instante. Veja a pré-visualização antes de partilhar. O texto no vídeo continua visível."
+            "value" : "Os rostos são encontrados automaticamente e algum pode escapar: pequeno, de lado ou no ecrã só por um instante. Veja a pré-visualização antes de partilhar."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ansikten hittas automatiskt och något kan missas – litet, bortvänt eller bara i bild ett ögonblick. Titta på förhandsvisningen innan du delar. Text i videon syns fortfarande."
+            "value" : "Ansikten hittas automatiskt och något kan missas – litet, bortvänt eller bara i bild ett ögonblick. Titta på förhandsvisningen innan du delar."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüzler otomatik olarak bulunur ve küçük, başka yöne dönük ya da yalnızca bir an görünen bir yüz gözden kaçabilir. Paylaşmadan önce önizlemeyi izleyin. Videodaki metinler görünür kalır."
+            "value" : "Yüzler otomatik olarak bulunur ve küçük, başka yöne dönük ya da yalnızca bir an görünen bir yüz gözden kaçabilir. Paylaşmadan önce önizlemeyi izleyin."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "面孔会被自动找到，但可能会漏掉较小、侧转或只出现片刻的面孔。共享前请先观看预览。视频中的文字仍然可见。"
+            "value" : "面孔会被自动找到，但可能会漏掉较小、侧转或只出现片刻的面孔。共享前请先观看预览。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "臉孔會自動找出，但可能會漏掉較小、轉向一側或只出現片刻的臉孔。分享前請先觀看預覽。影片中的文字仍然可見。"
-          }
-        }
-      }
-    },
-    "Faces were covered automatically. Watch the copy before you share it. Text in the video stays visible." : {
-      "comment" : "Note on the cleaned-video screen when faces were covered.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "حُجبت الوجوه تلقائيًا. شاهد النسخة قبل مشاركتها. يبقى النص في الفيديو ظاهرًا."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gesichter wurden automatisch verdeckt. Sieh dir die Kopie an, bevor du sie teilst. Text im Video bleibt sichtbar."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las caras se han censurado automáticamente. Mira la copia antes de compartirla. El texto del vídeo sigue visible."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Las caras se censuraron automáticamente. Mira la copia antes de compartirla. El texto del video sigue visible."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les visages ont été masqués automatiquement. Regardez la copie avant de la partager. Le texte de la vidéo reste visible."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "I volti sono stati coperti automaticamente. Guarda la copia prima di condividerla. Il testo nel video resta visibile."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顔は自動的にマスクされました。共有する前にコピーを確認してください。ビデオ内の文字はそのまま見えます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "얼굴이 자동으로 가려졌습니다. 공유하기 전에 사본을 확인하십시오. 비디오 속 텍스트는 그대로 보입니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gezichten zijn automatisch afgedekt. Bekijk de kopie voordat je deze deelt. Tekst in de video blijft zichtbaar."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Twarze zostały zamazane automatycznie. Obejrzyj kopię przed udostępnieniem. Tekst w wideo pozostaje widoczny."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Os rostos foram ocultados automaticamente. Assista à cópia antes de compartilhá-la. O texto no vídeo continua visível."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Os rostos foram ocultados automaticamente. Veja a cópia antes de a partilhar. O texto no vídeo continua visível."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ansikten maskerades automatiskt. Titta på kopian innan du delar den. Text i videon syns fortfarande."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Yüzler otomatik olarak karartıldı. Paylaşmadan önce kopyayı izleyin. Videodaki metinler görünür kalır."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "面孔已自动遮盖。共享前请先观看副本。视频中的文字仍然可见。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "臉孔已自動遮蓋。分享前請先觀看拷貝。影片中的文字仍然可見。"
+            "value" : "臉孔會自動找出，但可能會漏掉較小、轉向一側或只出現片刻的臉孔。分享前請先觀看預覽。"
           }
         }
       }
@@ -26259,6 +26461,107 @@
         }
       }
     },
+    "Leave Visible" : {
+      "comment" : "Menu item: do not cover this face in the video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إبقاؤه ظاهرًا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichtbar lassen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar visible"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dejar visible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Laisser visible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lascia visibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示したままにする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보이게 두기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zichtbaar laten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pozostaw widoczną"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixar visível"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deixar visível"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lämna synligt"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görünür bırak"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持可见"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "保持可見"
+          }
+        }
+      }
+    },
     "Leave the domain visible" : {
       "comment" : "Toggle for an email finding: cover only the name before the @ and leave the domain readable.",
       "localizations" : {
@@ -27375,103 +27678,204 @@
         }
       }
     },
-    "Looking for faces…" : {
-      "comment" : "Progress title while a video is scanned for faces.",
+    "Long videos, and videos kept in iCloud, take a moment to arrive." : {
+      "comment" : "Note while a picked video is being handed over by Photos, before scanning starts.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "جارٍ البحث عن الوجوه…"
+            "value" : "تستغرق الفيديوهات الطويلة والفيديوهات المحفوظة في iCloud لحظة حتى تصل."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gesichter werden gesucht…"
+            "value" : "Lange Videos und Videos in iCloud brauchen einen Moment, bis sie da sind."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscando caras…"
+            "value" : "Los vídeos largos y los guardados en iCloud tardan un momento en llegar."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Buscando caras…"
+            "value" : "Los videos largos y los guardados en iCloud tardan un momento en llegar."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Recherche des visages…"
+            "value" : "Les longues vidéos et celles conservées dans iCloud mettent un moment à arriver."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ricerca dei volti…"
+            "value" : "I video lunghi e quelli conservati su iCloud richiedono un momento per arrivare."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔を探しています…"
+            "value" : "長いビデオやiCloudに保存されたビデオは、届くまで少し時間がかかります。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴을 찾는 중…"
+            "value" : "긴 비디오와 iCloud에 보관된 비디오는 도착하는 데 잠시 시간이 걸립니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Gezichten zoeken…"
+            "value" : "Lange video's en video's in iCloud hebben even nodig om binnen te komen."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Wyszukiwanie twarzy…"
+            "value" : "Długie wideo i wideo przechowywane w iCloud potrzebują chwili, aby dotrzeć."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Procurando rostos…"
+            "value" : "Vídeos longos e vídeos guardados no iCloud levam um momento para chegar."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "A procurar rostos…"
+            "value" : "Os vídeos longos e os guardados em iCloud demoram um momento a chegar."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Letar efter ansikten…"
+            "value" : "Långa videor och videor i iCloud tar en stund att komma fram."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüzler aranıyor…"
+            "value" : "Uzun videoların ve iCloud’da saklanan videoların gelmesi biraz zaman alır."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在查找面孔…"
+            "value" : "较长的视频和存储在 iCloud 中的视频需要一点时间才能载入。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "正在尋找臉孔…"
+            "value" : "較長的影片和儲存在 iCloud 中的影片需要一點時間才能載入。"
+          }
+        }
+      }
+    },
+    "Looking for faces and text…" : {
+      "comment" : "Progress title while a video is scanned for faces, text and codes.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ البحث عن الوجوه والنصوص…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichter und Text werden gesucht…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando caras y texto…"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Buscando caras y texto…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Recherche des visages et du texte…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ricerca di volti e testo…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顔と文字を探しています…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "얼굴과 텍스트를 찾는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gezichten en tekst zoeken…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyszukiwanie twarzy i tekstu…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Procurando rostos e textos…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A procurar rostos e texto…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Letar efter ansikten och text…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yüzler ve metinler aranıyor…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在查找面孔和文字…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在尋找臉孔和文字…"
           }
         }
       }
@@ -30716,103 +31120,103 @@
         }
       }
     },
-    "No faces found" : {
-      "comment" : "Row on the cleaned-video screen when the video was scanned and no face was found.",
+    "No faces or sensitive text found" : {
+      "comment" : "Row on the cleaned-video screen when the video was scanned and nothing was found to cover.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "لم يُعثر على وجوه"
+            "value" : "لم يُعثر على وجوه أو نصوص حساسة"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Keine Gesichter gefunden"
+            "value" : "Keine Gesichter oder sensiblen Texte gefunden"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se han encontrado caras"
+            "value" : "No se han encontrado caras ni texto sensible"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "No se encontraron caras"
+            "value" : "No se encontraron caras ni texto sensible"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aucun visage trouvé"
+            "value" : "Aucun visage ni texte sensible trouvé"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nessun volto trovato"
+            "value" : "Nessun volto o testo sensibile trovato"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔は見つかりませんでした"
+            "value" : "顔や機密性の高い文字は見つかりませんでした"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴을 찾지 못함"
+            "value" : "얼굴이나 민감한 텍스트를 찾지 못함"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Geen gezichten gevonden"
+            "value" : "Geen gezichten of gevoelige tekst gevonden"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nie znaleziono twarzy"
+            "value" : "Nie znaleziono twarzy ani poufnego tekstu"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum rosto encontrado"
+            "value" : "Nenhum rosto ou texto sensível encontrado"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nenhum rosto encontrado"
+            "value" : "Nenhum rosto ou texto sensível encontrado"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Inga ansikten hittades"
+            "value" : "Inga ansikten eller känslig text hittades"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüz bulunamadı"
+            "value" : "Yüz veya hassas metin bulunamadı"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "未找到面孔"
+            "value" : "未找到面孔或敏感文字"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "找不到臉孔"
+            "value" : "找不到臉孔或敏感文字"
           }
         }
       }
@@ -37375,103 +37779,103 @@
         }
       }
     },
-    "Preview with faces covered" : {
-      "comment" : "VoiceOver label of the video preview that shows the faces covered.",
+    "Preview with covers" : {
+      "comment" : "VoiceOver label of the video preview that shows what will be covered.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "معاينة مع حجب الوجوه"
+            "value" : "معاينة مع الحجب"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vorschau mit verdeckten Gesichtern"
+            "value" : "Vorschau mit Abdeckungen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vista previa con las caras censuradas"
+            "value" : "Vista previa con la censura"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Vista previa con las caras censuradas"
+            "value" : "Vista previa con la censura"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Aperçu avec les visages masqués"
+            "value" : "Aperçu avec les masquages"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Anteprima con i volti coperti"
+            "value" : "Anteprima con le coperture"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔をマスクしたプレビュー"
+            "value" : "マスク付きのプレビュー"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴을 가린 미리보기"
+            "value" : "가리기가 적용된 미리보기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Voorvertoning met afgedekte gezichten"
+            "value" : "Voorvertoning met afdekkingen"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Podgląd z zamazanymi twarzami"
+            "value" : "Podgląd z zamazaniem"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pré-visualização com os rostos ocultos"
+            "value" : "Pré-visualização com as ocultações"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pré-visualização com os rostos ocultos"
+            "value" : "Pré-visualização com as ocultações"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Förhandsvisning med maskerade ansikten"
+            "value" : "Förhandsvisning med maskeringar"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüzleri karartılmış önizleme"
+            "value" : "Karartmalı önizleme"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已遮盖面孔的预览"
+            "value" : "带遮盖的预览"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "已遮蓋臉孔的預覽"
+            "value" : "帶遮蓋的預覽"
           }
         }
       }
@@ -45669,6 +46073,107 @@
         }
       }
     },
+    "Shows it in the preview" : {
+      "comment" : "VoiceOver hint of a text or code row: tapping it shows that finding in the preview.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يعرضه في المعاينة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt es in der Vorschau"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo muestra en la vista previa"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo muestra en la vista previa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’affiche dans l’aperçu"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo mostra nell’anteprima"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "プレビューに表示します"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "미리보기에서 보여 줍니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont het in de voorvertoning"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuje to w podglądzie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra na pré-visualização"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra na pré-visualização"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visar det i förhandsvisningen"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Önizlemede gösterir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在预览中显示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在預覽中顯示"
+          }
+        }
+      }
+    },
     "Shows this face in the preview" : {
       "comment" : "VoiceOver hint of a face row: tapping it shows that face in the preview.",
       "localizations" : {
@@ -45970,204 +46475,204 @@
         }
       }
     },
-    "Skip Face Covering" : {
-      "comment" : "Button while a video is scanned: stop looking for faces and only remove the hidden details.",
+    "Skip Covering" : {
+      "comment" : "Button while a video is scanned: stop looking and only remove the hidden details.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "تخطي حجب الوجوه"
+            "value" : "تخطي الحجب"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Verdecken der Gesichter überspringen"
+            "value" : "Verdecken überspringen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Omitir la censura de caras"
+            "value" : "Omitir la censura"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Omitir la censura de caras"
+            "value" : "Omitir la censura"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ignorer le masquage des visages"
+            "value" : "Ignorer le masquage"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Salta la copertura dei volti"
+            "value" : "Salta la copertura"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "顔のマスクをスキップ"
+            "value" : "マスクをスキップ"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "얼굴 가리기 건너뛰기"
+            "value" : "가리기 건너뛰기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afdekken van gezichten overslaan"
+            "value" : "Afdekken overslaan"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pomiń zamazywanie twarzy"
+            "value" : "Pomiń zamazywanie"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pular a ocultação de rostos"
+            "value" : "Pular a ocultação"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ignorar a ocultação de rostos"
+            "value" : "Ignorar a ocultação"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hoppa över maskering av ansikten"
+            "value" : "Hoppa över maskering"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Yüz karartmayı atla"
+            "value" : "Karartmayı atla"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "跳过遮盖面孔"
+            "value" : "跳过遮盖"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "略過遮蓋臉孔"
+            "value" : "略過遮蓋"
           }
         }
       }
     },
-    "Skipping keeps every face visible and only removes the hidden details." : {
-      "comment" : "Explains the Skip Face Covering button.",
+    "Skipping keeps everything in the video visible and only removes the hidden details." : {
+      "comment" : "Explains the Skip Covering button.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "عند التخطي تبقى كل الوجوه ظاهرة وتُزال التفاصيل المخفية فقط."
+            "value" : "عند التخطي يبقى كل ما في الفيديو ظاهرًا وتُزال التفاصيل المخفية فقط."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Beim Überspringen bleiben alle Gesichter sichtbar, und nur die versteckten Details werden entfernt."
+            "value" : "Beim Überspringen bleibt alles im Video sichtbar, und nur die versteckten Details werden entfernt."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Si lo omites, todas las caras siguen visibles y solo se eliminan los detalles ocultos."
+            "value" : "Si lo omites, todo lo que hay en el vídeo sigue visible y solo se eliminan los detalles ocultos."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Si lo omites, todas las caras siguen visibles y solo se eliminan los detalles ocultos."
+            "value" : "Si lo omites, todo lo que hay en el video sigue visible y solo se eliminan los detalles ocultos."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Si vous l’ignorez, tous les visages restent visibles et seuls les détails cachés sont supprimés."
+            "value" : "Si vous l’ignorez, tout reste visible dans la vidéo et seuls les détails cachés sont supprimés."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Se salti, tutti i volti restano visibili e vengono rimossi solo i dettagli nascosti."
+            "value" : "Se salti, tutto nel video resta visibile e vengono rimossi solo i dettagli nascosti."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "スキップすると、すべての顔はそのまま見え、隠れた情報だけが削除されます。"
+            "value" : "スキップすると、ビデオ内のものはすべてそのまま見え、隠れた情報だけが削除されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "건너뛰면 모든 얼굴이 그대로 보이고 숨겨진 정보만 제거됩니다."
+            "value" : "건너뛰면 비디오 속 모든 것이 그대로 보이고 숨겨진 정보만 제거됩니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Als je overslaat, blijven alle gezichten zichtbaar en worden alleen verborgen gegevens verwijderd."
+            "value" : "Als je overslaat, blijft alles in de video zichtbaar en worden alleen verborgen gegevens verwijderd."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Po pominięciu wszystkie twarze pozostają widoczne, a usuwane są tylko ukryte dane."
+            "value" : "Po pominięciu wszystko w wideo pozostaje widoczne, a usuwane są tylko ukryte dane."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ao pular, todos os rostos continuam visíveis e apenas os detalhes ocultos são removidos."
+            "value" : "Ao pular, tudo no vídeo continua visível e apenas os detalhes ocultos são removidos."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ao ignorar, todos os rostos continuam visíveis e apenas os detalhes ocultos são removidos."
+            "value" : "Ao ignorar, tudo no vídeo continua visível e apenas os detalhes ocultos são removidos."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Om du hoppar över syns alla ansikten fortfarande och bara dolda uppgifter tas bort."
+            "value" : "Om du hoppar över syns allt i videon fortfarande och bara dolda uppgifter tas bort."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Atlarsanız tüm yüzler görünür kalır ve yalnızca gizli ayrıntılar kaldırılır."
+            "value" : "Atlarsanız videodaki her şey görünür kalır ve yalnızca gizli ayrıntılar kaldırılır."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "跳过后，所有面孔仍然可见，只移除隐藏的信息。"
+            "value" : "跳过后，视频中的所有内容仍然可见，只移除隐藏的信息。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "略過後，所有臉孔仍然可見，只會移除隱藏的資訊。"
+            "value" : "略過後，影片中的所有內容仍然可見，只會移除隱藏的資訊。"
           }
         }
       }
@@ -49873,6 +50378,410 @@
         }
       }
     },
+    "Text and codes" : {
+      "comment" : "Section header: sensitive text, codes and Always Cover words found in a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النصوص والرموز"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text und Codes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texte et codes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testo e codici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字とコード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "텍스트 및 코드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst en codes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst i kody"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textos e códigos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto e códigos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text och koder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metinler ve kodlar"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字和条码"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字和條碼"
+          }
+        }
+      }
+    },
+    "Text and codes covered: %lld" : {
+      "comment" : "Row on the cleaned-video screen: how many distinct pieces of text and codes the copy covers.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النصوص والرموز المحجوبة: %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verdeckte Texte und Codes: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos censurados: %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos censurados: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textes et codes masqués : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testo e codici coperti: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスクした文字とコード：%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가린 텍스트 및 코드: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afgedekte tekst en codes: %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamazany tekst i kody: %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textos e códigos ocultados: %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto e códigos ocultados: %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskerad text och koder: %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartılan metin ve kodlar: %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已遮盖的文字和条码：%lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已遮蓋的文字和條碼：%lld"
+          }
+        }
+      }
+    },
+    "Text and codes found so far: %lld" : {
+      "comment" : "VoiceOver label of the running count of distinct text and codes found while a video is scanned.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النصوص والرموز التي عُثر عليها حتى الآن: %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bisher gefundene Texte und Codes: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos encontrados hasta ahora: %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto y códigos encontrados hasta ahora: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textes et codes trouvés jusqu’ici : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Testo e codici trovati finora: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これまでに見つかった文字とコード：%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금까지 찾은 텍스트 및 코드: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tot nu toe gevonden tekst en codes: %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dotychczas znaleziony tekst i kody: %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Textos e códigos encontrados até agora: %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Texto e códigos encontrados até agora: %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text och koder hittills: %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Şu ana kadar bulunan metin ve kodlar: %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前找到的文字和条码：%lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前找到的文字和條碼：%lld"
+          }
+        }
+      }
+    },
+    "Text is read twice a second, so text that is small, blurred by movement, or on screen only briefly can be missed." : {
+      "comment" : "Footer under the list of text and codes found in a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تُقرأ النصوص مرتين في الثانية، لذا قد يفوت النص الصغير أو المموَّه بسبب الحركة أو الذي يظهر لفترة قصيرة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text wird zweimal pro Sekunde gelesen. Kleiner, durch Bewegung verwischter oder nur kurz sichtbarer Text kann übersehen werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El texto se lee dos veces por segundo, así que el texto pequeño, borroso por el movimiento o que aparece poco tiempo puede pasarse por alto."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El texto se lee dos veces por segundo, así que el texto pequeño, borroso por el movimiento o que aparece poco tiempo puede pasarse por alto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le texte est lu deux fois par seconde : un texte petit, flou à cause du mouvement ou visible brièvement peut être manqué."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il testo viene letto due volte al secondo, quindi un testo piccolo, mosso o visibile solo per poco può sfuggire."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字は1秒に2回読み取られるため、小さい文字、動きでぶれた文字、短時間しか映らない文字は見逃されることがあります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "텍스트는 1초에 두 번 읽기 때문에 작거나, 움직임으로 흐려졌거나, 잠깐만 보이는 텍스트는 놓칠 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst wordt twee keer per seconde gelezen, dus kleine tekst, tekst die door beweging vervaagd is of maar kort in beeld is, kan worden gemist."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tekst jest odczytywany dwa razy na sekundę, więc tekst mały, rozmyty przez ruch lub widoczny tylko przez chwilę może zostać pominięty."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O texto é lido duas vezes por segundo, então textos pequenos, borrados pelo movimento ou que aparecem por pouco tempo podem passar despercebidos."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O texto é lido duas vezes por segundo, por isso texto pequeno, desfocado pelo movimento ou visível só por instantes pode escapar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text läses två gånger per sekund, så text som är liten, suddig av rörelse eller bara syns kort kan missas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metinler saniyede iki kez okunur; bu nedenle küçük, hareketten bulanıklaşmış ya da kısa süre görünen metinler gözden kaçabilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字每秒读取两次，因此较小、因移动而模糊或只短暂出现的文字可能会被漏掉。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "文字每秒讀取兩次，因此較小、因移動而模糊或只短暫出現的文字可能會被漏掉。"
+          }
+        }
+      }
+    },
     "The cleaned copy is a still image. Keep your original if you need Live Photo motion or editing history." : {
       "localizations" : {
         "ar" : {
@@ -50271,6 +51180,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "表情符號下方的臉孔也會被模糊處理，因此周圍不會透出任何內容。"
+          }
+        }
+      }
+    },
+    "The frame being scanned" : {
+      "comment" : "VoiceOver label of the picture of the video frame that is being scanned, with what was found outlined.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الإطار الجاري فحصه"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das gerade analysierte Bild"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El fotograma que se está analizando"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "El cuadro que se está analizando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’image en cours d’analyse"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il fotogramma in analisi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキャン中のコマ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검사 중인 프레임"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Het beeld dat wordt gescand"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skanowana klatka"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O quadro sendo analisado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A imagem a ser analisada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildrutan som skannas"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taranan kare"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在扫描的画面"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在掃描的畫面"
           }
         }
       }
@@ -50988,103 +51998,103 @@
         }
       }
     },
-    "This device cannot play the preview, so it shows one frame. Tap a face to see it covered." : {
+    "This device cannot play the preview, so it shows one frame. Tap a row to see it covered." : {
       "comment" : "Footer under the video preview when the device cannot play it with the covers.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "لا يمكن لهذا الجهاز تشغيل المعاينة، لذا تعرض إطارًا واحدًا. اضغط على وجه لرؤيته محجوبًا."
+            "value" : "لا يمكن لهذا الجهاز تشغيل المعاينة، لذا تعرض إطارًا واحدًا. اضغط على صف لرؤيته محجوبًا."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dieses Gerät kann die Vorschau nicht abspielen, daher wird ein Einzelbild gezeigt. Tippe auf ein Gesicht, um es verdeckt zu sehen."
+            "value" : "Dieses Gerät kann die Vorschau nicht abspielen, daher wird ein Einzelbild gezeigt. Tippe auf eine Zeile, um sie verdeckt zu sehen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este dispositivo no puede reproducir la vista previa, así que muestra un fotograma. Toca una cara para verla censurada."
+            "value" : "Este dispositivo no puede reproducir la vista previa, así que muestra un fotograma. Toca una fila para verla censurada."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este dispositivo no puede reproducir la vista previa, así que muestra un cuadro. Toca una cara para verla censurada."
+            "value" : "Este dispositivo no puede reproducir la vista previa, así que muestra un cuadro. Toca una fila para verla censurada."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cet appareil ne peut pas lire l’aperçu, il en affiche donc une seule image. Touchez un visage pour le voir masqué."
+            "value" : "Cet appareil ne peut pas lire l’aperçu, il en affiche donc une seule image. Touchez une ligne pour la voir masquée."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Questo dispositivo non può riprodurre l’anteprima, quindi ne mostra un fotogramma. Tocca un volto per vederlo coperto."
+            "value" : "Questo dispositivo non può riprodurre l’anteprima, quindi ne mostra un fotogramma. Tocca una riga per vederla coperta."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "このデバイスではプレビューを再生できないため、1コマを表示しています。顔をタップすると、マスクされた状態を確認できます。"
+            "value" : "このデバイスではプレビューを再生できないため、1コマを表示しています。行をタップすると、マスクされた状態を確認できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "이 기기에서는 미리보기를 재생할 수 없어 한 프레임만 보여 줍니다. 얼굴을 탭하면 가려진 모습을 볼 수 있습니다."
+            "value" : "이 기기에서는 미리보기를 재생할 수 없어 한 프레임만 보여 줍니다. 행을 탭하면 가려진 모습을 볼 수 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dit apparaat kan de voorvertoning niet afspelen en toont daarom één beeld. Tik op een gezicht om het afgedekt te zien."
+            "value" : "Dit apparaat kan de voorvertoning niet afspelen en toont daarom één beeld. Tik op een rij om deze afgedekt te zien."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To urządzenie nie może odtworzyć podglądu, więc pokazuje jedną klatkę. Stuknij twarz, aby zobaczyć ją zamazaną."
+            "value" : "To urządzenie nie może odtworzyć podglądu, więc pokazuje jedną klatkę. Stuknij wiersz, aby zobaczyć go zamazanego."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este dispositivo não consegue reproduzir a pré-visualização, então mostra um quadro. Toque em um rosto para vê-lo oculto."
+            "value" : "Este dispositivo não consegue reproduzir a pré-visualização, então mostra um quadro. Toque em uma linha para vê-la oculta."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este dispositivo não consegue reproduzir a pré-visualização, por isso mostra uma imagem. Toque num rosto para o ver oculto."
+            "value" : "Este dispositivo não consegue reproduzir a pré-visualização, por isso mostra uma imagem. Toque numa linha para a ver oculta."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Den här enheten kan inte spela upp förhandsvisningen, så den visar en bildruta. Tryck på ett ansikte för att se det maskerat."
+            "value" : "Den här enheten kan inte spela upp förhandsvisningen, så den visar en bildruta. Tryck på en rad för att se den maskerad."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bu cihaz önizlemeyi oynatamıyor, bu nedenle tek bir kare gösteriliyor. Karartılmış hâlini görmek için bir yüze dokunun."
+            "value" : "Bu cihaz önizlemeyi oynatamıyor, bu nedenle tek bir kare gösteriliyor. Karartılmış hâlini görmek için bir satıra dokunun."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此设备无法播放预览，因此只显示一帧。轻点面孔即可查看遮盖效果。"
+            "value" : "此设备无法播放预览，因此只显示一帧。轻点一行即可查看遮盖效果。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "此裝置無法播放預覽，因此只顯示一個畫面。點一下臉孔即可查看遮蓋效果。"
+            "value" : "此裝置無法播放預覽，因此只顯示一個畫面。點一下一列即可查看遮蓋效果。"
           }
         }
       }
@@ -51389,103 +52399,103 @@
         }
       }
     },
-    "This is a long video, so finding faces and saving the copy can take several minutes. Keep PicStrip open until it finishes." : {
+    "This is a long video, so scanning it and saving the copy can take several minutes. Keep PicStrip open until it finishes." : {
       "comment" : "Note shown for videos of three minutes or longer.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "هذا فيديو طويل، لذا قد يستغرق العثور على الوجوه وحفظ النسخة عدة دقائق. أبقِ PicStrip مفتوحًا حتى ينتهي."
+            "value" : "هذا فيديو طويل، لذا قد يستغرق فحصه وحفظ النسخة عدة دقائق. أبقِ PicStrip مفتوحًا حتى ينتهي."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Das ist ein langes Video, daher kann das Finden der Gesichter und das Sichern der Kopie einige Minuten dauern. Lass PicStrip geöffnet, bis es fertig ist."
+            "value" : "Das ist ein langes Video, daher können das Analysieren und das Sichern der Kopie einige Minuten dauern. Lass PicStrip geöffnet, bis es fertig ist."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es un vídeo largo, así que buscar las caras y guardar la copia puede tardar varios minutos. Mantén PicStrip abierto hasta que termine."
+            "value" : "Es un vídeo largo, así que analizarlo y guardar la copia puede tardar varios minutos. Mantén PicStrip abierto hasta que termine."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Es un video largo, así que buscar las caras y guardar la copia puede tardar varios minutos. Mantén PicStrip abierto hasta que termine."
+            "value" : "Es un video largo, así que analizarlo y guardar la copia puede tardar varios minutos. Mantén PicStrip abierto hasta que termine."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cette vidéo est longue : trouver les visages et enregistrer la copie peut prendre plusieurs minutes. Gardez PicStrip ouvert jusqu’à la fin."
+            "value" : "Cette vidéo est longue : l’analyser et enregistrer la copie peut prendre plusieurs minutes. Gardez PicStrip ouvert jusqu’à la fin."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "È un video lungo, quindi trovare i volti e salvare la copia può richiedere diversi minuti. Tieni aperta PicStrip fino al termine."
+            "value" : "È un video lungo, quindi analizzarlo e salvare la copia può richiedere diversi minuti. Tieni aperta PicStrip fino al termine."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "長いビデオのため、顔の検出とコピーの保存に数分かかることがあります。完了するまでPicStripを開いたままにしてください。"
+            "value" : "長いビデオのため、スキャンとコピーの保存に数分かかることがあります。完了するまでPicStripを開いたままにしてください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "긴 비디오이므로 얼굴을 찾고 사본을 저장하는 데 몇 분이 걸릴 수 있습니다. 완료될 때까지 PicStrip을 열어 두십시오."
+            "value" : "긴 비디오이므로 검사하고 사본을 저장하는 데 몇 분이 걸릴 수 있습니다. 완료될 때까지 PicStrip을 열어 두십시오."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dit is een lange video, dus gezichten zoeken en de kopie bewaren kan enkele minuten duren. Houd PicStrip open tot het klaar is."
+            "value" : "Dit is een lange video, dus scannen en de kopie bewaren kan enkele minuten duren. Houd PicStrip open tot het klaar is."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To długie wideo, więc wyszukanie twarzy i zachowanie kopii może potrwać kilka minut. Nie zamykaj PicStrip do końca."
+            "value" : "To długie wideo, więc skanowanie i zachowanie kopii może potrwać kilka minut. Nie zamykaj PicStrip do końca."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este é um vídeo longo, então encontrar os rostos e salvar a cópia pode levar vários minutos. Mantenha o PicStrip aberto até terminar."
+            "value" : "Este é um vídeo longo, então analisá-lo e salvar a cópia pode levar vários minutos. Mantenha o PicStrip aberto até terminar."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Este é um vídeo longo, por isso encontrar os rostos e guardar a cópia pode demorar vários minutos. Mantenha o PicStrip aberto até terminar."
+            "value" : "Este é um vídeo longo, por isso analisá-lo e guardar a cópia pode demorar vários minutos. Mantenha o PicStrip aberto até terminar."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Det här är en lång video, så det kan ta flera minuter att hitta ansikten och spara kopian. Låt PicStrip vara öppet tills det är klart."
+            "value" : "Det här är en lång video, så det kan ta flera minuter att skanna den och spara kopian. Låt PicStrip vara öppet tills det är klart."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bu uzun bir video; yüzleri bulmak ve kopyayı kaydetmek birkaç dakika sürebilir. İşlem bitene kadar PicStrip’i açık tutun."
+            "value" : "Bu uzun bir video; taranması ve kopyanın kaydedilmesi birkaç dakika sürebilir. İşlem bitene kadar PicStrip’i açık tutun."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "这是一段较长的视频，查找面孔和存储副本可能需要几分钟。请保持 PicStrip 打开，直到完成。"
+            "value" : "这是一段较长的视频，扫描和存储副本可能需要几分钟。请保持 PicStrip 打开，直到完成。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "這是一段較長的影片，尋找臉孔和儲存拷貝可能需要幾分鐘。請保持 PicStrip 開啟，直到完成。"
+            "value" : "這是一段較長的影片，掃描和儲存拷貝可能需要幾分鐘。請保持 PicStrip 開啟，直到完成。"
           }
         }
       }
@@ -54200,6 +55210,107 @@
         }
       }
     },
+    "Visible" : {
+      "comment" : "Shown for a face in a video that is left uncovered.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ظاهر"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sichtbar"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visible"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visible"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visible"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visibile"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보임"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zichtbaar"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Widoczna"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visível"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visível"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Synligt"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Görünür"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可见"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "可見"
+          }
+        }
+      }
+    },
     "Visual Content" : {
       "localizations" : {
         "ar" : {
@@ -55858,6 +56969,287 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已遮蓋 %lld 個臉孔"
+          }
+        }
+      }
+    },
+    "^[%lld face](inflect: true) found so far" : {
+      "comment" : "VoiceOver label of the running count of faces found while a video is scanned.",
+      "localizations" : {
+        "ar" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "عُثر على %lld وجوه حتى الآن"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "عُثر على %lld وجهًا حتى الآن"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "عُثر على وجه واحد حتى الآن"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "عُثر على %lld وجه حتى الآن"
+                }
+              },
+              "two" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "عُثر على وجهين حتى الآن"
+                }
+              },
+              "zero" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "لم يُعثر على وجوه حتى الآن"
+                }
+              }
+            }
+          }
+        },
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Bisher %lld Gesicht gefunden"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Bisher %lld Gesichter gefunden"
+                }
+              }
+            }
+          }
+        },
+        "es" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cara encontrada hasta ahora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld caras encontradas hasta ahora"
+                }
+              }
+            }
+          }
+        },
+        "es-419" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld cara encontrada hasta ahora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld caras encontradas hasta ahora"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld visage trouvé jusqu’ici"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld visages trouvés jusqu’ici"
+                }
+              }
+            }
+          }
+        },
+        "it" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld volto trovato finora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld volti trovati finora"
+                }
+              }
+            }
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "これまでに見つかった顔：%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "지금까지 찾은 얼굴 %lld개"
+          }
+        },
+        "nl" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tot nu toe %lld gezicht gevonden"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Tot nu toe %lld gezichten gevonden"
+                }
+              }
+            }
+          }
+        },
+        "pl" : {
+          "variations" : {
+            "plural" : {
+              "few" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dotychczas znaleziono %lld twarze"
+                }
+              },
+              "many" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dotychczas znaleziono %lld twarzy"
+                }
+              },
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dotychczas znaleziono %lld twarz"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Dotychczas znaleziono %lld twarzy"
+                }
+              }
+            }
+          }
+        },
+        "pt-BR" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rosto encontrado até agora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rostos encontrados até agora"
+                }
+              }
+            }
+          }
+        },
+        "pt-PT" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rosto encontrado até agora"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld rostos encontrados até agora"
+                }
+              }
+            }
+          }
+        },
+        "sv" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ansikte hittat hittills"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld ansikten hittade hittills"
+                }
+              }
+            }
+          }
+        },
+        "tr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Şu ana kadar %lld yüz bulundu"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Şu ana kadar %lld yüz bulundu"
+                }
+              }
+            }
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前找到 %lld 个面孔"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前找到 %lld 個臉孔"
           }
         }
       }

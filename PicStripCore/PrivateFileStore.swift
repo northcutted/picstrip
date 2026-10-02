@@ -56,6 +56,22 @@ nonisolated struct PrivateFileStore: Sendable {
         return url
     }
 
+    /// Takes over a file handed over for this purpose — a picked video — by
+    /// moving it in where it can be, so a large video is not written twice;
+    /// copies it where it cannot (another volume, a read-only original).
+    func adopt(_ source: URL, extension fileExtension: String, now: Date = Date()) throws -> URL {
+        let url = try reserve(extension: fileExtension, now: now)
+        do {
+            try FileManager.default.moveItem(at: source, to: url)
+        } catch {
+            try FileManager.default.copyItem(at: source, to: url)
+        }
+        try FileManager.default.setAttributes(
+            [.modificationDate: now, .protectionKey: FileProtectionType.complete], ofItemAtPath: url.path
+        )
+        return url
+    }
+
     func remove(_ url: URL?) {
         guard let url, url.deletingLastPathComponent().standardizedFileURL == directory.standardizedFileURL else { return }
         try? FileManager.default.removeItem(at: url)
