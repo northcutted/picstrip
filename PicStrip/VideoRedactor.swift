@@ -342,7 +342,11 @@ nonisolated enum VideoRedactor {
     /// black: nothing chosen is ever left showing.
     static func render(_ frame: CIImage, at time: Double, plan: Plan, glyphs: [String: CIImage]) -> CIImage {
         let extent = frame.extent
-        var output = frame
+        // Every cover is cut from the untouched frame and the covers are
+        // stacked at the end.  Building each on the frame-so-far nested the
+        // image graph one level per cover, and 21 faces in a collage overflowed
+        // Core Image's stack on a device.
+        var layers: [CIImage] = []
 
         func pixels(_ box: CGRect) -> CGRect {
             CGRect(
@@ -363,10 +367,10 @@ nonisolated enum VideoRedactor {
                 let blockSize = RedactionStrength.blockSize(
                     shortSide: min(full.width, full.height), strength: RedactionStrength.range.upperBound
                 )
-                cover = ImageRedactor.obscuredLayer(style == .pixelate ? .pixelate : .blur, blockSize: blockSize, of: output)
+                cover = ImageRedactor.obscuredLayer(style == .pixelate ? .pixelate : .blur, blockSize: blockSize, of: frame)
                     ?? CIImage(color: .black)
             }
-            output = cover.cropped(to: rect).composited(over: output)
+            layers.append(cover.cropped(to: rect))
         }
 
         for finding in plan.findings {
@@ -380,12 +384,29 @@ nonisolated enum VideoRedactor {
             if let emoji = face.style.emoji, let glyph = glyphs[emoji] {
                 let scale = max(full.width, full.height) * EmojiCover.coverage / max(glyph.extent.width, glyph.extent.height)
                 let sized = glyph.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-                output = sized
-                    .transformed(by: CGAffineTransform(translationX: full.midX - sized.extent.midX, y: full.midY - sized.extent.midY))
-                    .composited(over: output)
+                layers.append(sized.transformed(by: CGAffineTransform(
+                    translationX: full.midX - sized.extent.midX, y: full.midY - sized.extent.midY
+                )))
             }
         }
-        return output.cropped(to: extent)
+        guard let covers = stacked(layers) else { return frame }
+        return covers.composited(over: frame).cropped(to: extent)
+    }
+
+    /// `layers` in order, each over the ones before — combined in pairs, so the
+    /// image graph grows with the logarithm of their number, not the number.
+    static func stacked(_ layers: [CIImage]) -> CIImage? {
+        var level = layers
+        while level.count > 1 {
+            var next: [CIImage] = []
+            var index = 0
+            while index < level.count {
+                next.append(index + 1 < level.count ? level[index + 1].composited(over: level[index]) : level[index])
+                index += 2
+            }
+            level = next
+        }
+        return level.first
     }
 
     /// `emoji` drawn once, large, on a clear background; frames scale it to each face.

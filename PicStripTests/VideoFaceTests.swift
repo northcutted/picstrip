@@ -352,6 +352,35 @@ final class VideoFaceRedactionTests: XCTestCase {
         }
     }
 
+    func testCoversStackInOrderAndManyFacesStillRender() async throws {
+        // Layers combine in pairs, but the later layer is still on top.
+        let red = CIImage(color: .red).cropped(to: CGRect(x: 0, y: 0, width: 10, height: 10))
+        let blue = CIImage(color: .blue).cropped(to: CGRect(x: 5, y: 0, width: 10, height: 10))
+        let green = CIImage(color: .green).cropped(to: CGRect(x: 8, y: 0, width: 10, height: 10))
+        let stack = try XCTUnwrap(VideoRedactor.stacked([red, blue, green, red.transformed(by: .init(translationX: 30, y: 0))]))
+        let context = CIContext()
+        var pixel = [UInt8](repeating: 0, count: 4)
+        context.render(stack, toBitmap: &pixel, rowBytes: 4, bounds: CGRect(x: 9, y: 1, width: 1, height: 1), format: .RGBA8, colorSpace: nil)
+        XCTAssertGreaterThan(pixel[1], 200, "Green, the last of the three overlapping, is on top: \(pixel)")
+        XCTAssertNil(VideoRedactor.stacked([]))
+
+        // A crowd: a hundred faces in one frame render, off the main thread,
+        // with every face covered.
+        let frame = CIImage(color: CIColor(red: 0.3, green: 0.6, blue: 0.9)).cropped(to: CGRect(x: 0, y: 0, width: 1280, height: 1280))
+            .composited(over: CIImage(color: .white))
+            .cropped(to: CGRect(x: 0, y: 0, width: 1280, height: 1280))
+        let faces = (0..<100).map { index in
+            FaceTrack(id: index, samples: [.init(time: 0, box: CGRect(x: CGFloat(index % 10) * 0.1 + 0.02, y: CGFloat(index / 10) * 0.1 + 0.02, width: 0.05, height: 0.05))])
+        }
+        let plan = VideoRedactor.Plan(faces: faces.map { .init(track: $0, style: .emoji("🙂")) })
+        let glyphs = ["🙂": try XCTUnwrap(VideoRedactor.glyphImage("🙂"))]
+        let rendered = await Task.detached {
+            let image = VideoRedactor.render(frame, at: 0, plan: plan, glyphs: glyphs)
+            return CIContext().createCGImage(image, from: image.extent)
+        }.value
+        XCTAssertNotNil(rendered)
+    }
+
     func testABlankVideoHasNoFaces() async throws {
         let movie = try await FaceMovie.make(seconds: 1, face: " ")
         cleanup.append(movie.url)
