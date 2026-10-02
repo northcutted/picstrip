@@ -454,9 +454,10 @@ nonisolated struct PIIScanner {
     }
 
     /// `request` as it can run here.  The simulator's GPU cannot create the
-    /// inference context of Vision's detection models; its CPU can.
+    /// inference context of Vision's detection models; its CPU can.  Choosing
+    /// the device needs the iOS 27 SDK (`compiler(>=6.4)`, as in `makeFaceRequest`).
     nonisolated static func onSimulatorCPU<Request: VisionRequest>(_ request: Request) -> Request {
-        #if targetEnvironment(simulator)
+        #if targetEnvironment(simulator) && compiler(>=6.4)
         var request = request
         let cpu = request.supportedComputeStageDevices[.main]?.first {
             if case .cpu = $0 { return true }

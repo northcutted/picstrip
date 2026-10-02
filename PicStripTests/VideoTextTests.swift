@@ -196,6 +196,7 @@ final class VideoTextRedactionTests: XCTestCase {
     }
 
     func testTheEmailIsReadAndThePanMeasured() async throws {
+        try skipUnlessVisionModelsRunHere()
         let (movie, scan) = try await scanned()
         let emails = scan.findings.filter { $0.type == .email }
         XCTAssertEqual(emails.count, 1, "One email, one track: \(scan.findings.map { ($0.type, $0.samples.count) })")
