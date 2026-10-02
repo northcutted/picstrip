@@ -114,9 +114,10 @@ nonisolated enum VideoFaceScanner {
     }
 
     /// `request` as it can run here.  The simulator's GPU cannot create the face
-    /// model's inference context; its CPU can.
+    /// model's inference context; its CPU can.  Choosing the device needs the
+    /// iOS 27 SDK (`compiler(>=6.4)`, as in `PIIScanner.makeFaceRequest`).
     private static func runnable(_ request: DetectFaceRectanglesRequest) -> DetectFaceRectanglesRequest {
-        #if targetEnvironment(simulator)
+        #if targetEnvironment(simulator) && compiler(>=6.4)
         var request = request
         let cpu = request.supportedComputeStageDevices[.main]?.first {
             if case .cpu = $0 { return true }
