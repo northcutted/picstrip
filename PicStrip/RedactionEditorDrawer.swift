@@ -56,7 +56,7 @@ private struct RedactionStylePicker: View {
 
 /// The emoji an `.emoji` region is covered with: a grid of favourites and a
 /// field that takes any other emoji, typed or pasted.
-private struct RedactionEmojiPicker: View {
+struct RedactionEmojiPicker: View {
     /// `nil` when the selected regions do not share one emoji.
     let selection: String?
     let onSelect: (String) -> Void

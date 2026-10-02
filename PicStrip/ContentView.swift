@@ -18,6 +18,8 @@ struct ContentView: View {
     @State private var isShowingScreenshotPicker = false
     /// A video picked on the home screen; its cleaner shows while it is set.
     @State private var selectedVideoItem: PhotosPickerItem?
+    /// A video file opened directly by the UI tests (`PICSTRIP_VIDEO_FIXTURE`).
+    @State private var fixtureVideo: URL?
 
     /// Bumped by `haptic(_:)`; each change plays one impact.
     @State private var lightImpacts = 0
@@ -206,12 +208,18 @@ struct ContentView: View {
             photoLibrary: .shared()
         )
         .sheet(isPresented: Binding(
-            get: { selectedVideoItem != nil },
-            set: { if !$0 { selectedVideoItem = nil } }
+            get: { selectedVideoItem != nil || fixtureVideo != nil },
+            set: { if !$0 { selectedVideoItem = nil; fixtureVideo = nil } }
         )) {
-            if let item = selectedVideoItem {
-                VideoCleanerView(item: item)
+            Group {
+                if let item = selectedVideoItem {
+                    VideoCleanerView(source: .picked(item))
+                } else if let fixtureVideo {
+                    VideoCleanerView(source: .file(fixtureVideo))
+                }
             }
+            // On iPad, room for the preview, the faces and the notes together.
+            .presentationSizing(.page)
         }
         .onChange(of: intentRouter.isCameraRequested, initial: true) { _, requested in
             guard requested else { return }
@@ -241,6 +249,12 @@ struct ContentView: View {
         // which is the only way to run it on the simulator.
         .task {
             if LiveCameraFixture.isConfigured { isShowingLiveCamera = true }
+        }
+        // PICSTRIP_VIDEO_FIXTURE opens the video screen on a file, without the picker.
+        .task {
+            if let path = ProcessInfo.processInfo.environment["PICSTRIP_VIDEO_FIXTURE"] {
+                fixtureVideo = URL(fileURLWithPath: path)
+            }
         }
         .confirmationDialog("Use a smaller copy?", isPresented: $viewModel.showResizeOffer, titleVisibility: .visible) {
             Button("Use smaller copy") { Task { await viewModel.useSmallerCopy() } }

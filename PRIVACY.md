@@ -26,7 +26,7 @@ Live camera analysis is a guide. Frames and their detections are not recorded. A
 Screenshots and videos are chosen with Apple's photo picker, which hands PicStrip only the items you pick; PicStrip does not read your photo library.
 
 ## Videos and Live Photos
-When you clean a video, PicStrip copies it into protected temporary storage and writes a copy without its location, device, software and date metadata; the frames are not re-encoded or changed, so faces and text in a video stay visible. PicStrip checks the copy and does not keep it if any of those details remain. Both files are deleted when you close the video screen.
+When you clean a video, PicStrip copies it into protected temporary storage, looks for faces in it on your device, and writes a copy without its location, device, software and date metadata. Faces it finds are covered in the copy, which means the frames are re-encoded; faces it misses and text in a video stay visible. If no face is found, or you skip face covering, the frames are copied unchanged. PicStrip checks the copy and does not keep it if any of those details remain. Both files are deleted when you close the video screen.
 
 If you keep a Live Photo's motion, its video is cleaned the same way, except for a random identifier that pairs it with the still photo. The motion is not covered, so PicStrip offers it only when nothing in the photo is covered.
 

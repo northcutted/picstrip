@@ -99,17 +99,38 @@ nonisolated enum VideoCleaner {
     /// Writes a copy of `source` to `output` with no hidden details, except the
     /// items in `keeping` (a Live Photo's pairing identifier).  Fails closed: if
     /// a location, device or date survives, the copy is deleted and this throws.
-    static func clean(_ source: URL, to output: URL, keeping: [AVMetadataItem] = []) async throws {
+    ///
+    /// Without `videoComposition` the frames are copied as they are.  With one,
+    /// they are drawn through it (faces covered) and encoded again, as HEVC
+    /// where the video allows it.
+    static func clean(
+        _ source: URL,
+        to output: URL,
+        keeping: [AVMetadataItem] = [],
+        videoComposition: AVVideoComposition? = nil,
+        progress: (@Sendable (Double) -> Void)? = nil
+    ) async throws {
         let asset = AVURLAsset(url: source)
-        guard let session = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetPassthrough) else {
+        let preset = videoComposition == nil ? AVAssetExportPresetPassthrough : await reencodingPreset(for: asset)
+        guard let session = AVAssetExportSession(asset: asset, presetName: preset) else {
             throw Failure.cannotExport
         }
+        session.videoComposition = videoComposition
         // A non-empty list replaces the file's own metadata — an empty one is
         // read as "keep it all" — so a plain video gets a new random identifier,
         // tied to nothing.  The filter drops identifying items from the tracks.
         session.metadata = keeping.isEmpty ? [newContentIdentifier()] : keeping
         session.metadataItemFilter = .forSharing()
         let type: AVFileType = session.supportedFileTypes.contains(.mov) ? .mov : (session.supportedFileTypes.first ?? .mov)
+        let states = session.states(updateInterval: 0.25)
+        let reporter = progress.map { report in
+            Task {
+                for await state in states {
+                    if case .exporting(let exported) = state { report(exported.fractionCompleted) }
+                }
+            }
+        }
+        defer { reporter?.cancel() }
         try await session.export(to: output, as: type)
 
         let left = try await findings(in: output).filter { $0.kind != .other }
@@ -117,6 +138,13 @@ nonisolated enum VideoCleaner {
             try? FileManager.default.removeItem(at: output)
             throw Failure.detailsRemain
         }
+    }
+
+    /// HEVC at the best quality where the video can take it, else the best H.264.
+    static func reencodingPreset(for asset: AVAsset) async -> String {
+        let hevc = AVAssetExportPresetHEVCHighestQuality
+        let supported = await AVAssetExportSession.compatibility(ofExportPreset: hevc, with: asset, outputFileType: .mov)
+        return supported ? hevc : AVAssetExportPresetHighestQuality
     }
 }
 
