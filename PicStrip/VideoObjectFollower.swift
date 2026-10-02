@@ -122,7 +122,7 @@ nonisolated enum VideoObjectFollower {
 
         /// The subject's box in `pixels`, or `nil` while the tracker is unsure.
         mutating func follow(into pixels: CVPixelBuffer) async throws -> CGRect? {
-            let observation: DetectedObjectObservation??
+            let observation: DetectedObjectObservation?
             do {
                 observation = try await ImageRequestHandler(pixels).perform(request)
             } catch {
@@ -130,7 +130,7 @@ nonisolated enum VideoObjectFollower {
                 misses += 1
                 return nil
             }
-            guard let found = observation ?? nil, found.confidence >= VideoObjectFollower.minimumConfidence else {
+            guard let found = observation, found.confidence >= VideoObjectFollower.minimumConfidence else {
                 misses += 1
                 return nil
             }

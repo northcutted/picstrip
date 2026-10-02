@@ -48,6 +48,7 @@ final class CoverTimingTests: XCTestCase {
 final class VideoObjectFollowerTests: XCTestCase {
 
     func testADrawnBoxIsFollowedForwardsAndBack() async throws {
+        try skipUnlessVisionModelsRunHere()
         let movie = try await FaceMovie.make()
         defer { try? FileManager.default.removeItem(at: movie.url) }
         // Drawn around the face at one second.

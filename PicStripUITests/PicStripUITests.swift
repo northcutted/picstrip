@@ -736,9 +736,11 @@ final class PicStripUITests: XCTestCase {
         let containerFrame = container.frame.intersection(app.frame)
         let navigationBottom = app.navigationBars.allElementsBoundByIndex
             .map(\.frame).filter { $0.intersects(containerFrame) }.map(\.maxY).max() ?? containerFrame.minY
-        let share = app.buttons["shareCleanedImageButton"]
+        // A bar fixed over the bottom of the list: the photo review's Share, or
+        // the video screen's Make Cleaned Copy.
+        let footer = [app.buttons["shareCleanedImageButton"], app.buttons["makeCleanedCopyButton"]].first { $0.exists }
         let top = max(containerFrame.minY, navigationBottom) + 4
-        let bottom = min(containerFrame.maxY, share.exists ? share.frame.minY - 12 : containerFrame.maxY) - 4
+        let bottom = min(containerFrame.maxY, footer.map { $0.frame.minY - 12 } ?? containerFrame.maxY) - 4
         let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
         XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
 
