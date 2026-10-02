@@ -494,6 +494,47 @@ final class PicStripUITests: XCTestCase {
         XCTAssertEqual(cover.value as? String, "🐸")
     }
 
+    /// A cover drawn on the paused frame is followed, timed on the timeline, and saved.
+    @MainActor
+    func testACoverCanBeDrawnFollowedAndTimed() async throws {
+        let path = "/tmp/picstrip_video_draw_fixture.mov"
+        try await writeFaceMovie(to: URL(fileURLWithPath: path))
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = path
+        app.launch()
+
+        let add = app.buttons["addCoverButton"]
+        XCTAssertTrue(add.waitForExistence(timeout: 90), "The review shows Add a Cover.")
+        add.tap()
+        let area = app.descendants(matching: .any)["drawingArea"]
+        XCTAssertTrue(area.waitForExistence(timeout: 15))
+        // Around the face, which moves: the cover follows it.
+        let from = area.coordinate(withNormalizedOffset: CGVector(dx: 0.27, dy: 0.2))
+        let to = area.coordinate(withNormalizedOffset: CGVector(dx: 0.6, dy: 0.85))
+        from.press(forDuration: 0.1, thenDragTo: to)
+        attachScreen("draw_cover")
+        let follow = app.buttons["followButton"]
+        XCTAssertTrue(follow.isEnabled, "A drawn box can be followed.")
+        follow.tap()
+
+        let row = app.buttons["drawnRow-1"]
+        XCTAssertTrue(row.waitForExistence(timeout: 60), "The followed cover is listed.")
+        let end = app.descendants(matching: .any)["coverEndHandle"]
+        XCTAssertTrue(end.waitForExistence(timeout: 5), "The new cover is picked, with handles on the timeline.")
+        let start = app.descendants(matching: .any)["coverStartHandle"]
+        // Start it at the very beginning of the video.
+        start.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).press(
+            forDuration: 0.1,
+            thenDragTo: app.descendants(matching: .any)["coverTimelineTrack"].coordinate(withNormalizedOffset: CGVector(dx: 0, dy: 0.5))
+        )
+        XCTAssertTrue(app.buttons["resetTimingButton"].waitForExistence(timeout: 5), "A changed timing can be reset.")
+        attachScreen("cover_timeline")
+
+        app.buttons["makeCleanedCopyButton"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["drawnCoveredRow"].waitForExistence(timeout: 120),
+                      "The cleaned copy lists the cover that was added.")
+    }
+
     /// Skipping face covering still saves a cleaned copy, with every face as it was.
     @MainActor
     func testFaceCoveringCanBeSkipped() async throws {

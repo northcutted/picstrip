@@ -14,9 +14,24 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
 
     let id: Int
     var samples: [Sample]
+    /// Drawn by the user and followed, rather than found: the box is what they
+    /// drew, so it is padded only lightly.
+    var isDrawn = false
 
     var start: Double { samples.first?.time ?? 0 }
     var end: Double { samples.last?.time ?? 0 }
+
+    /// When the cover is on by itself: from a hold before the first sighting to
+    /// a hold after the last.  A drawn cover is on for at least
+    /// `minimumDrawnLength` — the tracker can lose a subject at once, and the
+    /// user drew it to cover something.
+    var automaticRange: ClosedRange<Double> {
+        guard isDrawn else { return max(0, start - FaceTracking.hold)...(end + FaceTracking.hold) }
+        let missing = max(0, Self.minimumDrawnLength - (end - start)) / 2
+        return max(0, start - missing)...(end + missing)
+    }
+
+    static let minimumDrawnLength = 1.0
 
     /// The box to cover at `time`, padded, or `nil` when the face is not on screen.
     ///
@@ -24,10 +39,12 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
     /// the moments the face was missed.  Before the first sighting and after the
     /// last, the face stays covered for `FaceTracking.hold`: a face is usually on
     /// screen a little before it is big or square-on enough to be found.
-    func coverBox(at time: Double) -> CGRect? {
-        guard let first = samples.first, let last = samples.last,
-              time >= first.time - FaceTracking.hold, time <= last.time + FaceTracking.hold
-        else { return nil }
+    ///
+    /// `range`, when the user has set one on the timeline, replaces that: the
+    /// cover is on exactly then, holding its first or last box beyond the sightings.
+    func coverBox(at time: Double, within range: ClosedRange<Double>? = nil) -> CGRect? {
+        guard let first = samples.first, let last = samples.last else { return nil }
+        guard (range ?? automaticRange).contains(time) else { return nil }
         let box: CGRect
         if time <= first.time {
             box = first.box
@@ -46,7 +63,7 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
             let span = after.time - before.time
             box = FaceTracking.blend(before.box, after.box, by: span > 0 ? CGFloat((time - before.time) / span) : 0)
         }
-        return FaceTracking.padded(box)
+        return isDrawn ? box.insetBy(dx: -box.width * 0.08, dy: -box.height * 0.08) : FaceTracking.padded(box)
     }
 
     /// The sample nearest the middle of the track: the face's most typical look.

@@ -59,6 +59,23 @@ final class VideoCleanerModel {
         didSet { if textStyle != oldValue { refreshPreview() } }
     }
 
+    /// Covers the user drew, each followed through the video (`isDrawn`).
+    private(set) var drawnCovers: [FaceTrack] = []
+    /// When a face or drawn cover is on, where set on the timeline (by track id).
+    private(set) var ranges: [Int: ClosedRange<Double>] = [:]
+    /// The row picked in the list, shown on the timeline.
+    var selection: Selection?
+    /// Where the preview is, in seconds.
+    private(set) var currentTime: Double = 0
+    /// How far following a drawn box has got, 0 … 1; `nil` when not following.
+    private(set) var followProgress: Double?
+
+    enum Selection: Hashable {
+        case face(Int)
+        case drawn(Int)
+        case group(String)
+    }
+
     /// How each face (by track id) and group (by group id) looks in the list.
     private(set) var faceThumbnails: [Int: UIImage] = [:]
     private(set) var findingThumbnails: [String: UIImage] = [:]
@@ -76,6 +93,7 @@ final class VideoCleanerModel {
     /// What the saved copy covers.
     private(set) var coveredFaceCount = 0
     private(set) var coveredFindingCount = 0
+    private(set) var coveredDrawnCount = 0
     private(set) var output: URL?
 
     private var source: URL?
@@ -85,9 +103,22 @@ final class VideoCleanerModel {
     private var saveTask: Task<Void, Never>?
     private(set) var skipsCovering = false
     private var previewGeneration = 0
+    private var timeObserver: Any?
+    private var nextDrawnID = 1_000_000
 
     var isLong: Bool { duration >= VideoScanner.longVideoDuration }
-    var hasSomethingToCover: Bool { !faces.isEmpty || !findingGroups.isEmpty }
+    var hasSomethingToCover: Bool { !faces.isEmpty || !findingGroups.isEmpty || !drawnCovers.isEmpty }
+
+    /// When `track` is covered: the user's range, or its own.
+    func range(of track: FaceTrack) -> ClosedRange<Double> {
+        ranges[track.id] ?? clamped(track.automaticRange)
+    }
+
+    func clamped(_ range: ClosedRange<Double>) -> ClosedRange<Double> {
+        let end = max(duration, 0)
+        let lower = min(max(range.lowerBound, 0), end)
+        return lower...min(max(range.upperBound, lower), end)
+    }
 
     func cover(for face: FaceTrack) -> FaceCover { covers[face.id] ?? .blur }
     func isVisible(_ face: FaceTrack) -> Bool { visibleFaces.contains(face.id) }
@@ -137,6 +168,7 @@ final class VideoCleanerModel {
             await makeThumbnails(from: url)
             stillTime = faces.first?.representativeSample?.time
                 ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
+            observePlayhead()
             refreshPreview()
             stage = .review
         } catch is CancellationError {
@@ -172,6 +204,87 @@ final class VideoCleanerModel {
     func setVisible(_ visible: Bool, for face: FaceTrack) {
         if visible { visibleFaces.insert(face.id) } else { visibleFaces.remove(face.id) }
         refreshPreview()
+    }
+
+    /// Follows what the user drew around at the playhead through the video, and
+    /// adds it as a cover.  `box` is normalised, top-left origin, upright.
+    func addDrawnCover(_ box: CGRect, at time: Double) async {
+        guard let source else { return }
+        followProgress = 0
+        defer { followProgress = nil }
+        do {
+            let samples = try await VideoObjectFollower.follow(box, at: time, in: source) { [weak self] fraction in
+                Task { @MainActor in
+                    if self?.followProgress != nil { self?.followProgress = fraction }
+                }
+            }
+            var cover = FaceTrack(id: nextDrawnID, samples: samples, isDrawn: true)
+            nextDrawnID += 1
+            if cover.samples.isEmpty { cover.samples = [FaceTrack.Sample(time: time, box: box)] }
+            drawnCovers.append(cover)
+            faceThumbnails[cover.id] = await Self.crops([(time: time, box: box)], from: source)[0]
+            selection = .drawn(cover.id)
+            refreshPreview()
+        } catch {
+            // Following was cancelled or could not read the video: nothing is added.
+        }
+    }
+
+    func deleteDrawnCover(_ cover: FaceTrack) {
+        drawnCovers.removeAll { $0.id == cover.id }
+        ranges[cover.id] = nil
+        if selection == .drawn(cover.id) { selection = nil }
+        refreshPreview()
+    }
+
+    /// Sets when a face or drawn cover is on, from the timeline.
+    func setRange(_ range: ClosedRange<Double>, for track: FaceTrack) {
+        ranges[track.id] = clamped(range)
+        refreshPreview()
+    }
+
+    func resetRange(for track: FaceTrack) {
+        ranges[track.id] = nil
+        refreshPreview()
+    }
+
+    /// The face or drawn cover with this id.
+    func track(_ id: Int) -> FaceTrack? {
+        faces.first { $0.id == id } ?? drawnCovers.first { $0.id == id }
+    }
+
+    /// Moves the preview to `time` — the timeline's playhead.
+    func scrub(to time: Double) {
+        let time = min(max(0, time), duration)
+        currentTime = time
+        player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        if previewStill != nil {
+            stillTime = time
+            refreshPreview()
+        }
+    }
+
+    /// The frame at the playhead with the current covers drawn on it — what the
+    /// user draws a new cover on.
+    func coveredFrame(at time: Double) async -> UIImage? {
+        guard let source else { return nil }
+        let plan = currentPlan
+        if plan.isEmpty {
+            return await Self.crops([(time: time, box: CGRect(x: 0, y: 0, width: 1, height: 1))], from: source)[0]
+        }
+        guard let composition = try? await VideoRedactor.composition(for: AVURLAsset(url: source), plan: plan) else { return nil }
+        return await Self.still(of: source, at: time, through: composition)
+    }
+
+    private func observePlayhead() {
+        guard timeObserver == nil else { return }
+        timeObserver = player.addPeriodicTimeObserver(
+            forInterval: CMTime(seconds: 0.05, preferredTimescale: 600), queue: .main
+        ) { [weak self] time in
+            MainActor.assumeIsolated {
+                self?.currentTime = time.seconds
+            }
+        }
     }
 
     func setCovered(_ covered: Bool, for group: FindingGroup) {
@@ -210,7 +323,8 @@ final class VideoCleanerModel {
             self.output = output
             removed = found.filter { $0.kind != .other } + found.filter { $0.kind == .other }.prefix(1)
             removedOther = !otherLeft
-            coveredFaceCount = plan.faces.count
+            coveredFaceCount = plan.faces.filter { !$0.track.isDrawn }.count
+            coveredDrawnCount = drawnCovers.count
             coveredFindingCount = findingGroups.filter(isCovered).count
             player.replaceCurrentItem(with: AVPlayerItem(url: output))
             stage = .cleaned
@@ -232,17 +346,22 @@ final class VideoCleanerModel {
     }
 
     func seek(to face: FaceTrack) {
-        seek(start: face.start - FaceTracking.hold, showing: face.representativeSample?.time)
+        selection = face.isDrawn ? .drawn(face.id) : .face(face.id)
+        seek(start: range(of: face).lowerBound, showing: face.representativeSample?.time)
     }
 
     func seek(to group: FindingGroup) {
+        selection = .group(group.id)
         seek(start: group.start - FindingTracking.hold, showing: group.tracks.first?.representativeSample?.time)
     }
 
     private func seek(start: Double, showing time: Double?) {
-        player.seek(to: CMTime(seconds: max(0, start), preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        let start = max(0, start)
+        currentTime = start
+        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
         if previewStill != nil, let time {
             stillTime = time
+            currentTime = time
             refreshPreview()
         }
     }
@@ -251,6 +370,8 @@ final class VideoCleanerModel {
     func discard() {
         scanTask?.cancel()
         saveTask?.cancel()
+        if let timeObserver { player.removeTimeObserver(timeObserver) }
+        timeObserver = nil
         player.pause()
         player.replaceCurrentItem(with: nil)
         PrivateFileStore.exports.remove(source)
@@ -262,7 +383,13 @@ final class VideoCleanerModel {
     private var currentPlan: VideoRedactor.Plan {
         var plan = VideoRedactor.Plan(path: path)
         if coversFaces {
-            plan.faces = faces.filter { !isVisible($0) }.map { VideoRedactor.FaceCoverage(track: $0, style: cover(for: $0)) }
+            plan.faces = faces.filter { !isVisible($0) }.map {
+                VideoRedactor.FaceCoverage(track: $0, style: cover(for: $0), range: ranges[$0.id])
+            }
+        }
+        // What the user drew is covered whatever the face switch says.
+        plan.faces += drawnCovers.map {
+            VideoRedactor.FaceCoverage(track: $0, style: cover(for: $0), range: ranges[$0.id])
         }
         plan.findings = findingGroups.filter(isCovered).flatMap { group in
             group.tracks.map { VideoRedactor.FindingCoverage(track: $0, style: textStyle) }
@@ -305,6 +432,7 @@ final class VideoCleanerModel {
             let still = await Self.still(of: source, at: stillTime, through: composition)
             guard generation == previewGeneration, stage == .review else { return }
             previewStill = still
+            currentTime = stillTime
             // A failed item cannot be reused: start the next refresh afresh.
             player.replaceCurrentItem(with: nil)
         }

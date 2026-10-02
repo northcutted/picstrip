@@ -15,6 +15,13 @@ struct VideoCleanerView: View {
     @State private var model = VideoCleanerModel()
     @State private var saveState = SaveState.idle
     @State private var emojiFace: FaceTrack?
+    /// The playhead time a new cover is being drawn at.
+    @State private var drawingAt: DrawingTime?
+
+    struct DrawingTime: Identifiable {
+        let time: Double
+        var id: Double { time }
+    }
 
     enum SaveState: Equatable {
         case idle, saving, saved
@@ -50,6 +57,9 @@ struct VideoCleanerView: View {
         }
         .task { await model.start(source) }
         .onDisappear { model.discard() }
+        .sheet(item: $drawingAt) { drawing in
+            DrawCoverSheet(model: model, time: drawing.time)
+        }
         .sheet(item: $emojiFace) { face in
             FaceEmojiSheet(
                 face: face,
@@ -137,9 +147,54 @@ struct VideoCleanerView: View {
                         .listRowInsets(EdgeInsets())
                         .accessibilityLabel("Preview with covers")
                 }
+                CoverTimeline(
+                    duration: model.duration,
+                    time: model.currentTime,
+                    items: timelineItems,
+                    selected: selectedTimelineItems,
+                    onSeek: { model.scrub(to: $0) },
+                    onTrim: selectedTrack.map { track in { model.setRange($0, for: track) } }
+                )
+                .padding(.vertical, 6)
+                .accessibilityElement(children: .contain)
+                .accessibilityIdentifier("coverTimeline")
+
+                HStack {
+                    Button {
+                        model.player.pause()
+                        drawingAt = DrawingTime(time: model.currentTime)
+                    } label: {
+                        Label("Add a Cover", systemImage: "plus.viewfinder")
+                    }
+                    .accessibilityIdentifier("addCoverButton")
+                    Spacer()
+                    if let track = selectedTrack, model.ranges[track.id] != nil {
+                        Button("Reset Timing") { model.resetRange(for: track) }
+                            .font(.subheadline)
+                            .accessibilityIdentifier("resetTimingButton")
+                    }
+                }
+                .buttonStyle(.borderless)
             } footer: {
-                if model.previewStill != nil {
-                    Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
+                VStack(alignment: .leading, spacing: 4) {
+                    if model.previewStill != nil {
+                        Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
+                    }
+                    if selectedTrack != nil {
+                        Text("Drag the ends on the timeline to start the cover earlier or end it later.")
+                    } else {
+                        Text("Missed something? Pause where it shows and add a cover; it follows what you draw around.")
+                    }
+                }
+            }
+
+            if !model.drawnCovers.isEmpty {
+                Section {
+                    ForEach(Array(model.drawnCovers.enumerated()), id: \.element.id) { index, cover in
+                        drawnRow(cover, number: index + 1)
+                    }
+                } header: {
+                    Text("Added by you")
                 }
             }
 
@@ -227,6 +282,11 @@ struct VideoCleanerView: View {
                     Label("Blur", systemImage: "drop.fill")
                 }
                 Button {
+                    model.setCover(.solid, for: face)
+                } label: {
+                    Label("Solid", systemImage: "rectangle.fill")
+                }
+                Button {
                     emojiFace = face
                 } label: {
                     Label("Emoji…", systemImage: "face.smiling")
@@ -243,6 +303,107 @@ struct VideoCleanerView: View {
             .accessibilityLabel("Cover for face \(number)")
             .accessibilityValue(coverName(model.isVisible(face) ? nil : model.cover(for: face)))
             .accessibilityIdentifier("faceCoverMenu-\(number)")
+        }
+        .listRowBackground(model.selection == .face(face.id) ? Color.accentColor.opacity(0.12) : nil)
+    }
+
+    private func drawnRow(_ cover: FaceTrack, number: Int) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                model.seek(to: cover)
+            } label: {
+                HStack(spacing: 12) {
+                    faceThumbnail(cover)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Cover \(number)")
+                            .foregroundStyle(.primary)
+                        Text(Self.timeRange(model.range(of: cover).lowerBound, model.range(of: cover).upperBound))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Shows it in the preview")
+            .accessibilityIdentifier("drawnRow-\(number)")
+
+            Menu {
+                Button {
+                    model.setCover(.blur, for: cover)
+                } label: {
+                    Label("Blur", systemImage: "drop.fill")
+                }
+                Button {
+                    model.setCover(.solid, for: cover)
+                } label: {
+                    Label("Solid", systemImage: "rectangle.fill")
+                }
+                Button {
+                    emojiFace = cover
+                } label: {
+                    Label("Emoji…", systemImage: "face.smiling")
+                }
+                Divider()
+                Button(role: .destructive) {
+                    model.deleteDrawnCover(cover)
+                } label: {
+                    Label("Remove Cover", systemImage: "trash")
+                }
+            } label: {
+                coverLabel(model.cover(for: cover))
+            }
+            .accessibilityLabel("Cover \(number)")
+            .accessibilityValue(coverName(model.cover(for: cover)))
+            .accessibilityIdentifier("drawnCoverMenu-\(number)")
+        }
+        .listRowBackground(model.selection == .drawn(cover.id) ? Color.accentColor.opacity(0.12) : nil)
+    }
+
+    // MARK: Timeline
+
+    /// Every cover on the timeline, in its lane and colour.
+    private var timelineItems: [CoverTimeline.Item] {
+        var items: [CoverTimeline.Item] = []
+        if model.coversFaces {
+            for face in model.faces where !model.isVisible(face) {
+                items.append(.init(id: "face-\(face.id)", lane: 0, range: model.range(of: face), color: PIIType.face.riskLevel.color))
+            }
+        }
+        for group in model.findingGroups where model.isCovered(group) {
+            for track in group.tracks {
+                items.append(.init(
+                    id: "text-\(track.id)", lane: 1,
+                    range: model.clamped((track.start - FindingTracking.hold)...(track.end + FindingTracking.hold)),
+                    color: group.type.riskLevel.color
+                ))
+            }
+        }
+        for cover in model.drawnCovers {
+            items.append(.init(id: "face-\(cover.id)", lane: 2, range: model.range(of: cover), color: .accentColor))
+        }
+        return items
+    }
+
+    private var selectedTimelineItems: [CoverTimeline.Item] {
+        switch model.selection {
+        case .face(let id), .drawn(let id):
+            return timelineItems.filter { $0.id == "face-\(id)" }
+        case .group(let groupID):
+            let ids = Set(model.findingGroups.first { $0.id == groupID }?.tracks.map { "text-\($0.id)" } ?? [])
+            return timelineItems.filter { ids.contains($0.id) }
+        case nil:
+            return []
+        }
+    }
+
+    /// The face or drawn cover picked in the list, whose timing can be changed.
+    private var selectedTrack: FaceTrack? {
+        switch model.selection {
+        case .face(let id), .drawn(let id): model.track(id)
+        default: nil
         }
     }
 
@@ -287,6 +448,7 @@ struct VideoCleanerView: View {
             .labelsHidden()
             .accessibilityIdentifier("findingToggle-\(number)")
         }
+        .listRowBackground(model.selection == .group(group.id) ? Color.accentColor.opacity(0.12) : nil)
     }
 
     @ViewBuilder
@@ -317,6 +479,9 @@ struct VideoCleanerView: View {
             case .blur:
                 Image(systemName: "drop.fill")
                 Text("Blur")
+            case .solid:
+                Image(systemName: "rectangle.fill")
+                Text("Solid")
             case .emoji(let emoji):
                 Text(emoji).font(.title3)
             }
@@ -331,6 +496,7 @@ struct VideoCleanerView: View {
         switch cover {
         case nil: String(localized: "Visible")
         case .blur: String(localized: "Blur")
+        case .solid: String(localized: "Solid")
         case .emoji(let emoji): emoji
         }
     }
@@ -383,6 +549,13 @@ struct VideoCleanerView: View {
                         symbol: "face.dashed.fill", values: []
                     )
                     .accessibilityIdentifier("facesCoveredRow")
+                }
+                if model.coveredDrawnCount > 0 {
+                    resultRow(
+                        title: Text("Covers you added: \(model.coveredDrawnCount)"),
+                        symbol: "plus.viewfinder", values: []
+                    )
+                    .accessibilityIdentifier("drawnCoveredRow")
                 }
                 if model.coveredFindingCount > 0 {
                     resultRow(
@@ -685,6 +858,123 @@ private struct ScanSweep: View {
         }
         .allowsHitTesting(false)
         .accessibilityHidden(true)
+    }
+}
+
+// MARK: - DrawCoverSheet
+
+/// The paused frame, with the covers already on it, to draw a box around
+/// something the scan missed.  PicStrip then follows it through the video.
+private struct DrawCoverSheet: View {
+    let model: VideoCleanerModel
+    let time: Double
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var frame: UIImage?
+    @State private var start: CGPoint?
+    @State private var end: CGPoint?
+    @State private var following: Task<Void, Never>?
+
+    /// The drawn box, normalised, top-left origin; `nil` until it is big enough.
+    private var box: CGRect? {
+        guard let start, let end else { return nil }
+        let rect = CGRect(
+            x: min(start.x, end.x), y: min(start.y, end.y),
+            width: abs(end.x - start.x), height: abs(end.y - start.y)
+        )
+        return rect.width >= 0.02 && rect.height >= 0.02 ? rect : nil
+    }
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 16) {
+                Group {
+                    if let frame {
+                        Image(uiImage: frame)
+                            .resizable()
+                            .scaledToFit()
+                            .overlay { drawingLayer }
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .accessibilityLabel("The paused frame")
+                    } else {
+                        ProgressView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    }
+                }
+                .frame(maxHeight: .infinity)
+
+                if let progress = model.followProgress {
+                    VStack(spacing: 6) {
+                        Text("Following it through the video…")
+                            .font(.headline)
+                        ProgressView(value: progress)
+                    }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityIdentifier("followProgress")
+                } else {
+                    Text("Draw a box around what to cover. PicStrip follows it through the video, forwards and back, until it loses it.")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+            }
+            .padding(20)
+            .navigationTitle("Add a Cover")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") {
+                        following?.cancel()
+                        dismiss()
+                    }
+                    .accessibilityIdentifier("cancelDrawButton")
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Follow") {
+                        guard let box else { return }
+                        following = Task {
+                            await model.addDrawnCover(box, at: time)
+                            if !Task.isCancelled { dismiss() }
+                        }
+                    }
+                    .disabled(box == nil || following != nil)
+                    .accessibilityIdentifier("followButton")
+                }
+            }
+            .task { frame = await model.coveredFrame(at: time) }
+            .interactiveDismissDisabled(following != nil)
+        }
+    }
+
+    private var drawingLayer: some View {
+        GeometryReader { geometry in
+            let size = geometry.size
+            ZStack(alignment: .topLeading) {
+                Color.clear
+                    .contentShape(Rectangle())
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { drag in
+                                guard following == nil, size.width > 0, size.height > 0 else { return }
+                                func normalised(_ point: CGPoint) -> CGPoint {
+                                    CGPoint(x: min(max(point.x / size.width, 0), 1), y: min(max(point.y / size.height, 0), 1))
+                                }
+                                if drag.translation == .zero || start == nil { start = normalised(drag.startLocation) }
+                                end = normalised(drag.location)
+                            }
+                    )
+                    .accessibilityIdentifier("drawingArea")
+                if let box {
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Color.accentColor.opacity(0.18))
+                        .strokeBorder(Color.accentColor, lineWidth: 2)
+                        .frame(width: box.width * size.width, height: box.height * size.height)
+                        .offset(x: box.minX * size.width, y: box.minY * size.height)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                }
+            }
+        }
     }
 }
 
