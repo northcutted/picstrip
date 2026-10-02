@@ -189,6 +189,16 @@ struct AboutView: View {
                             text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."
                         )
                         instructionRow(
+                            icon: "camera.viewfinder",
+                            color: .indigo,
+                            text: "**Screenshots** — tap \u{201C}Screenshots\u{201D} to pick from just your screenshots."
+                        )
+                        instructionRow(
+                            icon: "video",
+                            color: .red,
+                            text: "**Videos** — tap \u{201C}Videos\u{201D} to clean a video. See Videos below."
+                        )
+                        instructionRow(
                             icon: "arrow.down.to.line",
                             color: .purple,
                             text: "**Drag & Drop** — drag any image from Safari, Files, or another app and drop it onto PicStrip to load it instantly."
@@ -348,8 +358,57 @@ struct AboutView: View {
                             color: .green,
                             text: "**Draw a custom region** using the \u{201C}Add Region\u{201D} button, then drag on the photo to cover anything the automatic scan missed."
                         )
+                        instructionRow(
+                            icon: "face.smiling",
+                            color: .yellow,
+                            text: "**Cover with an emoji** — choose Emoji as the style, then pick one from the grid or search all emoji. The face is blurred underneath, so nothing shows around it."
+                        )
                     }
                     .padding(.vertical, 6)
+                }
+
+                // ── Section 6b: Videos ────────────────────────────────────
+                Section {
+                    VStack(alignment: .leading, spacing: 14) {
+                        instructionRow(
+                            icon: "video",
+                            color: .red,
+                            text: "**Clean a video.** PicStrip removes where it was filmed, the device, and the dates, and checks the copy before you share it."
+                        )
+                        instructionRow(
+                            icon: "face.dashed",
+                            color: .orange,
+                            text: "**Faces are found and covered as they move**, with a strong blur, a solid box, or an emoji you pick for each face. Choose \u{201C}Leave Visible\u{201D} for anyone who should stay seen."
+                        )
+                        instructionRow(
+                            icon: "text.viewfinder",
+                            color: .blue,
+                            text: "**Text and codes** — phone numbers, email addresses, card numbers, QR codes, and your Always Cover words — are read twice a second and stay covered as the camera moves."
+                        )
+                        instructionRow(
+                            icon: "viewfinder",
+                            color: .green,
+                            text: "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and draw a box around it. PicStrip tracks it through the whole video, forwards and back."
+                        )
+                        instructionRow(
+                            icon: "timeline.selection",
+                            color: .purple,
+                            text: "**The timeline** shows every cover as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and drag across the frames to move through the video."
+                        )
+                        instructionRow(
+                            icon: "waveform.badge.exclamationmark",
+                            color: .pink,
+                            text: "**Bleep or mute the sound.** Add a bleep or a mute at the playhead, then drag its ends on the Audio lane to cover exactly what was said."
+                        )
+                        instructionRow(
+                            icon: "play.rectangle",
+                            color: .teal,
+                            text: "**Watch the preview, then save.** The preview is drawn exactly the way the copy is saved. Automatic covering can miss something small, turned away, or on screen for a moment, so check before you share."
+                        )
+                    }
+                    .padding(.vertical, 6)
+                } header: {
+                    Text("Videos")
                 }
 
                 // ── Section 7: Privacy ───────────────────────────

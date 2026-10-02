@@ -147,44 +147,50 @@ struct VideoCleanerView: View {
                         .listRowInsets(EdgeInsets())
                         .accessibilityLabel("Preview with covers")
                 }
-                CoverTimeline(
+                EditorTimeline(
                     duration: model.duration,
                     time: model.currentTime,
-                    items: timelineItems,
-                    selected: selectedTimelineItems,
+                    lanes: timelineLanes,
+                    frames: model.filmstrip,
+                    levels: model.audioLevels,
+                    clips: timelineClips,
+                    selected: selectedClipIDs,
+                    trimmable: trimmableClipID,
                     onSeek: { model.scrub(to: $0) },
-                    onTrim: selectedTrack.map { track in { model.setRange($0, for: track) } }
+                    onSelect: { select($0) },
+                    onTrim: { trim($0, to: $1) }
                 )
-                .padding(.vertical, 6)
+                .padding(.vertical, 8)
                 .accessibilityElement(children: .contain)
                 .accessibilityIdentifier("coverTimeline")
 
-                HStack {
-                    Button {
+                HStack(spacing: 8) {
+                    editButton("Cover an Object", systemImage: "viewfinder", identifier: "addCoverButton") {
                         model.player.pause()
                         drawingAt = DrawingTime(time: model.currentTime)
-                    } label: {
-                        Label("Add a Cover", systemImage: "plus.viewfinder")
                     }
-                    .accessibilityIdentifier("addCoverButton")
-                    Spacer()
-                    if let track = selectedTrack, model.ranges[track.id] != nil {
-                        Button("Reset Timing") { model.resetRange(for: track) }
-                            .font(.subheadline)
-                            .accessibilityIdentifier("resetTimingButton")
+                    if model.hasAudio {
+                        editButton("Bleep", systemImage: "waveform.badge.exclamationmark", identifier: "addBleepButton") {
+                            model.addAudioEdit(.bleep)
+                        }
+                        editButton("Mute", systemImage: "speaker.slash", identifier: "addMuteButton") {
+                            model.addAudioEdit(.mute)
+                        }
                     }
                 }
-                .buttonStyle(.borderless)
+                .buttonStyle(.bordered)
+                .listRowSeparator(.hidden)
+                if let track = selectedTrack, model.ranges[track.id] != nil {
+                    Button("Reset Timing") { model.resetRange(for: track) }
+                        .buttonStyle(.borderless)
+                        .accessibilityIdentifier("resetTimingButton")
+                }
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
                     if model.previewStill != nil {
                         Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
                     }
-                    if selectedTrack != nil {
-                        Text("Drag the ends on the timeline to start the cover earlier or end it later.")
-                    } else {
-                        Text("Missed something? Pause where it shows and add a cover; it follows what you draw around.")
-                    }
+                    Text(timelineHint)
                 }
             }
 
@@ -194,7 +200,30 @@ struct VideoCleanerView: View {
                         drawnRow(cover, number: index + 1)
                     }
                 } header: {
-                    Text("Added by you")
+                    Text("Objects")
+                } footer: {
+                    Text("Anything you draw around — a person, a car, a screen, a sign — is tracked as it moves, forwards and back.")
+                }
+            }
+
+            if !model.audioEdits.isEmpty {
+                Section {
+                    ForEach(Array(model.audioEdits.enumerated()), id: \.element.id) { index, edit in
+                        audioRow(edit, number: index + 1)
+                    }
+                } header: {
+                    Text("Audio")
+                } footer: {
+                    Text("A bleep replaces the sound with a tone; a mute silences it.")
+                }
+            }
+
+            if model.faces.isEmpty && model.findingGroups.isEmpty {
+                Section {
+                    Label("No faces or sensitive text found", systemImage: "face.dashed")
+                        .accessibilityIdentifier("nothingFoundRow")
+                } footer: {
+                    Text("You can still cover objects yourself, bleep the sound, or save a copy with only the hidden details removed.")
                 }
             }
 
@@ -315,7 +344,7 @@ struct VideoCleanerView: View {
                 HStack(spacing: 12) {
                     faceThumbnail(cover)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("Cover \(number)")
+                        Text("Object \(number)")
                             .foregroundStyle(.primary)
                         Text(Self.timeRange(model.range(of: cover).lowerBound, model.range(of: cover).upperBound))
                             .font(.caption)
@@ -350,12 +379,12 @@ struct VideoCleanerView: View {
                 Button(role: .destructive) {
                     model.deleteDrawnCover(cover)
                 } label: {
-                    Label("Remove Cover", systemImage: "trash")
+                    Label("Remove", systemImage: "trash")
                 }
             } label: {
                 coverLabel(model.cover(for: cover))
             }
-            .accessibilityLabel("Cover \(number)")
+            .accessibilityLabel("Cover for object \(number)")
             .accessibilityValue(coverName(model.cover(for: cover)))
             .accessibilityIdentifier("drawnCoverMenu-\(number)")
         }
@@ -364,47 +393,190 @@ struct VideoCleanerView: View {
 
     // MARK: Timeline
 
-    /// Every cover on the timeline, in its lane and colour.
-    private var timelineItems: [CoverTimeline.Item] {
-        var items: [CoverTimeline.Item] = []
+    /// An action under the timeline: its symbol over a short title, the
+    /// buttons sharing the width.
+    private func editButton(
+        _ title: LocalizedStringKey, systemImage: String, identifier: String, action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: systemImage)
+                    .font(.body.weight(.semibold))
+                Text(title)
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+        }
+        .accessibilityIdentifier(identifier)
+    }
+
+    private var timelineLanes: [EditorTimeline.Lane] {
+        var lanes: [EditorTimeline.Lane] = []
+        if !model.faces.isEmpty { lanes.append(.faces) }
+        if !model.findingGroups.isEmpty { lanes.append(.text) }
+        lanes.append(.objects)
+        if model.hasAudio { lanes.append(.audio) }
+        return lanes
+    }
+
+    /// Every cover and sound edit as a clip, in its lane and colour.
+    private var timelineClips: [EditorTimeline.Clip] {
+        var clips: [EditorTimeline.Clip] = []
         if model.coversFaces {
-            for face in model.faces where !model.isVisible(face) {
-                items.append(.init(id: "face-\(face.id)", lane: 0, range: model.range(of: face), color: PIIType.face.riskLevel.color))
+            for (index, face) in model.faces.enumerated() where !model.isVisible(face) {
+                clips.append(.init(
+                    id: "face-\(face.id)", lane: .faces, range: model.range(of: face),
+                    color: PIIType.face.riskLevel.color, label: String(localized: "Face \(index + 1)")
+                ))
             }
         }
         for group in model.findingGroups where model.isCovered(group) {
             for track in group.tracks {
-                items.append(.init(
-                    id: "text-\(track.id)", lane: 1,
+                clips.append(.init(
+                    id: "text-\(track.id)", lane: .text,
                     range: model.clamped((track.start - FindingTracking.hold)...(track.end + FindingTracking.hold)),
-                    color: group.type.riskLevel.color
+                    color: group.type.riskLevel.color, label: group.type.description, symbol: group.type.symbolName
                 ))
             }
         }
-        for cover in model.drawnCovers {
-            items.append(.init(id: "face-\(cover.id)", lane: 2, range: model.range(of: cover), color: .accentColor))
+        for (index, cover) in model.drawnCovers.enumerated() {
+            clips.append(.init(
+                id: "face-\(cover.id)", lane: .objects, range: model.range(of: cover),
+                color: .accentColor, label: String(localized: "Object \(index + 1)"), symbol: "viewfinder"
+            ))
         }
-        return items
+        for edit in model.audioEdits {
+            clips.append(.init(
+                id: "audio-\(edit.id)", lane: .audio, range: edit.range,
+                color: edit.kind == .bleep ? .red : .gray,
+                label: edit.kind == .bleep ? String(localized: "Bleep") : String(localized: "Mute"),
+                symbol: edit.kind == .bleep ? "waveform.badge.exclamationmark" : "speaker.slash.fill"
+            ))
+        }
+        return clips
     }
 
-    private var selectedTimelineItems: [CoverTimeline.Item] {
+    private var selectedClipIDs: Set<String> {
         switch model.selection {
         case .face(let id), .drawn(let id):
-            return timelineItems.filter { $0.id == "face-\(id)" }
+            return ["face-\(id)"]
         case .group(let groupID):
-            let ids = Set(model.findingGroups.first { $0.id == groupID }?.tracks.map { "text-\($0.id)" } ?? [])
-            return timelineItems.filter { ids.contains($0.id) }
+            return Set(model.findingGroups.first { $0.id == groupID }?.tracks.map { "text-\($0.id)" } ?? [])
+        case .audio(let id):
+            return ["audio-\(id)"]
         case nil:
             return []
         }
     }
 
-    /// The face or drawn cover picked in the list, whose timing can be changed.
+    /// The selected clip whose ends can be dragged: a face, an object or a sound edit.
+    private var trimmableClipID: String? {
+        switch model.selection {
+        case .face(let id), .drawn(let id): "face-\(id)"
+        case .audio(let id): "audio-\(id)"
+        default: nil
+        }
+    }
+
+    /// The face or object cover picked, whose timing can be changed.
     private var selectedTrack: FaceTrack? {
         switch model.selection {
         case .face(let id), .drawn(let id): model.track(id)
         default: nil
         }
+    }
+
+    private var timelineHint: String {
+        trimmableClipID != nil
+            ? String(localized: "Drag the yellow ends of the selected clip to change when it applies. Drag across the frames to move through the video.")
+            : String(localized: "Each lane shows when something is covered. Tap a clip to select it, or drag across the frames to move through the video.")
+    }
+
+    private func select(_ clip: EditorTimeline.Clip) {
+        let parts = clip.id.split(separator: "-", maxSplits: 1)
+        guard parts.count == 2 else { return }
+        let id = String(parts[1])
+        switch parts[0] {
+        case "face":
+            if let number = Int(id), let track = model.track(number) { model.seek(to: track) }
+        case "text":
+            if let number = Int(id), let group = model.findingGroups.first(where: { $0.tracks.contains { $0.id == number } }) {
+                model.seek(to: group)
+            }
+        case "audio":
+            if let number = Int(id) {
+                model.selection = .audio(number)
+                model.scrub(to: clip.range.lowerBound)
+            }
+        default:
+            break
+        }
+    }
+
+    private func trim(_ clip: EditorTimeline.Clip, to range: ClosedRange<Double>) {
+        if let track = selectedTrack, clip.id == "face-\(track.id)" {
+            model.setRange(range, for: track)
+        } else if case .audio(let id) = model.selection, let edit = model.audioEdit(id) {
+            model.setRange(range, of: edit)
+        }
+    }
+
+    private func audioRow(_ edit: AudioEdit, number: Int) -> some View {
+        HStack(spacing: 12) {
+            Button {
+                model.selection = .audio(edit.id)
+                model.scrub(to: edit.range.lowerBound)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: edit.kind == .bleep ? "waveform.badge.exclamationmark" : "speaker.slash.fill")
+                        .font(.title3)
+                        .foregroundStyle(edit.kind == .bleep ? .red : .secondary)
+                        .frame(width: 44, height: 44)
+                        .accessibilityHidden(true)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(edit.kind == .bleep ? "Bleep" : "Mute")
+                            .foregroundStyle(.primary)
+                        Text(Self.timeRange(edit.range.lowerBound, edit.range.upperBound))
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .monospacedDigit()
+                    }
+                    Spacer(minLength: 0)
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityHint("Shows it on the timeline")
+            .accessibilityIdentifier("audioRow-\(number)")
+
+            Menu {
+                Button {
+                    model.setKind(.bleep, of: edit)
+                } label: {
+                    Label("Bleep", systemImage: "waveform.badge.exclamationmark")
+                }
+                Button {
+                    model.setKind(.mute, of: edit)
+                } label: {
+                    Label("Mute", systemImage: "speaker.slash")
+                }
+                Divider()
+                Button(role: .destructive) {
+                    model.deleteAudioEdit(edit)
+                } label: {
+                    Label("Remove", systemImage: "trash")
+                }
+            } label: {
+                Image(systemName: "ellipsis.circle")
+                    .font(.title3)
+                    .frame(width: 44, height: 44)
+            }
+            .accessibilityLabel("Change audio edit \(number)")
+            .accessibilityIdentifier("audioMenu-\(number)")
+        }
+        .listRowBackground(model.selection == .audio(edit.id) ? Color.accentColor.opacity(0.12) : nil)
     }
 
     private func findingRow(_ group: FindingGroup, number: Int) -> some View {
@@ -552,10 +724,17 @@ struct VideoCleanerView: View {
                 }
                 if model.coveredDrawnCount > 0 {
                     resultRow(
-                        title: Text("Covers you added: \(model.coveredDrawnCount)"),
-                        symbol: "plus.viewfinder", values: []
+                        title: Text("Objects covered: \(model.coveredDrawnCount)"),
+                        symbol: "viewfinder", values: []
                     )
                     .accessibilityIdentifier("drawnCoveredRow")
+                }
+                if model.editedAudioCount > 0 {
+                    resultRow(
+                        title: Text("Sound bleeped or muted: \(model.editedAudioCount)"),
+                        symbol: "waveform.badge.exclamationmark", values: []
+                    )
+                    .accessibilityIdentifier("audioEditedRow")
                 }
                 if model.coveredFindingCount > 0 {
                     resultRow(
@@ -564,7 +743,7 @@ struct VideoCleanerView: View {
                     )
                     .accessibilityIdentifier("textCoveredRow")
                 }
-                if !model.hasSomethingToCover && !model.skipsCovering {
+                if model.faces.isEmpty && model.findingGroups.isEmpty && !model.skipsCovering {
                     Label("No faces or sensitive text found", systemImage: "face.dashed")
                         .accessibilityIdentifier("noFacesFoundRow")
                 }
@@ -583,7 +762,7 @@ struct VideoCleanerView: View {
                 Text("Removed from the copy")
             }
 
-            if model.hasSomethingToCover {
+            if !model.skipsCovering {
                 Section {
                     Button {
                         saveState = .idle
@@ -905,21 +1084,21 @@ private struct DrawCoverSheet: View {
 
                 if let progress = model.followProgress {
                     VStack(spacing: 6) {
-                        Text("Following it through the video…")
+                        Text("Tracking it through the video…")
                             .font(.headline)
                         ProgressView(value: progress)
                     }
                     .accessibilityElement(children: .combine)
                     .accessibilityIdentifier("followProgress")
                 } else {
-                    Text("Draw a box around what to cover. PicStrip follows it through the video, forwards and back, until it loses it.")
+                    Text("Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                 }
             }
             .padding(20)
-            .navigationTitle("Add a Cover")
+            .navigationTitle("Cover an Object")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -930,7 +1109,7 @@ private struct DrawCoverSheet: View {
                     .accessibilityIdentifier("cancelDrawButton")
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Follow") {
+                    Button("Track") {
                         guard let box else { return }
                         following = Task {
                             await model.addDrawnCover(box, at: time)

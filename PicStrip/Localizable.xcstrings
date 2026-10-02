@@ -305,6 +305,107 @@
         }
       }
     },
+    "%@ – %@" : {
+      "comment" : "VoiceOver value of a clip on the video timeline: when it starts and ends.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%1$@ – %2$@"
+          }
+        }
+      }
+    },
     "%@%@" : {
       "shouldTranslate" : false
     },
@@ -1053,6 +1154,410 @@
         }
       }
     },
+    "**Bleep or mute the sound.** Add a bleep or a mute at the playhead, then drag its ends on the Audio lane to cover exactly what was said." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**أضف صفيرًا أو اكتم الصوت.** أضف صفيرًا أو كتمًا عند مؤشر التشغيل، ثم اسحب طرفيه في مسار الصوت ليغطي ما قيل بالضبط."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ton überpiepen oder stummschalten.** Füge an der Abspielposition einen Piepton oder eine Stummschaltung hinzu und zieh dann die Enden in der Audiospur, damit genau das Gesagte abgedeckt ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Pon un pitido o silencia el sonido.** Añade un pitido o un silencio en el cursor de reproducción y luego arrastra sus extremos en la pista de audio para cubrir exactamente lo que se dijo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Pon un pitido o silencia el sonido.** Agrega un pitido o un silencio en el cursor de reproducción y luego arrastra sus extremos en la pista de audio para cubrir exactamente lo que se dijo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Bipez ou coupez le son.** Ajoutez un bip ou un silence à la tête de lecture, puis faites glisser ses extrémités sur la piste Audio pour couvrir exactement ce qui a été dit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Metti un bip o silenzia l’audio.** Aggiungi un bip o un silenzio all’indicatore di riproduzione, poi trascina le sue estremità sulla traccia Audio per coprire esattamente ciò che è stato detto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**音声にピー音を入れる・ミュートする。** 再生ヘッドの位置にピー音またはミュートを追加し、オーディオトラックで端をドラッグして、話した内容にぴったり合わせます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**소리에 삐 소리를 넣거나 음소거하십시오.** 재생 헤드 위치에 삐 소리나 음소거를 추가한 다음 오디오 트랙에서 끝을 드래그하여 말한 내용을 정확히 덮으십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Laat geluid piepen of demp het.** Voeg op de afspeelkop een piep of demping toe en sleep de uiteinden op het Audio-spoor zodat precies het gezegde wordt bedekt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zagłusz lub wycisz dźwięk.** Dodaj pisk lub wyciszenie w miejscu głowicy odtwarzania, a potem przeciągnij jego końce na ścieżce Dźwięk, aby objąć dokładnie to, co zostało powiedziane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Coloque um bipe ou silencie o som.** Adicione um bipe ou um silêncio no indicador de reprodução e arraste as extremidades na faixa Áudio para cobrir exatamente o que foi dito."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ponha um bipe ou silencie o som.** Adicione um bipe ou um silêncio na cabeça de reprodução e arraste as extremidades na faixa Áudio para cobrir exatamente o que foi dito."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Lägg pip över eller tysta ljudet.** Lägg till ett pip eller en tystnad vid uppspelningshuvudet och dra sedan i ändarna på ljudspåret så att exakt det som sades täcks."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Sese bip sesi ekleyin veya sessize alın.** Oynatma imlecinde bir bip sesi veya sessizlik ekleyin, ardından söyleneni tam olarak kapsaması için Ses kanalında uçlarını sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**为声音加哔声或静音。** 在播放头处添加哔声或静音，然后在“音频”轨道上拖动两端，准确盖住所说的内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**為聲音加嗶聲或靜音。** 在播放頭處加入嗶聲或靜音，然後在「音訊」軌道上拖移兩端，準確蓋住所說的內容。"
+          }
+        }
+      }
+    },
+    "**Clean a video.** PicStrip removes where it was filmed, the device, and the dates, and checks the copy before you share it." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**نظّف فيديو.** يزيل PicStrip مكان التصوير والجهاز والتواريخ، ويتحقق من النسخة قبل مشاركتها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Video bereinigen.** PicStrip entfernt, wo es gefilmt wurde, das Gerät und die Daten und prüft die Kopie, bevor du sie teilst."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Limpia un vídeo.** PicStrip elimina dónde se grabó, el dispositivo y las fechas, y comprueba la copia antes de que la compartas."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Limpia un video.** PicStrip elimina dónde se grabó, el dispositivo y las fechas, y comprueba la copia antes de que la compartas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Nettoyez une vidéo.** PicStrip supprime le lieu du tournage, l’appareil et les dates, et vérifie la copie avant que vous la partagiez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Pulisci un video.** PicStrip rimuove dove è stato girato, il dispositivo e le date, e controlla la copia prima che tu la condivida."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ビデオをクリーンアップ。** PicStripは撮影場所、デバイス、日付を削除し、共有する前にコピーを確認します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**비디오를 정리하십시오.** PicStrip이 촬영 위치, 기기, 날짜를 제거하고 공유하기 전에 사본을 확인합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Schoon een video op.** PicStrip verwijdert waar die is gefilmd, het apparaat en de datums, en controleert de kopie voordat je die deelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Wyczyść wideo.** PicStrip usuwa miejsce nagrania, urządzenie i daty oraz sprawdza kopię, zanim ją udostępnisz."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Limpe um vídeo.** O PicStrip remove onde ele foi filmado, o dispositivo e as datas, e verifica a cópia antes de você compartilhá-la."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Limpe um vídeo.** O PicStrip remove onde foi filmado, o dispositivo e as datas, e verifica a cópia antes de a partilhar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Rensa en video.** PicStrip tar bort var den filmades, enheten och datumen, och kontrollerar kopian innan du delar den."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Bir videoyu temizleyin.** PicStrip çekildiği yeri, cihazı ve tarihleri kaldırır ve paylaşmadan önce kopyayı denetler."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**清理视频。** PicStrip 会移除拍摄地点、设备和日期，并在你共享前检查副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**清理影片。** PicStrip 會移除拍攝地點、裝置和日期，並在你分享前檢查拷貝。"
+          }
+        }
+      }
+    },
+    "**Cover any object.** Pause where something shows — a person, a car, a screen, a sign — and draw a box around it. PicStrip tracks it through the whole video, forwards and back." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**احجب أي عنصر.** أوقف الفيديو حيث يظهر شيء — شخص أو سيارة أو شاشة أو لافتة — وارسم مربعًا حوله. يتتبعه PicStrip عبر الفيديو كله، للأمام وللخلف."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Beliebige Objekte verdecken.** Halte an, wo etwas zu sehen ist – eine Person, ein Auto, ein Bildschirm, ein Schild –, und zieh einen Rahmen darum. PicStrip verfolgt es durch das ganze Video, vorwärts und rückwärts."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un coche, una pantalla, un letrero) y dibuja un recuadro alrededor. PicStrip lo sigue por todo el vídeo, hacia delante y hacia atrás."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Censura cualquier objeto.** Pausa donde aparezca algo (una persona, un auto, una pantalla, un letrero) y dibuja un recuadro alrededor. PicStrip lo sigue por todo el video, hacia adelante y hacia atrás."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Masquez n’importe quel objet.** Mettez en pause là où quelque chose apparaît (une personne, une voiture, un écran, un panneau) et tracez un cadre autour. PicStrip le suit dans toute la vidéo, en avant et en arrière."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Copri qualsiasi oggetto.** Metti in pausa dove compare qualcosa (una persona, un’auto, uno schermo, un cartello) e disegna un riquadro intorno. PicStrip lo segue in tutto il video, in avanti e indietro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**どんなオブジェクトでもマスク。** 人、車、画面、看板などが映っているところで一時停止し、枠で囲みます。PicStripはビデオ全体の前後にわたってそれを追跡します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**어떤 개체든 가리십시오.** 사람, 자동차, 화면, 표지판 등이 보이는 곳에서 일시 정지하고 상자로 둘러싸면 PicStrip이 비디오 전체에서 앞뒤로 추적합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Dek elk object af.** Pauzeer waar iets te zien is — een persoon, een auto, een scherm, een bord — en teken er een kader omheen. PicStrip volgt het door de hele video, vooruit en terug."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zamaż dowolny obiekt.** Zatrzymaj tam, gdzie coś widać – osobę, samochód, ekran, znak – i narysuj wokół tego ramkę. PicStrip śledzi to w całym wideo, do przodu i do tyłu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, uma tela, uma placa — e desenhe um retângulo em volta. O PicStrip acompanha isso pelo vídeo inteiro, para a frente e para trás."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Oculte qualquer objeto.** Pause onde algo aparece — uma pessoa, um carro, um ecrã, uma placa — e desenhe um retângulo à volta. O PicStrip segue-o pelo vídeo inteiro, para a frente e para trás."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Maskera vilket objekt som helst.** Pausa där något syns – en person, en bil, en skärm, en skylt – och rita en ruta runt det. PicStrip följer det genom hela videon, framåt och bakåt."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Herhangi bir nesneyi karartın.** Bir şeyin göründüğü yerde (bir kişi, bir araba, bir ekran, bir tabela) duraklatın ve çevresine bir kutu çizin. PicStrip onu tüm video boyunca ileri ve geri takip eder."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**遮盖任何物体。** 在某样东西（人、汽车、屏幕、标牌）出现的地方暂停，并在它周围画一个框。PicStrip 会在整个视频中向前向后跟踪它。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**遮蓋任何物體。** 在某樣東西（人、汽車、螢幕、招牌）出現的地方暫停，並在它周圍畫一個框。PicStrip 會在整部影片中向前向後追蹤它。"
+          }
+        }
+      }
+    },
+    "**Cover with an emoji** — choose Emoji as the style, then pick one from the grid or search all emoji. The face is blurred underneath, so nothing shows around it." : {
+      "comment" : "Help page, Redaction Editor Tips.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**احجب بإيموجي** — اختر الإيموجي كنمط، ثم اختر واحدًا من الشبكة أو ابحث في كل الإيموجي. يُموَّه الوجه تحته، فلا يظهر شيء حوله."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Mit einem Emoji verdecken** – wähle Emoji als Stil und dann eines aus dem Raster oder durchsuche alle Emojis. Das Gesicht wird darunter weichgezeichnet, sodass drumherum nichts zu sehen ist."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Censura con un emoji**: elige Emoji como estilo y luego uno de la cuadrícula o busca entre todos los emojis. La cara se desenfoca debajo, así que no se ve nada alrededor."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Censura con un emoji**: elige Emoji como estilo y luego uno de la cuadrícula o busca entre todos los emojis. La cara se desenfoca debajo, así que no se ve nada alrededor."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Masquez avec un emoji** — choisissez Emoji comme style, puis un emoji de la grille, ou recherchez parmi tous les emojis. Le visage est flouté en dessous : rien ne se voit autour."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Copri con un’emoji** — scegli Emoji come stile, poi una dalla griglia o cerca tra tutte le emoji. Il volto viene sfocato sotto, così intorno non si vede nulla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**絵文字でマスク** — スタイルで「絵文字」を選び、グリッドから選ぶか、すべての絵文字を検索します。顔はその下でぼかされるため、周りから何も見えません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**이모티콘으로 가리기** — 스타일로 이모티콘을 선택한 다음 격자에서 고르거나 모든 이모티콘을 검색하십시오. 얼굴은 그 아래에서 흐리게 처리되므로 주변으로 아무것도 보이지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Afdekken met een emoji** — kies Emoji als stijl en kies er dan een uit het raster of zoek in alle emoji. Het gezicht wordt eronder vervaagd, zodat er rondom niets te zien is."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zamaż emoji** — wybierz Emoji jako styl, a potem jedną z siatki lub wyszukaj wśród wszystkich emoji. Twarz pod spodem jest rozmyta, więc wokół nic nie widać."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Oculte com um emoji** — escolha Emoji como estilo e depois um da grade, ou busque em todos os emojis. O rosto é desfocado por baixo, então nada aparece ao redor."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Oculte com um emoji** — escolha Emoji como estilo e depois um da grelha, ou pesquise todos os emojis. O rosto é desfocado por baixo, por isso nada se vê à volta."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Maskera med en emoji** – välj Emoji som stil och sedan en i rutnätet, eller sök bland alla emojier. Ansiktet görs suddigt under, så inget syns runt den."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Emoji ile karartın** — stil olarak Emoji’yi seçin, ardından ızgaradan birini seçin veya tüm emojilerde arayın. Yüz altında bulanıklaştırılır; böylece çevresinden hiçbir şey görünmez."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**用表情符号遮盖** — 选择“表情符号”样式，然后从网格中选取或搜索所有表情符号。下方的面孔会被模糊处理，因此周围不会露出任何内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**用表情符號遮蓋** — 選擇「表情符號」樣式，然後從網格中選取或搜尋所有表情符號。下方的臉孔會被模糊處理，因此周圍不會露出任何內容。"
+          }
+        }
+      }
+    },
     "**Drag & Drop** — drag any image from Safari, Files, or another app and drop it onto PicStrip to load it instantly." : {
       "localizations" : {
         "ar" : {
@@ -1249,6 +1754,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**繪製自訂區域**：使用「新增區域」按鈕，然後在照片上拖移，即可遮蓋自動掃描遺漏的任何內容。"
+          }
+        }
+      }
+    },
+    "**Faces are found and covered as they move**, with a strong blur, a solid box, or an emoji you pick for each face. Choose “Leave Visible” for anyone who should stay seen." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**يُعثر على الوجوه وتُحجب أثناء حركتها** بتمويه قوي أو مربع مصمت أو إيموجي تختاره لكل وجه. اختر ”إبقاؤه ظاهرًا“ لمن يجب أن يبقى ظاهرًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Gesichter werden gefunden und verdeckt, während sie sich bewegen** – mit starker Weichzeichnung, einem vollen Kasten oder einem Emoji, das du für jedes Gesicht wählst. Wähle „Sichtbar lassen“ für alle, die zu sehen bleiben sollen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Las caras se detectan y se censuran mientras se mueven**, con un desenfoque fuerte, un recuadro opaco o un emoji que eliges para cada cara. Elige «Dejar visible» para quien deba seguir viéndose."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Las caras se detectan y se censuran mientras se mueven**, con un desenfoque fuerte, un recuadro opaco o un emoji que eliges para cada cara. Elige «Dejar visible» para quien deba seguir viéndose."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Les visages sont détectés et masqués dans leurs mouvements**, avec un flou prononcé, un cadre plein ou un emoji choisi pour chaque visage. Choisissez « Laisser visible » pour les personnes qui doivent rester visibles."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**I volti vengono trovati e coperti mentre si muovono**, con una sfocatura forte, un riquadro pieno o un’emoji scelta per ogni volto. Scegli “Lascia visibile” per chi deve restare visibile."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**顔は動きに合わせて検出され、マスクされます。** 顔ごとに、強いぼかし、塗りつぶし、または好きな絵文字を選べます。見えたままにしたい人には「表示したままにする」を選んでください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**얼굴은 움직이는 동안 찾아서 가립니다.** 얼굴마다 강한 흐림, 단색 상자 또는 선택한 이모티콘으로 가립니다. 보여야 하는 사람에게는 ‘보이게 두기’를 선택하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Gezichten worden gevonden en afgedekt terwijl ze bewegen**, met een sterke vervaging, een dicht kader of een emoji die je per gezicht kiest. Kies ‘Zichtbaar laten’ voor iedereen die zichtbaar moet blijven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Twarze są wykrywane i zamazywane w ruchu** – silnym rozmyciem, pełnym prostokątem lub emoji wybranym dla każdej twarzy. Wybierz „Pozostaw widoczną” dla osób, które mają być widoczne."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Os rostos são encontrados e ocultados enquanto se movem**, com um desfoque forte, uma caixa sólida ou um emoji que você escolhe para cada rosto. Escolha “Deixar visível” para quem deve continuar aparecendo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Os rostos são encontrados e ocultados enquanto se movem**, com um desfoque forte, uma caixa sólida ou um emoji que escolhe para cada rosto. Escolha “Deixar visível” para quem deve continuar visível."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ansikten hittas och maskeras medan de rör sig**, med kraftig oskärpa, en hel ruta eller en emoji du väljer för varje ansikte. Välj ”Lämna synligt” för den som ska synas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Yüzler hareket ettikçe bulunur ve karartılır**; her yüz için güçlü bir bulanıklık, düz bir kutu veya seçtiğiniz bir emoji kullanılır. Görünmesi gereken kişiler için “Görünür bırak”ı seçin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**面孔会在移动时被找到并遮盖**，可为每张面孔选择强模糊、实心框或表情符号。对应保持可见的人，请选择“保持可见”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**臉孔會在移動時被找出並遮蓋**，可為每張臉孔選擇強模糊、實心框或表情符號。對應保持可見的人，請選擇「保持可見」。"
           }
         }
       }
@@ -1954,6 +2560,107 @@
         }
       }
     },
+    "**Screenshots** — tap “Screenshots” to pick from just your screenshots." : {
+      "comment" : "Help page, Ways to Import.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**لقطات الشاشة** — اضغط على ”لقطات الشاشة“ للاختيار من لقطات الشاشة فقط."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Screenshots** – tippe auf „Screenshots“, um nur aus deinen Screenshots zu wählen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Capturas de pantalla**: toca «Capturas de pantalla» para elegir solo entre tus capturas."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Capturas de pantalla**: toca «Capturas de pantalla» para elegir solo entre tus capturas."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Captures d’écran** — touchez « Captures d’écran » pour choisir uniquement parmi vos captures."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Schermate** — tocca “Schermate” per scegliere solo tra le tue schermate."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**スクリーンショット** — 「スクリーンショット」をタップすると、スクリーンショットだけから選べます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**스크린샷** — ‘스크린샷’을 탭하면 스크린샷 중에서만 선택할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Schermafbeeldingen** — tik op ‘Schermafbeeldingen’ om alleen uit je schermafbeeldingen te kiezen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zrzuty ekranu** — stuknij „Zrzuty ekranu”, aby wybrać tylko spośród zrzutów ekranu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Capturas de tela** — toque em “Capturas de tela” para escolher apenas entre suas capturas."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Capturas de ecrã** — toque em “Capturas de ecrã” para escolher apenas entre as suas capturas."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Skärmbilder** – tryck på ”Skärmbilder” för att bara välja bland dina skärmbilder."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Ekran görüntüleri** — yalnızca ekran görüntülerinizden seçmek için “Ekran görüntüleri”ne dokunun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**截图** — 轻点“截图”，只从截图中选取。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**截圖** — 點一下「截圖」，只從截圖中選取。"
+          }
+        }
+      }
+    },
     "**Select a photo** from your library, import from Files, or drag an image directly onto PicStrip." : {
       "localizations" : {
         "ar" : {
@@ -2555,6 +3262,208 @@
         }
       }
     },
+    "**Text and codes** — phone numbers, email addresses, card numbers, QR codes, and your Always Cover words — are read twice a second and stay covered as the camera moves." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**النصوص والرموز** — أرقام الهواتف وعناوين البريد الإلكتروني وأرقام البطاقات ورموز QR وكلمات الحجب الدائم — تُقرأ مرتين في الثانية وتبقى محجوبة أثناء حركة الكاميرا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Text und Codes** – Telefonnummern, E-Mail-Adressen, Kartennummern, QR-Codes und deine Wörter für „Immer verdecken“ – werden zweimal pro Sekunde gelesen und bleiben verdeckt, während sich die Kamera bewegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Texto y códigos** (números de teléfono, correos electrónicos, números de tarjeta, códigos QR y tus palabras de Censurar siempre) se leen dos veces por segundo y siguen censurados mientras se mueve la cámara."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Texto y códigos** (números de teléfono, correos electrónicos, números de tarjeta, códigos QR y tus palabras de Censurar siempre) se leen dos veces por segundo y siguen censurados mientras se mueve la cámara."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Texte et codes** (numéros de téléphone, adresses e-mail, numéros de carte, codes QR et vos mots de « Toujours masquer ») sont lus deux fois par seconde et restent masqués quand la caméra bouge."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Testo e codici** (numeri di telefono, indirizzi email, numeri di carta, codici QR e le tue parole di Copri sempre) vengono letti due volte al secondo e restano coperti mentre la fotocamera si muove."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**文字とコード**（電話番号、メールアドレス、カード番号、QRコード、「常にマスク」の語句）は1秒に2回読み取られ、カメラが動いてもマスクされたままになります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**텍스트 및 코드**(전화번호, 이메일 주소, 카드 번호, QR 코드, ‘항상 가리기’ 단어)는 1초에 두 번 읽히며 카메라가 움직여도 계속 가려집니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tekst en codes** — telefoonnummers, e-mailadressen, kaartnummers, QR-codes en je woorden voor Altijd afdekken — worden twee keer per seconde gelezen en blijven afgedekt terwijl de camera beweegt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tekst i kody** – numery telefonów, adresy e-mail, numery kart, kody QR i Twoje słowa z listy Zawsze zamazuj – są odczytywane dwa razy na sekundę i pozostają zamazane, gdy kamera się porusza."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Textos e códigos** — números de telefone, endereços de e-mail, números de cartão, códigos QR e suas palavras de Sempre ocultar — são lidos duas vezes por segundo e continuam ocultos enquanto a câmera se move."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Texto e códigos** — números de telefone, endereços de e-mail, números de cartão, códigos QR e as suas palavras de Ocultar sempre — são lidos duas vezes por segundo e continuam ocultos enquanto a câmara se move."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Text och koder** – telefonnummer, e-postadresser, kortnummer, QR-koder och dina ord för Maskera alltid – läses två gånger per sekund och förblir maskerade medan kameran rör sig."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Metinler ve kodlar** (telefon numaraları, e-posta adresleri, kart numaraları, QR kodları ve Her zaman karart sözcükleriniz) saniyede iki kez okunur ve kamera hareket ederken karartılmış kalır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**文字和条码**（电话号码、电子邮件地址、卡号、二维码以及你的“始终遮盖”字词）每秒读取两次，镜头移动时也会保持遮盖。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**文字和條碼**（電話號碼、電子郵件地址、卡號、QR 碼以及你的「一律遮蓋」字詞）每秒讀取兩次，鏡頭移動時也會保持遮蓋。"
+          }
+        }
+      }
+    },
+    "**The timeline** shows every cover as a clip in its lane. Tap a clip to select it, drag its yellow ends to start it earlier or end it later, and drag across the frames to move through the video." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**يُظهر المخطط الزمني** كل حجب كمقطع في مساره. اضغط على مقطع لتحديده، واسحب طرفيه الأصفرين لبدئه أبكر أو إنهائه لاحقًا، واسحب عبر الإطارات للتنقل في الفيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Die Zeitleiste** zeigt jede Abdeckung als Clip in ihrer Spur. Tippe auf einen Clip, um ihn auszuwählen, zieh seine gelben Enden, damit er früher beginnt oder später endet, und zieh über die Bilder, um dich durch das Video zu bewegen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**La línea de tiempo** muestra cada censura como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y arrastra por los fotogramas para moverte por el vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**La línea de tiempo** muestra cada censura como un clip en su pista. Toca un clip para seleccionarlo, arrastra sus extremos amarillos para que empiece antes o termine después y arrastra por los cuadros para moverte por el video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**La chronologie** affiche chaque masquage sous forme de clip dans sa piste. Touchez un clip pour le sélectionner, faites glisser ses extrémités jaunes pour qu’il commence plus tôt ou finisse plus tard, et faites glisser sur les images pour parcourir la vidéo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**La timeline** mostra ogni copertura come una clip nella sua traccia. Tocca una clip per selezionarla, trascina le sue estremità gialle per farla iniziare prima o finire dopo, e trascina sui fotogrammi per spostarti nel video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**タイムライン**には、各マスクがトラック上のクリップとして表示されます。クリップをタップして選択し、黄色い端をドラッグして開始を早めたり終了を遅らせたりできます。コマの上をドラッグするとビデオ内を移動できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**타임라인**에는 각 가리기가 트랙의 클립으로 표시됩니다. 클립을 탭하여 선택하고, 노란색 끝을 드래그하여 더 일찍 시작하거나 더 늦게 끝내고, 프레임 위를 드래그하여 비디오를 이동하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**De tijdbalk** toont elke afdekking als een clip in zijn spoor. Tik op een clip om die te selecteren, sleep de gele uiteinden om hem eerder te laten beginnen of later te laten eindigen, en sleep over de beelden om door de video te gaan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Oś czasu** pokazuje każde zamazanie jako klip na jego ścieżce. Stuknij klip, aby go zaznaczyć, przeciągnij jego żółte końce, aby zaczynał się wcześniej lub kończył później, i przeciągnij po klatkach, aby poruszać się po wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**A linha do tempo** mostra cada ocultação como um clipe na sua faixa. Toque em um clipe para selecioná-lo, arraste as extremidades amarelas para começar antes ou terminar depois e arraste pelos quadros para se mover pelo vídeo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**A linha temporal** mostra cada ocultação como um clipe na sua faixa. Toque num clipe para o selecionar, arraste as extremidades amarelas para começar mais cedo ou terminar mais tarde e arraste pelas imagens para percorrer o vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Tidslinjen** visar varje maskering som ett klipp i sitt spår. Tryck på ett klipp för att markera det, dra i de gula ändarna för att börja tidigare eller sluta senare, och dra över bildrutorna för att röra dig genom videon."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Zaman çizelgesi** her karartmayı kendi kanalında bir klip olarak gösterir. Seçmek için bir klibe dokunun, daha erken başlatmak veya daha geç bitirmek için sarı uçlarını sürükleyin ve videoda ilerlemek için kareler üzerinde sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**时间线**会将每个遮盖显示为其轨道中的片段。轻点片段即可选中，拖动黄色两端可让它提前开始或延后结束，在画面上拖动可在视频中移动。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**時間列**會將每個遮蓋顯示為其軌道中的片段。點一下片段即可選取，拖移黃色兩端可讓它提早開始或延後結束，在畫面上拖移可在影片中移動。"
+          }
+        }
+      }
+    },
     "**Undo / Redo** every style change, move, resize, or delete — every action is fully reversible." : {
       "localizations" : {
         "ar" : {
@@ -2651,6 +3560,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**還原/重做**每一次樣式變更、移動、調整大小或刪除，每個動作都可以完全回復。"
+          }
+        }
+      }
+    },
+    "**Videos** — tap “Videos” to clean a video. See Videos below." : {
+      "comment" : "Help page, Ways to Import.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**مقاطع الفيديو** — اضغط على ”مقاطع الفيديو“ لتنظيف فيديو. راجع قسم الفيديو أدناه."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Videos** – tippe auf „Videos“, um ein Video zu bereinigen. Siehe „Videos“ weiter unten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Vídeos**: toca «Vídeos» para limpiar un vídeo. Consulta Vídeos más abajo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Videos**: toca «Videos» para limpiar un video. Consulta Videos más abajo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Vidéos** — touchez « Vidéos » pour nettoyer une vidéo. Consultez Vidéos ci-dessous."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Video** — tocca “Video” per pulire un video. Vedi Video più sotto."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ビデオ** — 「ビデオ」をタップすると、ビデオをクリーンアップできます。下の「ビデオ」を参照してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**비디오** — ‘비디오’를 탭하여 비디오를 정리합니다. 아래의 비디오를 참조하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Video’s** — tik op ‘Video’s’ om een video op te schonen. Zie Video’s hieronder."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Wideo** — stuknij „Wideo”, aby wyczyścić wideo. Zobacz sekcję Wideo poniżej."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Vídeos** — toque em “Vídeos” para limpar um vídeo. Veja Vídeos abaixo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Vídeos** — toque em “Vídeos” para limpar um vídeo. Consulte Vídeos abaixo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Videor** – tryck på ”Videor” för att rensa en video. Se Videor nedan."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Videolar** — bir videoyu temizlemek için “Videolar”a dokunun. Aşağıdaki Videolar bölümüne bakın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**视频** — 轻点“视频”以清理视频。请参阅下方的“视频”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**影片** — 點一下「影片」以清理影片。請參閱下方的「影片」。"
+          }
+        }
+      }
+    },
+    "**Watch the preview, then save.** The preview is drawn exactly the way the copy is saved. Automatic covering can miss something small, turned away, or on screen for a moment, so check before you share." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**شاهد المعاينة ثم احفظ.** تُرسم المعاينة تمامًا كما تُحفظ النسخة. قد يفوت الحجب التلقائي شيئًا صغيرًا أو مُشاحًا أو ظهر للحظة، لذا تحقق قبل المشاركة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Vorschau ansehen, dann sichern.** Die Vorschau wird genau so gezeichnet, wie die Kopie gesichert wird. Das automatische Verdecken kann etwas Kleines, Abgewandtes oder nur kurz Sichtbares übersehen, also prüfe vor dem Teilen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Mira la vista previa y guarda.** La vista previa se dibuja exactamente como se guardará la copia. La censura automática puede pasar por alto algo pequeño, de lado o que aparece un instante, así que revísalo antes de compartir."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Mira la vista previa y guarda.** La vista previa se dibuja exactamente como se guardará la copia. La censura automática puede pasar por alto algo pequeño, de lado o que aparece un instante, así que revísalo antes de compartir."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Regardez l’aperçu, puis enregistrez.** L’aperçu est dessiné exactement comme la copie sera enregistrée. Le masquage automatique peut manquer un élément petit, de profil ou visible un instant : vérifiez avant de partager."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Guarda l’anteprima, poi salva.** L’anteprima viene disegnata esattamente come verrà salvata la copia. La copertura automatica può non vedere qualcosa di piccolo, girato o visibile solo per un istante, quindi controlla prima di condividere."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**プレビューを見てから保存。** プレビューは保存されるコピーとまったく同じに描かれます。自動マスクでは、小さいもの、横を向いたもの、一瞬だけ映るものを見逃すことがあるため、共有する前に確認してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**미리보기를 확인한 다음 저장하십시오.** 미리보기는 저장될 사본과 똑같이 그려집니다. 자동 가리기는 작거나, 고개를 돌렸거나, 잠깐만 보이는 것을 놓칠 수 있으므로 공유하기 전에 확인하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Bekijk de voorvertoning en bewaar dan.** De voorvertoning wordt precies zo getekend als de kopie wordt bewaard. Automatisch afdekken kan iets kleins, afgewends of iets wat maar even in beeld is missen, dus controleer voordat je deelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Obejrzyj podgląd, a potem zachowaj.** Podgląd jest rysowany dokładnie tak, jak zostanie zachowana kopia. Automatyczne zamazywanie może pominąć coś małego, odwróconego lub widocznego tylko przez chwilę, więc sprawdź przed udostępnieniem."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Assista à pré-visualização e depois salve.** A pré-visualização é desenhada exatamente como a cópia será salva. A ocultação automática pode deixar passar algo pequeno, virado ou que aparece por um instante, então confira antes de compartilhar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Veja a pré-visualização e depois guarde.** A pré-visualização é desenhada exatamente como a cópia será guardada. A ocultação automática pode deixar escapar algo pequeno, de lado ou visível só por um instante, por isso verifique antes de partilhar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Titta på förhandsvisningen och spara sedan.** Förhandsvisningen ritas precis som kopian sparas. Automatisk maskering kan missa något litet, bortvänt eller som bara syns ett ögonblick, så kontrollera innan du delar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Önizlemeyi izleyin, sonra kaydedin.** Önizleme, kopyanın kaydedileceği şekilde aynen çizilir. Otomatik karartma küçük, başka yöne dönük ya da yalnızca bir an görünen bir şeyi kaçırabilir; paylaşmadan önce kontrol edin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**先观看预览，再存储。** 预览的绘制方式与存储的副本完全相同。自动遮盖可能会漏掉较小、侧转或只出现片刻的内容，所以请在共享前检查。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**先觀看預覽，再儲存。** 預覽的繪製方式與儲存的拷貝完全相同。自動遮蓋可能會漏掉較小、轉向一側或只出現片刻的內容，所以請在分享前檢查。"
           }
         }
       }
@@ -2851,6 +3962,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "符合 ISO 3779 的 17 碼 VIN（不含 I/O/Q）"
+          }
+        }
+      }
+    },
+    "A bleep replaces the sound with a tone; a mute silences it." : {
+      "comment" : "Footer under the list of bleeps and mutes.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستبدل الصفير الصوت بنغمة، ويكتمه الكتم."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Piepton ersetzt den Ton durch ein Signal, Stumm schaltet ihn ab."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un pitido sustituye el sonido por un tono; silenciar lo elimina."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un pitido reemplaza el sonido por un tono; silenciar lo elimina."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un bip remplace le son par une tonalité ; couper le son le supprime."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Un bip sostituisce l’audio con un tono; silenziare lo elimina."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピー音は音声を信号音に置き換え、ミュートは音声を消します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삐 소리는 소리를 신호음으로 바꾸고, 음소거는 소리를 없앱니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een piep vervangt het geluid door een toon; dempen maakt het stil."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pisk zastępuje dźwięk tonem, a wyciszenie go usuwa."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um bipe substitui o som por um tom; silenciar remove o som."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Um bipe substitui o som por um tom; silenciar remove o som."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ett pip ersätter ljudet med en ton; tysta tar bort det."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bip sesi sesi bir tonla değiştirir; sessize al sesi tamamen keser."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "哔声会用提示音替换声音；静音会让声音消失。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嗶聲會用提示音取代聲音；靜音會讓聲音消失。"
           }
         }
       }
@@ -4165,107 +5377,6 @@
         }
       }
     },
-    "Add a Cover" : {
-      "comment" : "Button under the video preview: draw a box around something to cover; PicStrip follows it.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "إضافة حجب"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Abdeckung hinzufügen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadir censura"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agregar censura"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajouter un masquage"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiungi copertura"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "マスクを追加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "가리기 추가"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afdekking toevoegen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dodaj zamazanie"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionar ocultação"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionar ocultação"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lägg till maskering"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Karartma ekle"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "添加遮盖"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "加入遮蓋"
-          }
-        }
-      }
-    },
     "Add a word or phrase" : {
       "comment" : "Placeholder of the text field for a new Always Cover word or phrase.",
       "localizations" : {
@@ -4463,107 +5574,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "加入置中區域"
-          }
-        }
-      }
-    },
-    "Added by you" : {
-      "comment" : "Section header: covers the user drew on the video.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "أضفتها أنت"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Von dir hinzugefügt"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Añadidas por ti"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Agregadas por ti"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ajoutés par vous"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aggiunte da te"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自分で追加"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "직접 추가함"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Door jou toegevoegd"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dodane przez Ciebie"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionadas por você"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Adicionadas por si"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tillagda av dig"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sizin eklediğiniz"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你添加的"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你加入的"
           }
         }
       }
@@ -5182,6 +6192,107 @@
         }
       }
     },
+    "Anything you draw around — a person, a car, a screen, a sign — is tracked as it moves, forwards and back." : {
+      "comment" : "Footer under the list of objects the user drew around in a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كل ما ترسم حوله — شخص أو سيارة أو شاشة أو لافتة — يُتتبَّع أثناء حركته، للأمام وللخلف."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles, was du umrahmst – eine Person, ein Auto, ein Bildschirm, ein Schild –, wird vorwärts und rückwärts verfolgt, während es sich bewegt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo lo que rodees (una persona, un coche, una pantalla, un letrero) se sigue mientras se mueve, hacia delante y hacia atrás."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Todo lo que rodees (una persona, un auto, una pantalla, un letrero) se sigue mientras se mueve, hacia adelante y hacia atrás."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout ce que vous encadrez (une personne, une voiture, un écran, un panneau) est suivi dans ses mouvements, en avant et en arrière."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutto ciò che incornici (una persona, un’auto, uno schermo, un cartello) viene seguito mentre si muove, in avanti e indietro."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "枠で囲んだもの（人、車、画面、看板など）は、動きに合わせて前後にわたって追跡されます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "상자로 둘러싼 것(사람, 자동차, 화면, 표지판 등)은 움직이는 동안 앞뒤로 추적됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles wat je omkadert (een persoon, een auto, een scherm, een bord) wordt gevolgd terwijl het beweegt, vooruit en terug."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wszystko, co obrysujesz (osoba, samochód, ekran, znak), jest śledzone w ruchu, do przodu i do tyłu."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo o que você contornar (uma pessoa, um carro, uma tela, uma placa) é acompanhado enquanto se move, para a frente e para trás."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tudo o que contornar (uma pessoa, um carro, um ecrã, uma placa) é seguido enquanto se move, para a frente e para trás."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Allt du ritar runt – en person, en bil, en skärm, en skylt – följs medan det rör sig, framåt och bakåt."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çevresine çizdiğiniz her şey (bir kişi, bir araba, bir ekran, bir tabela) hareket ettikçe ileri ve geri takip edilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你框住的任何东西（人、汽车、屏幕、标牌）都会在移动时被向前向后跟踪。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你框住的任何東西（人、汽車、螢幕、招牌）都會在移動時被向前向後追蹤。"
+          }
+        }
+      }
+    },
     "Apply %@ color to selected regions" : {
       "localizations" : {
         "ar" : {
@@ -5746,6 +6857,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "套用至 %lld 個區域"
+          }
+        }
+      }
+    },
+    "Audio" : {
+      "comment" : "Label of the video timeline's lane for sound edits, and the section of bleeps and mutes.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الصوت"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーディオ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오디오"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dźwięk"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Áudio"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Áudio"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ljud"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音訊"
           }
         }
       }
@@ -6452,6 +7664,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "黑色"
+          }
+        }
+      }
+    },
+    "Bleep" : {
+      "comment" : "Button and label: replace a stretch of the video's sound with a tone.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "صفير"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piepton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pitido"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pitido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bip"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bip"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピー音"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삐 소리"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Piep"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pisk"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bipe"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bipe"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pip"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bip"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "哔声"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "嗶聲"
           }
         }
       }
@@ -8773,6 +10086,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "更改遮蓋內容"
+          }
+        }
+      }
+    },
+    "Change audio edit %lld" : {
+      "comment" : "VoiceOver label of the menu for one bleep or mute.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تغيير تعديل الصوت %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toneingriff %lld ändern"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar la edición de audio %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar la edición de audio %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la retouche audio %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica intervento audio %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オーディオ編集%lldを変更"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "오디오 편집 %lld 변경"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audiobewerking %lld wijzigen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zmień edycję dźwięku %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alterar edição de áudio %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alterar edição de áudio %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ändra ljudredigering %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses düzenlemesi %lld öğesini değiştir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改音频编辑 %lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "更改音訊編輯 %lld"
           }
         }
       }
@@ -13064,103 +14478,103 @@
         }
       }
     },
-    "Cover %lld" : {
-      "comment" : "Name of a cover the user drew on a video, numbered.",
+    "Cover an Object" : {
+      "comment" : "Button: draw a box around anything in the video; PicStrip tracks and covers it.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "الحجب %lld"
+            "value" : "حجب عنصر"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abdeckung %lld"
+            "value" : "Objekt verdecken"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Censura %lld"
+            "value" : "Censurar un objeto"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Censura %lld"
+            "value" : "Censurar un objeto"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Masquage %lld"
+            "value" : "Masquer un objet"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Copertura %lld"
+            "value" : "Copri un oggetto"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "マスク%lld"
+            "value" : "オブジェクトをマスク"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "가리기 %lld"
+            "value" : "개체 가리기"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afdekking %lld"
+            "value" : "Object afdekken"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zamazanie %lld"
+            "value" : "Zamaż obiekt"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocultação %lld"
+            "value" : "Ocultar um objeto"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ocultação %lld"
+            "value" : "Ocultar um objeto"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Maskering %lld"
+            "value" : "Maskera ett objekt"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Karartma %lld"
+            "value" : "Nesne karart"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "遮盖 %lld"
+            "value" : "遮盖物体"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "遮蓋 %lld"
+            "value" : "遮蓋物體"
           }
         }
       }
@@ -13468,6 +14882,107 @@
         }
       }
     },
+    "Cover for object %lld" : {
+      "comment" : "VoiceOver label of the menu that picks how a drawn object in a video is covered.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حجب العنصر %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abdeckung für Objekt %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censura del objeto %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Censura del objeto %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Masquage de l’objet %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copertura dell’oggetto %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクト%lldのマスク"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개체 %lld 가리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afdekking voor object %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamazanie obiektu %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultação do objeto %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ocultação do objeto %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskering för objekt %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne %lld karartması"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物体 %lld 的遮盖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物體 %lld 的遮蓋"
+          }
+        }
+      }
+    },
     "Cover starts" : {
       "comment" : "VoiceOver label of the handle at the start of a cover on the video timeline.",
       "localizations" : {
@@ -13767,107 +15282,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "正在遮蓋並儲存拷貝…"
-          }
-        }
-      }
-    },
-    "Covers you added: %lld" : {
-      "comment" : "Row on the cleaned-video screen: how many covers the user drew.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الحجب الذي أضفته: %lld"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Von dir hinzugefügte Abdeckungen: %lld"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Censuras añadidas por ti: %lld"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Censuras agregadas por ti: %lld"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Masquages ajoutés : %lld"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coperture aggiunte da te: %lld"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "自分で追加したマスク：%lld"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "직접 추가한 가리기: %lld"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Door jou toegevoegde afdekkingen: %lld"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dodane przez Ciebie zamazania: %lld"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ocultações adicionadas por você: %lld"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ocultações adicionadas por si: %lld"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maskeringar du lade till: %lld"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Eklediğiniz karartmalar: %lld"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你添加的遮盖：%lld"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "你加入的遮蓋：%lld"
           }
         }
       }
@@ -18628,103 +20042,103 @@
         }
       }
     },
-    "Drag the ends on the timeline to start the cover earlier or end it later." : {
-      "comment" : "Footer when a face or drawn cover is selected: its timing can be changed on the timeline.",
+    "Drag the yellow ends of the selected clip to change when it applies. Drag across the frames to move through the video." : {
+      "comment" : "Hint under the video timeline when a clip that can be trimmed is selected.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "اسحب طرفَي المخطط الزمني لبدء الحجب أبكر أو إنهائه لاحقًا."
+            "value" : "اسحب الطرفين الأصفرين للمقطع المحدد لتغيير توقيت تطبيقه. اسحب عبر الإطارات للتنقل في الفيديو."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zieh die Enden auf der Zeitleiste, um die Abdeckung früher beginnen oder später enden zu lassen."
+            "value" : "Zieh die gelben Enden des ausgewählten Clips, um zu ändern, wann er gilt. Zieh über die Bilder, um dich durch das Video zu bewegen."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra los extremos en la línea de tiempo para que la censura empiece antes o termine después."
+            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Arrastra por los fotogramas para moverte por el vídeo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arrastra los extremos en la línea de tiempo para que la censura empiece antes o termine después."
+            "value" : "Arrastra los extremos amarillos del clip seleccionado para cambiar cuándo se aplica. Arrastra por los cuadros para moverte por el video."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Faites glisser les extrémités sur la chronologie pour faire commencer le masquage plus tôt ou finir plus tard."
+            "value" : "Faites glisser les extrémités jaunes du clip sélectionné pour changer quand il s’applique. Faites glisser sur les images pour parcourir la vidéo."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trascina le estremità sulla timeline per far iniziare prima o finire dopo la copertura."
+            "value" : "Trascina le estremità gialle della clip selezionata per cambiare quando si applica. Trascina sui fotogrammi per spostarti nel video."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "タイムラインの端をドラッグすると、マスクの開始を早めたり終了を遅らせたりできます。"
+            "value" : "選択したクリップの黄色い端をドラッグすると、適用するタイミングを変更できます。コマの上をドラッグすると、ビデオ内を移動できます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "타임라인의 끝을 드래그하여 가리기를 더 일찍 시작하거나 더 늦게 끝낼 수 있습니다."
+            "value" : "선택한 클립의 노란색 끝을 드래그하면 적용 시점을 바꿀 수 있습니다. 프레임 위를 드래그하면 비디오를 이동할 수 있습니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sleep de uiteinden op de tijdbalk om de afdekking eerder te laten beginnen of later te laten eindigen."
+            "value" : "Sleep de gele uiteinden van de geselecteerde clip om te wijzigen wanneer die geldt. Sleep over de beelden om door de video te gaan."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Przeciągnij końce na osi czasu, aby zamazanie zaczynało się wcześniej lub kończyło później."
+            "value" : "Przeciągnij żółte końce zaznaczonego klipu, aby zmienić, kiedy działa. Przeciągnij po klatkach, aby poruszać się po wideo."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste as extremidades na linha do tempo para começar a ocultação antes ou terminá-la depois."
+            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando ele se aplica. Arraste pelos quadros para se mover pelo vídeo."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Arraste as extremidades na linha temporal para começar a ocultação mais cedo ou terminá-la mais tarde."
+            "value" : "Arraste as extremidades amarelas do clipe selecionado para mudar quando se aplica. Arraste pelas imagens para percorrer o vídeo."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dra ändarna på tidslinjen för att börja maskeringen tidigare eller avsluta den senare."
+            "value" : "Dra de gula ändarna på det markerade klippet för att ändra när det gäller. Dra över bildrutorna för att röra dig genom videon."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Karartmayı daha erken başlatmak veya daha geç bitirmek için zaman çizelgesindeki uçları sürükleyin."
+            "value" : "Ne zaman uygulanacağını değiştirmek için seçili klibin sarı uçlarını sürükleyin. Videoda ilerlemek için kareler üzerinde sürükleyin."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖动时间线上的两端，可让遮盖提前开始或延后结束。"
+            "value" : "拖动所选片段的黄色两端，可更改它的生效时间。在画面上拖动，可在视频中移动。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "拖移時間列上的兩端，可讓遮蓋提早開始或延後結束。"
+            "value" : "拖移所選片段的黃色兩端，可更改它的生效時間。在畫面上拖移，可在影片中移動。"
           }
         }
       }
@@ -18929,103 +20343,103 @@
         }
       }
     },
-    "Draw a box around what to cover. PicStrip follows it through the video, forwards and back, until it loses it." : {
-      "comment" : "Instructions on the Add a Cover screen.",
+    "Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it." : {
+      "comment" : "Instructions on the Cover an Object screen.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "ارسم مربعًا حول ما تريد حجبه. يتتبعه PicStrip عبر الفيديو، للأمام وللخلف، حتى يفقده."
+            "value" : "ارسم مربعًا حول أي شيء — شخص أو سيارة أو شاشة أو لافتة. يتتبعه PicStrip عبر الفيديو، للأمام وللخلف، ما دام يراه."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Zieh einen Rahmen um das, was verdeckt werden soll. PicStrip verfolgt es im Video vorwärts und rückwärts, bis es verloren geht."
+            "value" : "Zieh einen Rahmen um irgendetwas – eine Person, ein Auto, einen Bildschirm, ein Schild. PicStrip verfolgt es im Video vorwärts und rückwärts, solange es zu sehen ist."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dibuja un recuadro alrededor de lo que quieres censurar. PicStrip lo sigue por el vídeo, hacia delante y hacia atrás, hasta perderlo."
+            "value" : "Dibuja un recuadro alrededor de lo que sea: una persona, un coche, una pantalla, un letrero. PicStrip lo sigue por el vídeo, hacia delante y hacia atrás, mientras pueda verlo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dibuja un recuadro alrededor de lo que quieres censurar. PicStrip lo sigue por el video, hacia adelante y hacia atrás, hasta perderlo."
+            "value" : "Dibuja un recuadro alrededor de lo que sea: una persona, un auto, una pantalla, un letrero. PicStrip lo sigue por el video, hacia adelante y hacia atrás, mientras pueda verlo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tracez un cadre autour de ce qu’il faut masquer. PicStrip le suit dans la vidéo, en avant et en arrière, jusqu’à le perdre."
+            "value" : "Tracez un cadre autour de n’importe quoi : une personne, une voiture, un écran, un panneau. PicStrip le suit dans la vidéo, en avant et en arrière, tant qu’il le voit."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Disegna un riquadro intorno a ciò che vuoi coprire. PicStrip lo segue nel video, in avanti e indietro, finché non lo perde."
+            "value" : "Disegna un riquadro intorno a qualsiasi cosa: una persona, un’auto, uno schermo, un cartello. PicStrip lo segue nel video, in avanti e indietro, finché riesce a vederlo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "マスクしたい部分を囲むように枠を描いてください。PicStripは見失うまで、ビデオの前後にわたってそれを追跡します。"
+            "value" : "人、車、画面、看板など、何でも枠で囲んでください。PicStripは見えている間、ビデオの前後にわたってそれを追跡します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "가릴 부분 주위에 상자를 그리십시오. PicStrip이 놓칠 때까지 비디오 앞뒤로 따라갑니다."
+            "value" : "사람, 자동차, 화면, 표지판 등 무엇이든 상자로 둘러싸십시오. PicStrip이 보이는 동안 비디오 앞뒤로 추적합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Teken een kader om wat je wilt afdekken. PicStrip volgt het door de video, vooruit en terug, tot PicStrip het kwijtraakt."
+            "value" : "Teken een kader om wat dan ook: een persoon, een auto, een scherm, een bord. PicStrip volgt het door de video, vooruit en terug, zolang het te zien is."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Narysuj ramkę wokół tego, co chcesz zamazać. PicStrip śledzi to w wideo do przodu i do tyłu, aż to zgubi."
+            "value" : "Narysuj ramkę wokół czegokolwiek – osoby, samochodu, ekranu, znaku. PicStrip śledzi to w wideo do przodu i do tyłu, dopóki to widzi."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desenhe um retângulo em volta do que deseja ocultar. O PicStrip acompanha isso pelo vídeo, para a frente e para trás, até perdê-lo."
+            "value" : "Desenhe um retângulo em volta de qualquer coisa: uma pessoa, um carro, uma tela, uma placa. O PicStrip acompanha isso pelo vídeo, para a frente e para trás, enquanto conseguir vê-lo."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Desenhe um retângulo à volta do que pretende ocultar. O PicStrip segue-o pelo vídeo, para a frente e para trás, até o perder."
+            "value" : "Desenhe um retângulo à volta de qualquer coisa: uma pessoa, um carro, um ecrã, uma placa. O PicStrip segue-o pelo vídeo, para a frente e para trás, enquanto o conseguir ver."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rita en ruta runt det som ska maskeras. PicStrip följer det genom videon, framåt och bakåt, tills det tappar bort det."
+            "value" : "Rita en ruta runt vad som helst – en person, en bil, en skärm, en skylt. PicStrip följer det genom videon, framåt och bakåt, så länge det syns."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Karartılacak şeyin çevresine bir kutu çizin. PicStrip onu kaybedene kadar videoda ileri ve geri takip eder."
+            "value" : "Herhangi bir şeyin çevresine bir kutu çizin: bir kişi, bir araba, bir ekran, bir tabela. PicStrip onu görebildiği sürece videoda ileri ve geri takip eder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在要遮盖的内容周围画一个框。PicStrip 会在视频中向前向后跟踪它，直到跟丢为止。"
+            "value" : "在任何东西周围画一个框——人、汽车、屏幕、标牌都可以。只要还能看到，PicStrip 就会在视频中向前向后跟踪它。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "在要遮蓋的內容周圍畫一個框。PicStrip 會在影片中向前向後追蹤它，直到跟丟為止。"
+            "value" : "在任何東西周圍畫一個框——人、汽車、螢幕、招牌都可以。只要還能看到，PicStrip 就會在影片中向前向後追蹤它。"
           }
         }
       }
@@ -19426,6 +20840,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "匯出格式"
+          }
+        }
+      }
+    },
+    "Each lane shows when something is covered. Tap a clip to select it, or drag across the frames to move through the video." : {
+      "comment" : "Hint under the video timeline when nothing is selected.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يُظهر كل مسار متى يُحجب شيء. اضغط على مقطع لتحديده، أو اسحب عبر الإطارات للتنقل في الفيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jede Spur zeigt, wann etwas verdeckt ist. Tippe auf einen Clip, um ihn auszuwählen, oder zieh über die Bilder, um dich durch das Video zu bewegen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada pista muestra cuándo hay algo censurado. Toca un clip para seleccionarlo o arrastra por los fotogramas para moverte por el vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada pista muestra cuándo hay algo censurado. Toca un clip para seleccionarlo o arrastra por los cuadros para moverte por el video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chaque piste montre quand quelque chose est masqué. Touchez un clip pour le sélectionner, ou faites glisser sur les images pour parcourir la vidéo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ogni traccia mostra quando qualcosa è coperto. Tocca una clip per selezionarla, o trascina sui fotogrammi per spostarti nel video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "各トラックには、何かがマスクされている時間が表示されます。クリップをタップして選択するか、コマの上をドラッグしてビデオ内を移動します。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "각 트랙에는 무언가가 가려지는 시간이 표시됩니다. 클립을 탭하여 선택하거나 프레임 위를 드래그하여 비디오를 이동하십시오."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elk spoor toont wanneer iets is afgedekt. Tik op een clip om die te selecteren, of sleep over de beelden om door de video te gaan."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Każda ścieżka pokazuje, kiedy coś jest zamazane. Stuknij klip, aby go zaznaczyć, lub przeciągnij po klatkach, aby poruszać się po wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada faixa mostra quando algo está oculto. Toque em um clipe para selecioná-lo ou arraste pelos quadros para se mover pelo vídeo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cada faixa mostra quando algo está oculto. Toque num clipe para o selecionar ou arraste pelas imagens para percorrer o vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Varje spår visar när något är maskerat. Tryck på ett klipp för att markera det, eller dra över bildrutorna för att röra dig genom videon."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Her kanal bir şeyin ne zaman karartıldığını gösterir. Seçmek için bir klibe dokunun veya videoda ilerlemek için kareler üzerinde sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每条轨道都会显示何时有内容被遮盖。轻点片段可选中它，或在画面上拖动以在视频中移动。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每條軌道都會顯示何時有內容被遮蓋。點一下片段可選取它，或在畫面上拖移以在影片中移動。"
           }
         }
       }
@@ -23027,208 +24542,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已聚焦 %@"
-          }
-        }
-      }
-    },
-    "Follow" : {
-      "comment" : "Button on the Add a Cover screen: follow the drawn box through the video.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تتبُّع"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Verfolgen"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seguir"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seguir"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suivre"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Segui"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追跡"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "따라가기"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volgen"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Śledź"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seguir"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Seguir"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Följ"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Takip et"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "跟踪"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "追蹤"
-          }
-        }
-      }
-    },
-    "Following it through the video…" : {
-      "comment" : "Progress title while a drawn box is followed through the video.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "جارٍ تتبعه عبر الفيديو…"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wird im Video verfolgt…"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiéndolo por el vídeo…"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Siguiéndolo por el video…"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Suivi dans la vidéo…"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tracciamento nel video…"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ビデオ内で追跡しています…"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "비디오에서 따라가는 중…"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Volgen door de video…"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Śledzenie w wideo…"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Acompanhando pelo vídeo…"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "A seguir pelo vídeo…"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Följer genom videon…"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Videoda takip ediliyor…"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在视频中跟踪…"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "正在影片中追蹤…"
           }
         }
       }
@@ -31318,107 +32631,6 @@
         }
       }
     },
-    "Missed something? Pause where it shows and add a cover; it follows what you draw around." : {
-      "comment" : "Footer under the video preview and timeline when nothing is selected.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "فات شيء؟ أوقف الفيديو حيث يظهر وأضف حجبًا؛ فهو يتتبع ما ترسم حوله."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Etwas übersehen? Halte dort an, wo es zu sehen ist, und füge eine Abdeckung hinzu – sie folgt dem, was du umrahmst."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Se ha escapado algo? Pausa donde aparece y añade una censura; seguirá lo que rodees."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "¿Se escapó algo? Pausa donde aparece y agrega una censura; seguirá lo que rodees."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Un élément a été manqué ? Mettez en pause là où il apparaît et ajoutez un masquage : il suit ce que vous encadrez."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Manca qualcosa? Metti in pausa dove compare e aggiungi una copertura: seguirà ciò che hai incorniciato."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "見逃しがありましたか？映っているところで一時停止してマスクを追加すると、囲んだものを追跡します。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "놓친 것이 있나요? 보이는 곳에서 일시 정지하고 가리기를 추가하면 상자로 그린 대상을 따라갑니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Iets gemist? Pauzeer waar het te zien is en voeg een afdekking toe; die volgt wat je omkadert."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Coś pominięto? Zatrzymaj tam, gdzie to widać, i dodaj zamazanie – będzie śledzić to, co obrysujesz."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Algo passou despercebido? Pause onde aparece e adicione uma ocultação; ela acompanha o que você contornar."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Algo escapou? Pause onde aparece e adicione uma ocultação; ela segue o que contornar."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Missades något? Pausa där det syns och lägg till en maskering – den följer det du ritar runt."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bir şey mi kaçtı? Göründüğü yerde duraklatın ve bir karartma ekleyin; çevresine çizdiğiniz şeyi takip eder."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "漏掉了什么？在它出现的地方暂停并添加遮盖，遮盖会跟踪你框住的内容。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "漏掉了什麼？在它出現的地方暫停並加入遮蓋，遮蓋會追蹤你框住的內容。"
-          }
-        }
-      }
-    },
     "Multiline PEM private-key blocks, including their encoded contents" : {
       "localizations" : {
         "ar" : {
@@ -31515,6 +32727,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "多行PEM私密金鑰區塊，包含編碼後的內容"
+          }
+        }
+      }
+    },
+    "Mute" : {
+      "comment" : "Button and label: silence a stretch of the video's sound.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "كتم"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stumm"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couper le son"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenzia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ミュート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "음소거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dempen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wycisz"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Silenciar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tysta"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sessize al"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "静音"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "靜音"
           }
         }
       }
@@ -33640,6 +34953,107 @@
         }
       }
     },
+    "Object %lld" : {
+      "comment" : "Name of an object the user drew around in a video, numbered.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العنصر %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objeto %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objeto %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objet %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggetto %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクト%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개체 %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiekt %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objeto %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objeto %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesne %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物体 %lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物體 %lld"
+          }
+        }
+      }
+    },
     "Object Selection" : {
       "comment" : "Feature name: tap an object in the photo to redact it.",
       "localizations" : {
@@ -33737,6 +35151,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "物體選取"
+          }
+        }
+      }
+    },
+    "Objects" : {
+      "comment" : "Label of the timeline lane and the section for objects the user drew around and PicStrip tracks.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العناصر"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekte"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objets"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggetti"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オブジェクト"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "개체"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objecten"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Obiekty"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objekt"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nesneler"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物体"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "物體"
+          }
+        }
+      }
+    },
+    "Objects covered: %lld" : {
+      "comment" : "Row on the cleaned-video screen: how many drawn objects the copy covers.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "العناصر المحجوبة: %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verdeckte Objekte: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos censurados: %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos censurados: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objets masqués : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oggetti coperti: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスクしたオブジェクト：%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가린 개체: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afgedekte objecten: %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamazane obiekty: %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos ocultados: %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objetos ocultados: %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskerade objekt: %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartılan nesneler: %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已遮盖的物体：%lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已遮蓋的物體：%lld"
           }
         }
       }
@@ -41629,103 +43245,103 @@
         }
       }
     },
-    "Remove Cover" : {
-      "comment" : "Menu item: delete a cover the user drew on the video.",
+    "Remove" : {
+      "comment" : "Menu item: delete a drawn object cover or a sound edit.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "إزالة الحجب"
+            "value" : "إزالة"
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Abdeckung entfernen"
+            "value" : "Entfernen"
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar censura"
+            "value" : "Eliminar"
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Eliminar censura"
+            "value" : "Eliminar"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Supprimer le masquage"
+            "value" : "Supprimer"
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Rimuovi copertura"
+            "value" : "Rimuovi"
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "マスクを削除"
+            "value" : "削除"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "가리기 제거"
+            "value" : "제거"
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Afdekking verwijderen"
+            "value" : "Verwijderen"
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Usuń zamazanie"
+            "value" : "Usuń"
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover ocultação"
+            "value" : "Remover"
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remover ocultação"
+            "value" : "Remover"
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ta bort maskering"
+            "value" : "Ta bort"
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Karartmayı kaldır"
+            "value" : "Kaldır"
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "移除遮盖"
+            "value" : "移除"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "移除遮蓋"
+            "value" : "移除"
           }
         }
       }
@@ -47588,6 +49204,107 @@
         }
       }
     },
+    "Shows it on the timeline" : {
+      "comment" : "VoiceOver hint of a bleep or mute row: tapping it selects it on the timeline.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يعرضه على المخطط الزمني"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zeigt es auf der Zeitleiste"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo muestra en la línea de tiempo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo muestra en la línea de tiempo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’affiche sur la chronologie"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lo mostra sulla timeline"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タイムラインに表示します"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "타임라인에서 보여 줍니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toont het op de tijdbalk"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pokazuje to na osi czasu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra na linha do tempo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mostra na linha temporal"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visar det på tidslinjen"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zaman çizelgesinde gösterir"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在时间线上显示"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在時間列上顯示"
+          }
+        }
+      }
+    },
     "Shows this face in the preview" : {
       "comment" : "VoiceOver hint of a face row: tapping it shows that face in the preview.",
       "localizations" : {
@@ -49005,6 +50722,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "部分選取的後設資料無法移除。未輸出任何內容。"
+          }
+        }
+      }
+    },
+    "Sound bleeped or muted: %lld" : {
+      "comment" : "Row on the cleaned-video screen: how many stretches of sound were bleeped or muted.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مقاطع صوت مصفّرة أو مكتومة: %lld"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ton überpiept oder stumm: %lld"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido con pitido o silenciado: %lld"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sonido con pitido o silenciado: %lld"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Son bipé ou coupé : %lld"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Audio con bip o silenziato: %lld"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ピー音またはミュートした音声：%lld"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "삐 소리 또는 음소거한 소리: %lld"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geluid met piep of gedempt: %lld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dźwięk z piskiem lub wyciszony: %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som com bipe ou silenciado: %lld"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Som com bipe ou silenciado: %lld"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ljud med pip eller tystat: %lld"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bip sesiyle örtülen veya sessize alınan ses: %lld"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加哔声或静音的声音：%lld"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已加嗶聲或靜音的聲音：%lld"
           }
         }
       }
@@ -54518,6 +56336,208 @@
         }
       }
     },
+    "Track" : {
+      "comment" : "Button on the Cover an Object screen: track the drawn box through the video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تتبّع"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verfolgen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Traccia"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追跡"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "추적"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volgen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Śledź"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acompanhar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Följ"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Takip et"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "跟踪"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "追蹤"
+          }
+        }
+      }
+    },
+    "Tracking it through the video…" : {
+      "comment" : "Progress title while a drawn object is tracked through the video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ تتبعه عبر الفيديو…"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wird im Video verfolgt…"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiéndolo por el vídeo…"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Siguiéndolo por el video…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suivi dans la vidéo…"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tracciamento nel video…"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオ内で追跡しています…"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오에서 추적하는 중…"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Volgen door de video…"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Śledzenie w wideo…"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Acompanhando pelo vídeo…"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A seguir pelo vídeo…"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Följer genom videon…"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoda takip ediliyor…"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在视频中跟踪…"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在影片中追蹤…"
+          }
+        }
+      }
+    },
     "Try a sample" : {
       "localizations" : {
         "ar" : {
@@ -56525,6 +58545,107 @@
         }
       }
     },
+    "Video" : {
+      "comment" : "Label of the video timeline's row of frames.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الفيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidéo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影片"
+          }
+        }
+      }
+    },
     "Videos" : {
       "comment" : "Home screen tile that opens the photo picker filtered to videos.",
       "localizations" : {
@@ -57835,6 +59956,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "黃色"
+          }
+        }
+      }
+    },
+    "You can still cover objects yourself, bleep the sound, or save a copy with only the hidden details removed." : {
+      "comment" : "Footer when a video scan found no faces or sensitive text.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يزال بإمكانك حجب العناصر بنفسك أو إضافة صفير على الصوت أو حفظ نسخة أُزيلت منها التفاصيل المخفية فقط."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kannst trotzdem selbst Objekte verdecken, den Ton überpiepen oder eine Kopie sichern, bei der nur die versteckten Details entfernt sind."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aun así puedes censurar objetos tú mismo, poner un pitido al sonido o guardar una copia sin los detalles ocultos."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aun así puedes censurar objetos tú mismo, poner un pitido al sonido o guardar una copia sin los detalles ocultos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous pouvez toujours masquer des objets vous-même, biper le son ou enregistrer une copie dont seuls les détails cachés sont supprimés."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Puoi comunque coprire tu stesso degli oggetti, mettere un bip sull’audio o salvare una copia senza i dettagli nascosti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自分でオブジェクトをマスクしたり、音声にピー音を入れたり、隠れた情報だけを削除したコピーを保存したりすることもできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "직접 개체를 가리거나, 소리에 삐 소리를 넣거나, 숨겨진 정보만 제거한 사본을 저장할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je kunt nog steeds zelf objecten afdekken, het geluid laten piepen of een kopie bewaren waarin alleen verborgen gegevens zijn verwijderd."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nadal możesz samodzielnie zamazać obiekty, zagłuszyć dźwięk piskiem lub zachować kopię bez ukrytych danych."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Você ainda pode ocultar objetos por conta própria, colocar um bipe no som ou salvar uma cópia apenas sem os detalhes ocultos."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pode ainda ocultar objetos por si, pôr um bipe no som ou guardar uma cópia apenas sem os detalhes ocultos."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Du kan fortfarande maskera objekt själv, lägga pip över ljudet eller spara en kopia där bara dolda uppgifter är borttagna."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yine de nesneleri kendiniz karartabilir, sese bip sesi ekleyebilir veya yalnızca gizli ayrıntıları kaldırılmış bir kopya kaydedebilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你仍然可以自行遮盖物体、为声音加上哔声，或存储一份只移除了隐藏信息的副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "你仍然可以自行遮蓋物體、為聲音加上嗶聲，或儲存一份只移除了隱藏資訊的拷貝。"
           }
         }
       }

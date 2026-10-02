@@ -530,9 +530,18 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(app.buttons["resetTimingButton"].waitForExistence(timeout: 5), "A changed timing can be reset.")
         attachScreen("cover_timeline")
 
+        // A bleep at the playhead shows as a clip on the audio lane, selected.
+        let bleep = app.buttons["addBleepButton"]
+        XCTAssertTrue(bleep.waitForExistence(timeout: 5), "The video has sound, so it can be bleeped.")
+        bleep.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["clip-audio-0"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.descendants(matching: .any)["coverEndHandle"].exists, "The new bleep can be trimmed.")
+        attachScreen("bleep_timeline")
+
         app.buttons["makeCleanedCopyButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["drawnCoveredRow"].waitForExistence(timeout: 120),
                       "The cleaned copy lists the cover that was added.")
+        XCTAssertTrue(app.descendants(matching: .any)["audioEditedRow"].exists, "…and the bleep.")
     }
 
     /// Skipping face covering still saves a cleaned copy, with every face as it was.
@@ -799,8 +808,47 @@ final class PicStripUITests: XCTestCase {
     }
 
     /// A movie of 🧑🏽 drifting across a pale frame — a face Vision finds, even
-    /// on the simulator — with an email address on a label in the corner.
+    /// on the simulator — with an email address on a label in the corner, and a
+    /// tone for its sound.  The picture and the sound are written separately and
+    /// put together: one writer with both inputs stalls waiting on itself.
     private func writeFaceMovie(to url: URL, seconds: Double = 2.5) async throws {
+        let picture = url.deletingLastPathComponent().appendingPathComponent("picture-\(url.lastPathComponent)")
+        let sound = url.deletingLastPathComponent().appendingPathComponent("sound-\(UUID().uuidString).caf")
+        defer {
+            try? FileManager.default.removeItem(at: picture)
+            try? FileManager.default.removeItem(at: sound)
+        }
+        try await writeSilentFaceMovie(to: picture, seconds: seconds)
+
+        let rate = 44_100.0
+        let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: rate, channels: 1))
+        let frames = AVAudioFrameCount(seconds * rate)
+        let tone = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames))
+        tone.frameLength = frames
+        let samples = try XCTUnwrap(tone.floatChannelData?[0])
+        for index in 0..<Int(frames) { samples[index] = 0.3 * Float(sin(2 * Double.pi * 440 * Double(index) / rate)) }
+        let file = try AVAudioFile(forWriting: sound, settings: format.settings)
+        try file.write(from: tone)
+        file.close()
+
+        let composition = AVMutableComposition()
+        let pictureAsset = AVURLAsset(url: picture)
+        let soundAsset = AVURLAsset(url: sound)
+        let videoTracks = try await pictureAsset.loadTracks(withMediaType: .video)
+        let audioTracks = try await soundAsset.loadTracks(withMediaType: .audio)
+        let videoTrack = try XCTUnwrap(videoTracks.first)
+        let audioTrack = try XCTUnwrap(audioTracks.first)
+        let duration = try await pictureAsset.load(.duration)
+        try composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)?
+            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: videoTrack, at: .zero)
+        try composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)?
+            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: audioTrack, at: .zero)
+        try? FileManager.default.removeItem(at: url)
+        let session = try XCTUnwrap(AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality))
+        try await session.export(to: url, as: .mov)
+    }
+
+    private func writeSilentFaceMovie(to url: URL, seconds: Double) async throws {
         try? FileManager.default.removeItem(at: url)
         let size = CGSize(width: 640, height: 360)
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
@@ -814,6 +862,12 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(writer.startWriting())
         writer.startSession(atSourceTime: .zero)
         let fps = 30
+        func waitFor(_ writerInput: AVAssetWriterInput) async throws {
+            while !writerInput.isReadyForMoreMediaData {
+                guard writer.status == .writing else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
+                try await Task.sleep(for: .milliseconds(5))
+            }
+        }
         let frames = Int(seconds * Double(fps))
         let font = UIFont.systemFont(ofSize: 220)
         let face = "🧑🏽" as NSString
@@ -821,7 +875,7 @@ final class PicStripUITests: XCTestCase {
         let format = UIGraphicsImageRendererFormat()
         format.scale = 1
         for frame in 0..<frames {
-            while !input.isReadyForMoreMediaData { try await Task.sleep(for: .milliseconds(5)) }
+            try await waitFor(input)
             let x = size.width * (0.4 + 0.2 * CGFloat(frame) / CGFloat(max(frames - 1, 1)))
             let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
                 UIColor(red: 0.82, green: 0.86, blue: 0.9, alpha: 1).setFill()

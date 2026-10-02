@@ -74,6 +74,7 @@ final class VideoCleanerModel {
         case face(Int)
         case drawn(Int)
         case group(String)
+        case audio(Int)
     }
 
     /// How each face (by track id) and group (by group id) looks in the list.
@@ -94,6 +95,21 @@ final class VideoCleanerModel {
     private(set) var coveredFaceCount = 0
     private(set) var coveredFindingCount = 0
     private(set) var coveredDrawnCount = 0
+    private(set) var editedAudioCount = 0
+
+    /// Stretches of sound to bleep or mute.
+    private(set) var audioEdits: [AudioEdit] = []
+    /// Whether the video has sound at all.
+    private(set) var hasAudio = false
+    /// How loud the sound is along the video, 0 … 1, for the timeline.
+    private(set) var audioLevels: [Float] = []
+    /// Small frames spread along the video, for the timeline's top row.
+    private(set) var filmstrip: [UIImage] = []
+    private var nextAudioID = 0
+    /// Tone files laid over bleeps; deleted with the screen.
+    private var toneFiles: [URL] = []
+    /// The audio edits the current preview item was built with.
+    private var previewAudioEdits: [AudioEdit] = []
     private(set) var output: URL?
 
     private var source: URL?
@@ -160,12 +176,17 @@ final class VideoCleanerModel {
             faces = scan.faces
             findingGroups = FindingGroup.groups(of: scan.findings)
             path = scan.path
-            guard hasSomethingToCover else {
-                // Nothing to cover: straight to the cleaned copy, frames untouched.
+            guard !skipsCovering else {
+                // Only the hidden details: straight to the cleaned copy, frames untouched.
                 await save()
                 return
             }
+            // Even with nothing found the editor opens: objects can be covered
+            // and sound bleeped by hand.
             await makeThumbnails(from: url)
+            hasAudio = !((try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []).isEmpty
+            if hasAudio { audioLevels = await VideoAudioEditor.levels(of: url, count: 160) }
+            filmstrip = await Self.filmstrip(of: url, duration: duration, count: 10)
             stillTime = faces.first?.representativeSample?.time
                 ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
             observePlayhead()
@@ -272,8 +293,41 @@ final class VideoCleanerModel {
         if plan.isEmpty {
             return await Self.crops([(time: time, box: CGRect(x: 0, y: 0, width: 1, height: 1))], from: source)[0]
         }
-        guard let composition = try? await VideoRedactor.composition(for: AVURLAsset(url: source), plan: plan) else { return nil }
-        return await Self.still(of: source, at: time, through: composition)
+        return await Self.still(of: source, at: time, plan: plan)
+    }
+
+    /// Adds a bleep or mute at the playhead, a second long, and selects it.
+    func addAudioEdit(_ kind: AudioEdit.Kind) {
+        player.pause()
+        let length = min(1, duration)
+        let start = min(max(0, currentTime), max(0, duration - length))
+        let edit = AudioEdit(id: nextAudioID, kind: kind, range: start...(start + length))
+        nextAudioID += 1
+        audioEdits.append(edit)
+        selection = .audio(edit.id)
+        refreshPreview()
+    }
+
+    func setKind(_ kind: AudioEdit.Kind, of edit: AudioEdit) {
+        guard let index = audioEdits.firstIndex(where: { $0.id == edit.id }) else { return }
+        audioEdits[index].kind = kind
+        refreshPreview()
+    }
+
+    func setRange(_ range: ClosedRange<Double>, of edit: AudioEdit) {
+        guard let index = audioEdits.firstIndex(where: { $0.id == edit.id }) else { return }
+        audioEdits[index].range = clamped(range)
+        refreshPreview()
+    }
+
+    func deleteAudioEdit(_ edit: AudioEdit) {
+        audioEdits.removeAll { $0.id == edit.id }
+        if selection == .audio(edit.id) { selection = nil }
+        refreshPreview()
+    }
+
+    func audioEdit(_ id: Int) -> AudioEdit? {
+        audioEdits.first { $0.id == id }
     }
 
     private func observePlayhead() {
@@ -307,12 +361,16 @@ final class VideoCleanerModel {
         var reserved: URL?
         do {
             let plan = currentPlan
+            let edited = try await VideoAudioEditor.edited(source, edits: audioEdits)
+            if let tone = edited.toneFile { toneFiles.append(tone) }
             let composition = plan.isEmpty
                 ? nil
-                : try await VideoRedactor.composition(for: AVURLAsset(url: source), plan: plan)
+                : try await VideoRedactor.composition(for: edited.asset, plan: plan)
             let output = try PrivateFileStore.exports.reserve(extension: "mov")
             reserved = output
-            try await VideoCleaner.clean(source, to: output, videoComposition: composition) { [weak self] fraction in
+            try await VideoCleaner.clean(
+                edited.asset, audioMix: edited.audioMix, to: output, videoComposition: composition
+            ) { [weak self] fraction in
                 Task { @MainActor in self?.saveProgress = fraction }
             }
             try Task.checkCancellation()
@@ -326,6 +384,7 @@ final class VideoCleanerModel {
             coveredFaceCount = plan.faces.filter { !$0.track.isDrawn }.count
             coveredDrawnCount = drawnCovers.count
             coveredFindingCount = findingGroups.filter(isCovered).count
+            editedAudioCount = audioEdits.count
             player.replaceCurrentItem(with: AVPlayerItem(url: output))
             stage = .cleaned
         } catch {
@@ -376,6 +435,7 @@ final class VideoCleanerModel {
         player.replaceCurrentItem(with: nil)
         PrivateFileStore.exports.remove(source)
         PrivateFileStore.exports.remove(output)
+        toneFiles.forEach { PrivateFileStore.exports.remove($0) }
     }
 
     // MARK: Helpers
@@ -404,14 +464,29 @@ final class VideoCleanerModel {
         previewGeneration += 1
         let generation = previewGeneration
         let plan = currentPlan
+        let edits = audioEdits
         Task {
-            let item = player.currentItem.flatMap { ($0.asset as? AVURLAsset)?.url == source ? $0 : nil }
-                ?? AVPlayerItem(url: source)
+            // The item is kept while the sound edits are unchanged; covers are
+            // swapped on it in place.
+            var item = player.currentItem.flatMap { current -> AVPlayerItem? in
+                guard edits == previewAudioEdits else { return nil }
+                if edits.isEmpty { return (current.asset as? AVURLAsset)?.url == source ? current : nil }
+                return current.asset is AVComposition ? current : nil
+            }
+            if item == nil {
+                guard let edited = try? await VideoAudioEditor.edited(source, edits: edits) else { return }
+                if let tone = edited.toneFile { toneFiles.append(tone) }
+                let fresh = AVPlayerItem(asset: edited.asset)
+                fresh.audioMix = edited.audioMix
+                item = fresh
+            }
+            guard let item else { return }
             let composition = plan.isEmpty
                 ? nil
                 : try? await VideoRedactor.composition(for: item.asset, plan: plan)
             // Covers that cannot be drawn are never replaced by the bare video.
             guard generation == previewGeneration, stage == .review, plan.isEmpty || composition != nil else { return }
+            previewAudioEdits = edits
             item.videoComposition = composition
             if player.currentItem !== item {
                 player.replaceCurrentItem(with: item)
@@ -425,11 +500,11 @@ final class VideoCleanerModel {
             for _ in 0..<25 where item.status == .unknown {
                 try? await Task.sleep(for: .milliseconds(200))
             }
-            guard item.status == .failed, let composition, generation == previewGeneration else {
+            guard item.status == .failed, composition != nil, generation == previewGeneration else {
                 if generation == previewGeneration { previewStill = nil }
                 return
             }
-            let still = await Self.still(of: source, at: stillTime, through: composition)
+            let still = await Self.still(of: source, at: stillTime, plan: plan)
             guard generation == previewGeneration, stage == .review else { return }
             previewStill = still
             currentTime = stillTime
@@ -438,8 +513,12 @@ final class VideoCleanerModel {
         }
     }
 
-    nonisolated private static func still(of url: URL, at time: Double, through composition: AVVideoComposition) async -> UIImage? {
-        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+    /// The frame at `time` with `plan` drawn on it, from the image generator,
+    /// which can compose frames where the player cannot.
+    nonisolated private static func still(of url: URL, at time: Double, plan: VideoRedactor.Plan) async -> UIImage? {
+        let asset = AVURLAsset(url: url)
+        guard let composition = try? await VideoRedactor.composition(for: asset, plan: plan) else { return nil }
+        let generator = AVAssetImageGenerator(asset: asset)
         generator.videoComposition = composition
         generator.maximumSize = CGSize(width: 1280, height: 1280)
         generator.requestedTimeToleranceBefore = .zero
@@ -482,6 +561,21 @@ final class VideoCleanerModel {
         } onCancel: {
             box.cancel()
         }
+    }
+
+    /// `count` small frames spread evenly along the video.
+    nonisolated private static func filmstrip(of url: URL, duration: Double, count: Int) async -> [UIImage] {
+        guard duration > 0, count > 0 else { return [] }
+        let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 160, height: 160)
+        var frames: [UIImage] = []
+        for index in 0..<count {
+            let time = duration * (Double(index) + 0.5) / Double(count)
+            guard let image = try? await generator.image(at: CMTime(seconds: time, preferredTimescale: 600)).image else { continue }
+            frames.append(UIImage(cgImage: image))
+        }
+        return frames
     }
 
     /// Each face and each group as it looks in the middle of its first track.
