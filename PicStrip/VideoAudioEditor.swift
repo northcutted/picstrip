@@ -1,3 +1,4 @@
+import Accelerate
 import AVFoundation
 
 // MARK: - AudioEdit
@@ -156,20 +157,25 @@ nonisolated enum VideoAudioEditor {
 
     /// How loud the sound is across the video, in `count` even slices, 0 … 1
     /// against the loudest — for the timeline's audio lane.  Empty without sound.
+    ///
+    /// The whole sound is decoded, which takes a while for a long video, so it
+    /// is done off the main actor.
+    @concurrent
     static func levels(of url: URL, count: Int) async -> [Float] {
         let asset = AVURLAsset(url: url)
         guard count > 0,
               let track = try? await asset.loadTracks(withMediaType: .audio).first,
               let duration = try? await asset.load(.duration).seconds, duration > 0,
               let reader = try? AVAssetReader(asset: asset) else { return [] }
+        let rate = 8_000.0
         let output = AVAssetReaderTrackOutput(track: track, outputSettings: [
             AVFormatIDKey: kAudioFormatLinearPCM,
-            AVLinearPCMBitDepthKey: 16,
-            AVLinearPCMIsFloatKey: false,
+            AVLinearPCMBitDepthKey: 32,
+            AVLinearPCMIsFloatKey: true,
             AVLinearPCMIsBigEndianKey: false,
             AVLinearPCMIsNonInterleaved: false,
             AVNumberOfChannelsKey: 1,
-            AVSampleRateKey: 8_000
+            AVSampleRateKey: rate
         ])
         guard reader.canAdd(output) else { return [] }
         reader.add(output)
@@ -177,19 +183,28 @@ nonisolated enum VideoAudioEditor {
         defer { reader.cancelReading() }
 
         var peaks = [Float](repeating: 0, count: count)
+        func slot(at time: Double) -> Int {
+            min(count - 1, max(0, Int(time / duration * Double(count))))
+        }
         while let buffer = output.copyNextSampleBuffer() {
-            guard let block = CMSampleBufferGetDataBuffer(buffer) else { continue }
             let start = CMSampleBufferGetPresentationTimeStamp(buffer).seconds
-            let length = CMBlockBufferGetDataLength(block)
-            var bytes = [Int16](repeating: 0, count: length / 2)
-            let copied = bytes.withUnsafeMutableBytes { raw in
-                raw.baseAddress.map { CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: raw.count, destination: $0) }
-            }
-            guard copied == kCMBlockBufferNoErr else { continue }
-            for (index, sample) in bytes.enumerated() {
-                let time = start + Double(index) / 8_000
-                let slot = min(count - 1, max(0, Int(time / duration * Double(count))))
-                peaks[slot] = max(peaks[slot], abs(Float(sample)) / Float(Int16.max))
+            // Read where the decoder left the samples, a slice's worth at a time.
+            try? buffer.withAudioBufferList(flags: .audioBufferListAssure16ByteAlignment) { list, _ in
+                guard let audio = list.first, let data = audio.mData else { return }
+                let samples = UnsafeBufferPointer(
+                    start: data.assumingMemoryBound(to: Float.self), count: Int(audio.mDataByteSize) / MemoryLayout<Float>.stride
+                )
+                var index = 0
+                while index < samples.count {
+                    let current = slot(at: start + Double(index) / rate)
+                    // The first sample in the next slice.
+                    let next = current == count - 1
+                        ? samples.count
+                        : Int(((Double(current + 1) * duration / Double(count) - start) * rate).rounded(.up))
+                    let end = min(samples.count, max(index + 1, next))
+                    peaks[current] = max(peaks[current], vDSP.maximumMagnitude(UnsafeBufferPointer(rebasing: samples[index..<end])))
+                    index = end
+                }
             }
         }
         let loudest = peaks.max() ?? 0
