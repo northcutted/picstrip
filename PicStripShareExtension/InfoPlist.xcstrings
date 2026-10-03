@@ -116,103 +116,103 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يحفظ PicStrip الصور المنظَّفة في مكتبة الصور الخاصة بك."
+            "value" : "يحفظ PicStrip الصور ومقاطع الفيديو المنظَّفة في مكتبة الصور الخاصة بك."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip sichert bereinigte Bilder in deiner Fotomediathek."
+            "value" : "PicStrip sichert bereinigte Fotos und Videos in deiner Fotomediathek."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "PicStrip saves cleaned images to your photo library."
+            "value" : "PicStrip saves cleaned photos and videos to your photo library."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip guarda las imágenes limpias en tu fototeca."
+            "value" : "PicStrip guarda las fotos y los vídeos limpios en tu fototeca."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip guarda las imágenes limpias en tu fototeca."
+            "value" : "PicStrip guarda las fotos y los videos limpios en tu fototeca."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip enregistre les images nettoyées dans votre photothèque."
+            "value" : "PicStrip enregistre les photos et les vidéos nettoyées dans votre photothèque."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip salva le immagini pulite nella tua libreria foto."
+            "value" : "PicStrip salva le foto e i video puliti nella tua libreria foto."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStripは、クリーンアップした画像を写真ライブラリに保存します。"
+            "value" : "PicStripは、クリーンアップした写真やビデオを写真ライブラリに保存します。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip은 정리를 마친 이미지를 사진 보관함에 저장합니다."
+            "value" : "PicStrip은 정리된 사진과 비디오를 사진 보관함에 저장합니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip bewaart opgeschoonde afbeeldingen in je fotobibliotheek."
+            "value" : "PicStrip bewaart opgeschoonde foto’s en video’s in je fotobibliotheek."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip zachowuje wyczyszczone obrazy w Twojej bibliotece zdjęć."
+            "value" : "PicStrip zachowuje wyczyszczone zdjęcia i wideo w Twojej bibliotece zdjęć."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip salva as imagens limpas na sua fototeca."
+            "value" : "O PicStrip salva fotos e vídeos limpos na sua fototeca."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip guarda as imagens limpas na sua fototeca."
+            "value" : "O PicStrip guarda fotografias e vídeos limpos na sua fototeca."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip sparar rensade bilder i ditt bildbibliotek."
+            "value" : "PicStrip sparar rensade bilder och videor i ditt bildbibliotek."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip, temizlenen görüntüleri fotoğraf arşivinize kaydeder."
+            "value" : "PicStrip, temizlenen fotoğrafları ve videoları fotoğraf arşivinize kaydeder."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 会把清理完成的图像存储到你的照片图库。"
+            "value" : "PicStrip 会将清理后的照片和视频存储到你的照片图库。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 會將清理後的影像儲存到你的照片圖庫。"
+            "value" : "PicStrip 會將清理後的照片和影片儲存到你的照片圖庫。"
           }
         }
       }

@@ -34,9 +34,9 @@
     <key>NSMicrophoneUsageDescription</key>
     <string>PicStrip records sound with the videos you take in the app. Recordings stay on your device until you save or share a cleaned copy.</string>
     <key>NSPhotoLibraryAddUsageDescription</key>
-    <string>PicStrip saves the scrubbed image to your photo library.</string>
+    <string>PicStrip saves cleaned photos and videos to your photo library.</string>
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>PicStrip needs access to your photo library to replace the original image when requested.</string>
+    <string>PicStrip needs access to your photo library to replace an original photo or video when you ask it to.</string>
 
     <!-- URL scheme — registered so the Share Extension can open the main app editor.
          picstrip://edit-from-extension is called after writing the processed image data
