@@ -201,7 +201,7 @@ struct LiveCameraView: View {
     private var bottomBar: some View {
         VStack(spacing: 12) {
             if let mode {
-                CameraModePicker(mode: mode)
+                CameraModePicker(mode: mode) { model.stop() }
                     .opacity(model.isCapturing ? 0 : 1)
                     .allowsHitTesting(!model.isCapturing)
             }

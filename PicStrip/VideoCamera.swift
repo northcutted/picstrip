@@ -700,7 +700,9 @@ final class VideoCameraModel {
     private(set) var fixture: VideoCameraFixture?
 
     let previewLayer = AVCaptureVideoPreviewLayer()
-    @ObservationIgnored private let camera = VideoCaptureSession()
+    // Lazy: SwiftUI builds `@State`'s initial value each time the parent re-creates
+    // the view and keeps only the first, so a session built here would be thrown away.
+    @ObservationIgnored private lazy var camera = VideoCaptureSession()
     @ObservationIgnored private var tasks: [Task<Void, Never>] = []
     @ObservationIgnored private var pinchStart: CGFloat?
     @ObservationIgnored private var biasStart: Float?
