@@ -44,12 +44,15 @@ except ImportError:  # pragma: no cover - extremely rare
 # — the result is unreadable. ``arabic_reshaper`` joins the letters; the bidi
 # algorithm reorders the result for visual (LTR) order so PIL draws the
 # correct sequence. Both are pure-Python; if not installed we degrade
-# gracefully and Arabic renders unshaped (still better than tofu).
+# gracefully and Arabic renders unshaped (still better than tofu). A Pillow
+# that finds libraqm (and fribidi) at runtime shapes and reorders Arabic
+# itself, so shaping again would reverse it — skip it there.
 try:
     import arabic_reshaper
     from bidi.algorithm import get_display
+    from PIL import features
 
-    _HAS_ARABIC_SHAPING = True
+    _HAS_ARABIC_SHAPING = not features.check("raqm")
 except ImportError:  # pragma: no cover - optional dependency
     arabic_reshaper = None  # type: ignore[assignment]
     get_display = None  # type: ignore[assignment]
