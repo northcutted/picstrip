@@ -132,13 +132,24 @@ struct VideoCameraView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            preview
-            if !model.areControlsHidden {
-                controls
-                    .transition(.opacity)
+            CameraFrameLayout(aspect: pictureAspect, controlsHidden: model.areControlsHidden) {
+                topBar
+            } viewfinder: {
+                preview
+            } inPicture: {
+                VStack(spacing: 10) {
+                    statusNote
+                    Spacer(minLength: 0)
+                    if model.setup.zoomLevels.count > 1 {
+                        CameraZoomButtons(levels: model.setup.zoomLevels, zoom: model.zoomLevel) { model.setZoom($0) }
+                            .disabled(model.state != .running)
+                    }
+                }
+            } bottom: {
+                bottomBar
             }
+            .disabled(model.state == .starting)
         }
-        .animation(.easeInOut(duration: 0.2), value: model.areControlsHidden)
         .statusBarHidden()
         // The volume buttons and Camera Control start and stop recording, as in the Camera app.
         .onCameraCaptureEvent(isEnabled: model.state == .running && !model.isFinishing) { event in
@@ -203,48 +214,56 @@ struct VideoCameraView: View {
                 endExposure: { model.endExposureAdjustment() }
             )
         }
-        .ignoresSafeArea()
         .accessibilityHidden(true)
+    }
+
+    /// The picture's shape: the movie's for the stand-in, else the format's —
+    /// upright when the viewfinder is.
+    private func pictureAspect(for size: CGSize) -> CGFloat? {
+        if let still = model.fixture?.still {
+            return CGFloat(still.width) / CGFloat(max(1, still.height))
+        }
+        let resolution = model.setup.quality.resolution
+        let landscape = CGFloat(resolution.width) / CGFloat(resolution.height)
+        return size.height > size.width ? 1 / landscape : landscape
     }
 
     // MARK: Controls
 
-    private var controls: some View {
-        VStack(spacing: 12) {
-            GlassEffectContainer(spacing: 10) {
-                if model.isRecording {
-                    // The time in the middle, as in the Camera app; the torch stays at hand.
-                    RecordingTimer(started: model.recordingStarted ?? .now)
-                        .frame(maxWidth: .infinity)
-                        .overlay(alignment: .trailing) {
-                            if model.setup.hasTorch { torchToggle }
-                        }
-                } else {
-                    HStack(spacing: 10) {
-                        closeButton
-                        Spacer()
+    /// Above the picture: close and the recording settings, or the time while recording.
+    private var topBar: some View {
+        GlassEffectContainer(spacing: 10) {
+            if model.isRecording {
+                // The time in the middle, as in the Camera app; the torch stays at hand.
+                RecordingTimer(started: model.recordingStarted ?? .now)
+                    .frame(maxWidth: .infinity)
+                    .overlay(alignment: .trailing) {
                         if model.setup.hasTorch { torchToggle }
-                        stabilizationToggle
-                        hdrToggle
-                        qualityButtons
                     }
+                    .frame(height: 44)
+            } else {
+                HStack(spacing: 10) {
+                    closeButton
+                    Spacer()
+                    if model.setup.hasTorch { torchToggle }
+                    stabilizationToggle
+                    hdrToggle
+                    qualityButtons
                 }
+                .frame(height: 44)
             }
+        }
+    }
 
-            statusNote
-
-            Spacer()
-
-            GlassEffectContainer(spacing: 10) {
-                VStack(spacing: 12) {
-                    if model.setup.zoomLevels.count > 1 {
-                        CameraZoomButtons(levels: model.setup.zoomLevels, zoom: model.zoomLevel) { model.setZoom($0) }
-                            .disabled(model.state != .running)
-                    }
-                    if !model.isRecording { CameraModePicker(mode: $mode) }
-                }
-            }
-
+    /// Below the picture: the mode, and the record button between the
+    /// microphone notice and the camera switch.  The mode keeps its place while
+    /// recording, so the picture does not jump.
+    private var bottomBar: some View {
+        VStack(spacing: 12) {
+            CameraModePicker(mode: $mode)
+                .opacity(model.isRecording ? 0 : 1)
+                .disabled(model.isRecording)
+                .accessibilityHidden(model.isRecording)
             HStack {
                 microphoneButton
                     .frame(width: 60)
@@ -255,10 +274,6 @@ struct VideoCameraView: View {
                     .frame(width: 60)
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 24)
-        .disabled(model.state == .starting)
     }
 
     @ViewBuilder

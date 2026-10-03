@@ -19,9 +19,9 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 ## Screenshots
 
 <p align="center">
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_Metadata.png" width="240" alt="A loaded photo with its risks ranked"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-02_RedactionEditor.png" width="240" alt="The redaction editor"/>
-  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-01_FullPreview.png" width="240" alt="Inspect the cleaned image in full"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-04_Metadata.png" width="240" alt="A loaded photo with its risks ranked"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-02_VideoEditor.png" width="240" alt="The video editor, with a face blurred, text covered and a bleep on the timeline"/>
+  <img src="fastlane/screenshots/processed/en-US/iPhone%2018%20Pro%20Max-03_RedactionEditor.png" width="240" alt="The redaction editor"/>
 </p>
 
 ---

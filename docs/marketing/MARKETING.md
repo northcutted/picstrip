@@ -34,7 +34,7 @@ Keep engineering details in the GitHub release notes. Run `python3 scripts/valid
 
 ## Prepare screenshots
 
-Use the configured capture workflow and actual app UI. Lead with a cleaned result and redaction controls, then show metadata, full-image review and the fictional sample. Five screens × two device classes × 17 locales produces 170 images. Verify count, dimensions, text fit, order and source identity in the candidate manifest.
+Use the configured capture workflow and actual app UI. Lead with the cleaned full-image review, then the video editor (a face blurred, text covered, a bleep on the timeline), the redaction controls, metadata, the final review and the fictional sample. Six screens × two device classes × 17 locales produces 204 images. Verify count, dimensions, text fit, order and source identity in the candidate manifest.
 
 The screenshot workflow prepares assets for review; publishing a release and deploying to Apple are separate actions. Follow [release operations](../release-pipeline.md) and [the 1.7.0 acceptance record](../releases/1.7.0-acceptance.md).
 

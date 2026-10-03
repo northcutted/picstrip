@@ -192,7 +192,9 @@ struct VideoCleanerView: View {
                 }
             } footer: {
                 VStack(alignment: .leading, spacing: 4) {
-                    if model.previewStill != nil {
+                    // Not in the store screenshots, taken on a simulator that cannot play the
+                    // preview: a phone plays it.
+                    if model.previewStill != nil, !ProcessInfo.processInfo.arguments.contains("-FASTLANE_SNAPSHOT") {
                         Text("This device cannot play the preview, so it shows one frame. Tap a row to see it covered.")
                     }
                     Text(timelineHint)

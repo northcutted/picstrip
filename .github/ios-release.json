@@ -50,10 +50,11 @@
   },
   "screens": [
     "01_FullPreview",
-    "02_RedactionEditor",
-    "03_Metadata",
-    "04_ReviewAndShare",
-    "05_Sample"
+    "02_VideoEditor",
+    "03_RedactionEditor",
+    "04_Metadata",
+    "05_ReviewAndShare",
+    "06_Sample"
   ],
   "locales": [
     "en-US",
