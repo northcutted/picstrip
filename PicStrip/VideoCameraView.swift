@@ -414,6 +414,8 @@ struct VideoCameraView: View {
                     .frame(width: model.isRecording ? 32 : 66, height: model.isRecording ? 32 : 66)
                     .animation(reduceMotion ? nil : .snappy(duration: 0.2), value: model.isRecording)
             }
+            // The whole button stops a recording, not just the small square in it.
+            .contentShape(Circle())
         }
         .buttonStyle(.plain)
         .disabled(model.state != .running || model.isFinishing)

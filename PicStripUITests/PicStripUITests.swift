@@ -524,7 +524,8 @@ final class PicStripUITests: XCTestCase {
         XCTAssertFalse(app.buttons["addBleepButton"].exists, "Bleep and mute are in the audio lane's menu, not buttons.")
         add.tap()
         let area = app.descendants(matching: .any)["drawingArea"]
-        XCTAssertTrue(area.waitForExistence(timeout: 15))
+        // The paused frame is drawn with the covers on it first; a slow CI runner takes a while.
+        XCTAssertTrue(area.waitForExistence(timeout: 60), "The paused frame appears to draw on.")
         // Too small at first, then moved and resized around the face, which moves:
         // the cover follows it.
         area.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.15))

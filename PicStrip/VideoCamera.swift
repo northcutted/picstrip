@@ -249,15 +249,16 @@ nonisolated final class VideoCaptureSession: NSObject, @unchecked Sendable,
     /// The other camera, front or back, at the same quality where it can.
     @MainActor
     func flip() async throws -> Setup {
-        let (device, setup) = try await onSessionQueue { [self] in
+        let (device, flipped) = try await onSessionQueue { [self] in
             guard !isRecording else { throw SetupError.cannotConfigure }
+            let current = self.setup
             return try configure(
-                position: setup.position == .back ? .front : .back,
-                quality: setup.quality, recordsSound: setup.recordsSound
+                position: current.position == .back ? .front : .back,
+                quality: current.quality, recordsSound: current.recordsSound
             )
         }
         attachRotation(to: device)
-        return setup
+        return flipped
     }
 
     /// Records at `quality`, or the nearest the camera can.
@@ -389,7 +390,7 @@ nonisolated final class VideoCaptureSession: NSObject, @unchecked Sendable,
 
     private typealias Configured = (device: AVCaptureDevice, setup: Setup)
 
-    private func onSessionQueue(_ work: @escaping () throws -> Configured) async throws -> Configured {
+    private func onSessionQueue(_ work: @escaping @Sendable () throws -> Configured) async throws -> Configured {
         try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Configured, Error>) in
             sessionQueue.async {
                 do {
