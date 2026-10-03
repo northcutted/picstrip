@@ -10,6 +10,13 @@ enum VideoSource {
     case picked(PhotosPickerItem)
     /// A file on disk — the UI tests' fixture (`PICSTRIP_VIDEO_FIXTURE`).
     case file(URL)
+    /// Recorded with PicStrip's camera, already in its protected temporary
+    /// store: used where it is, and deleted with the screen like any copy.
+    case recorded(URL)
+
+    var isRecording: Bool {
+        if case .recorded = self { true } else { false }
+    }
 }
 
 // MARK: - VideoCleanerModel
@@ -593,6 +600,8 @@ final class VideoCleanerModel {
             return try await loadPicked(item)
         case .file(let url):
             return try PrivateFileStore.exports.copy(url, extension: url.pathExtension.isEmpty ? "mov" : url.pathExtension)
+        case .recorded(let url):
+            return url
         }
     }
 

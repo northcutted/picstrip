@@ -1,1 +1,1 @@
-integritet,EXIF,metadata,GPS,redigera,oskärpa,PII,ansikte,risk,detektion,anonym,säker,OCR,vision
+video,censurera,sudda,oskärpa,pixla,GPS,plats,anonym,integritet,pip,kamera,skärmbild,blurra,EXIF

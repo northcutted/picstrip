@@ -71,7 +71,8 @@ final class LocalizationTests: XCTestCase {
         let keys = [
             "NSPhotoLibraryAddUsageDescription",
             "NSPhotoLibraryUsageDescription",
-            "NSCameraUsageDescription"
+            "NSCameraUsageDescription",
+            "NSMicrophoneUsageDescription"
         ]
         for locale in Self.locales {
             for key in keys {
@@ -82,8 +83,9 @@ final class LocalizationTests: XCTestCase {
         }
     }
 
-    /// iOS kills the app when it asks for the camera without this key.
+    /// iOS kills the app when it asks for the camera or the microphone without these keys.
     func testCameraUsageDescriptionIsDeclared() {
         XCTAssertNotNil(Bundle.main.object(forInfoDictionaryKey: "NSCameraUsageDescription"))
+        XCTAssertNotNil(Bundle.main.object(forInfoDictionaryKey: "NSMicrophoneUsageDescription"))
     }
 }

@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Revisar e partilhar
+O PicStrip 1.7 é uma grande atualização: agora limpa vídeos, e a câmara mostra o que iria ocultar antes de fotografar.
 
-• Experimentar um exemplo. Uma foto fictícia. Não é necessário aceder à fototeca.
-• Inspecionar imagem completa. Revelar original.
-• Compartilhar imagem limpa. Predefinição de partilha. Tamanho atual do ficheiro.
-• Adicionar área centrada. Posição e tamanho.
-• Algumas verificações não foram concluídas. Força da correspondência.
-• Gravação em Fotografias mais fiável, melhor cobertura de blocos de chaves privadas e ficheiros temporários protegidos.
-• A ação dos Atalhos em segundo plano remove apenas metadados. Abra o PicStrip para rever e ocultar conteúdo visível.
+• Vídeos: rostos, texto, códigos e as suas palavras de Ocultar sempre são encontrados, seguidos enquanto se movem e ocultados — com desfoque, uma caixa sólida ou um emoji para cada rosto.
+• Oculte qualquer objeto num vídeo desenhando à sua volta; o PicStrip segue-o para a frente e para trás.
+• Ajuste cada ocultação numa linha temporal de editor de vídeo e ponha um bipe ou silencie o que foi dito.
+• Grave vídeo no PicStrip até 4K com HDR, com os controlos que já conhece da app Câmara.
+• Tirar fotografia abre um visor ao vivo que contorna o que iria ocultar.
+• Oculte com um emoji, toque num objeto para o ocultar no iOS 27 e deixe visíveis os últimos dígitos de um cartão ou número de telefone.
+• Ocultar sempre: o seu nome, uma matrícula ou a sua rua, ocultados onde quer que o PicStrip os leia.
+• Digitalize documentos, escolha apenas as suas capturas de ecrã, mantenha o movimento de uma Live Photo e compare o antes e o depois.
+• Predefinições de partilha, tamanho do ficheiro visível e um resumo do que foi removido.
 
-Reveja a foto antes de partilhar. A deteção automática pode deixar passar detalhes.
+A deteção automática pode deixar passar detalhes. Reveja a fotografia ou o vídeo completo antes de partilhar.

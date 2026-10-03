@@ -1,1 +1,1 @@
-Strip metadata. Hide secrets.
+Blur faces. Strip metadata.

@@ -12,7 +12,7 @@
 
 </div>
 
-PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos before you share them. Scanning and image processing use Apple frameworks on the device. PicStrip has no developer photo server, analytics or advertising SDK. User-selected imports, saves and shares follow the chosen service settings; optional Apple models may need a download.
+PicStrip removes EXIF location data, camera metadata, and visually redacts personally identifiable information (PII) from photos and videos before you share them. Scanning and image processing use Apple frameworks on the device. PicStrip has no developer photo server, analytics or advertising SDK. User-selected imports, saves and shares follow the chosen service settings; optional Apple models may need a download.
 
 ---
 
@@ -35,13 +35,13 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Name Detection** | Where Apple Intelligence is on, Apple's on-device language model finds people's names — listed, off by default, never Private Cloud Compute |
 | **Redaction Editor** | Solid, crosshatch, pixelate, blur in 12 colors, or an emoji (each face its own, on a strong blur), with adjustable blur and pixelate strength, previewed live in the editor; move, resize, draw your own boxes; multi-select bulk edits; 50-step undo/redo |
 | **Tap to Redact** | On iOS 27, tap an object and PicStrip boxes it for you (uses an Apple model that iOS downloads once, only after you agree) |
-| **Take Photo** | The main action: an advisory live viewfinder that outlines and names what it would redact, with its match strength, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library |
+| **Take Photo and Record Video** | The main actions, in one camera with Photo and Video modes. Photo: an advisory live viewfinder that outlines and names what it would redact, with its match strength, and can preview the result; the captured image receives a full scan and review; the photo goes straight into the editor and the original never reaches your photo library. Video: records at the Camera app's quality straight into the video cleaner (see Videos) |
 | **Partial Covering** | Leave the last four digits of a card, phone or ID number — or an email's domain — readable, per finding |
 | **Always Cover** | Words and phrases (your name, a plate, your street) covered wherever PicStrip reads them: editor, batches and live camera; kept in one protected, non-backed-up file on the device |
 | **Sharing Presets** | Everyday photo, screenshot or document, recognised on import: picks JPEG or PNG and what is covered straight away |
 | **Before and After** | Hold the review preview to see the original; a summary and a confirmation after saving say what was removed |
 | **Screenshots** | A Screenshots tile and a "Clean a Screenshot" shortcut open the photo picker at your screenshots, without library access |
-| **Videos and Live Photos** | Find the faces, sensitive text, codes and Always Cover words in a video and cover them — faces with a strong blur or an emoji per face, text with a solid box, mosaic or blur — choosing what stays visible; cover any object by drawing around it — PicStrip tracks it through the video; select a stretch of sound on the timeline to bleep or mute it; a video-editor timeline, which zooms, shows every cover and sound edit as a clip you can trim; preview before saving; remove a video's location, device and dates (without re-encoding when no face is covered); keep a Live Photo's motion when nothing is covered |
+| **Videos and Live Photos** | Record a video with PicStrip's camera — 4K or HD, 24 to 120 fps, HDR, enhanced stabilization, every lens, the flashlight and the Camera Control — or pick one; find the faces, sensitive text, codes and Always Cover words in a video and cover them — faces with a strong blur or an emoji per face, text with a solid box, mosaic or blur — choosing what stays visible; cover any object by drawing around it — PicStrip tracks it through the video; select a stretch of sound on the timeline to bleep or mute it; a video-editor timeline, which zooms, shows every cover and sound edit as a clip you can trim; preview before saving; remove a video's location, device and dates (without re-encoding when no face is covered); keep a Live Photo's motion when nothing is covered |
 | **Scan Document** | Scan paper into the editor; multi-page scans use batch. Captures are not automatically saved to Photos |
 | **Import Anywhere** | Photos, Files, paste, drag and drop; review the supplied image and metadata |
 | **Batch Processing** | Process sequentially with a shared policy; incomplete visual scans are skipped, successful copies are retained, and cancellation stops future saves |

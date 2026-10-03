@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Controleren en delen
+PicStrip 1.7 is een grote update: de app schoont nu video’s op, en de camera laat zien wat hij zou afdekken voordat je fotografeert.
 
-• Probeer een voorbeeld. Een fictieve foto. Geen toegang tot je bibliotheek nodig.
-• Hele afbeelding bekijken. Origineel tonen.
-• Opgeschoonde afbeelding delen. Deelvoorinstelling. Huidige bestandsgrootte.
-• Gecentreerd gebied toevoegen. Positie en grootte.
-• Sommige controles zijn niet voltooid. Matchsterkte.
-• Betrouwbaarder bewaren in Foto’s, betere dekking van privésleutelblokken en beveiligde tijdelijke bestanden.
-• De achtergrondactie in Opdrachten verwijdert alleen metadata. Open PicStrip om zichtbare inhoud te controleren en af te dekken.
+• Video’s: gezichten, tekst, codes en je woorden voor Altijd afdekken worden gevonden, gevolgd terwijl ze bewegen en afgedekt — met een vervaging, een effen vlak of een emoji per gezicht.
+• Dek elk object in een video af door er een kader omheen te trekken; PicStrip volgt het vooruit en achteruit.
+• Kort elke afdekking in op een tijdbalk zoals in een video-editor, en zet een piep over wat er gezegd is of demp het.
+• Neem in PicStrip video op tot 4K met HDR, met de bediening die je kent van de Camera-app.
+• Maak foto opent een livezoeker die omlijnt wat hij zou afdekken.
+• Dek af met een emoji, tik op iOS 27 op een object om het af te dekken, en laat de laatste cijfers van een kaart- of telefoonnummer zichtbaar.
+• Altijd afdekken: je naam, een kenteken of je straat, afgedekt overal waar PicStrip ze leest.
+• Scan documenten, kies alleen je schermafbeeldingen, behoud de beweging van een Live Photo en vergelijk voor en na.
+• Deelvoorinstellingen, een zichtbare bestandsgrootte en een overzicht van wat er is verwijderd.
 
-Controleer de foto voordat je deelt. Automatische detectie kan details missen.
+Automatische detectie kan details missen. Controleer de hele foto of video voordat je deelt.

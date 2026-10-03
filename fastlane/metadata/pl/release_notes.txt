@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Sprawdź i udostępnij
+PicStrip 1.7 to duża aktualizacja: aplikacja czyści teraz wideo, a jej aparat pokazuje, co zamaże, zanim zrobisz zdjęcie.
 
-• Wypróbuj przykład. Fikcyjne zdjęcie. Dostęp do biblioteki nie jest potrzebny.
-• Sprawdź cały obraz. Pokaż oryginał.
-• Udostępnij wyczyszczony obraz. Ustawienie udostępniania. Aktualny rozmiar pliku.
-• Dodaj wyśrodkowany obszar. Pozycja i rozmiar.
-• Niektóre kontrole nie zostały ukończone. Siła dopasowania.
-• Bardziej niezawodne zapisywanie w Zdjęciach, lepsze zamazywanie bloków kluczy prywatnych i chronione pliki tymczasowe.
-• Działanie Skrótów w tle usuwa tylko metadane. Otwórz PicStrip, aby sprawdzić i zasłonić widoczne treści.
+• Wideo: twarze, tekst, kody i Twoje słowa z listy Zawsze zamazuj są wykrywane, śledzone w ruchu i zamazywane – rozmyciem, jednolitym prostokątem lub emoji dla każdej twarzy.
+• Zamaż dowolny obiekt w wideo, obrysowując go; PicStrip śledzi go do przodu i do tyłu.
+• Przycinaj każde zamazanie na osi czasu jak w edytorze wideo oraz zagłuszaj wypowiedzi piskiem lub je wyciszaj.
+• Nagrywaj wideo w PicStrip w jakości do 4K z HDR, korzystając z elementów sterujących znanych z aplikacji Aparat.
+• Zrób zdjęcie otwiera wizjer na żywo, który obrysowuje to, co zamaże.
+• Zamazuj emoji, stuknij obiekt, aby go zamazać w iOS 27, i pozostaw widoczne ostatnie cyfry numeru karty lub telefonu.
+• Zawsze zamazuj: Twoje imię i nazwisko, numer rejestracyjny lub nazwa ulicy – zamazywane wszędzie, gdzie PicStrip je odczyta.
+• Skanuj dokumenty, wybieraj tylko zrzuty ekranu, zachowuj ruch zdjęć Live Photo i porównuj stan przed i po.
+• Ustawienia udostępniania, widoczny rozmiar pliku i podsumowanie tego, co zostało usunięte.
 
-Sprawdź zdjęcie przed udostępnieniem. Automatyczne wykrywanie może pomijać szczegóły.
+Automatyczne wykrywanie może pomijać szczegóły. Sprawdź całe zdjęcie lub wideo przed udostępnieniem.

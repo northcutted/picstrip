@@ -1,1 +1,1 @@
-prywatność,EXIF,metadane,GPS,redagowanie,rozmycie,PII,twarz,ryzyko,wykrycie,anonim,OCR,wizja
+wideo,film,zamazać,cenzura,EXIF,GPS,lokalizacja,anonimizacja,pikselizacja,prywatność,zrzut ekranu

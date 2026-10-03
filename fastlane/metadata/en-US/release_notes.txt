@@ -1,11 +1,13 @@
-PicStrip 1.7.0 makes the final review clearer and sharing easier.
+PicStrip 1.7 is a big update: it now cleans videos, and its camera shows what it would cover before you shoot.
 
-• Try a fictional sample without opening your photo library.
-• Inspect a full-size cleaned preview and reveal the original for comparison.
-• Share directly, choose a photo, screenshot or document preset, and see the output file size.
-• Place, move and resize redaction boxes with accessible controls.
-• See incomplete scan warnings, uncovered findings and clearer match-strength labels.
-• Improved multiline private-key coverage, protected temporary files and large-image handling.
-• More reliable Photos saving and file-backed metadata-only Shortcuts.
+• Videos: faces, text, codes and your Always Cover words are found, followed as they move, and covered — with a blur, a solid box or an emoji for each face.
+• Cover any object in a video by drawing around it; PicStrip tracks it forwards and back.
+• Trim every cover on a video-editor timeline, and bleep or mute what was said.
+• Record video in PicStrip in up to 4K with HDR, using the controls you know from the Camera app.
+• Take Photo opens a live viewfinder that outlines what it would redact.
+• Cover with an emoji, tap an object to cover it on iOS 27, and leave the last digits of a card or phone number showing.
+• Always Cover: your name, a plate or your street, covered wherever PicStrip reads them.
+• Scan documents, pick just your screenshots, keep a Live Photo's motion, and compare before and after.
+• Sharing presets, a visible file size, and a summary of what was removed.
 
-Automatic detection can miss details. Please review the entire image before sharing.
+Automatic detection can miss details. Please review the entire photo or video before sharing.

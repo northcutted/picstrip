@@ -1,19 +1,27 @@
-Finde und verdecke private Details, bevor du Fotos teilst. Scannen, Schwärzen und Entfernen von Metadaten erfolgen auf deinem Gerät. Fotos gelangen nur durch die von dir gewählten Import-, Speicher- und Teilaktionen zu anderen Apps oder Diensten.
+Teile den Moment, nicht die Geschichte dahinter. PicStrip findet, was ein Foto oder Video verrät – Gesichter, Telefonnummern, E-Mail-Adressen, Kartennummern, QR-Codes, wo es aufgenommen wurde und mit welchem Gerät – und hilft dir, es vor dem Teilen zu verdecken oder zu entfernen. Alles wird auf deinem iPhone oder iPad verarbeitet.
 
-Beispiel ausprobieren
-Ein erfundenes Foto. Kein Zugriff auf deine Mediathek nötig.
+Videos, verdeckt in Bewegung
+Nimm mit PicStrip auf oder wähle ein Video. PicStrip findet Gesichter, Text, Codes und deine Wörter aus „Immer verdecken“, folgt ihnen Bild für Bild und verdeckt sie: Gesichter mit starker Weichzeichnung, einem vollen Kasten oder einem Emoji deiner Wahl. Umrahme alles andere – eine Person, ein Auto, einen Bildschirm, ein Schild –, und es wird vorwärts und rückwärts verfolgt. Eine Zeitleiste wie im Videoeditor zeigt jede Abdeckung und Tonbearbeitung als Clip zum Kürzen; markiere Ton, um ihn zu überpiepen oder stummzuschalten. Die Vorschau entspricht der gesicherten Kopie, die ohne Standort, Gerät und Datum geteilt wird.
 
-Erkennungen prüfen im Schwärzungseditor. Jeder Fund zeigt die Übereinstimmungsstärke und eine Risikoeinstufung, damit du entscheiden kannst, was verdeckt werden soll. Prüfe das Foto vor dem Teilen. Die automatische Erkennung kann Details übersehen. Namensvorschläge erfordern Apple Intelligence und werden nicht automatisch verdeckt. Ein optionales Modell zur Objektauswahl kann nach deiner Zustimmung von Apple geladen werden.
+Aufnehmen ohne Kompromisse
+Der Videomodus nimmt auf wie die Kamera-App: 4K oder HD, 24 bis 120 fps, HDR, verbesserte Stabilisierung, alle Objektive mit Zoom, Fokus und Belichtung, die Taschenlampe sowie Lautstärketasten oder Kamerasteuerung zum Starten und Stoppen. Aufnahmen gehen direkt zum Bereinigen und werden nie unverändert in deiner Mediathek gesichert.
 
-Schwärzungen anpassen: Ziehe sie oder nutze Position & Größe. Füge einen zentrierten Bereich ohne Zeichnen hinzu. Mit Auswählen änderst du mehrere Bereiche. Weichzeichnen und Verpixeln können Details erkennbar lassen. Verwende eine deckende Fläche für Geheimnisse und identifizierenden Text.
+Sieh es vor der Aufnahme
+Der Live-Sucher im Fotomodus umrandet und benennt mit Übereinstimmungsstärke, was geschwärzt würde, und zeigt auf Wunsch das Ergebnis. Nach der Aufnahme wird das Foto vollständig gescannt und geprüft.
 
-Verborgene Metadaten prüfen, etwa Standort, Kameradetails und Zeitstempel. Wähle, was entfernt wird, und prüfe das bereinigte Ergebnis.
-PNG: Verlustfreie Qualität für Screenshots und Text. Größere Dateien.
-JPEG: Kleinere Dateien für Alltagsfotos. Weitgehend unterstützt.
-HEIC: Kompakte Fotos mit hoher Qualität. Prüfe die Kompatibilität beim Empfänger.
+Prüfen vor dem Teilen
+Scanne nach Gesichtern, Barcodes, Kontaktdaten, Finanzkennungen und gängigen Entwickler-Secrets. Prüfe Übereinstimmungsstärke und Scanstatus und entscheide, was verdeckt wird. Namensvorschläge erfordern Apple Intelligence und werden nicht automatisch verdeckt.
 
-Prüfen & teilen: Teile das bereinigte Bild oder speichere eine Kopie in Fotos. Die Teilen-Erweiterung bietet auch direktes Bereinigen oder eine geschützte Übergabe zum Bearbeiten. Bearbeiten öffnet das erste Originalbild zur Prüfung. Eine geschützte lokale Kopie läuft nach 15 Minuten ab. Große Fotos benötigen in der Erweiterung kleinere Kopien: bis zu 6 Megapixel für Schwärzungen oder 12 nur für Metadaten. Bearbeite sie in PicStrip für eine vollständige Prüfung.
+Deine Kopie, deine Regeln
+Zieh einen Rahmen oder tippe unter iOS 27 auf ein Objekt und passe Position und Größe mit barrierefreien Steuerelementen an. Wähle Deckend, Kreuzschraffur, Verpixeln, Weichzeichnen oder ein Emoji, mit Farben, Stärke und Widerrufen/Wiederholen. Für Geheimnisse wird eine deckende Fläche empfohlen: Weichzeichnen und Verpixeln können Details erkennbar lassen. Lass auf Wunsch die letzten Ziffern einer Karten- oder Telefonnummer sichtbar und vergleiche vor dem Teilen mit dem Original. Wörter in „Immer verdecken“ – dein Name, ein Kennzeichen, deine Straße – werden verdeckt, wo immer PicStrip sie liest.
 
-Die Hintergrundaktion in Kurzbefehle entfernt nur Metadaten. Öffne PicStrip, um sichtbare Inhalte zu prüfen und zu verdecken.
+Verborgene Details entfernen
+Prüfe Metadaten zu Standort, Kamera, Datum, Bildunterschrift und Gerät. Wähle, was entfernt wird, und prüfe das Ergebnis. Exportiere als PNG, JPEG, HEIC oder unterstütztes Originalformat, mit sichtbarer Dateigröße. Voreinstellungen zum Teilen helfen bei der Formatwahl für Fotos, Screenshots und Dokumente. Behalte die Live-Photo-Bewegung, wenn darin nichts verdeckt wird.
 
-Dieser Bericht enthält Feldnamen und Anzahlen, niemals ursprüngliche Metadatenwerte oder erkannten Text.
+Weitere Wege hinein
+Probiere das erfundene Beispiel aus. Wähle Fotos, Videos oder nur deine Screenshots, scanne ein Dokument, durchsuche Dateien, füge ein oder nutze Drag & Drop. Bereinige viele Fotos auf einmal mit denselben Datenschutzoptionen, nutze die Teilen-Erweiterung oder starte in Kurzbefehle – die Hintergrundaktion entfernt nur Metadaten.
+
+Datenschutz auf dem Gerät
+Kein Account, keine Werbung, kein Tracking, keine Abos und kein Fotoserver des Entwicklers. Ein optionales Modell zur Objektauswahl kann auf unterstützten Systemen nach deiner Zustimmung von Apple geladen werden. Import aus der Cloud, Sichern in eine synchronisierte Mediathek und Teilen mit einer App deiner Wahl folgen den Einstellungen dieser Dienste. Geschützte temporäre Dateien werden wie in der Datenschutzerklärung beschrieben bereinigt. PicStrip ist Open Source, mit überprüfbarer Build-Herkunft für veröffentlichte Versionen.
+
+Die automatische Erkennung kann Details übersehen, und das Verdecken des Gefundenen macht niemanden anonym. Prüfe vor dem Teilen immer das ganze Foto oder Video.

@@ -1,1 +1,1 @@
-Encuentra y oculta detalles privados antes de compartir fotos. Procesado en tu dispositivo. Probar un ejemplo.
+Nuevo: graba o elige un vídeo y PicStrip detecta caras, texto y códigos y los censura en movimiento. Pon un pitido a lo dicho y comparte. Todo en tu dispositivo.

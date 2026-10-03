@@ -134,7 +134,7 @@ struct AboutView: View {
                         instructionRow(
                             icon: "photo.badge.plus",
                             color: .blue,
-                            text: "**Select a photo** from your library, import from Files, or drag an image directly onto PicStrip."
+                            text: "**Choose a photo or video** from your library, take one with PicStrip\u{2019}s camera, import from Files, or drag an image directly onto PicStrip."
                         )
                         instructionRow(
                             icon: "viewfinder",
@@ -169,24 +169,24 @@ struct AboutView: View {
                 Section(header: Text("Ways to Import")) {
                     VStack(alignment: .leading, spacing: 14) {
                         instructionRow(
-                            icon: "photo",
-                            color: .blue,
-                            text: "**Photos Library** — tap \u{201C}Select a Photo\u{201D} or \u{201C}Select Multiple Photos\u{201D} to pick from your camera roll."
-                        )
-                        instructionRow(
-                            icon: "folder",
-                            color: .orange,
-                            text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
-                        )
-                        instructionRow(
                             icon: "camera",
                             color: .pink,
                             text: "**Take Photo** — tap \u{201C}Take Photo\u{201D} to shoot straight into PicStrip. The original photo is never saved to your photo library; only the cleaned copy is."
                         )
                         instructionRow(
-                            icon: "doc.viewfinder",
-                            color: .green,
-                            text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."
+                            icon: "video",
+                            color: .red,
+                            text: "**Record Video** — tap \u{201C}Record Video\u{201D} to film in 4K or HD with HDR, as in the Camera app. The recording opens to be cleaned and is never saved to your photo library as it is; only the cleaned copy is."
+                        )
+                        instructionRow(
+                            icon: "photo",
+                            color: .blue,
+                            text: "**Photos Library** — tap \u{201C}Select a Photo\u{201D} or \u{201C}Select Multiple Photos\u{201D} to pick from your camera roll."
+                        )
+                        instructionRow(
+                            icon: "film",
+                            color: .orange,
+                            text: "**Videos** — tap \u{201C}Select a Video\u{201D} to clean a video from your library. See Videos below."
                         )
                         instructionRow(
                             icon: "camera.viewfinder",
@@ -194,9 +194,14 @@ struct AboutView: View {
                             text: "**Screenshots** — tap \u{201C}Screenshots\u{201D} to pick from just your screenshots."
                         )
                         instructionRow(
-                            icon: "video",
-                            color: .red,
-                            text: "**Videos** — tap \u{201C}Videos\u{201D} to clean a video. See Videos below."
+                            icon: "doc.viewfinder",
+                            color: .green,
+                            text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."
+                        )
+                        instructionRow(
+                            icon: "folder",
+                            color: .brown,
+                            text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
                         )
                         instructionRow(
                             icon: "arrow.down.to.line",
@@ -374,6 +379,11 @@ struct AboutView: View {
                             icon: "video",
                             color: .red,
                             text: "**Clean a video.** PicStrip removes where it was filmed, the device, and the dates, and checks the copy before you share it."
+                        )
+                        instructionRow(
+                            icon: "video.circle",
+                            color: .pink,
+                            text: "**Record in PicStrip.** In the camera, switch between Photo and Video. Tap 4K or the frame rate to change them, HDR to turn it off, and the running figure for steadier video. Tap a lens or pinch to zoom; tap to focus, then drag up or down to brighten or darken. The volume buttons and the Camera Control start and stop recording."
                         )
                         instructionRow(
                             icon: "face.dashed",

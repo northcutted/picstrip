@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Granska och dela
+PicStrip 1.7 är en stor uppdatering: nu rensar appen videor, och kameran visar vad den skulle maskera innan du tar bilden.
 
-• Prova ett exempel. Ett påhittat foto. Ingen åtkomst till bildbiblioteket behövs.
-• Granska hela bilden. Visa original.
-• Dela rensad bild. Delningsförinställning. Aktuell filstorlek.
-• Lägg till centrerat område. Position och storlek.
-• Vissa kontroller kunde inte slutföras. Matchningsstyrka.
-• Tillförlitligare sparande i Bilder, bättre täckning av privata nyckelblock och skyddade tillfälliga filer.
-• Bakgrundsåtgärden i Genvägar tar bara bort metadata. Öppna PicStrip för att granska och dölja synligt innehåll.
+• Videor: ansikten, text, koder och dina Maskera alltid-ord hittas, följs när de rör sig och maskeras – med oskärpa, en fylld ruta eller en emoji för varje ansikte.
+• Maskera vilket objekt som helst i en video genom att rita runt det; PicStrip följer det framåt och bakåt.
+• Korta varje maskering på en tidslinje som i en videoredigerare, och lägg pip över eller tysta det som sägs.
+• Spela in video i PicStrip i upp till 4K med HDR, med reglagen du känner igen från appen Kamera.
+• Ta bild öppnar en livesökare som ringar in det som skulle maskeras.
+• Maskera med en emoji, tryck på ett objekt för att maskera det i iOS 27 och låt de sista siffrorna i ett kort- eller telefonnummer synas.
+• Maskera alltid: ditt namn, en registreringsskylt eller din gata maskeras var PicStrip än läser dem.
+• Skanna dokument, välj bara bland dina skärmbilder, behåll rörelsen i Live Photo-bilder och jämför före och efter.
+• Delningsförinställningar, synlig filstorlek och en sammanfattning av vad som togs bort.
 
-Granska fotot innan du delar. Automatisk upptäckt kan missa detaljer.
+Automatisk upptäckt kan missa detaljer. Granska hela bilden eller videon innan du delar.

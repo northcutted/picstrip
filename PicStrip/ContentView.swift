@@ -20,6 +20,8 @@ struct ContentView: View {
     @State private var selectedVideoItem: PhotosPickerItem?
     /// A video file opened directly by the UI tests (`PICSTRIP_VIDEO_FIXTURE`).
     @State private var fixtureVideo: URL?
+    /// A video just recorded with PicStrip's camera, on its way to the cleaner.
+    @State private var recordedVideo: URL?
 
     /// Bumped by `haptic(_:)`; each change plays one impact.
     @State private var lightImpacts = 0
@@ -40,7 +42,8 @@ struct ContentView: View {
     /// because presenting the batch sheet mid-dismissal can drop the sheet.
     @State private var scanOutcome: DocumentScannerView.Outcome?
     /// Drives the live-preview camera; handled like the document camera above.
-    @State private var isShowingLiveCamera = false
+    /// The camera, and the mode it opens in: Take Photo or Record Video.
+    @State private var cameraRequest: CameraRequest?
     @State private var liveCameraOutcome: LiveCameraView.Outcome?
     /// The system camera, used when the live-preview camera cannot be set up.
     @State private var isShowingCamera = false
@@ -208,12 +211,14 @@ struct ContentView: View {
             photoLibrary: .shared()
         )
         .sheet(isPresented: Binding(
-            get: { selectedVideoItem != nil || fixtureVideo != nil },
-            set: { if !$0 { selectedVideoItem = nil; fixtureVideo = nil } }
+            get: { selectedVideoItem != nil || fixtureVideo != nil || recordedVideo != nil },
+            set: { if !$0 { selectedVideoItem = nil; fixtureVideo = nil; recordedVideo = nil } }
         )) {
             Group {
                 if let item = selectedVideoItem {
                     VideoCleanerView(source: .picked(item))
+                } else if let recordedVideo {
+                    VideoCleanerView(source: .recorded(recordedVideo))
                 } else if let fixtureVideo {
                     VideoCleanerView(source: .file(fixtureVideo))
                 }
@@ -224,7 +229,7 @@ struct ContentView: View {
         .onChange(of: intentRouter.isCameraRequested, initial: true) { _, requested in
             guard requested else { return }
             intentRouter.cameraPresented()
-            if CameraCaptureView.isAvailable { openCamera { isShowingLiveCamera = true } }
+            if CameraCaptureView.isAvailable { openCamera { showCamera(.photo) } }
         }
         .onChange(of: viewModel.batchItems) { _, items in
             guard !items.isEmpty else { return }
@@ -248,7 +253,9 @@ struct ContentView: View {
         // PICSTRIP_LIVE_CAMERA_FIXTURE opens the viewfinder on a still image,
         // which is the only way to run it on the simulator.
         .task {
-            if LiveCameraFixture.isConfigured { isShowingLiveCamera = true }
+            if LiveCameraFixture.isConfigured { showCamera(.photo) }
+            // PICSTRIP_VIDEO_CAMERA_FIXTURE: the camera in Video mode, recording a movie file.
+            if VideoCameraFixture.isConfigured { showCamera(.video) }
         }
         // PICSTRIP_VIDEO_FIXTURE opens the video screen on a file, without the picker.
         .task {
@@ -294,10 +301,10 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
         }
-        .fullScreenCover(isPresented: $isShowingLiveCamera, onDismiss: handleLiveCameraOutcome) {
-            LiveCameraView { outcome in
+        .fullScreenCover(item: $cameraRequest, onDismiss: handleLiveCameraOutcome) { request in
+            CameraView(mode: request.mode) { outcome in
                 liveCameraOutcome = outcome
-                isShowingLiveCamera = false
+                cameraRequest = nil
             }
         }
         .fullScreenCover(isPresented: $isShowingCamera, onDismiss: handleCameraOutcome) {
@@ -406,7 +413,7 @@ struct ContentView: View {
                     VStack(spacing: 8) {
                         Text("PicStrip")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                        Text("Share the photo. Not the story behind it.")
+                        Text("Share the moment. Not the story behind it.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -415,10 +422,7 @@ struct ContentView: View {
                         .frame(height: 150)
                         .accessibilityHidden(true)
                     VStack(spacing: 20) {
-                        importButton(primaryImportAction, isRow: true)
-                            .buttonStyle(.glassProminent)
-                            .buttonBorderShape(.capsule)
-
+                        primaryActions
                         importGrid
                     }
                     VStack(spacing: 2) {
@@ -454,12 +458,27 @@ struct ContentView: View {
         }
     }
 
+    /// Capturing leads — Take Photo and Record Video side by side, stacked at
+    /// accessibility text sizes — or, without a camera, choosing a photo.
+    private var primaryActions: some View {
+        let layout = dynamicTypeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(spacing: 10))
+            : AnyLayout(HStackLayout(spacing: 10))
+        return layout {
+            ForEach(primaryImportActions, id: \.self) { action in
+                importButton(action, isRow: true)
+                    .buttonStyle(.glassProminent)
+                    .buttonBorderShape(.capsule)
+            }
+        }
+    }
+
     /// Every other way in, at once: two tiles to a row, or one full-width row
     /// each at accessibility text sizes, where a tile would be too narrow.
     private var importGrid: some View {
         let isCompact = dynamicTypeSize.isAccessibilitySize
         let columns = isCompact ? 1 : 2
-        let actions = importActions.filter { $0 != primaryImportAction }
+        let actions = importActions.filter { !primaryImportActions.contains($0) }
         return Grid(horizontalSpacing: 10, verticalSpacing: 10) {
             ForEach(Array(stride(from: 0, to: actions.count, by: columns)), id: \.self) { start in
                 let row = actions[start..<min(start + columns, actions.count)]
@@ -481,23 +500,25 @@ struct ContentView: View {
     }
 
     private enum ImportAction: Hashable {
-        case camera, photo, screenshot, documentScanner, video, multiplePhotos, files
+        case camera, recordVideo, photo, screenshot, documentScanner, video, multiplePhotos, files
     }
 
-    /// The camera actions only where there is a camera to use.
+    /// In pairs: the library's photos and videos, then screenshots and
+    /// several photos at once, then a paper document and a file.  The camera
+    /// actions only where there is a camera to use.
     private var importActions: [ImportAction] {
         var actions: [ImportAction] = []
-        if CameraCaptureView.isAvailable { actions.append(.camera) }
-        actions += [.photo, .screenshot]
+        if CameraCaptureView.isAvailable { actions += [.camera, .recordVideo] }
+        actions += [.photo, .video, .screenshot, .multiplePhotos]
         if DocumentScannerView.isAvailable { actions.append(.documentScanner) }
-        actions += [.video, .multiplePhotos, .files]
+        actions.append(.files)
         return actions
     }
 
-    /// Taking a photo leads, so it goes straight through the live viewfinder;
-    /// without a camera, choosing one from the library does.
-    private var primaryImportAction: ImportAction {
-        CameraCaptureView.isAvailable ? .camera : .photo
+    /// Capturing leads, so it goes straight through PicStrip's camera; without
+    /// a camera, choosing a photo from the library does.
+    private var primaryImportActions: [ImportAction] {
+        CameraCaptureView.isAvailable ? [.camera, .recordVideo] : [.photo]
     }
 
     /// The button for `action`, unstyled: the caller makes it the prominent
@@ -508,12 +529,21 @@ struct ContentView: View {
         case .camera:
             Button {
                 haptic(.light)
-                openCamera { isShowingLiveCamera = true }
+                openCamera { showCamera(.photo) }
             } label: {
                 ImportTileLabel(icon: "camera", text: "Take Photo", isRow: isRow)
             }
             .accessibilityIdentifier("takePhotoButton")
             .accessibilityLabel("Take a photo with the camera")
+        case .recordVideo:
+            Button {
+                haptic(.light)
+                openCamera { showCamera(.video) }
+            } label: {
+                ImportTileLabel(icon: "video", text: "Record Video", isRow: isRow)
+            }
+            .accessibilityIdentifier("recordVideoButton")
+            .accessibilityLabel("Record a video with the camera")
         case .photo:
             PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
                 ImportTileLabel(icon: "photo.badge.plus", text: "Select a Photo", isRow: isRow)
@@ -532,7 +562,7 @@ struct ContentView: View {
             // (HEVC to H.264) before handing it over, which is most of the wait
             // when opening a long video; PicStrip reads HEVC itself.
             PhotosPicker(selection: $selectedVideoItem, matching: .videos, preferredItemEncoding: .current, photoLibrary: .shared()) {
-                ImportTileLabel(icon: "video", text: "Videos", isRow: isRow)
+                ImportTileLabel(icon: "film", text: "Select a Video", isRow: isRow)
             }
             .accessibilityIdentifier("selectVideoButton")
             .accessibilityLabel("Select a video to clean")
@@ -607,12 +637,23 @@ struct ContentView: View {
         }
     }
 
+    private struct CameraRequest: Identifiable {
+        let mode: CameraView.Mode
+        let id = UUID()
+    }
+
+    private func showCamera(_ mode: CameraView.Mode) {
+        cameraRequest = CameraRequest(mode: mode)
+    }
+
     private func handleLiveCameraOutcome() {
         defer { liveCameraOutcome = nil }
         switch liveCameraOutcome {
         case .captured(let data):
             // The camera's own bytes: metadata intact, exactly like a library photo.
             Task { await viewModel.loadCaptured(CapturedPages(count: 1) { _ in data }) }
+        case .recorded(let url):
+            recordedVideo = url
         case .unavailable:
             isShowingCamera = true
         case .cancelled, nil:

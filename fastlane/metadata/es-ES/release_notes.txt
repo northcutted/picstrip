@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Revisar y compartir
+PicStrip 1.7 es una gran actualización: ahora limpia vídeos, y su cámara muestra lo que censuraría antes de disparar.
 
-• Probar un ejemplo. Una foto ficticia. No necesita acceso a tu fototeca.
-• Inspeccionar imagen completa. Mostrar original.
-• Compartir imagen limpia. Preajuste para compartir. Tamaño actual del archivo.
-• Añadir área centrada. Posición y tamaño.
-• Algunas comprobaciones no finalizaron. Intensidad de coincidencia.
-• Guardado en Fotos más fiable, mejor cobertura de bloques de claves privadas y archivos temporales protegidos.
-• La acción de Atajos en segundo plano solo elimina metadatos. Abre PicStrip para revisar y censurar contenido visible.
+• Vídeos: se encuentran caras, texto, códigos y tus palabras de «Censurar siempre», se siguen mientras se mueven y se censuran, con un desenfoque, un recuadro opaco o un emoji para cada cara.
+• Censura cualquier objeto de un vídeo dibujando un recuadro a su alrededor; PicStrip lo sigue hacia delante y hacia atrás.
+• Recorta cada censura en una línea de tiempo de editor de vídeo, y pon un pitido o silencia lo que se dijo.
+• Graba vídeo en PicStrip hasta en 4K con HDR, con los controles que ya conoces de la app Cámara.
+• «Hacer una foto» abre un visor en directo que marca lo que censuraría.
+• Censura con un emoji, toca un objeto para censurarlo en iOS 27 y deja visibles los últimos dígitos de una tarjeta o un número de teléfono.
+• Censurar siempre: tu nombre, una matrícula o tu calle, censurados dondequiera que PicStrip los lea.
+• Escanea documentos, elige solo tus capturas de pantalla, conserva el movimiento de una Live Photo y compara el antes y el después.
+• Preajustes para compartir, tamaño de archivo visible y un resumen de lo que se ha eliminado.
 
-Revisa la foto antes de compartir. La detección automática puede omitir detalles.
+La detección automática puede omitir detalles. Revisa toda la foto o el vídeo antes de compartir.

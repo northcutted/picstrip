@@ -1,19 +1,27 @@
-Repérez et masquez les détails privés avant de partager vos photos. L’analyse, le masquage et la suppression des métadonnées se font sur votre appareil. Les photos ne vont vers une autre app ou un service que par les actions d’importation, d’enregistrement et de partage que vous choisissez.
+Partagez l’instant, pas l’histoire qu’il cache. PicStrip repère ce qu’une photo ou une vidéo dévoile — visages, numéros de téléphone, adresses e-mail, numéros de carte, codes QR, lieu et appareil de prise de vue — et vous aide à le masquer ou le supprimer avant de partager. Tout est traité sur votre iPhone ou iPad.
 
-Essayer un exemple
-Une photo fictive. Aucun accès à votre photothèque nécessaire.
+Vidéos masquées en mouvement
+Filmez avec PicStrip ou choisissez une vidéo. PicStrip repère visages, texte, codes et vos mots Toujours masquer, les suit image par image et les masque : les visages par un flou intense, un aplat ou un emoji au choix. Encadrez tout autre élément — personne, voiture, écran, panneau — et il est suivi dans les deux sens. Une chronologie de montage présente chaque masquage et retouche audio en clip à raccourcir ; sélectionnez un passage pour le couvrir d’un bip ou le couper. L’aperçu correspond à la copie enregistrée, qui part sans lieu, appareil ni dates.
 
-Vérifiez les détections dans l’éditeur de masquage. Chaque résultat indique la force de correspondance et un niveau de risque pour vous aider à choisir quoi masquer. Vérifiez la photo avant de la partager. La détection automatique peut manquer des détails. Les suggestions de noms nécessitent Apple Intelligence et ne sont pas masquées automatiquement. Un modèle facultatif de sélection d’objets peut être téléchargé depuis Apple avec votre accord.
+Filmer sans compromis
+Le mode Vidéo filme comme l’app Appareil photo : 4K ou HD, de 24 à 120 ips, HDR, stabilisation améliorée, tous les objectifs, zoom par pincement, mise au point et exposition, lampe de poche, et boutons de volume ou Commande de l’appareil photo pour lancer et arrêter. Les vidéos vont droit au nettoyage et ne sont jamais enregistrées telles quelles dans la photothèque.
 
-Ajustez les masquages en les faisant glisser ou avec Position et taille. Ajoutez une zone centrée sans dessiner. Utilisez Sélectionner pour modifier plusieurs zones. Le flou et la pixellisation peuvent laisser des détails reconnaissables. Utilisez un aplat opaque pour les secrets et le texte identifiant.
+Voir avant de déclencher
+En mode Photo, le viseur en direct encadre et nomme ce qu’il masquerait, avec sa force de correspondance, et peut prévisualiser le résultat. Après la capture, la photo est entièrement analysée et vérifiée.
 
-Vérifiez les métadonnées cachées, comme le lieu, l’appareil photo et les dates. Choisissez quoi supprimer et vérifiez le résultat nettoyé.
-PNG: Qualité sans perte pour les captures d’écran et le texte. Fichiers plus volumineux.
-JPEG: Fichiers plus petits pour les photos courantes. Largement compatible.
-HEIC: Photos compactes de haute qualité. Vérifiez la compatibilité du destinataire.
+Vérifier avant de partager
+Recherchez visages, codes-barres, coordonnées, identifiants financiers et secrets de développeur courants. Vérifiez la force de correspondance et l’état de l’analyse, puis choisissez quoi masquer. Les suggestions de noms dépendent d’Apple Intelligence et ne sont pas masquées automatiquement.
 
-Vérifiez et partagez l’image nettoyée, ou enregistrez une copie dans Photos. L’extension de partage permet aussi un nettoyage direct ou un transfert protégé pour la retouche. Modifier ouvre la première image originale pour vérification. Une copie locale protégée expire après 15 minutes. Les grandes photos nécessitent des copies réduites dans l’extension : jusqu’à 6 mégapixels pour le masquage, ou 12 pour les métadonnées seules. Modifiez dans PicStrip pour une vérification complète.
+Une copie à votre façon
+Dessinez un cadre, ou touchez un objet sous iOS 27, puis déplacez-le et ajustez sa taille avec des commandes accessibles. Choisissez uni, hachures croisées, pixellisation, flou ou emoji, avec couleurs, intensité, annuler et rétablir. Pour les secrets, préférez un aplat opaque : le flou et la pixellisation peuvent laisser des détails reconnaissables. Laissez au besoin visibles les derniers chiffres d’une carte ou d’un numéro de téléphone, puis comparez avec l’original avant de partager. Ajoutez des mots à Toujours masquer — votre nom, une plaque, votre rue — pour les masquer partout où PicStrip les lit.
 
-L’action Raccourcis en arrière-plan supprime uniquement les métadonnées. Ouvrez PicStrip pour vérifier et masquer le contenu visible.
+Effacer les détails cachés
+Vérifiez les métadonnées de lieu, d’appareil photo, de date, de légende et d’appareil. Choisissez quoi supprimer et vérifiez le résultat. Exportez en PNG, JPEG, HEIC ou format source pris en charge, taille du fichier affichée. Les préréglages de partage aident à choisir un format pour photos, captures d’écran et documents. Conservez l’animation d’une Live Photo quand rien n’y est masqué.
 
-Ce rapport contient les noms des champs et des comptes, jamais les valeurs des métadonnées d’origine ni le texte détecté.
+Autres sources
+Essayez l’exemple fictif intégré. Choisissez photos, vidéos ou seulement vos captures d’écran, scannez un document, parcourez Fichiers, collez ou glissez-déposez. Nettoyez plusieurs photos d’un coup avec une politique commune, utilisez l’extension de partage ou partez de Raccourcis — l’action en arrière-plan ne supprime que les métadonnées.
+
+Confidentialité sur l’appareil
+Sans compte, publicité, pistage, abonnement ni serveur photo du développeur. Sur les systèmes compatibles, un modèle facultatif de sélection d’objets peut être téléchargé depuis Apple avec votre accord. Importer depuis le cloud, enregistrer dans une photothèque synchronisée ou partager vers l’app choisie dépend des réglages de ces services. Les fichiers temporaires protégés sont effacés selon la politique de confidentialité. PicStrip est open source, avec une provenance de build vérifiable pour ses versions publiées.
+
+La détection automatique peut manquer des détails, et masquer ce qu’elle trouve ne rend personne anonyme. Vérifiez toujours toute la photo ou la vidéo avant de partager.

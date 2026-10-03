@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Vérifier et partager
+PicStrip 1.7 est une mise à jour majeure : l’app nettoie désormais les vidéos, et son appareil photo montre ce qu’il masquerait avant même la prise de vue.
 
-• Essayer un exemple. Une photo fictive. Aucun accès à votre photothèque nécessaire.
-• Examiner l’image entière. Afficher l’original.
-• Partager l’image nettoyée. Préréglage de partage. Taille actuelle du fichier.
-• Ajouter une zone centrée. Position et taille.
-• Certaines vérifications n’ont pas abouti. Force de correspondance.
-• Enregistrement dans Photos plus fiable, meilleure couverture des blocs de clés privées et fichiers temporaires protégés.
-• L’action Raccourcis en arrière-plan supprime uniquement les métadonnées. Ouvrez PicStrip pour vérifier et masquer le contenu visible.
+• Vidéos : les visages, le texte, les codes et vos mots Toujours masquer sont repérés, suivis en mouvement et masqués — avec un flou, un aplat opaque ou un emoji pour chaque visage.
+• Masquez n’importe quel objet d’une vidéo en l’encadrant ; PicStrip le suit vers l’avant comme vers l’arrière.
+• Raccourcissez chaque masquage sur une chronologie de montage vidéo, et couvrez les paroles d’un bip ou coupez le son.
+• Filmez dans PicStrip jusqu’en 4K avec HDR, avec les commandes que vous connaissez dans l’app Appareil photo.
+• Prendre une photo ouvre un viseur en direct qui encadre ce qu’il masquerait.
+• Masquez avec un emoji, touchez un objet pour le masquer sous iOS 27, et laissez visibles les derniers chiffres d’une carte ou d’un numéro de téléphone.
+• Toujours masquer : votre nom, une plaque ou votre rue, masqués partout où PicStrip les lit.
+• Scannez des documents, choisissez uniquement vos captures d’écran, conservez l’animation d’une Live Photo et comparez avant/après.
+• Préréglages de partage, taille du fichier visible et résumé de ce qui a été supprimé.
 
-Vérifiez la photo avant de la partager. La détection automatique peut manquer des détails.
+La détection automatique peut manquer des détails. Vérifiez l’intégralité de la photo ou de la vidéo avant de la partager.

@@ -1,19 +1,27 @@
-Trova e copri i dettagli privati prima di condividere le foto. Analisi, oscuramento e rimozione dei metadati avvengono sul dispositivo. Le foto passano ad altre app o servizi solo tramite le azioni di importazione, salvataggio e condivisione che scegli.
+Condividi il momento, non la storia che c’è dietro. PicStrip trova ciò che una foto o un video rivela — volti, numeri di telefono, indirizzi email, numeri di carta, codici QR, luogo dello scatto e dispositivo usato — e ti aiuta a coprirlo o rimuoverlo prima di condividere. L’elaborazione avviene sul tuo iPhone o iPad.
 
-Prova un esempio
-Una foto inventata. Nessun accesso alla libreria necessario.
+Video coperti in movimento
+Registra con PicStrip o scegli un video. PicStrip trova volti, testo, codici e le tue parole di Copri sempre, li segue fotogramma per fotogramma e li copre: i volti con una sfocatura intensa, un riquadro pieno o un’emoji a tua scelta. Racchiudi in un riquadro qualsiasi altra cosa — persona, auto, schermo, cartello — e verrà seguita in avanti e all’indietro. Una timeline da editor video mostra ogni copertura e modifica audio come una clip da accorciare; seleziona un tratto audio per coprirlo con un bip o silenziarlo. L’anteprima corrisponde alla copia salvata, che esce senza posizione, dispositivo e date.
 
-Controlla i rilevamenti nell’editor. Ogni risultato mostra la forza della corrispondenza e un livello di rischio per aiutarti a scegliere cosa coprire. Controlla la foto prima di condividerla. Il rilevamento automatico può perdere dettagli. I suggerimenti dei nomi richiedono Apple Intelligence e non vengono coperti automaticamente. Un modello facoltativo per selezionare oggetti può essere scaricato da Apple con il tuo consenso.
+Registra senza compromessi
+La modalità Video registra come l’app Fotocamera: 4K o HD, da 24 a 120 fps, HDR, stabilizzazione migliorata, tutti gli obiettivi con zoom a pizzico, messa a fuoco ed esposizione, la torcia, e i tasti del volume o il Controllo fotocamera per avviare e interrompere. Le registrazioni passano subito alla pulizia e non vengono mai salvate così come sono nella libreria.
 
-Regola le oscuramenti trascinandole o usando Posizione e dimensioni. Aggiungi un’area centrata senza disegnare. Usa Seleziona per modificare più aree. Sfocatura e pixelatura possono lasciare dettagli riconoscibili. Usa una copertura piena per segreti e testo identificativo.
+Guarda prima di scattare
+In modalità Foto, il mirino dal vivo evidenzia e nomina ciò che oscurerebbe, con la forza della corrispondenza, e può mostrare l’anteprima del risultato. Dopo lo scatto, la foto viene analizzata e controllata per intero.
 
-Controlla i metadati nascosti, come posizione, fotocamera e date. Scegli cosa rimuovere e verifica il risultato pulito.
-PNG: Qualità senza perdita per schermate e testo. File più grandi.
-JPEG: File più piccoli per foto quotidiane. Ampia compatibilità.
-HEIC: Foto compatte di alta qualità. Verifica la compatibilità del destinatario.
+Controlla prima di condividere
+Cerca volti, codici a barre, dati di contatto, identificativi finanziari e segreti comuni degli sviluppatori. Controlla la forza della corrispondenza e lo stato dell’analisi, poi decidi cosa coprire. I suggerimenti dei nomi dipendono da Apple Intelligence e non vengono coperti automaticamente.
 
-Controlla e condividi l’immagine pulita, oppure salva una copia in Foto. L’estensione di condivisione offre anche pulizia diretta o un trasferimento protetto per la modifica. Modifica apre la prima immagine originale per il controllo. Una copia locale protetta scade dopo 15 minuti. Le foto grandi richiedono copie più piccole nell’estensione: fino a 6 megapixel per oscurare, o 12 per i soli metadati. Modifica in PicStrip per un controllo completo.
+Una copia a modo tuo
+Disegna un riquadro, o tocca un oggetto su iOS 27, poi spostalo e ridimensionalo con controlli accessibili. Scegli solido, tratteggio, pixel, sfocatura o un’emoji, con colori, intensità, annulla e ripristina. Per i segreti è consigliata una copertura piena: sfocatura e pixelatura possono lasciare dettagli riconoscibili. Se vuoi, lascia visibili le ultime cifre di una carta o di un numero di telefono e confronta con l’originale prima di condividere. Aggiungi parole a Copri sempre — il tuo nome, una targa, la tua via — e verranno coperte ovunque PicStrip le legga.
 
-L’azione Comandi Rapidi in background rimuove solo i metadati. Apri PicStrip per controllare e oscurare il contenuto visibile.
+Rimuovi i dettagli nascosti
+Controlla i metadati di posizione, fotocamera, data, didascalia e dispositivo. Scegli cosa rimuovere e verifica il risultato. Esporta in PNG, JPEG, HEIC o un formato di origine supportato, con la dimensione del file in vista. I preset di condivisione aiutano a scegliere un formato per foto, schermate e documenti. Mantieni il movimento di una Live Photo quando nulla viene coperto.
 
-Questo rapporto contiene nomi e conteggi dei campi, mai i valori originali dei metadati o il testo rilevato.
+Altri modi per iniziare
+Prova l’esempio inventato integrato. Scegli foto, video o solo le tue schermate, scansiona un documento, sfoglia File, incolla o trascina. Pulisci più foto insieme con una politica comune, usa l’estensione di condivisione o parti da Comandi Rapidi — l’azione in background rimuove solo i metadati.
+
+Privacy sul dispositivo
+Nessun account, pubblicità, tracciamento, abbonamento o server di foto dello sviluppatore. Sui sistemi supportati, un modello facoltativo per selezionare oggetti può essere scaricato da Apple con il tuo consenso. Importare dal cloud, salvare in una libreria sincronizzata e condividere con l’app che scegli dipende dalle impostazioni di quei servizi. I file temporanei protetti vengono eliminati come descritto nell’informativa sulla privacy. PicStrip è open source, con provenienza della build verificabile per le versioni pubblicate.
+
+Il rilevamento automatico può perdere dettagli, e coprire ciò che trova non rende nessuno anonimo. Controlla sempre tutta la foto o il video prima di condividere.

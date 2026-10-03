@@ -781,6 +781,107 @@
         }
       }
     },
+    "%lld frames per second" : {
+      "comment" : "VoiceOver value of the frame-rate button, e.g.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld إطارًا في الثانية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld Bilder pro Sekunde"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fotogramas por segundo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fotogramas por segundo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld images par seconde"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fotogrammi al secondo"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "毎秒%lldフレーム"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "초당 %lld프레임"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld beelden per seconde"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klatki na sekundę: %lld"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld quadros por segundo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld fotogramas por segundo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld bilder per sekund"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saniyede %lld kare"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每秒 %lld 帧"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每秒 %lld 格"
+          }
+        }
+      }
+    },
     "%lld of %lld" : {
       "localizations" : {
         "ar" : {
@@ -1352,6 +1453,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**為聲音加嗶聲或靜音。** 在「音訊」軌道上按住並拖移過所說的內容，然後選擇「嗶聲」或「靜音」，或先選擇「播放」試聽。拖移片段的兩端，讓它正好蓋住那些字詞。"
+          }
+        }
+      }
+    },
+    "**Choose a photo or video** from your library, take one with PicStrip’s camera, import from Files, or drag an image directly onto PicStrip." : {
+      "comment" : "Help page, How It Works, first step.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**حدد صورة أو فيديو** من مكتبتك، أو صوّر بكاميرا PicStrip، أو استورد من الملفات، أو اسحب صورة مباشرة إلى PicStrip."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Wähle ein Foto oder Video** aus deiner Mediathek, nimm eines mit der Kamera von PicStrip auf, importiere eines aus Dateien oder zieh ein Bild direkt auf PicStrip."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Elige una foto o un vídeo** de tu fototeca, usa la cámara de PicStrip, importa desde Archivos o arrastra una imagen directamente a PicStrip."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Elige una foto o un video** de tu fototeca, usa la cámara de PicStrip, importa desde Archivos o arrastra una imagen directamente a PicStrip."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Choisissez une photo ou une vidéo** dans votre photothèque, capturez-en une avec l’appareil photo de PicStrip, importez-la depuis Fichiers ou faites glisser une image directement sur PicStrip."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Scegli una foto o un video** dalla tua libreria, acquisiscine uno con la fotocamera di PicStrip, importa da File oppure trascina un’immagine direttamente su PicStrip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ライブラリから**写真やビデオを選択**するか、PicStripのカメラで撮影する、「ファイル」から読み込む、または画像をPicStripに直接ドラッグします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "보관함에서 **사진이나 비디오를 선택**하거나, PicStrip 카메라로 촬영하거나, 파일 앱에서 가져오거나, 이미지를 PicStrip으로 바로 끌어다 놓으세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Kies een foto of video** uit je bibliotheek, maak er een met de camera van PicStrip, importeer er een uit Bestanden of sleep een afbeelding direct op PicStrip."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Wybierz zdjęcie lub wideo** z biblioteki, zarejestruj je aparatem PicStrip, zaimportuj z Plików lub przeciągnij obraz bezpośrednio na PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Escolha uma foto ou um vídeo** da sua fototeca, capture com a câmera do PicStrip, importe do app Arquivos ou arraste uma imagem direto para o PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Escolha uma fotografia ou um vídeo** da sua fototeca, capture com a câmara do PicStrip, importe da app Ficheiros ou arraste uma imagem diretamente para o PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Välj en bild eller video** i ditt bildbibliotek, fotografera eller filma med PicStrips kamera, importera från Filer eller dra en bild direkt till PicStrip."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arşivinizden **bir fotoğraf veya video seçin**, PicStrip’in kamerasıyla çekin, Dosyalar’dan içe aktarın veya bir görüntüyü doğrudan PicStrip’e sürükleyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**选择照片或视频**：从图库中选取、用 PicStrip 的相机拍摄、从“文件”导入，或直接将图像拖移到 PicStrip 上。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**從圖庫選擇照片或影片**、使用 PicStrip 的相機拍攝、從「檔案」匯入，或直接將影像拖移到 PicStrip 上。"
           }
         }
       }
@@ -2260,6 +2462,208 @@
         }
       }
     },
+    "**Record Video** — tap “Record Video” to film in 4K or HD with HDR, as in the Camera app. The recording opens to be cleaned and is never saved to your photo library as it is; only the cleaned copy is." : {
+      "comment" : "Help page, Ways to Import row; mirror the existing “**Take Photo** — tap “Take Photo”…” row's translation.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**تسجيل فيديو** — اضغط على ”تسجيل فيديو“ للتصوير بدقة 4K أو HD مع HDR، كما في تطبيق الكاميرا. يُفتح التسجيل لتنظيفه ولا يُحفظ أبدًا كما هو في مكتبة الصور؛ تُحفظ النسخة المنظَّفة فقط."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Video aufnehmen** – tippe auf „Video aufnehmen“, um wie in der Kamera-App in 4K oder HD mit HDR zu filmen. Die Aufnahme wird direkt zum Bereinigen geöffnet und nie unverändert in deiner Fotomediathek gesichert; nur die bereinigte Kopie."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Grabar un vídeo**: toca «Grabar un vídeo» para filmar en 4K o HD con HDR, como en la app Cámara. La grabación se abre para limpiarla y nunca se guarda tal cual en tu fototeca; solo se guarda la copia limpia."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Grabar un video**: toca “Grabar un video” para filmar en 4K o HD con HDR, como en la app Cámara. La grabación se abre para limpiarla y nunca se guarda tal cual en tu fototeca; solo se guarda la copia limpia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Filmer une vidéo** — touchez « Filmer une vidéo » pour filmer en 4K ou HD avec HDR, comme dans l’app Appareil photo. La vidéo s’ouvre pour être nettoyée et n’est jamais enregistrée telle quelle dans votre photothèque ; seule la copie nettoyée l’est."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Registra video** — tocca “Registra video” per riprendere in 4K o HD con HDR, come nell’app Fotocamera. La registrazione si apre per essere pulita e non viene mai salvata così com’è nella libreria foto; viene salvata solo la copia pulita."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ビデオを撮る**：「ビデオを撮る」をタップすると、「カメラ」アプリと同じように、4KまたはHDのHDRビデオを撮影できます。録画したビデオはクリーンアップのために開かれ、そのまま写真ライブラリに保存されることはありません。保存されるのはクリーンアップしたコピーだけです。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**비디오 녹화** — “비디오 녹화”를 탭하면 카메라 앱처럼 4K 또는 HD, HDR로 촬영할 수 있습니다. 녹화한 비디오는 정리할 수 있도록 바로 열리며, 그대로 사진 보관함에 저장되지 않습니다. 정리된 사본만 저장됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Neem video op** — tik op ‘Neem video op’ om in 4K of HD met HDR te filmen, zoals in de Camera-app. De opname wordt geopend om op te schonen en wordt nooit ongewijzigd in je fotobibliotheek bewaard; alleen de opgeschoonde kopie."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Nagraj wideo** – stuknij „Nagraj wideo”, aby filmować w 4K lub HD z HDR, jak w aplikacji Aparat. Nagranie otwiera się do wyczyszczenia i nigdy nie jest zachowywane w bibliotece zdjęć w oryginalnej postaci; zachowywana jest tylko wyczyszczona kopia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Gravar Vídeo** — toque em “Gravar Vídeo” para filmar em 4K ou HD com HDR, como no app Câmera. A gravação é aberta para ser limpa e nunca é salva na sua fototeca do jeito que está; apenas a cópia limpa é salva."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Gravar vídeo** — toque em “Gravar vídeo” para filmar em 4K ou HD com HDR, tal como na app Câmara. A gravação abre para ser limpa e nunca é guardada na sua fototeca tal como está; apenas a cópia limpa é guardada."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Spela in video** – tryck på ”Spela in video” för att filma i 4K eller HD med HDR, precis som i appen Kamera. Inspelningen öppnas för rensning och sparas aldrig som den är i ditt bildbibliotek; bara den rensade kopian sparas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Video Çek** — Kamera uygulamasındaki gibi 4K veya HD’de, HDR ile çekim yapmak için “Video Çek” düğmesine dokunun. Kayıt temizlenmek üzere açılır ve olduğu gibi hiçbir zaman fotoğraf arşivinize kaydedilmez; yalnızca temizlenen kopya kaydedilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**录像**——轻点“录像”，即可像使用“相机”一样，以 4K 或 HD 并开启 HDR 拍摄视频。录制的视频会直接打开以供清理，绝不会原样存储到你的照片图库，只会存储清理后的副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**錄影**：點一下「錄影」，即可像使用「相機」App 一樣，以 4K 或 HD 搭配 HDR 拍攝影片。錄製的影片會直接開啟以供清理，永遠不會以原樣儲存到你的照片圖庫，只會儲存清理後的副本。"
+          }
+        }
+      }
+    },
+    "**Record in PicStrip.** In the camera, switch between Photo and Video. Tap 4K or the frame rate to change them, HDR to turn it off, and the running figure for steadier video. Tap a lens or pinch to zoom; tap to focus, then drag up or down to brighten or darken. The volume buttons and the Camera Control start and stop recording." : {
+      "comment" : "Help page, Videos section.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**سجّل في PicStrip.** في الكاميرا، بدّل بين ”صورة“ و”فيديو“. اضغط على 4K أو معدل الإطارات لتغييرهما، وعلى HDR لإيقافه، وعلى رمز الشخص الراكض للحصول على فيديو أكثر ثباتًا. اضغط على عدسة أو باعد إصبعيك للتكبير؛ اضغط للتركيز، ثم اسحب لأعلى أو لأسفل لزيادة السطوع أو تقليله. تبدأ أزرار مستوى الصوت ووحدة التحكم في الكاميرا التسجيل وتوقفه."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**In PicStrip aufnehmen.** Wechsle in der Kamera zwischen Foto und Video. Tippe auf 4K oder die Bildrate, um sie zu ändern, auf HDR, um es auszuschalten, und auf die laufende Figur für ruhigere Videos. Tippe auf ein Objektiv oder zoome mit zwei Fingern; tippe zum Fokussieren und zieh dann nach oben oder unten, um das Bild aufzuhellen oder abzudunkeln. Mit den Lautstärketasten und der Kamerasteuerung startest und stoppst du die Aufnahme."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Graba en PicStrip.** En la cámara, cambia entre Foto y Vídeo. Toca 4K o la frecuencia de fotogramas para cambiarlos, HDR para desactivarlo y la figura que corre para un vídeo más estable. Toca un objetivo o pellizca para hacer zoom; toca para enfocar y luego arrastra hacia arriba o hacia abajo para aclarar u oscurecer. Los botones de volumen y el control de la cámara inician y detienen la grabación."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Graba en PicStrip.** En la cámara, cambia entre Foto y Video. Toca 4K o la frecuencia de fotogramas para cambiarlos, HDR para desactivarlo y la figura que corre para un video más estable. Toca un lente o pellizca para hacer zoom; toca para enfocar y luego arrastra hacia arriba o hacia abajo para aclarar u oscurecer. Los botones de volumen y el control de la cámara inician y detienen la grabación."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Filmez dans PicStrip.** Dans l’appareil photo, basculez entre Photo et Vidéo. Touchez 4K ou la fréquence d’images pour les modifier, HDR pour le désactiver et la silhouette qui court pour une vidéo plus stable. Touchez un objectif ou pincez pour zoomer ; touchez pour faire la mise au point, puis faites glisser vers le haut ou le bas pour éclaircir ou assombrir. Les boutons de volume et la Commande de l’appareil photo lancent et arrêtent l’enregistrement."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Registra in PicStrip.** Nella fotocamera, passa da Foto a Video e viceversa. Tocca 4K o la frequenza fotogrammi per cambiarli, HDR per disattivarlo e la figura che corre per un video più stabile. Tocca un obiettivo o pizzica per lo zoom; tocca per mettere a fuoco, poi trascina in su o in giù per schiarire o scurire. I tasti del volume e il Controllo fotocamera avviano e interrompono la registrazione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**PicStripで録画。**カメラでは「写真」と「ビデオ」を切り替えられます。4Kやフレームレートをタップすると変更、HDRをタップするとオフ、走る人のアイコンをタップするとビデオがより安定します。レンズをタップするかピンチしてズームし、タップしてフォーカスを合わせてから上下にドラッグすると明るさを調整できます。音量ボタンとカメラコントロールで録画を開始・停止できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**PicStrip에서 녹화하기.** 카메라에서 ‘사진’과 ‘비디오’ 모드를 전환할 수 있습니다. 4K나 프레임률을 탭하면 변경되고, HDR을 탭하면 꺼지며, 달리는 사람 아이콘을 탭하면 비디오가 더 안정적으로 촬영됩니다. 렌즈를 탭하거나 핀치하여 줌하고, 탭하여 초점을 맞춘 다음 위아래로 드래그하면 밝게 또는 어둡게 조절됩니다. 음량 버튼과 카메라 컨트롤로 녹화를 시작하고 정지할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Neem op in PicStrip.** Schakel in de camera tussen Foto en Video. Tik op 4K of de beeldsnelheid om ze te wijzigen, op HDR om het uit te zetten en op het rennende figuurtje voor stabielere video. Tik op een lens of knijp om te zoomen; tik om scherp te stellen en sleep daarna omhoog of omlaag om het beeld lichter of donkerder te maken. De volumeknoppen en Camerabediening starten en stoppen de opname."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Nagrywaj w PicStrip.** W aparacie przełączaj się między trybami Zdjęcie i Wideo. Stuknij 4K lub liczbę klatek, aby je zmienić, HDR, aby go wyłączyć, oraz biegnącą postać, aby uzyskać stabilniejsze wideo. Stuknij obiektyw lub zsuń albo rozsuń palce, aby zmienić powiększenie; stuknij, aby ustawić ostrość, a następnie przeciągnij w górę lub w dół, aby rozjaśnić lub przyciemnić obraz. Przyciski głośności i Sterowanie aparatem rozpoczynają i zatrzymują nagrywanie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Grave no PicStrip.** Na câmera, alterne entre Foto e Vídeo. Toque em 4K ou na taxa de quadros para alterá-los, em HDR para desativá-lo e no ícone da pessoa correndo para um vídeo mais estável. Toque em uma lente ou junte e afaste os dedos para fazer zoom; toque para focar e arraste para cima ou para baixo para clarear ou escurecer. Os botões de volume e o Controle da Câmera iniciam e param a gravação."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Grave no PicStrip.** Na câmara, alterne entre Foto e Vídeo. Toque em 4K ou na taxa de fotogramas para os alterar, em HDR para o desativar e na figura a correr para um vídeo mais estável. Toque numa objetiva ou junte e afaste os dedos para fazer zoom; toque para focar e, depois, arraste para cima ou para baixo para clarear ou escurecer. Os botões de volume e o Controlo da câmara iniciam e param a gravação."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Spela in i PicStrip.** Växla mellan Bild och Video i kameran. Tryck på 4K eller bildfrekvensen för att ändra dem, på HDR för att stänga av det och på den springande figuren för stadigare video. Tryck på ett objektiv eller nyp för att zooma; tryck för att fokusera och dra sedan uppåt eller nedåt för att göra bilden ljusare eller mörkare. Volymknapparna och Kamerakontroll startar och stoppar inspelningen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**PicStrip’te kayıt yapın.** Kamerada Fotoğraf ile Video arasında geçiş yapın. Değiştirmek için 4K’ya veya kare hızına, kapatmak için HDR’ye, daha sabit video için koşan insan simgesine dokunun. Yakınlaştırmak için bir objektife dokunun veya kıstırın; odaklamak için dokunun, ardından parlaklığı artırmak veya azaltmak için yukarı ya da aşağı sürükleyin. Ses düğmeleri ve Kamera Denetimi kaydı başlatıp durdurur."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**在 PicStrip 中录制。**在相机中，可在“照片”和“视频”之间切换。轻点“4K”或帧率可进行更改，轻点“HDR”可将其关闭，轻点跑步人形图标可让视频更稳定。轻点镜头或双指开合以缩放；轻点以对焦，然后向上或向下拖移以调亮或调暗。音量按钮和相机控制可开始和停止录制。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**在 PicStrip 中錄影。**在相機中，可在「照片」和「影片」之間切換。點一下「4K」或影格速率即可更改，點一下「HDR」可將其關閉，點一下跑步人形圖像可讓影片更穩定。點一下鏡頭或兩指開合來縮放；點一下以對焦，然後向上或向下拖移來調亮或調暗。音量按鈕和相機控制可開始和停止錄影。"
+          }
+        }
+      }
+    },
     "**Review & Share** the cleaned image, or save a new copy to Photos. The Share Extension also offers direct cleaning or a protected handoff for editing." : {
       "localizations" : {
         "ar" : {
@@ -2758,106 +3162,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "**截圖** — 點一下「截圖」，只從截圖中選取。"
-          }
-        }
-      }
-    },
-    "**Select a photo** from your library, import from Files, or drag an image directly onto PicStrip." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**حدد صورة** من مكتبتك، أو استوردها من الملفات، أو اسحب صورة مباشرة إلى PicStrip."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Wähle ein Foto** aus deiner Mediathek, importiere eines aus Dateien oder zieh ein Bild direkt auf PicStrip."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Selecciona una foto** de tu fototeca, impórtala desde Archivos o arrastra una imagen directamente a PicStrip."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Selecciona una foto** de tu fototeca, impórtala desde Archivos o arrastra una imagen directamente a PicStrip."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Sélectionnez une photo** dans votre photothèque, importez-la depuis Fichiers ou faites glisser une image directement sur PicStrip."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Seleziona una foto** dalla tua libreria, importala da File oppure trascina un’immagine direttamente su PicStrip."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ライブラリから**写真を選択**するか、「ファイル」から読み込む、または画像をPicStripに直接ドラッグします。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "보관함에서 **사진을 선택**하거나, 파일 앱에서 가져오거나, 이미지를 PicStrip으로 바로 끌어다 놓으세요."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Selecteer een foto** uit je bibliotheek, importeer er een uit Bestanden of sleep een afbeelding direct op PicStrip."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Wybierz zdjęcie** z biblioteki, zaimportuj je z Plików lub przeciągnij obraz bezpośrednio na PicStrip."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Selecione uma foto** da sua fototeca, importe do app Arquivos ou arraste uma imagem direto para o PicStrip."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Selecione uma fotografia** da sua fototeca, importe da app Ficheiros ou arraste uma imagem diretamente para o PicStrip."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**Välj en bild** i ditt bildbibliotek, importera från Filer eller dra en bild direkt till PicStrip."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Arşivinizden **bir fotoğraf seçin**, Dosyalar’dan içe aktarın veya bir görüntüyü doğrudan PicStrip’e sürükleyin."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**选择一张照片**：从图库中选取、从“文件”导入，或直接将图像拖移到 PicStrip 上。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "**從圖庫選擇照片**、從「檔案」匯入，或直接將影像拖移到 PicStrip 上。"
           }
         }
       }
@@ -3665,103 +3969,103 @@
         }
       }
     },
-    "**Videos** — tap “Videos” to clean a video. See Videos below." : {
-      "comment" : "Help page, Ways to Import.",
+    "**Videos** — tap “Select a Video” to clean a video from your library. See Videos below." : {
+      "comment" : "Help page row; replaces “**Videos** — tap “Videos” to clean a video.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**مقاطع الفيديو** — اضغط على ”مقاطع الفيديو“ لتنظيف فيديو. راجع قسم الفيديو أدناه."
+            "value" : "**مقاطع الفيديو** — اضغط على ”حدد فيديو“ لتنظيف فيديو من مكتبتك. راجع قسم ”مقاطع الفيديو“ أدناه."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Videos** – tippe auf „Videos“, um ein Video zu bereinigen. Siehe „Videos“ weiter unten."
+            "value" : "**Videos** – tippe auf „Video auswählen“, um ein Video aus deiner Mediathek zu bereinigen. Siehe „Videos“ weiter unten."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Vídeos**: toca «Vídeos» para limpiar un vídeo. Consulta Vídeos más abajo."
+            "value" : "**Vídeos**: toca «Seleccionar un vídeo» para limpiar un vídeo de tu fototeca. Consulta Vídeos más abajo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Videos**: toca «Videos» para limpiar un video. Consulta Videos más abajo."
+            "value" : "**Videos**: toca “Seleccionar un video” para limpiar un video de tu fototeca. Consulta Videos más abajo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Vidéos** — touchez « Vidéos » pour nettoyer une vidéo. Consultez Vidéos ci-dessous."
+            "value" : "**Vidéos** — touchez « Sélectionner une vidéo » pour nettoyer une vidéo de votre photothèque. Consultez Vidéos ci-dessous."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Video** — tocca “Video” per pulire un video. Vedi Video più sotto."
+            "value" : "**Video** — tocca “Seleziona un video” per pulire un video della tua libreria. Vedi Video più sotto."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**ビデオ** — 「ビデオ」をタップすると、ビデオをクリーンアップできます。下の「ビデオ」を参照してください。"
+            "value" : "**ビデオ** — 「ビデオを選択」をタップすると、ライブラリのビデオをクリーンアップできます。下の「ビデオ」を参照してください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**비디오** — ‘비디오’를 탭하여 비디오를 정리합니다. 아래의 비디오를 참조하십시오."
+            "value" : "**비디오** — ‘비디오 선택’을 탭하여 보관함의 비디오를 정리합니다. 아래의 비디오를 참조하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Video’s** — tik op ‘Video’s’ om een video op te schonen. Zie Video’s hieronder."
+            "value" : "**Video’s** — tik op ‘Selecteer een video’ om een video uit je bibliotheek op te schonen. Zie Video’s hieronder."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Wideo** — stuknij „Wideo”, aby wyczyścić wideo. Zobacz sekcję Wideo poniżej."
+            "value" : "**Wideo** – stuknij „Wybierz wideo”, aby wyczyścić wideo z biblioteki. Zobacz sekcję Wideo poniżej."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Vídeos** — toque em “Vídeos” para limpar um vídeo. Veja Vídeos abaixo."
+            "value" : "**Vídeos** — toque em “Selecionar um vídeo” para limpar um vídeo da sua fototeca. Veja Vídeos abaixo."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Vídeos** — toque em “Vídeos” para limpar um vídeo. Consulte Vídeos abaixo."
+            "value" : "**Vídeos** — toque em “Selecionar um vídeo” para limpar um vídeo da sua fototeca. Consulte Vídeos abaixo."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Videor** – tryck på ”Videor” för att rensa en video. Se Videor nedan."
+            "value" : "**Videor** – tryck på ”Välj en video” för att rensa en video från ditt bildbibliotek. Se Videor nedan."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Videolar** — bir videoyu temizlemek için “Videolar”a dokunun. Aşağıdaki Videolar bölümüne bakın."
+            "value" : "**Videolar** — arşivinizdeki bir videoyu temizlemek için “Bir Video Seç”e dokunun. Aşağıdaki Videolar bölümüne bakın."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**视频** — 轻点“视频”以清理视频。请参阅下方的“视频”。"
+            "value" : "**视频** — 轻点“选择视频”以清理图库中的视频。请参阅下方的“视频”。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**影片** — 點一下「影片」以清理影片。請參閱下方的「影片」。"
+            "value" : "**影片** — 點一下「選擇影片」以清理圖庫中的影片。請參閱下方的「影片」。"
           }
         }
       }
@@ -9486,6 +9790,107 @@
         }
       }
     },
+    "Camera mode" : {
+      "comment" : "VoiceOver label of that Video | Photo switcher.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "وضع الكاميرا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameramodus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de la cámara"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo de cámara"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mode de l’appareil photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modalità fotocamera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラモード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라 모드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cameramodus"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryb aparatu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo da câmera"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modo da câmara"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameraläge"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera modu"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机模式"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相機模式"
+          }
+        }
+      }
+    },
     "Camera paused" : {
       "comment" : "Status line in the in-app camera while the system has taken the camera away (a phone call, Split View, the app in the background).",
       "localizations" : {
@@ -14781,6 +15186,107 @@
         }
       }
     },
+    "Couldn’t Record" : {
+      "comment" : "Alert title when a recording failed.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر التسجيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme nicht möglich"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido grabar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo grabar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile registrare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "録画できませんでした"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "녹화할 수 없음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kan niet opnemen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można nagrać"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível gravar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível gravar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kunde inte spela in"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydedilemedi"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法錄影"
+          }
+        }
+      }
+    },
     "Cover %@" : {
       "comment" : "VoiceOver label of the switch that covers one finding in a video. %@ is its kind, e.g. “Email Address”.",
       "localizations" : {
@@ -18540,6 +19046,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "停用 %@ 的遮蓋"
+          }
+        }
+      }
+    },
+    "Discard This Video?" : {
+      "comment" : "Confirmation title when closing the video editor for a video recorded in the app that was not saved yet.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "هل تريد تجاهل هذا الفيديو؟"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Video verwerfen?"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar este vídeo?"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "¿Descartar este video?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer cette vidéo ?"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminare questo video?"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "このビデオを破棄しますか？"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "이 비디오를 버리겠습니까?"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Deze video weggooien?"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzucić to wideo?"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar este vídeo?"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar este vídeo?"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vill du slänga den här videon?"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu Video Atılsın mı?"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要丢弃此视频吗？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "要捨棄此影片嗎？"
+          }
+        }
+      }
+    },
+    "Discard Video" : {
+      "comment" : "Destructive button in that confirmation.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجاهل الفيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video verwerfen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la vidéo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオを破棄"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 버리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gooi video weg"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzuć wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Släng video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoyu At"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "丢弃视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捨棄影片"
           }
         }
       }
@@ -23242,6 +23950,107 @@
         }
       }
     },
+    "Enhanced stabilization" : {
+      "comment" : "VoiceOver label of the camera toggle for the strongest video stabilization (like Action mode in the Camera app, but not called that).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الثبات المحسّن"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbesserte Stabilisierung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilización mejorada"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilización mejorada"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stabilisation améliorée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stabilizzazione migliorata"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "強力な手ぶれ補正"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "향상된 흔들림 보정"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verbeterde stabilisatie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ulepszona stabilizacja"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilização aprimorada"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Estabilização melhorada"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Förbättrad stabilisering"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gelişmiş sabitleme"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增强防抖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "增強防手震"
+          }
+        }
+      }
+    },
     "Enter multi-select mode" : {
       "localizations" : {
         "ar" : {
@@ -25354,6 +26163,107 @@
         }
       }
     },
+    "Frame rate" : {
+      "comment" : "VoiceOver label of the camera's frame-rate button (30, 60…).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "معدل الإطارات"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildrate"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frecuencia de fotogramas"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frecuencia de fotogramas"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fréquence d’images"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Frequenza fotogrammi"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フレームレート"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "프레임률"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beeldsnelheid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Liczba klatek na sekundę"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taxa de quadros"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taxa de fotogramas"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildfrekvens"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kare hızı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "帧率"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影格速率"
+          }
+        }
+      }
+    },
     "French INSEE" : {
       "localizations" : {
         "ar" : {
@@ -26068,6 +26978,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "綠色"
+          }
+        }
+      }
+    },
+    "HDR video" : {
+      "comment" : "VoiceOver label of the camera's HDR toggle.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فيديو HDR"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR-Video"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo HDR"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video HDR"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidéo HDR"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video HDR"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDRビデオ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR 비디오"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR-video"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wideo HDR"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo HDR"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo HDR"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR-video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR video"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR 视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "HDR 影片"
           }
         }
       }
@@ -29288,6 +30299,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "全部保留"
+          }
+        }
+      }
+    },
+    "Keep Editing" : {
+      "comment" : "Cancel button in that confirmation.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متابعة التحرير"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weiter bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir editando"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seguir editando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuer à modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continua a modificare"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集を続ける"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "계속 편집"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ga door met bewerken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kontynuuj edycję"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar editando"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Continuar a editar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fortsätt redigera"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Düzenlemeye Devam Et"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "继续编辑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "繼續編輯"
           }
         }
       }
@@ -36367,6 +37479,107 @@
         }
       }
     },
+    "Off" : {
+      "comment" : "VoiceOver value of a camera toggle that is off.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "متوقف"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aus"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desactivado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オフ"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "끔"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uit"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyłączone"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desativado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Av"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kapalı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉"
+          }
+        }
+      }
+    },
     "Offline Editing" : {
       "localizations" : {
         "ar" : {
@@ -36463,6 +37676,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "離線編輯"
+          }
+        }
+      }
+    },
+    "On" : {
+      "comment" : "VoiceOver value of a camera toggle (HDR, stabilization) that is on.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "مشغل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Activado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sí"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oui"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sì"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "オン"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "켬"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aan"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Włączone"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ativado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "På"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Açık"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "打开"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟"
           }
         }
       }
@@ -39392,6 +40706,107 @@
         }
       }
     },
+    "Photo" : {
+      "comment" : "Camera mode name in the Video | Photo switcher above the shutter, as in Apple's Camera app — use the Camera app's own mode name in your language.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "صورة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zdjęcie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Foto"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bild"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotoğraf"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "照片"
+          }
+        }
+      }
+    },
     "Photo hidden while PicStrip is inactive" : {
       "localizations" : {
         "ar" : {
@@ -40301,6 +41716,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "只要能辨識，PicStrip 就會遮蓋這些內容：在編輯器、批次處理和即時相機中都一樣。例如你的姓名、車牌或所在街道。"
+          }
+        }
+      }
+    },
+    "PicStrip doesn’t keep what you record. Save a cleaned copy to keep this video." : {
+      "comment" : "Message under “Discard This Video?”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يحتفظ PicStrip بما تسجّله. احفظ نسخة منظَّفة للاحتفاظ بهذا الفيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip behält deine Aufnahmen nicht. Sichere eine bereinigte Kopie, um dieses Video zu behalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no guarda lo que grabas. Guarda una copia limpia para conservar este vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no guarda lo que grabas. Guarda una copia limpia para conservar este video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip ne conserve pas ce que vous filmez. Enregistrez une copie nettoyée pour garder cette vidéo."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non conserva ciò che registri. Salva una copia pulita per tenere questo video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは録画した内容を保持しません。このビデオを残すには、クリーンアップしたコピーを保存してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip은 녹화한 내용을 보관하지 않습니다. 이 비디오를 남기려면 정리된 사본을 저장하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip bewaart niet wat je opneemt. Bewaar een opgeschoonde kopie om deze video te behouden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie przechowuje tego, co nagrywasz. Zachowaj wyczyszczoną kopię, aby zatrzymać to wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não guarda o que você grava. Salve uma cópia limpa para manter este vídeo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não guarda o que grava. Guarde uma cópia limpa para manter este vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip sparar inte det du spelar in. Spara en rensad kopia för att behålla den här videon."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kaydettiklerinizi saklamaz. Bu videoyu tutmak için temizlenmiş bir kopyasını kaydedin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 不会保留你录制的内容。要保留此视频，请存储清理后的副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 不會保留你錄製的內容。若要保留此影片，請儲存清理後的拷貝。"
+          }
+        }
+      }
+    },
+    "PicStrip isn’t allowed to use the microphone, so videos are recorded without sound. You can allow it in Settings." : {
+      "comment" : "Alert message under “Recording Without Sound”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لا يُسمح لـ PicStrip باستخدام الميكروفون، لذا تُسجَّل مقاطع الفيديو بدون صوت. يمكنك السماح بذلك في الإعدادات."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip darf das Mikrofon nicht verwenden, daher werden Videos ohne Ton aufgenommen. Du kannst den Zugriff in den Einstellungen erlauben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no tiene permiso para usar el micrófono, así que los vídeos se graban sin sonido. Puedes permitirlo en Ajustes."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no tiene permiso para usar el micrófono, así que los videos se graban sin sonido. Puedes permitirlo en Configuración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip n’est pas autorisé à utiliser le micro, les vidéos sont donc enregistrées sans son. Vous pouvez l’autoriser dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non è autorizzato a usare il microfono, quindi i video vengono registrati senza audio. Puoi consentirlo in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripにはマイクの使用が許可されていないため、ビデオは音声なしで録画されます。「設定」で許可できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip에 마이크 사용 권한이 없어 비디오가 소리 없이 녹화됩니다. 설정에서 허용할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip mag de microfoon niet gebruiken, dus video’s worden zonder geluid opgenomen. Je kunt dit toestaan in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie ma pozwolenia na używanie mikrofonu, więc wideo jest nagrywane bez dźwięku. Możesz na to pozwolić w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não tem permissão para usar o microfone, então os vídeos são gravados sem som. Você pode permitir o acesso em Ajustes."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não tem permissão para usar o microfone, por isso os vídeos são gravados sem som. Pode permitir o acesso nas Definições."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip får inte använda mikrofonen, så videor spelas in utan ljud. Du kan tillåta det i Inställningar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip’in mikrofonu kullanmasına izin verilmediği için videolar ses olmadan kaydedilir. Ayarlar’dan izin verebilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 未获准使用麦克风，因此视频将在没有声音的情况下录制。你可以在“设置”中允许访问。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 未獲准使用麥克風，因此影片會在沒有聲音的情況下錄製。你可以在「設定」中允許取用。"
           }
         }
       }
@@ -43851,6 +45468,511 @@
         }
       }
     },
+    "Record Video" : {
+      "comment" : "Home screen main button beside “Take Photo” (keep it as short as the existing “Take Photo” translation, same style), also the VoiceOver label of the camera's record button.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تسجيل فيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video aufnehmen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabar un vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabar un video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filmer une vidéo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオを撮る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 녹화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Neem video op"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagraj wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar Vídeo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spela in video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video Çek"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "录像"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "錄影"
+          }
+        }
+      }
+    },
+    "Record a video with the camera" : {
+      "comment" : "VoiceOver label of the home screen “Record Video” button.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "سجّل فيديو باستخدام الكاميرا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ein Video mit der Kamera aufnehmen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabar un vídeo con la cámara"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabar un video con la cámara"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Filmer une vidéo avec l’appareil photo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registra un video con la fotocamera"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラでビデオを撮る"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라로 비디오 녹화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Een video opnemen met de camera"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagraj wideo aparatem"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar um vídeo com a câmera"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravar um vídeo com a câmara"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spela in en video med kameran"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamerayla video çekin"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用相机录制视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "使用相機錄製影片"
+          }
+        }
+      }
+    },
+    "Recording" : {
+      "comment" : "VoiceOver label of the red elapsed-time badge shown while recording (the time is read with it).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جارٍ التسجيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme läuft"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabando"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabando"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement en cours"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrazione in corso"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "録画中"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "녹화 중"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opname bezig"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravando"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A gravar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spelar in"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydediliyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "正在錄影"
+          }
+        }
+      }
+    },
+    "Recording Without Sound" : {
+      "comment" : "Alert title when that button is tapped.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التسجيل بدون صوت"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme ohne Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabación sin sonido"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabación sin sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement sans son"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrazione senza audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声なしで録画"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소리 없이 녹화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opname zonder geluid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie bez dźwięku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravação sem som"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravação sem som"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inspelning utan ljud"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses Olmadan Kayıt"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无声录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無聲錄影"
+          }
+        }
+      }
+    },
+    "Recording without sound" : {
+      "comment" : "VoiceOver label of a red crossed-out-microphone button shown when the app may not use the microphone.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التسجيل بدون صوت"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme ohne Ton"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabación sin sonido"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grabación sin sonido"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrement sans son"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Registrazione senza audio"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "音声なしで録画"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "소리 없이 녹화"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opname zonder geluid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nagrywanie bez dźwięku"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gravando sem som"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A gravar sem som"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Spelar in utan ljud"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ses olmadan kaydediliyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无声录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無聲錄影"
+          }
+        }
+      }
+    },
     "Red" : {
       "localizations" : {
         "ar" : {
@@ -45926,6 +48048,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "調整方框大小"
+          }
+        }
+      }
+    },
+    "Resolution" : {
+      "comment" : "VoiceOver label of the camera's 4K/HD button.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الدقة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Auflösung"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolución"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolución"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Résolution"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Risoluzione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解像度"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해상도"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolutie"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozdzielczość"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolução"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Resolução"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Upplösning"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çözünürlük"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "分辨率"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "解析度"
           }
         }
       }
@@ -49042,6 +51265,107 @@
         }
       }
     },
+    "Select a Video" : {
+      "comment" : "Home screen tile that picks a video from the photo library.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حدد فيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video auswählen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar un vídeo"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleccionar un video"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sélectionner une vidéo"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seleziona un video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオを選択"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 선택"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecteer een video"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wybierz wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar um vídeo"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Selecionar um vídeo"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Välj en video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bir Video Seç"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "选择视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選擇影片"
+          }
+        }
+      }
+    },
     "Select a photo from your library" : {
       "localizations" : {
         "ar" : {
@@ -50015,102 +52339,103 @@
         }
       }
     },
-    "Share the photo. Not the story behind it." : {
+    "Share the moment. Not the story behind it." : {
+      "comment" : "Tagline under the app name on the home screen.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "شارك الصورة، لا القصة التي وراءها."
+            "value" : "شارك اللحظة، لا القصة التي وراءها."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Teile das Foto. Nicht die Geschichte dahinter."
+            "value" : "Teile den Moment. Nicht die Geschichte dahinter."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comparte la foto. No la historia que hay detrás."
+            "value" : "Comparte el momento. No la historia que hay detrás."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Comparte la foto. No la historia que hay detrás."
+            "value" : "Comparte el momento. No la historia que hay detrás."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Partagez la photo. Pas l’histoire qu’elle cache."
+            "value" : "Partagez l’instant. Pas l’histoire qu’il cache."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Condividi la foto. Non la storia che c’è dietro."
+            "value" : "Condividi il momento. Non la storia che c’è dietro."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "写真は共有しても、その裏側までは共有しない。"
+            "value" : "その瞬間は共有しても、裏側までは共有しない。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "사진은 공유하고, 그 뒤의 이야기는 남기지 마세요."
+            "value" : "순간은 공유하고, 그 뒤의 이야기는 남기지 마세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Deel de foto. Niet het verhaal erachter."
+            "value" : "Deel het moment. Niet het verhaal erachter."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Udostępnij zdjęcie. Nie historię, która się za nim kryje."
+            "value" : "Udostępnij chwilę. Nie historię, która się za nią kryje."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Compartilhe a foto. Não a história por trás dela."
+            "value" : "Compartilhe o momento. Não a história por trás dele."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Partilhe a fotografia. Não a história por detrás dela."
+            "value" : "Partilhe o momento. Não a história por detrás dele."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dela bilden. Inte historien bakom den."
+            "value" : "Dela ögonblicket. Inte historien bakom det."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fotoğrafı paylaşın. Arkasındaki hikâyeyi değil."
+            "value" : "O anı paylaşın. Arkasındaki hikâyeyi değil."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只分享照片，不分享背后的故事。"
+            "value" : "只分享瞬间，不分享背后的故事。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "只分享照片，不分享背後的故事。"
+            "value" : "只分享瞬間，不分享背後的故事。"
           }
         }
       }
@@ -52741,6 +55066,208 @@
         }
       }
     },
+    "Steadier video when you walk or run, with a slightly narrower view." : {
+      "comment" : "VoiceOver hint of that toggle.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "فيديو أكثر ثباتًا أثناء المشي أو الجري، مع مجال رؤية أضيق قليلًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ruhigere Videos beim Gehen oder Laufen, mit etwas engerem Bildausschnitt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo más estable al caminar o correr, con un encuadre algo más cerrado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video más estable al caminar o correr, con un encuadre un poco más cerrado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidéo plus stable lorsque vous marchez ou courez, avec un champ de vision légèrement plus étroit."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video più stabile quando cammini o corri, con un’inquadratura leggermente più stretta."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "歩いたり走ったりしても、より安定したビデオを撮影できます。画角はわずかに狭くなります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "걷거나 달릴 때 더 안정적인 비디오를 촬영합니다. 화각은 약간 좁아집니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stabielere video tijdens het lopen of rennen, met een iets smaller beeld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stabilniejsze wideo podczas chodzenia lub biegania, przy nieco węższym kadrze."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo mais estável quando você anda ou corre, com um enquadramento um pouco mais estreito."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo mais estável quando caminha ou corre, com um enquadramento ligeiramente mais estreito."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stadigare video när du går eller springer, med något smalare bildvinkel."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yürürken veya koşarken daha sabit video sağlar; görüş alanı biraz daralır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "走动或跑步时视频更稳定，但视野会略微变窄。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "走路或跑步時讓影片更穩定，但視野會稍微變窄。"
+          }
+        }
+      }
+    },
+    "Stop Recording" : {
+      "comment" : "VoiceOver label of the record button while recording.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إيقاف التسجيل"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aufnahme stoppen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detener grabación"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detener grabación"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter l’enregistrement"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Interrompi registrazione"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "録画を停止"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "녹화 정지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop opname"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zatrzymaj nagrywanie"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar Gravação"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Parar gravação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stoppa inspelning"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kaydı Durdur"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止录制"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "停止錄影"
+          }
+        }
+      }
+    },
     "Stop batch" : {
       "localizations" : {
         "ar" : {
@@ -54216,6 +56743,208 @@
         }
       }
     },
+    "Switch to the back camera" : {
+      "comment" : "VoiceOver label of the flip-camera button when the front camera is in use.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التبديل إلى الكاميرا الخلفية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Rückkamera wechseln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar a la cámara trasera"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar a la cámara trasera"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer à la caméra arrière"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passa alla fotocamera posteriore"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "背面カメラに切り替える"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "후면 카메라로 전환"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel naar de camera aan de achterkant"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przełącz na tylny aparat"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudar para a câmera traseira"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudar para a câmara traseira"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Byt till den bakre kameran"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arka kameraya geç"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换到后置相机"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換到後置相機"
+          }
+        }
+      }
+    },
+    "Switch to the front camera" : {
+      "comment" : "VoiceOver label of the flip-camera button.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التبديل إلى الكاميرا الأمامية"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zur Frontkamera wechseln"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar a la cámara frontal"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cambiar a la cámara frontal"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passer à la caméra avant"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passa alla fotocamera frontale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前面カメラに切り替える"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "전면 카메라로 전환"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schakel naar de camera aan de voorkant"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przełącz na przedni aparat"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudar para a câmera frontal"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mudar para a câmara frontal"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Byt till den främre kameran"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ön kameraya geç"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切换到前置相机"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "切換到前置相機"
+          }
+        }
+      }
+    },
     "Take Photo" : {
       "comment" : "Home-screen button: open the camera and take a photo straight into the editor.",
       "localizations" : {
@@ -55424,6 +58153,309 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "文字每秒讀取兩次，因此較小、因移動而模糊或只短暫出現的文字可能會被漏掉。"
+          }
+        }
+      }
+    },
+    "The camera is in use by another app." : {
+      "comment" : "Status note when another app or a call took the camera.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يستخدم تطبيق آخر الكاميرا حاليًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kamera wird von einer anderen App verwendet."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra app está usando la cámara."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otra app está usando la cámara."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’appareil photo est utilisé par une autre app."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fotocamera è in uso da parte di un’altra app."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラは別のアプリで使用中です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "다른 앱에서 카메라를 사용 중입니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De camera wordt gebruikt door een andere app."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparat jest używany przez inną aplikację."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmera está sendo usada por outro app."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmara está a ser utilizada por outra app."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameran används av en annan app."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera başka bir uygulama tarafından kullanılıyor."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机正被其他应用使用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相機正由其他 App 使用中。"
+          }
+        }
+      }
+    },
+    "The camera is running warm. Recording may drop to 30 fps while it cools." : {
+      "comment" : "Status note when the phone gets hot; fps = frames per second (keep “fps” or use your language's usual abbreviation).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حرارة الكاميرا مرتفعة. قد ينخفض التسجيل إلى 30 إطارًا في الثانية حتى تبرد."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kamera ist warm. Während sie abkühlt, kann die Aufnahme auf 30 fps sinken."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cámara se está calentando. La grabación puede bajar a 30 fps mientras se enfría."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cámara se está calentando. La grabación puede bajar a 30 fps mientras se enfría."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’appareil photo chauffe. L’enregistrement peut descendre à 30 ips le temps qu’il refroidisse."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fotocamera si sta scaldando. La registrazione potrebbe scendere a 30 fps finché non si raffredda."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "カメラの温度が上がっています。温度が下がるまで、録画が30fpsに下がる場合があります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "카메라 온도가 높습니다. 온도가 내려갈 때까지 녹화가 30fps로 낮아질 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De camera wordt warm. De opname kan tijdens het afkoelen terugvallen naar 30 fps."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparat się nagrzewa. Dopóki nie ostygnie, nagrywanie może zwolnić do 30 kl./s."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmera está esquentando. A gravação pode cair para 30 qps enquanto ela esfria."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmara está a aquecer. A gravação pode descer para 30 fps enquanto arrefece."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameran är varm. Inspelningen kan sjunka till 30 bilder/s medan den svalnar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera ısınıyor. Soğuyana kadar kayıt 30 fps’ye düşebilir."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机温度较高。在降温期间，录制可能会降至 30 fps。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相機溫度偏高。降溫期間，錄影可能會降至 30 fps。"
+          }
+        }
+      }
+    },
+    "The camera isn’t available right now." : {
+      "comment" : "Status note on the camera screen when the camera can't start.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "الكاميرا غير متاحة حاليًا."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Die Kamera ist gerade nicht verfügbar."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cámara no está disponible en este momento."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La cámara no está disponible en este momento."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’appareil photo n’est pas disponible pour le moment."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fotocamera non è disponibile al momento."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "現在カメラを使用できません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "현재 카메라를 사용할 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De camera is momenteel niet beschikbaar."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aparat jest teraz niedostępny."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmera não está disponível no momento."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "A câmara não está disponível neste momento."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kameran är inte tillgänglig just nu."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kamera şu anda kullanılamıyor."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "相机当前不可用。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "目前無法使用相機。"
           }
         }
       }
@@ -56741,6 +59773,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "無法對此影像執行敏感資料掃描。請在分享前手動檢查。"
+          }
+        }
+      }
+    },
+    "The video could not be recorded. Check that there is enough storage, then try again." : {
+      "comment" : "Alert message under “Couldn’t Record”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر تسجيل الفيديو. تحقق من توفر مساحة تخزين كافية، ثم حاول مرة أخرى."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Das Video konnte nicht aufgenommen werden. Prüfe, ob genügend Speicherplatz frei ist, und versuche es dann erneut."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido grabar el vídeo. Comprueba que haya suficiente espacio de almacenamiento y vuelve a intentarlo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo grabar el video. Comprueba que haya suficiente espacio de almacenamiento e inténtalo de nuevo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La vidéo n’a pas pu être enregistrée. Vérifiez qu’il reste suffisamment d’espace de stockage, puis réessayez."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossibile registrare il video. Verifica che ci sia spazio di archiviazione sufficiente, poi riprova."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオを録画できませんでした。ストレージの空き容量が十分にあることを確認してから、もう一度お試しください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오를 녹화할 수 없습니다. 저장 공간이 충분한지 확인한 다음 다시 시도하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "De video kan niet worden opgenomen. Controleer of er genoeg opslagruimte is en probeer het opnieuw."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie można nagrać wideo. Sprawdź, czy jest wystarczająco dużo miejsca, a następnie spróbuj ponownie."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível gravar o vídeo. Verifique se há espaço de armazenamento suficiente e tente novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível gravar o vídeo. Verifique se tem espaço de armazenamento suficiente e tente novamente."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Det gick inte att spela in videon. Kontrollera att det finns tillräckligt med lagringsutrymme och försök sedan igen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video kaydedilemedi. Yeterli depolama alanı olduğundan emin olun, ardından yeniden deneyin."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法录制视频。请检查是否有足够的存储空间，然后重试。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法錄製影片。請確認是否有足夠的儲存空間，然後再試一次。"
           }
         }
       }
@@ -60066,7 +63199,7 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "الفيديو"
+            "value" : "فيديو"
           }
         },
         "de" : {

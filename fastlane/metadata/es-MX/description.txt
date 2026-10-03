@@ -1,19 +1,27 @@
-Encuentra y oculta detalles privados antes de compartir fotos. El análisis, la censura y la eliminación de metadatos se realizan en tu dispositivo. Las fotos solo van a otra app o servicio mediante las acciones de importar, guardar y compartir que elijas.
+Comparte el momento, no la historia que hay detrás. PicStrip encuentra lo que revela una foto o un video (caras, números de teléfono, direcciones de correo, números de tarjeta, códigos QR, dónde se tomó y con qué dispositivo) y te ayuda a censurarlo o eliminarlo antes de compartir. Todo se procesa en tu iPhone o iPad.
 
-Probar un ejemplo
-Una foto ficticia. No necesita acceso a tu fototeca.
+Videos censurados en movimiento
+Graba con PicStrip o elige un video. PicStrip encuentra caras, texto, códigos y tus palabras de “Censurar siempre”, los sigue cuadro por cuadro y los censura: las caras, con un desenfoque fuerte, un recuadro opaco o el emoji que elijas. Rodea con un recuadro cualquier otra cosa (una persona, un auto, una pantalla, un letrero) y se seguirá hacia adelante y hacia atrás. Una línea de tiempo de editor de video muestra cada censura y edición de sonido como un clip recortable; selecciona un fragmento de sonido para ponerle un pitido o silenciarlo. La previsualización muestra la copia tal como se guarda, y esta sale sin ubicación, dispositivo ni fechas.
 
-Revisa las detecciones en el editor. Cada resultado muestra la intensidad de coincidencia y un nivel de riesgo para ayudarte a decidir qué censurar. Revisa la foto antes de compartir. La detección automática puede omitir detalles. Las sugerencias de nombres requieren Apple Intelligence y no se censuran automáticamente. Un modelo opcional para seleccionar objetos puede descargarse de Apple con tu permiso.
+Graba sin concesiones
+El modo Video graba como la app Cámara: 4K o HD, de 24 a 120 fps, HDR, estabilización mejorada, todos los lentes con zoom, enfoque y exposición, la linterna, y los botones de volumen o el control de la cámara para iniciar y detener. Las grabaciones pasan directamente a la limpieza y nunca se guardan tal cual en tu fototeca.
 
-Ajusta las censuras arrastrándolas o con Posición y tamaño. Agrega un área centrada sin dibujar. Usa Seleccionar para modificar varias áreas. El desenfoque y el pixelado pueden dejar detalles reconocibles. Usa una cobertura sólida para secretos y texto identificativo.
+Míralo antes de tomar la foto
+El visor en vivo del modo Foto marca y nombra lo que censuraría, con su intensidad de coincidencia, y puede previsualizar el resultado. Después de la captura, la foto se analiza y revisa por completo.
 
-Revisa los metadatos ocultos, como ubicación, cámara y fechas. Elige qué eliminar y comprueba el resultado limpio.
-PNG: Calidad sin pérdida para capturas y texto. Archivos más grandes.
-JPEG: Archivos más pequeños para fotos cotidianas. Amplia compatibilidad.
-HEIC: Fotos compactas de alta calidad. Comprueba la compatibilidad del destinatario.
+Revisa antes de compartir
+Analiza caras, códigos de barras, datos de contacto, identificadores financieros y secretos de desarrollador comunes. Revisa la intensidad de coincidencia y el estado del análisis, y decide qué censurar. Las sugerencias de nombres dependen de Apple Intelligence y no se censuran automáticamente.
 
-Revisa y comparte la imagen limpia o guarda una copia en Fotos. La extensión para compartir también permite limpiar directamente o transferir de forma protegida para editar. Editar abre la primera imagen original para revisarla. Una copia local protegida caduca a los 15 minutos. Las fotos grandes necesitan copias más pequeñas en la extensión: hasta 6 megapíxeles para censurar contenido o 12 solo para metadatos. Edita en PicStrip para una revisión completa.
+Haz la copia a tu manera
+Dibuja un recuadro, o toca un objeto en iOS 27, y luego muévelo y cambia su tamaño con controles accesibles. Elige sólido, trama cruzada, pixelado, desenfoque o un emoji, con colores, intensidad y deshacer/rehacer. Para secretos se recomienda una cobertura sólida: el desenfoque y el pixelado pueden dejar detalles reconocibles. Puedes dejar visibles los últimos dígitos de una tarjeta o un teléfono y comparar con el original antes de compartir. Agrega palabras a “Censurar siempre” (tu nombre, una placa, tu calle) y se censurarán dondequiera que PicStrip las lea.
 
-La acción de Atajos en segundo plano solo elimina metadatos. Abre PicStrip para revisar y censurar contenido visible.
+Elimina los detalles ocultos
+Revisa los metadatos de ubicación, cámara, fecha, pie de foto y dispositivo. Elige qué eliminar y comprueba el resultado. Exporta en PNG, JPEG, HEIC o un formato de origen compatible, con el tamaño del archivo a la vista. Los preajustes para compartir ayudan a elegir un formato para fotos, capturas y documentos. Conserva el movimiento de una Live Photo si no se censura nada en ella.
 
-Este informe contiene nombres de campos y cantidades, nunca valores originales de metadatos ni texto detectado.
+Más formas de empezar
+Prueba el ejemplo ficticio integrado. Elige fotos, videos o solo tus capturas, escanea un documento, explora Archivos, pega o arrastra y suelta. Limpia muchas fotos a la vez con una política común, usa la extensión para compartir o empieza desde Atajos: la acción en segundo plano solo elimina metadatos.
+
+Privacidad en el dispositivo
+Sin cuenta, anuncios, rastreo, suscripciones ni servidor de fotos del desarrollador. En sistemas compatibles, un modelo opcional de selección de objetos puede descargarse de Apple con tu permiso. Importar desde la nube, guardar en una fototeca sincronizada y compartir con una app que elijas se rigen por la configuración de esos servicios. Los archivos temporales protegidos se eliminan como se describe en la política de privacidad. PicStrip es de código abierto, con procedencia de compilación verificable para las versiones publicadas.
+
+La detección automática puede omitir detalles, y censurar lo que encuentra no hace anónimo a nadie. Revisa siempre toda la foto o el video antes de compartir.

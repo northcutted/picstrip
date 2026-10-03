@@ -12,11 +12,15 @@ struct LiveCameraView: View {
 
     enum Outcome {
         case captured(Data)
+        /// A video recorded in Video mode, in PicStrip's protected temporary store.
+        case recorded(URL)
         case cancelled
         /// The capture session could not be set up; the caller falls back to the system camera.
         case unavailable
     }
 
+    /// Photo or Video, when this is the camera's Photo mode.
+    var mode: Binding<CameraView.Mode>?
     let onFinish: (Outcome) -> Void
 
     @State private var model = LiveCameraModel()
@@ -155,6 +159,7 @@ struct LiveCameraView: View {
                         summary: model.summary
                     )
                     if model.capabilities.zoomLevels.count > 1 { zoomPicker }
+                    if let mode, !model.isCapturing { CameraModePicker(mode: mode) }
                 }
             }
             .animation(reduceMotion ? nil : .snappy, value: model.summary)
@@ -526,7 +531,7 @@ private struct LiveDetectionLabel: View {
 // MARK: - FocusReticle
 
 /// The Camera app's yellow square where the user tapped to focus.
-private struct FocusReticle: View {
+struct FocusReticle: View {
     let reduceMotion: Bool
     @State private var isSettled = false
 
@@ -545,7 +550,7 @@ private struct FocusReticle: View {
 
 // MARK: - CameraPreview
 
-private struct CameraPreview: UIViewRepresentable {
+struct CameraPreview: UIViewRepresentable {
     let layer: AVCaptureVideoPreviewLayer
 
     func makeUIView(context: Context) -> PreviewHostView {

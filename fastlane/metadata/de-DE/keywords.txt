@@ -1,1 +1,1 @@
-Datenschutz,EXIF,Metadaten,GPS,schwärzen,Gesicht,PII,Risiko,Erkennung,anonym,sicher,OCR,Vision
+Video,Metadaten,entfernen,löschen,unkenntlich,schwärzen,zensieren,anonym,GPS,Standort,Screenshot
