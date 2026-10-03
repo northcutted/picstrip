@@ -86,7 +86,29 @@ struct ContentView: View {
 
     // MARK: - Body
 
+    // The body's modifiers come in three parts: as one chain they were too
+    // long for Xcode 26's type checker.
     var body: some View {
+        alertsAndObservers(importsAndCapture(mainContent))
+    }
+
+    /// The video on its way to the cleaner, wherever it came from.
+    private var openVideo: VideoSource? {
+        if let selectedVideoItem { return .picked(selectedVideoItem) }
+        if let recordedVideo { return .recorded(recordedVideo) }
+        if let importedVideo { return .imported(importedVideo) }
+        if let fixtureVideo { return .file(fixtureVideo) }
+        return nil
+    }
+
+    private func closeVideo() {
+        selectedVideoItem = nil
+        recordedVideo = nil
+        importedVideo = nil
+        fixtureVideo = nil
+    }
+
+    private var mainContent: some View {
         NavigationStack {
             ZStack {
                 // Gradient is only visible on the home screen.
@@ -212,24 +234,18 @@ struct ContentView: View {
             matching: .screenshots,
             photoLibrary: .shared()
         )
-        .sheet(isPresented: Binding(
-            get: { selectedVideoItem != nil || fixtureVideo != nil || recordedVideo != nil || importedVideo != nil },
-            set: { if !$0 { selectedVideoItem = nil; fixtureVideo = nil; recordedVideo = nil; importedVideo = nil } }
-        )) {
-            Group {
-                if let item = selectedVideoItem {
-                    VideoCleanerView(source: .picked(item))
-                } else if let recordedVideo {
-                    VideoCleanerView(source: .recorded(recordedVideo))
-                } else if let importedVideo {
-                    VideoCleanerView(source: .imported(importedVideo))
-                } else if let fixtureVideo {
-                    VideoCleanerView(source: .file(fixtureVideo))
-                }
+        .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } })) {
+            if let openVideo {
+                VideoCleanerView(source: openVideo)
+                    // On iPad, room for the preview, the faces and the notes together.
+                    .presentationSizing(.page)
             }
-            // On iPad, room for the preview, the faces and the notes together.
-            .presentationSizing(.page)
         }
+    }
+
+    /// Fixtures, the Files and drop importers, the library selection and the camera.
+    private func importsAndCapture<Content: View>(_ content: Content) -> some View {
+        content
         .onChange(of: intentRouter.isCameraRequested, initial: true) { _, requested in
             guard requested else { return }
             intentRouter.cameraPresented()
@@ -317,6 +333,11 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
         }
+    }
+
+    /// Permission and model alerts, pasteboard watching, load errors and feedback.
+    private func alertsAndObservers<Content: View>(_ content: Content) -> some View {
+        content
         .alert("Camera Access Needed", isPresented: $isShowingCameraDenied) {
             Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
