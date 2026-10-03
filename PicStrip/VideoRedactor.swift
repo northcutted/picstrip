@@ -159,6 +159,9 @@ nonisolated enum VideoScanner {
         var nextSample = -Double.infinity
         var latestRead = FrameRead()
         var lastGlimpse = ContinuousClock.now - .seconds(1)
+        // What has been read changes only when text is read: counted then.
+        var textCount = 0
+        var textKinds: [(type: PIIType, count: Int)] = []
         while let buffer = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(buffer) else { continue }
@@ -199,6 +202,11 @@ nonisolated enum VideoScanner {
                     let read = await PIIScanner.frameFindings(in: pixels, alwaysCover: alwaysCover)
                     findings.add(read.findings, at: time, path: scan.path)
                     latestRead = read
+                    let groups = FindingGroup.groups(of: findings.tracks)
+                    textCount = groups.count
+                    textKinds = Dictionary(grouping: groups, by: \.type)
+                        .map { (type: $0.key, count: $0.value.count) }
+                        .sorted { ($0.type.riskLevel, $0.count) > ($1.type.riskLevel, $1.count) }
                 }
 
                 if ContinuousClock.now - lastGlimpse >= .milliseconds(250), let image = registrationSize.image(of: small) {
@@ -215,13 +223,9 @@ nonisolated enum VideoScanner {
                 try Task.checkCancellation()
                 throw error
             }
-            let groups = FindingGroup.groups(of: findings.tracks)
-            let kinds = Dictionary(grouping: groups, by: \.type)
-                .map { (type: $0.key, count: $0.value.count) }
-                .sorted { ($0.type.riskLevel, $0.count) > ($1.type.riskLevel, $1.count) }
             progress(Progress(
                 fraction: min(1, time / duration), isCooling: false, glimpse: glimpse,
-                faceCount: faces.tracks.count, textCount: groups.count, textKinds: kinds
+                faceCount: faces.trackCount, textCount: textCount, textKinds: textKinds
             ))
         }
         if reader.status == .failed { throw reader.error ?? VideoCleaner.Failure.cannotExport }
