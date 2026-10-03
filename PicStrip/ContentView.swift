@@ -234,7 +234,7 @@ struct ContentView: View {
             matching: .screenshots,
             photoLibrary: .shared()
         )
-        .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } })) {
+        .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } }), onDismiss: openHandedOffVideo) {
             if let openVideo {
                 VideoCleanerView(source: openVideo)
                     // On iPad, room for the preview, the faces and the notes together.
@@ -251,6 +251,8 @@ struct ContentView: View {
             intentRouter.cameraPresented()
             if CameraCaptureView.isAvailable { openCamera { showCamera(.photo) } }
         }
+        // A video from the Share Extension's Edit; see `openHandedOffVideo`.
+        .onChange(of: intentRouter.requestedVideo, initial: true) { _, _ in openHandedOffVideo() }
         .onChange(of: viewModel.batchItems) { _, items in
             // A batch with videos in it is opened by `openLibrarySelection`.
             guard !items.isEmpty, viewModel.batchVideoItems.isEmpty else { return }
@@ -626,6 +628,15 @@ struct ContentView: View {
         } catch {
             viewModel.errorMessage = String(localized: "The selected video could not be opened.")
         }
+    }
+
+    /// A video handed over by the Share Extension, already in the protected
+    /// store, so it is opened like a video from Files.  If another video is
+    /// open, it waits until that sheet has gone (`onDismiss`).
+    private func openHandedOffVideo() {
+        guard openVideo == nil, let url = intentRouter.requestedVideo else { return }
+        intentRouter.videoPresented()
+        importedVideo = url
     }
 
     // MARK: - Breathing gradient

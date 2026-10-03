@@ -180,3 +180,92 @@ final class VideoMetadataCleanerTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Share Extension handoff
+
+/// "Edit in PicStrip" with a video: the extension copies the file into the App
+/// Group, and the app moves it into its own store instead of reading it.
+@MainActor
+final class VideoHandoffTests: XCTestCase {
+
+    private var folders: [URL] = []
+
+    override func tearDown() async throws {
+        folders.forEach { try? FileManager.default.removeItem(at: $0) }
+        folders = []
+        try await super.tearDown()
+    }
+
+    private func store(lifetime: TimeInterval = 900) -> PrivateFileStore {
+        let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        folders.append(folder)
+        return PrivateFileStore(directory: folder, lifetime: lifetime, maximumBytes: 64)
+    }
+
+    private func contents(of store: PrivateFileStore) -> [URL] {
+        (try? FileManager.default.contentsOfDirectory(at: store.directory, includingPropertiesForKeys: nil)) ?? []
+    }
+
+    func testAVideoIsMovedIntoTheAppsStoreNotRead() async throws {
+        let handoffs = store()
+        let exports = store(lifetime: 3_600)
+        let movie = try await makeMovieWithMetadata(in: FileManager.default.temporaryDirectory)
+        defer { try? FileManager.default.removeItem(at: movie) }
+
+        // Larger than the handoff byte limit, which applies to images read into memory.
+        let handedOff = try handoffs.copy(movie, extension: "mov")
+        XCTAssertGreaterThan(try XCTUnwrap(handedOff.resourceValues(forKeys: [.fileSizeKey]).fileSize), handoffs.maximumBytes)
+
+        guard case .video(let opened) = handoffs.consume(movingVideosTo: exports) else {
+            return XCTFail("Expected the video.")
+        }
+        XCTAssertEqual(opened.deletingLastPathComponent().standardizedFileURL, exports.directory.standardizedFileURL)
+        XCTAssertEqual(opened.pathExtension, "mov")
+        XCTAssertTrue(contents(of: handoffs).isEmpty, "Consumed: nothing is left in the App Group.")
+        let kinds = Set(try await VideoMetadataCleaner.findings(in: opened).map(\.kind))
+        XCTAssertTrue(kinds.contains(.location), "The original, for the cleaner to review.")
+        XCTAssertNil(handoffs.consume(movingVideosTo: exports))
+    }
+
+    func testImagesAndVideosAreConsumedOldestFirst() async throws {
+        let handoffs = store()
+        let exports = store(lifetime: 3_600)
+        let movie = try await makeMovieWithMetadata()
+        defer { try? FileManager.default.removeItem(at: movie) }
+        let now = Date()
+
+        _ = try handoffs.copy(movie, extension: "mp4", now: now.addingTimeInterval(-2))
+        _ = try handoffs.write(Data("image".utf8), extension: "data", now: now.addingTimeInterval(-1))
+
+        guard case .video(let video) = handoffs.consume(movingVideosTo: exports, now: now) else {
+            return XCTFail("The video was handed over first.")
+        }
+        XCTAssertEqual(video.pathExtension, "mp4")
+        XCTAssertEqual(handoffs.consume(movingVideosTo: exports, now: now), .image(Data("image".utf8)))
+        XCTAssertNil(handoffs.consume(movingVideosTo: exports, now: now))
+    }
+
+    func testAnExpiredVideoIsDeletedNotOpened() async throws {
+        let handoffs = store(lifetime: 10)
+        let exports = store(lifetime: 3_600)
+        let movie = try await makeMovieWithMetadata()
+        defer { try? FileManager.default.removeItem(at: movie) }
+        let now = Date()
+
+        _ = try handoffs.copy(movie, extension: "mov", now: now)
+
+        XCTAssertNil(handoffs.consume(movingVideosTo: exports, now: now.addingTimeInterval(11)))
+        XCTAssertTrue(contents(of: handoffs).isEmpty)
+        XCTAssertTrue(contents(of: exports).isEmpty)
+    }
+
+    func testTheRequestWaitsUntilTheViewOpensIt() throws {
+        let router = IntentRouter()
+        let url = URL(fileURLWithPath: "/tmp/PicStrip-handoff.mov")
+        XCTAssertNil(router.requestedVideo)
+        router.requestVideo(url)
+        XCTAssertEqual(router.requestedVideo, url, "Kept while another video is open.")
+        router.videoPresented()
+        XCTAssertNil(router.requestedVideo)
+    }
+}

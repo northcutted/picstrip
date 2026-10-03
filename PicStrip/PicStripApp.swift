@@ -59,8 +59,7 @@ struct PicStripApp: App {
                     while !Task.isCancelled {
                         try? await Task.sleep(for: .seconds(60))
                         guard !Task.isCancelled else { return }
-                        PrivateFileStore.exports.removeExpired()
-                        PrivateFileStore.handoffs?.removeExpired()
+                        await Self.removeExpiredFiles()
                     }
                 }
                 .onChange(of: viewModel.sourceUIImage == nil) { _, empty in
@@ -72,8 +71,8 @@ struct PicStripApp: App {
         }
         .onChange(of: scenePhase) { _, newPhase in
             // The Share Extension cannot open the app (extensions may not call
-            // `open`), so it leaves the image in the App Group and the app picks
-            // it up here, on every foreground transition.
+            // `open`), so it leaves the image or video in the App Group and the
+            // app picks it up here, on every foreground transition.
             guard newPhase == .active else { return }
             drainPendingEdit()
         }
@@ -96,19 +95,38 @@ struct PicStripApp: App {
 
     // MARK: - App group drain
 
-    /// Reads and clears any image left by the Share Extension in the app group
-    /// container, then loads it into the view model.
+    /// Takes the oldest image or video left by the Share Extension in the app
+    /// group container: an image is loaded into the editor, a video opened in
+    /// the video cleaner (`ContentView` waits if another video is open there).
     ///
-    /// Safe to call multiple times — the `fileExists` guard makes it idempotent.
+    /// Safe to call multiple times — `isDrainingHandoff` lets one run at a time.
     private func drainPendingEdit() {
         // Never replace an in-progress edit with another queued handoff.
         guard !isDrainingHandoff, viewModel.sourceUIImage == nil,
               !viewModel.isProcessing, !viewModel.showResizeOffer,
-              let data = PrivateFileStore.handoffs?.consume() else { return }
+              intentRouter.requestedVideo == nil else { return }
         isDrainingHandoff = true
         Task { @MainActor in
             defer { isDrainingHandoff = false }
-            await viewModel.loadData(data)
+            switch await Self.takePendingEdit() {
+            case .image(let data): await viewModel.loadData(data)
+            case .video(let url): intentRouter.requestVideo(url)
+            case nil: break
+            }
         }
+    }
+
+    /// The oldest pending handoff.  This lists the App Group folder and reads
+    /// the file on every activation, so it runs off the main actor.
+    @concurrent
+    nonisolated private static func takePendingEdit() async -> PrivateFileStore.PendingEdit? {
+        PrivateFileStore.handoffs?.consume()
+    }
+
+    /// The periodic sweep of expired exports and handoffs, off the main actor.
+    @concurrent
+    nonisolated private static func removeExpiredFiles() async {
+        PrivateFileStore.exports.removeExpired()
+        PrivateFileStore.handoffs?.removeExpired()
     }
 }

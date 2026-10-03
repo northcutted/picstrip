@@ -1,8 +1,10 @@
+import Foundation
 import Observation
 
 // MARK: - IntentRouter
 
-/// In-process hand-off from App Intents to the SwiftUI scene.
+/// In-process hand-off from App Intents — and from the drain of the Share
+/// Extension's App Group handoff in `PicStripApp` — to the SwiftUI scene.
 ///
 /// `StripImageIntent` runs in the foreground app process, so it can tell the UI
 /// what to do directly.  The previous design wrote a flag to the App Group's
@@ -52,5 +54,19 @@ final class IntentRouter {
 
     func screenshotPickerPresented() {
         isScreenshotPickerRequested = false
+    }
+
+    /// A video handed over by the Share Extension, already moved into the app's
+    /// protected store, waiting for the video cleaner — pending until no other
+    /// video is open there.
+    private(set) var requestedVideo: URL?
+
+    func requestVideo(_ url: URL) {
+        requestedVideo = url
+    }
+
+    /// Called by the view once it has opened the video.
+    func videoPresented() {
+        requestedVideo = nil
     }
 }

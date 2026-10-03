@@ -150,7 +150,7 @@ final class PrivacyExportTests: XCTestCase {
         let attributes = try FileManager.default.attributesOfItem(atPath: second.path)
         XCTAssertEqual(attributes[.protectionKey] as? FileProtectionType, .complete)
         #endif
-        XCTAssertEqual(store.consume(now: now.addingTimeInterval(2)), Data("first".utf8))
+        XCTAssertEqual(store.consume(now: now.addingTimeInterval(2)), .image(Data("first".utf8)))
         XCTAssertFalse(FileManager.default.fileExists(atPath: first.path))
         XCTAssertTrue(FileManager.default.fileExists(atPath: second.path))
         XCTAssertNil(store.consume(now: now.addingTimeInterval(12)))
