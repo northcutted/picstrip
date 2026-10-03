@@ -27,6 +27,8 @@ struct BatchSummaryView: View {
     }
 
     private var succeeded: Int { viewModel.batchSucceededCount }
+    /// Videos were in the batch: counts are of items, not photos.
+    private var hasVideos: Bool { viewModel.batchVideoCount > 0 }
     private var failed: Int { viewModel.batchFailedCount }
 
     private var outcomeSymbol: String {
@@ -57,17 +59,29 @@ struct BatchSummaryView: View {
                     Text("Batch Complete")
                         .font(.title2.weight(.bold))
                     if succeeded > 0 {
-                        Text("Successfully cleaned and saved ^[\(succeeded) photo](inflect: true).")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
+                        Group {
+                            if hasVideos {
+                                Text("Cleaned and saved: \(succeeded)")
+                            } else {
+                                Text("Successfully cleaned and saved ^[\(succeeded) photo](inflect: true).")
+                            }
+                        }
+                        .font(.body)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
                     }
                     if failed > 0 {
-                        Text("^[\(failed) photo](inflect: true) could not be cleaned. Nothing was saved for those photos.")
-                            .font(.body)
-                            .foregroundStyle(.red)
-                            .multilineTextAlignment(.center)
-                            .accessibilityIdentifier("batchFailureLabel")
+                        Group {
+                            if hasVideos {
+                                Text("Not cleaned: \(failed). Nothing was saved for those.")
+                            } else {
+                                Text("^[\(failed) photo](inflect: true) could not be cleaned. Nothing was saved for those photos.")
+                            }
+                        }
+                        .font(.body)
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                        .accessibilityIdentifier("batchFailureLabel")
                     }
                 }
 
@@ -126,10 +140,13 @@ struct BatchSummaryView: View {
         let photos     = succeeded
 
         return VStack(spacing: 12) {
-            Label(
-                "^[\(photos) photo](inflect: true) processed",
-                systemImage: "photo.stack"
-            )
+            Group {
+                if hasVideos {
+                    Label("Processed: \(photos)", systemImage: "photo.on.rectangle.angled")
+                } else {
+                    Label("^[\(photos) photo](inflect: true) processed", systemImage: "photo.stack")
+                }
+            }
             .font(.subheadline.weight(.medium))
             .foregroundStyle(.primary)
 

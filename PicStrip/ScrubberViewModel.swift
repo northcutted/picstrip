@@ -63,6 +63,21 @@ enum BatchSaveResult {
 /// Persists one cleaned photo. Injected so tests never touch the photo library.
 typealias BatchSaver = (_ data: Data, _ assetIdentifier: String?, _ mode: BatchSaveMode) async -> BatchSaveResult
 
+/// One video queued for a batch, abstracted from `PhotosPickerItem` like `BatchSource`.
+struct VideoBatchSource {
+    let assetIdentifier: String?
+    /// Copies the video into the protected store; `nil` when it cannot be read.
+    let load: @Sendable () async -> URL?
+}
+
+/// Persists one cleaned video. Injected so tests never touch the photo library.
+typealias VideoBatchSaver = (_ url: URL, _ assetIdentifier: String?, _ mode: BatchSaveMode) async -> BatchSaveResult
+
+/// Cleans one video of a batch (`VideoBatchCleaner.clean`); injected for tests.
+typealias VideoBatchCleaning = @Sendable (
+    _ url: URL, _ covering: Bool, _ alwaysCover: [String], _ progress: @escaping @Sendable (Double) -> Void
+) async throws -> VideoBatchCleaner.Result
+
 /// What `processBatchItem` hands back to the main actor for one photo.
 nonisolated private struct BatchItemOutput: Sendable {
     let data: Data
@@ -394,6 +409,12 @@ final class ScrubberViewModel {
     /// Items selected for batch processing via the multi-photo picker.
     var batchItems: [PhotosPickerItem] = []
 
+    /// Videos picked for the batch, cleaned after its photos.
+    var batchVideoItems: [PhotosPickerItem] = []
+
+    /// How far the video being cleaned has got, 0 … 1; `nil` while a photo is.
+    var batchVideoFraction: Double?
+
     /// Pages captured in-app (document scanner) queued for batch processing.
     /// They exist only in memory: there is no library original to replace, and
     /// dropping this array is what releases the un-redacted capture.
@@ -403,6 +424,9 @@ final class ScrubberViewModel {
     var batchCount: Int {
         scannedBatchSources.isEmpty ? batchItems.count : scannedBatchSources.count
     }
+
+    /// How many videos the batch sheet is about to process.
+    var batchVideoCount: Int { batchVideoItems.count }
 
     /// Captured pages were never in the photo library, so "Replace Original"
     /// has nothing to replace.
@@ -574,6 +598,10 @@ final class ScrubberViewModel {
     private var processingToken = UUID()
     private var reviewToken = UUID()
     private var batchCancellationRequested = false
+    /// Originals replace mode could not find, across the photos and videos of a batch.
+    private var batchOriginalsNotFound = 0
+    /// The video being cleaned, so Stop does not wait for the whole of it.
+    private var batchVideoTask: Task<VideoBatchCleaner.Result, Error>?
 
     // MARK: - Item change handler
 
@@ -1717,8 +1745,31 @@ final class ScrubberViewModel {
             return
         }
 
-        // Capture the list once; the batch must not be mutated during the loop.
-        await runBatch(sources: currentBatchSources(), config: config, save: Self.saveBatchItemToPhotos)
+        // Capture the lists once; the batch must not be mutated during the loop.
+        // Photos first — they are quick — then the videos.
+        let photos = currentBatchSources()
+        let videos = currentVideoBatchSources()
+        let total = photos.count + videos.count
+        if !photos.isEmpty {
+            await runBatch(sources: photos, config: config, save: Self.saveBatchItemToPhotos, total: total, finishes: videos.isEmpty)
+        }
+        // A batch stopped during its photos is already finished.
+        guard !videos.isEmpty, !batchComplete else { return }
+        await runVideoBatch(
+            sources: videos, config: config, offset: photos.count, total: total,
+            save: Self.saveBatchVideoToPhotos
+        ) { url, covering, terms, progress in
+            try await VideoBatchCleaner.clean(url, covering: covering, alwaysCover: terms, progress: progress)
+        }
+    }
+
+    /// The videos of the batch, each copied into the protected store when its turn comes.
+    func currentVideoBatchSources() -> [VideoBatchSource] {
+        batchVideoItems.map { item in
+            VideoBatchSource(assetIdentifier: item.itemIdentifier) {
+                try? await item.loadTransferable(type: IncomingVideo.self)?.url
+            }
+        }
     }
 
     /// The config a batch actually runs with.  Captured pages have no library
@@ -1748,19 +1799,28 @@ final class ScrubberViewModel {
     /// for succeeded.  If stripping or redaction fails, the photo is counted as
     /// failed and nothing is saved — silently saving the untouched original as a
     /// "cleaned" copy would defeat the purpose of the app.
-    func cancelBatch() { batchCancellationRequested = true }
+    func cancelBatch() {
+        batchCancellationRequested = true
+        batchVideoTask?.cancel()
+    }
 
-    func runBatch(sources: [BatchSource], config: BatchConfig, save: BatchSaver) async {
+    /// `total` counts the videos to come after these photos; `finishes` is
+    /// `false` when they follow, so the batch is not over yet.
+    func runBatch(
+        sources: [BatchSource], config: BatchConfig, save: BatchSaver,
+        total: Int? = nil, finishes: Bool = true
+    ) async {
+        let total = total ?? sources.count
         batchCancellationRequested = false
         isBatchProcessing = true
-        batchProgress     = (0, sources.count)
+        batchProgress     = (0, total)
         batchReports      = []
         batchFailedCount  = 0
         batchErrorMessage = nil
+        batchOriginalsNotFound = 0
 
         let preset = config.outputFormat.exportPreset
         let formatTitle = config.outputFormat.title
-        var originalsNotFound = 0
         // Always Cover applies to batches as well: the matches join each photo's findings.
         let terms = alwaysCoverList.terms
         let scanWithAlwaysCover: @Sendable (Data, ScanHints, ScanProgressHandler?) async throws -> ScanOutput = { [scan] data, hints, progress in
@@ -1772,7 +1832,7 @@ final class ScrubberViewModel {
 
         for (index, source) in sources.enumerated() {
             if batchCancellationRequested || Task.isCancelled { break }
-            batchProgress = (index + 1, sources.count)
+            batchProgress = (index + 1, total)
 
             // Load + scan + redact + strip all run off the main actor; only the
             // resulting bytes and report rows come back.
@@ -1795,7 +1855,7 @@ final class ScrubberViewModel {
                 batchFailedCount += 1
                 continue
             case .savedCopyOriginalMissing:
-                originalsNotFound += 1
+                batchOriginalsNotFound += 1
             case .saved:
                 break
             }
@@ -1810,14 +1870,81 @@ final class ScrubberViewModel {
             ))
         }
 
+        if finishes || batchCancellationRequested || Task.isCancelled { finishBatch() }
+    }
+
+    /// Cleans the batch's videos one at a time, after its photos (`offset`
+    /// of `total`), with no review: faces blurred and text covered when
+    /// "Redact Sensitive Visual Data" is on, and the hidden details always gone.
+    /// Fails closed like the photos: a video is saved only when it was cleaned.
+    func runVideoBatch(
+        sources: [VideoBatchSource], config: BatchConfig, offset: Int = 0, total: Int? = nil,
+        save: VideoBatchSaver, clean: @escaping VideoBatchCleaning
+    ) async {
+        let total = total ?? sources.count
+        if offset == 0 {
+            batchCancellationRequested = false
+            batchReports = []
+            batchFailedCount = 0
+            batchErrorMessage = nil
+            batchOriginalsNotFound = 0
+        }
+        isBatchProcessing = true
+        let terms = alwaysCoverList.terms
+        let covering = config.redactVisualPII
+
+        for (index, source) in sources.enumerated() {
+            if batchCancellationRequested || Task.isCancelled { break }
+            batchProgress = (offset + index + 1, total)
+            batchVideoFraction = 0
+
+            guard let url = await source.load() else {
+                batchFailedCount += 1
+                continue
+            }
+            let task = Task { [weak self] in
+                try await clean(url, covering, terms) { fraction in
+                    Task { @MainActor in self?.batchVideoFraction = fraction }
+                }
+            }
+            batchVideoTask = task
+            let cleaned = try? await task.value
+            batchVideoTask = nil
+            PrivateFileStore.exports.remove(url)
+            guard let cleaned else {
+                if !batchCancellationRequested { batchFailedCount += 1 }
+                continue
+            }
+            defer { PrivateFileStore.exports.remove(cleaned.url) }
+            if batchCancellationRequested || Task.isCancelled { break }
+
+            switch await save(cleaned.url, source.assetIdentifier, config.saveMode) {
+            case .failed:
+                batchFailedCount += 1
+                continue
+            case .savedCopyOriginalMissing:
+                batchOriginalsNotFound += 1
+            case .saved:
+                break
+            }
+            batchReports.append(cleaned.report)
+        }
+        batchVideoFraction = nil
+        finishBatch(hasVideos: true)
+    }
+
+    /// The batch is over: say how it went.
+    private func finishBatch(hasVideos: Bool = false) {
         if batchCancellationRequested || Task.isCancelled {
             batchErrorMessage = String(localized: "Batch stopped. Copies already saved remain in Photos.")
         } else if batchFailedCount > 0 {
-            batchErrorMessage = String(localized: "Some photos could not be cleaned and were not saved.")
-        } else if originalsNotFound > 0 {
+            batchErrorMessage = hasVideos
+                ? String(localized: "Some photos or videos could not be cleaned and were not saved.")
+                : String(localized: "Some photos could not be cleaned and were not saved.")
+        } else if batchOriginalsNotFound > 0 {
             batchErrorMessage = String(localized: "Some originals could not be identified, so cleaned copies were saved instead.")
         }
-
+        batchVideoFraction = nil
         isBatchProcessing = false
         batchComplete     = true
     }
@@ -1870,6 +1997,26 @@ final class ScrubberViewModel {
         }
     }
 
+    /// Writes one cleaned video to the library, deleting the original in replace mode.
+    private static func saveBatchVideoToPhotos(
+        url: URL,
+        assetIdentifier: String?,
+        mode: BatchSaveMode
+    ) async -> BatchSaveResult {
+        var original: PHAsset?
+        if mode == .replaceOriginal {
+            original = assetIdentifier.flatMap {
+                PHAsset.fetchAssets(withLocalIdentifiers: [$0], options: nil).firstObject
+            }
+        }
+        do {
+            try await PhotoLibraryWriter.saveVideo(at: url, deleting: original)
+            return mode == .replaceOriginal && original == nil ? .savedCopyOriginalMissing : .saved
+        } catch {
+            return .failed
+        }
+    }
+
     /// Wraps all per-photo `AuditReport`s in a `BatchAuditReport`, encodes it as
     /// pretty-printed JSON, writes it to a temp file, and returns the URL.
     func generateBatchAuditJSON() -> URL? {
@@ -1889,6 +2036,8 @@ final class ScrubberViewModel {
     /// Resets all batch-related state and dismisses the batch sheet.
     func clearBatchState() {
         batchItems        = []
+        batchVideoItems   = []
+        batchVideoFraction = nil
         scannedBatchSources = []
         isBatchProcessing = false
         batchProgress     = (0, 0)

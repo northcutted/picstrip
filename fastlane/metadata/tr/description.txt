@@ -1,19 +1,27 @@
-Fotoğrafları paylaşmadan önce özel bilgileri bulun ve örtün. Tarama, karartma ve meta veri kaldırma aygıtınızda gerçekleşir. Fotoğraflar başka bir uygulamaya veya hizmete yalnızca seçtiğiniz içe aktarma, kaydetme ve paylaşma işlemleriyle gider.
+O anı paylaşın, arkasındaki hikâyeyi değil. PicStrip bir fotoğrafın veya videonun ele verdiklerini bulur — yüzler, telefon numaraları, e-posta adresleri, kart numaraları, QR kodları, nerede çekildiği ve hangi cihazla çekildiği — ve paylaşmadan önce bunları örtmenize veya kaldırmanıza yardım eder. İşlemler iPhone’unuzda veya iPad’inizde yapılır.
 
-Bir örnek dene
-Kurgusal bir fotoğraf. Arşivinize erişim gerekmez.
+Hareket ettikçe karartılan videolar
+PicStrip’in kamerasıyla çekin, bir video ya da hepsini birden temizlemek için birçok video seçin. PicStrip yüzleri, metinleri, kodları ve Her zaman karart sözcüklerinizi bulur, kare kare takip eder ve karartır: Yüzleri güçlü bir bulanıklık, düz bir kutu veya seçtiğiniz bir emoji ile. Başka herhangi bir şeyin — bir kişinin, bir arabanın, bir ekranın, bir tabelanın — çevresine kutu çizin; ileri ve geri takip edilir. Video düzenleyici tarzı zaman çizelgesi, her karartmayı ve ses düzenlemesini kırpılabilir bir klip olarak gösterir; sesin bir bölümünü seçip bip ekleyin veya sessize alın. Önizleme kopyayı kaydedileceği gibi gösterir; kopya konum, cihaz ve tarih bilgisi olmadan çıkar.
 
-Düzenleyicide tespitleri inceleyin. Her sonuç, nelerin örtüleceğine karar vermeniz için eşleşme gücünü ve risk düzeyini gösterir. Paylaşmadan önce fotoğrafı inceleyin. Otomatik tespit ayrıntıları kaçırabilir. İsim önerileri Apple Intelligence gerektirir ve otomatik olarak örtülmez. İsteğe bağlı nesne seçimi modeli, onayınızdan sonra Apple’dan indirilebilir.
+Ödün vermeden kayıt
+Fotoğraf, video ve belgeler için tek bir kamera. Video modu, Kamera uygulaması gibi kaydeder: 4K veya HD, 24–120 fps, HDR, gelişmiş sabitleme, kıstırarak yakınlaştırmalı tüm objektifler, odak ve pozlama, el feneri ve kaydı başlatıp durdurmak için ses düğmeleri ya da Kamera Denetimi. Kayıtlar doğrudan temizlemeye gider, asla olduğu gibi arşivinize kaydedilmez.
 
-Karartmaları ayarlayın: Sürükleyin veya Konum ve boyut’u kullanın. Çizmeden ortalanmış bir alan ekleyin. Birden çok alanı değiştirmek için Seç’i kullanın. Bulanıklaştırma ve pikselleştirme ayrıntıları tanınabilir bırakabilir. Sırlar ve kimlik belirten metinler için düz, opak kaplama kullanın.
+Çekmeden önce görün
+Fotoğraf modunun canlı vizörü, karartacaklarını eşleşme gücüyle çerçeveler ve adlandırır; sonucu önizleyebilir. Çekimden sonra fotoğraf tam tarama ve incelemeden geçer.
 
-Konum, kamera bilgileri ve tarihler gibi gizli meta verileri inceleyin. Nelerin kaldırılacağını seçin ve temizlenmiş çıktıyı kontrol edin.
-PNG: Ekran görüntüleri ve metinler için kayıpsız kalite. Daha büyük dosyalar.
-JPEG: Günlük fotoğraflar için küçük dosyalar. Geniş uyumluluk.
-HEIC: Yüksek kaliteli, küçük fotoğraflar. Alıcının uyumluluğunu kontrol edin.
+Paylaşmadan önce inceleyin
+Yüzleri, barkodları, iletişim bilgilerini, finansal tanımlayıcıları ve yaygın geliştirici sırlarını tarayın. Eşleşme gücünü ve tarama durumunu inceleyip neleri karartacağınıza karar verin. İsim önerileri Apple Intelligence’a bağlıdır ve otomatik olarak karartılmaz.
 
-Temizlenmiş görüntüyü İnceleyin ve paylaşın ya da Fotoğraflar’a bir kopya kaydedin. Paylaşım uzantısı doğrudan temizleme veya düzenleme için korumalı aktarım da sunar. Düzenle, incelemek için ilk özgün görüntüyü açar. Korumalı yerel kopyanın süresi 15 dakika sonra dolar. Uzantıda büyük fotoğraflar için daha küçük kopyalar gerekir: karartma için en fazla 6 megapiksel, yalnızca meta veriler için 12 megapiksel. Tam inceleme için PicStrip’te düzenleyin.
+Kopyayı kendinize göre ayarlayın
+Bir kutu çizin veya iOS 27’de bir nesneye dokunun, sonra erişilebilir denetimlerle taşıyıp yeniden boyutlandırın. Düz, çapraz tarama, pikselleştirme, bulanıklaştırma veya emoji seçin; renk, yoğunluk ve geri al/yinele de var. Sırlar için düz kaplama önerilir: Bulanıklaştırma ve pikselleştirme ayrıntıları tanınabilir bırakabilir. İsterseniz kart veya telefon numarasının son hanelerini görünür bırakın ve paylaşmadan önce orijinaliyle karşılaştırın. Her zaman karart’a adınız, bir plaka veya sokağınız gibi sözcükler ekleyin; PicStrip bunları okuduğu her yerde karartır.
 
-Arka plandaki Kestirmeler eylemi yalnızca meta verileri kaldırır. Görünür içeriği inceleyip karartmak için PicStrip’i açın.
+Gizli ayrıntıları kaldırın
+Konum, kamera, tarih, açıklama ve cihaz meta verilerini inceleyin. Nelerin kaldırılacağını seçin ve çıktıyı kontrol edin. Dosya boyutunu görerek PNG, JPEG, HEIC veya desteklenen kaynak biçiminde dışa aktarın. Paylaşım ön ayarları; fotoğraflar, ekran görüntüleri ve belgeler için biçim seçmeye yardım eder. Hiçbir yeri karartılmamış Live Photo’ların hareketini koruyun.
 
-Bu rapor alan adlarını ve sayılarını içerir; özgün meta veri değerlerini veya tespit edilen metni asla içermez.
+Başlamanın başka yolları
+Yerleşik kurgusal örneği deneyin. Bir veya birden çok fotoğraf ve video ya da yalnızca ekran görüntülerinizi seçin, belge tarayın, Dosyalar’a göz atın, yapıştırın veya sürükleyip bırakın. Ortak bir politikayla birçok fotoğraf ve videoyu aynı anda temizleyin, paylaşım uzantısını kullanın ya da Kestirmeler’den başlayın — arka plan eylemi yalnızca meta verileri kaldırır.
+
+Cihazda gizlilik
+Hesap, reklam, izleme, abonelik veya geliştiricinin fotoğraf sunucusu yok. Desteklenen sistemlerde isteğe bağlı bir nesne seçimi modeli, onayınızla Apple’dan indirilebilir. Bulut hizmetlerinden içe aktarma, eşzamanlanan bir arşive kaydetme ve seçtiğiniz uygulamayla paylaşma, o hizmetlerin ayarlarına tabidir. Korumalı geçici dosyalar, gizlilik politikasında açıklandığı gibi temizlenir. PicStrip açık kaynaklıdır ve yayımlanan sürümler için doğrulanabilir derleme kökeni sunar.
+
+Otomatik algılama ayrıntıları kaçırabilir ve bulduklarını karartmak kimseyi anonim yapmaz. Paylaşmadan önce her zaman fotoğrafın veya videonun tamamını inceleyin.

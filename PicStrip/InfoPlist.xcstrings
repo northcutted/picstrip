@@ -8,103 +8,211 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "يستخدم PicStrip الكاميرا لالتقاط المستندات والصور التي تريد تنظيفها. تتم معالجة اللقطات على جهازك."
+            "value" : "يستخدم PicStrip الكاميرا لالتقاط المستندات والصور ومقاطع الفيديو التي تريد تنظيفها. تتم معالجة اللقطات على جهازك."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip verwendet die Kamera, um Dokumente und Fotos aufzunehmen, die du bereinigen möchtest. Die Aufnahmen werden auf deinem Gerät verarbeitet."
+            "value" : "PicStrip verwendet die Kamera, um Dokumente, Fotos und Videos aufzunehmen, die du bereinigen möchtest. Die Aufnahmen werden auf deinem Gerät verarbeitet."
           }
         },
         "en" : {
           "stringUnit" : {
             "state" : "new",
-            "value" : "PicStrip uses the camera to capture documents and photos you want to clean. Captures are processed on your device."
+            "value" : "PicStrip uses the camera to capture documents, photos and videos you want to clean. Captures are processed on your device."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip usa la cámara para capturar documentos y fotos que quieres limpiar. Las capturas se procesan en tu dispositivo."
+            "value" : "PicStrip usa la cámara para capturar documentos, fotos y vídeos que quieres limpiar. Las capturas se procesan en tu dispositivo."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip usa la cámara para capturar documentos y fotos que quieres limpiar. Las capturas se procesan en tu dispositivo."
+            "value" : "PicStrip usa la cámara para capturar documentos, fotos y videos que quieres limpiar. Las capturas se procesan en tu dispositivo."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip utilise l’appareil photo pour capturer les documents et les photos que vous souhaitez nettoyer. Les captures sont traitées sur votre appareil."
+            "value" : "PicStrip utilise l’appareil photo pour capturer les documents, les photos et les vidéos que vous souhaitez nettoyer. Les captures sont traitées sur votre appareil."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip usa la fotocamera per acquisire documenti e foto che vuoi pulire. Le acquisizioni vengono elaborate sul tuo dispositivo."
+            "value" : "PicStrip usa la fotocamera per acquisire documenti, foto e video che vuoi pulire. Le acquisizioni vengono elaborate sul tuo dispositivo."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStripは、クリーンアップしたい書類や写真を取り込むためにカメラを使用します。取り込んだデータはお使いのデバイス上で処理されます。"
+            "value" : "PicStripは、クリーンアップしたい書類、写真、ビデオを取り込むためにカメラを使用します。取り込んだデータはお使いのデバイス上で処理されます。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip은 정리하려는 도큐멘트와 사진을 촬영하기 위해 카메라를 사용합니다. 촬영한 항목은 기기에서 처리됩니다."
+            "value" : "PicStrip은 정리하려는 도큐멘트, 사진 및 비디오를 촬영하기 위해 카메라를 사용합니다. 촬영한 항목은 기기에서 처리됩니다."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip gebruikt de camera om documenten en foto’s vast te leggen die je wilt opschonen. De opnamen worden op je apparaat verwerkt."
+            "value" : "PicStrip gebruikt de camera om documenten, foto’s en video’s vast te leggen die je wilt opschonen. De opnamen worden op je apparaat verwerkt."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip używa aparatu do rejestrowania dokumentów i zdjęć, które chcesz wyczyścić. Przechwycone obrazy są przetwarzane na Twoim urządzeniu."
+            "value" : "PicStrip używa aparatu do rejestrowania dokumentów, zdjęć i wideo, które chcesz wyczyścić. Przechwycone obrazy są przetwarzane na Twoim urządzeniu."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip usa a câmera para capturar documentos e fotos que você quer limpar. As capturas são processadas no seu dispositivo."
+            "value" : "O PicStrip usa a câmera para capturar documentos, fotos e vídeos que você quer limpar. As capturas são processadas no seu dispositivo."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "O PicStrip usa a câmara para capturar documentos e fotografias que pretende limpar. As capturas são processadas no seu dispositivo."
+            "value" : "O PicStrip usa a câmara para capturar documentos, fotografias e vídeos que pretende limpar. As capturas são processadas no seu dispositivo."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip använder kameran för att fånga dokument och bilder som du vill rensa. Det du fångar behandlas på din enhet."
+            "value" : "PicStrip använder kameran för att fånga dokument, bilder och videor som du vill rensa. Det du fångar behandlas på din enhet."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip, temizlemek istediğiniz belgeleri ve fotoğrafları yakalamak için kamerayı kullanır. Yakalananlar cihazınızda işlenir."
+            "value" : "PicStrip, temizlemek istediğiniz belgeleri, fotoğrafları ve videoları yakalamak için kamerayı kullanır. Yakalananlar cihazınızda işlenir."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 使用相机拍摄你想清理的文稿和照片。拍摄的内容在你的设备上处理。"
+            "value" : "PicStrip 使用相机拍摄你想清理的文稿、照片和视频。拍摄的内容在你的设备上处理。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "PicStrip 使用相機拍攝你想清理的文件和照片。拍攝的內容會在你的裝置上處理。"
+            "value" : "PicStrip 使用相機拍攝你想清理的文件、照片和影片。拍攝的內容會在你的裝置上處理。"
+          }
+        }
+      }
+    },
+    "NSMicrophoneUsageDescription" : {
+      "comment" : "Privacy - Microphone Usage Description",
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يسجّل PicStrip الصوت مع مقاطع الفيديو التي تصوّرها في التطبيق. تبقى التسجيلات على جهازك إلى أن تحفظ نسخة منظَّفة أو تشاركها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nimmt Ton zu den Videos auf, die du in der App aufnimmst. Aufnahmen bleiben auf deinem Gerät, bis du eine bereinigte Kopie sicherst oder teilst."
+          }
+        },
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PicStrip records sound with the videos you take in the app. Recordings stay on your device until you save or share a cleaned copy."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip incluye el sonido en los vídeos que grabas en la app. Las grabaciones se quedan en tu dispositivo hasta que guardas o compartes una copia limpia."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip incluye el sonido en los videos que grabas en la app. Las grabaciones se quedan en tu dispositivo hasta que guardas o compartes una copia limpia."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip capte le son des vidéos que vous filmez dans l’app. Les vidéos restent sur votre appareil jusqu’à ce que vous enregistriez ou partagiez une copie nettoyée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip registra l’audio dei video che riprendi nell’app. Le registrazioni restano sul tuo dispositivo finché non salvi o condividi una copia pulita."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは、アプリ内で撮影するビデオと一緒に音声を録音します。録画した内容は、クリーンアップしたコピーを保存または共有するまで、お使いのデバイス上にとどまります。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip은 앱에서 촬영하는 비디오와 함께 소리를 녹음합니다. 녹화한 내용은 정리된 사본을 저장하거나 공유할 때까지 기기에 보관됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip neemt geluid op bij de video’s die je in de app maakt. Opnamen blijven op je apparaat totdat je een opgeschoonde kopie bewaart of deelt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip rejestruje dźwięk do nagrań wideo, które tworzysz w aplikacji. Nagrania pozostają na Twoim urządzeniu, dopóki nie zachowasz lub nie udostępnisz wyczyszczonej kopii."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip grava o som dos vídeos que você faz no app. As gravações ficam no seu dispositivo até você salvar ou compartilhar uma cópia limpa."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip grava o som dos vídeos que faz na app. As gravações ficam no seu dispositivo até guardar ou partilhar uma cópia limpa."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip spelar in ljud till videorna du filmar i appen. Inspelningarna stannar på din enhet tills du sparar eller delar en rensad kopia."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip, uygulamada çektiğiniz videoların sesini kaydeder. Kayıtlar, temizlenmiş bir kopyayı kaydedene veya paylaşana kadar cihazınızda kalır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 会在你于应用内拍摄视频时一并录制声音。录制的内容会保留在你的设备上，直到你存储或共享清理后的副本。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 會在你於 App 中拍攝影片時一併錄製聲音。錄製的內容會保留在你的裝置上，直到你儲存或分享清理後的副本。"
           }
         }
       }

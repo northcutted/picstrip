@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Revisar e compartilhar
+O PicStrip 1.7 é uma grande atualização: agora ele limpa vídeos, e a câmera mostra o que seria ocultado antes de você fotografar.
 
-• Experimentar um exemplo. Uma foto fictícia. Não precisa acessar sua fototeca.
-• Inspecionar imagem completa. Revelar original.
-• Compartilhar imagem limpa. Predefinição de compartilhamento. Tamanho atual do arquivo.
-• Adicionar área centralizada. Posição e tamanho.
-• Algumas verificações não foram concluídas. Força da correspondência.
-• Salvamento em Fotos mais confiável, melhor cobertura de blocos de chaves privadas e arquivos temporários protegidos.
-• A ação do Atalhos em segundo plano remove apenas metadados. Abra o PicStrip para revisar e ocultar conteúdo visível.
+• Vídeos: rostos, textos, códigos e suas palavras de Sempre ocultar são encontrados, acompanhados enquanto se movem e ocultados — com desfoque, uma caixa sólida ou um emoji para cada rosto.
+• Oculte qualquer objeto em um vídeo desenhando em volta dele; o PicStrip o acompanha para frente e para trás.
+• Ajuste cada ocultação em uma linha do tempo de editor de vídeo e coloque bipe ou silencie o que foi dito.
+• Uma câmera para fotos, vídeos e documentos. Grave em até 4K com HDR usando os controles que você já conhece do app Câmera; no modo Foto, um visor ao vivo contorna o que seria ocultado.
+• Escolha fotos e vídeos juntos: um item abre o editor, vários são limpos de uma vez.
+• Oculte com um emoji, toque em um objeto para ocultá-lo no iOS 27 e deixe visíveis os últimos dígitos de um cartão ou telefone.
+• Sempre ocultar: seu nome, uma placa ou sua rua, ocultados onde quer que o PicStrip os leia.
+• Escaneie documentos, escolha apenas suas capturas de tela, mantenha o movimento de uma Live Photo e compare o antes e o depois.
+• Predefinições de compartilhamento, tamanho do arquivo visível e um resumo do que foi removido.
 
-Revise a foto antes de compartilhar. A detecção automática pode deixar passar detalhes.
+A detecção automática pode deixar passar detalhes. Revise a foto ou o vídeo inteiro antes de compartilhar.

@@ -20,6 +20,12 @@ struct ContentView: View {
     @State private var selectedVideoItem: PhotosPickerItem?
     /// A video file opened directly by the UI tests (`PICSTRIP_VIDEO_FIXTURE`).
     @State private var fixtureVideo: URL?
+    /// A video just recorded with PicStrip's camera, on its way to the cleaner.
+    @State private var recordedVideo: URL?
+    /// A video chosen in Files, copied into the protected store.
+    @State private var importedVideo: URL?
+    /// What was just picked from the library: routed to the right flow by `openLibrarySelection`.
+    @State private var libraryItems: [PhotosPickerItem] = []
 
     /// Bumped by `haptic(_:)`; each change plays one impact.
     @State private var lightImpacts = 0
@@ -34,13 +40,9 @@ struct ContentView: View {
     /// Whether the pasteboard holds an image; shows or hides the Paste button.
     @State private var pasteboard = PasteboardMonitor()
 
-    /// Drives the document camera.
-    @State private var isShowingScanner = false
-    /// What the document camera returned; acted on once its cover has gone,
-    /// because presenting the batch sheet mid-dismissal can drop the sheet.
-    @State private var scanOutcome: DocumentScannerView.Outcome?
     /// Drives the live-preview camera; handled like the document camera above.
-    @State private var isShowingLiveCamera = false
+    /// The camera, and the mode it opens in: Take Photo or Record Video.
+    @State private var cameraRequest: CameraRequest?
     @State private var liveCameraOutcome: LiveCameraView.Outcome?
     /// The system camera, used when the live-preview camera cannot be set up.
     @State private var isShowingCamera = false
@@ -84,7 +86,29 @@ struct ContentView: View {
 
     // MARK: - Body
 
+    // The body's modifiers come in three parts: as one chain they were too
+    // long for Xcode 26's type checker.
     var body: some View {
+        alertsAndObservers(importsAndCapture(mainContent))
+    }
+
+    /// The video on its way to the cleaner, wherever it came from.
+    private var openVideo: VideoSource? {
+        if let selectedVideoItem { return .picked(selectedVideoItem) }
+        if let recordedVideo { return .recorded(recordedVideo) }
+        if let importedVideo { return .imported(importedVideo) }
+        if let fixtureVideo { return .file(fixtureVideo) }
+        return nil
+    }
+
+    private func closeVideo() {
+        selectedVideoItem = nil
+        recordedVideo = nil
+        importedVideo = nil
+        fixtureVideo = nil
+    }
+
+    private var mainContent: some View {
         NavigationStack {
             ZStack {
                 // Gradient is only visible on the home screen.
@@ -189,11 +213,14 @@ struct ContentView: View {
             isShowingIntentBatchPicker = true
         }
         // ── Programmatic PhotosPicker for intent ──────────────────────────
+        // The library button's picker: whatever is picked is routed the same way.
         .photosPicker(
             isPresented: $isShowingIntentBatchPicker,
-            selection: $viewModel.batchItems,
+            selection: $libraryItems,
             maxSelectionCount: 0,
-            matching: .images,
+            selectionBehavior: .ordered,
+            matching: .any(of: [.images, .videos]),
+            preferredItemEncoding: .current,
             photoLibrary: .shared()
         )
         .onChange(of: intentRouter.isScreenshotPickerRequested, initial: true) { _, requested in
@@ -207,27 +234,26 @@ struct ContentView: View {
             matching: .screenshots,
             photoLibrary: .shared()
         )
-        .sheet(isPresented: Binding(
-            get: { selectedVideoItem != nil || fixtureVideo != nil },
-            set: { if !$0 { selectedVideoItem = nil; fixtureVideo = nil } }
-        )) {
-            Group {
-                if let item = selectedVideoItem {
-                    VideoCleanerView(source: .picked(item))
-                } else if let fixtureVideo {
-                    VideoCleanerView(source: .file(fixtureVideo))
-                }
+        .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } })) {
+            if let openVideo {
+                VideoCleanerView(source: openVideo)
+                    // On iPad, room for the preview, the faces and the notes together.
+                    .presentationSizing(.page)
             }
-            // On iPad, room for the preview, the faces and the notes together.
-            .presentationSizing(.page)
         }
+    }
+
+    /// Fixtures, the Files and drop importers, the library selection and the camera.
+    private func importsAndCapture<Content: View>(_ content: Content) -> some View {
+        content
         .onChange(of: intentRouter.isCameraRequested, initial: true) { _, requested in
             guard requested else { return }
             intentRouter.cameraPresented()
-            if CameraCaptureView.isAvailable { openCamera { isShowingLiveCamera = true } }
+            if CameraCaptureView.isAvailable { openCamera { showCamera(.photo) } }
         }
         .onChange(of: viewModel.batchItems) { _, items in
-            guard !items.isEmpty else { return }
+            // A batch with videos in it is opened by `openLibrarySelection`.
+            guard !items.isEmpty, viewModel.batchVideoItems.isEmpty else { return }
             if items.count == 1 {
                 viewModel.selectedItem = items[0]
                 viewModel.batchItems   = []
@@ -248,7 +274,9 @@ struct ContentView: View {
         // PICSTRIP_LIVE_CAMERA_FIXTURE opens the viewfinder on a still image,
         // which is the only way to run it on the simulator.
         .task {
-            if LiveCameraFixture.isConfigured { isShowingLiveCamera = true }
+            if LiveCameraFixture.isConfigured { showCamera(.photo) }
+            // PICSTRIP_VIDEO_CAMERA_FIXTURE: the camera in Video mode, recording a movie file.
+            if VideoCameraFixture.isConfigured { showCamera(.video) }
         }
         // PICSTRIP_VIDEO_FIXTURE opens the video screen on a file, without the picker.
         .task {
@@ -265,10 +293,14 @@ struct ContentView: View {
         // ── Files app picker ──────────────────────────────────────────────
         .fileImporter(
             isPresented: $isShowingFilePicker,
-            allowedContentTypes: [.image],
+            allowedContentTypes: [.image, .movie],
             allowsMultipleSelection: false
         ) { result in
             guard case .success(let urls) = result, let url = urls.first else { return }
+            if UTType(filenameExtension: url.pathExtension)?.conforms(to: .movie) == true {
+                openVideoFile(url)
+                return
+            }
             Task {
                 guard let data = await IncomingImage.read(securityScoped: url) else {
                     viewModel.errorMessage = String(localized: "The selected item could not be loaded as image data.")
@@ -286,18 +318,12 @@ struct ContentView: View {
             load(images)
         }
         .photosPickerKeepsMetadata()
-        // ── Document camera ───────────────────────────────────────────────
-        .fullScreenCover(isPresented: $isShowingScanner, onDismiss: handleScanOutcome) {
-            DocumentScannerView { outcome in
-                scanOutcome = outcome
-                isShowingScanner = false
-            }
-            .ignoresSafeArea()
-        }
-        .fullScreenCover(isPresented: $isShowingLiveCamera, onDismiss: handleLiveCameraOutcome) {
-            LiveCameraView { outcome in
+        // ── Camera: photo, video and document ─────────────────────────────
+        .onChange(of: libraryItems) { _, items in openLibrarySelection(items) }
+        .fullScreenCover(item: $cameraRequest, onDismiss: handleLiveCameraOutcome) { request in
+            CameraView(mode: request.mode) { outcome in
                 liveCameraOutcome = outcome
-                isShowingLiveCamera = false
+                cameraRequest = nil
             }
         }
         .fullScreenCover(isPresented: $isShowingCamera, onDismiss: handleCameraOutcome) {
@@ -307,6 +333,11 @@ struct ContentView: View {
             }
             .ignoresSafeArea()
         }
+    }
+
+    /// Permission and model alerts, pasteboard watching, load errors and feedback.
+    private func alertsAndObservers<Content: View>(_ content: Content) -> some View {
+        content
         .alert("Camera Access Needed", isPresented: $isShowingCameraDenied) {
             Button("Open Settings") {
                 if let url = URL(string: UIApplication.openSettingsURLString) {
@@ -406,7 +437,7 @@ struct ContentView: View {
                     VStack(spacing: 8) {
                         Text("PicStrip")
                             .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                        Text("Share the photo. Not the story behind it.")
+                        Text("Share the moment. Not the story behind it.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
@@ -415,10 +446,7 @@ struct ContentView: View {
                         .frame(height: 150)
                         .accessibilityHidden(true)
                     VStack(spacing: 20) {
-                        importButton(primaryImportAction, isRow: true)
-                            .buttonStyle(.glassProminent)
-                            .buttonBorderShape(.capsule)
-
+                        primaryActions
                         importGrid
                     }
                     VStack(spacing: 2) {
@@ -454,12 +482,30 @@ struct ContentView: View {
         }
     }
 
+    /// The camera leads — photo, video and document in one — or, without a
+    /// camera, the library.
+    private var primaryActions: some View {
+        VStack(spacing: 6) {
+            ForEach(primaryImportActions, id: \.self) { action in
+                importButton(action, isRow: true)
+                    .buttonStyle(.glassProminent)
+                    .buttonBorderShape(.capsule)
+            }
+            if primaryImportActions.contains(.camera) {
+                Text(DocumentScannerView.isAvailable ? "Photo · Video · Document" : "Photo · Video")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .accessibilityHidden(true)
+            }
+        }
+    }
+
     /// Every other way in, at once: two tiles to a row, or one full-width row
     /// each at accessibility text sizes, where a tile would be too narrow.
     private var importGrid: some View {
         let isCompact = dynamicTypeSize.isAccessibilitySize
         let columns = isCompact ? 1 : 2
-        let actions = importActions.filter { $0 != primaryImportAction }
+        let actions = importActions.filter { !primaryImportActions.contains($0) }
         return Grid(horizontalSpacing: 10, verticalSpacing: 10) {
             ForEach(Array(stride(from: 0, to: actions.count, by: columns)), id: \.self) { start in
                 let row = actions[start..<min(start + columns, actions.count)]
@@ -481,23 +527,19 @@ struct ContentView: View {
     }
 
     private enum ImportAction: Hashable {
-        case camera, photo, screenshot, documentScanner, video, multiplePhotos, files
+        case camera, library, files
     }
 
-    /// The camera actions only where there is a camera to use.
+    /// The camera (where there is one), the photo library, and Files.  What is
+    /// picked decides the flow: see `openLibrarySelection`.
     private var importActions: [ImportAction] {
-        var actions: [ImportAction] = []
-        if CameraCaptureView.isAvailable { actions.append(.camera) }
-        actions += [.photo, .screenshot]
-        if DocumentScannerView.isAvailable { actions.append(.documentScanner) }
-        actions += [.video, .multiplePhotos, .files]
-        return actions
+        (CameraCaptureView.isAvailable ? [.camera] : []) + [.library, .files]
     }
 
-    /// Taking a photo leads, so it goes straight through the live viewfinder;
-    /// without a camera, choosing one from the library does.
-    private var primaryImportAction: ImportAction {
-        CameraCaptureView.isAvailable ? .camera : .photo
+    /// Capturing leads, so it goes straight through PicStrip's camera; without
+    /// a camera, the library does.
+    private var primaryImportActions: [ImportAction] {
+        CameraCaptureView.isAvailable ? [.camera] : [.library]
     }
 
     /// The button for `action`, unstyled: the caller makes it the prominent
@@ -508,53 +550,31 @@ struct ContentView: View {
         case .camera:
             Button {
                 haptic(.light)
-                openCamera { isShowingLiveCamera = true }
+                openCamera { showCamera(.photo) }
             } label: {
-                ImportTileLabel(icon: "camera", text: "Take Photo", isRow: isRow)
+                ImportTileLabel(icon: "camera", text: "Camera", isRow: isRow)
             }
-            .accessibilityIdentifier("takePhotoButton")
-            .accessibilityLabel("Take a photo with the camera")
-        case .photo:
-            PhotosPicker(selection: $viewModel.selectedItem, matching: .images, photoLibrary: .shared()) {
-                ImportTileLabel(icon: "photo.badge.plus", text: "Select a Photo", isRow: isRow)
-            }
-            .accessibilityIdentifier("selectPhotoButton")
-            .accessibilityLabel("Select a photo from your library")
-        case .screenshot:
-            // The picker, filtered to screenshots and newest first — no library access needed.
-            PhotosPicker(selection: $viewModel.selectedItem, matching: .screenshots, photoLibrary: .shared()) {
-                ImportTileLabel(icon: "camera.viewfinder", text: "Screenshots", isRow: isRow)
-            }
-            .accessibilityIdentifier("selectScreenshotButton")
-            .accessibilityLabel("Select a screenshot")
-        case .video:
-            // `.current`: the video as it is stored.  The default may convert it
-            // (HEVC to H.264) before handing it over, which is most of the wait
-            // when opening a long video; PicStrip reads HEVC itself.
-            PhotosPicker(selection: $selectedVideoItem, matching: .videos, preferredItemEncoding: .current, photoLibrary: .shared()) {
-                ImportTileLabel(icon: "video", text: "Videos", isRow: isRow)
-            }
-            .accessibilityIdentifier("selectVideoButton")
-            .accessibilityLabel("Select a video to clean")
-        case .documentScanner:
-            Button {
-                haptic(.light)
-                openCamera { isShowingScanner = true }
-            } label: {
-                ImportTileLabel(icon: "doc.viewfinder", text: "Scan Document", isRow: isRow)
-            }
-            .accessibilityIdentifier("scanDocumentButton")
-            .accessibilityLabel("Scan a document with the camera")
-        case .multiplePhotos:
+            .accessibilityIdentifier("cameraButton")
+            .accessibilityLabel(DocumentScannerView.isAvailable
+                ? "Camera: take a photo, record a video or scan a document"
+                : "Camera: take a photo or record a video")
+        case .library:
+            // Photos and videos, one or many — Screenshots is one of the
+            // picker's own collections.  `.current`: videos as they are stored;
+            // the default may convert HEVC to H.264 first, most of the wait when
+            // opening a long one.
             PhotosPicker(
-                selection: $viewModel.batchItems,
+                selection: $libraryItems,
                 maxSelectionCount: 0,
-                matching: .images,
+                selectionBehavior: .ordered,
+                matching: .any(of: [.images, .videos]),
+                preferredItemEncoding: .current,
                 photoLibrary: .shared()
             ) {
-                ImportTileLabel(icon: "photo.stack", text: "Select Multiple Photos", isRow: isRow)
+                ImportTileLabel(icon: "photo.on.rectangle.angled", text: "Photos & Videos", isRow: isRow)
             }
-            .accessibilityIdentifier("selectMultiplePhotosButton")
+            .accessibilityIdentifier("libraryButton")
+            .accessibilityLabel("Choose photos or videos from your library")
             .simultaneousGesture(TapGesture().onEnded { haptic(.light) })
         case .files:
             Button {
@@ -564,7 +584,47 @@ struct ContentView: View {
                 ImportTileLabel(icon: "folder", text: "Browse Files", isRow: isRow)
             }
             .accessibilityIdentifier("browseFilesButton")
-            .accessibilityLabel("Browse files to select an image")
+            .accessibilityLabel("Browse files for an image or a video")
+        }
+    }
+
+    /// What was picked in the library, to its flow: one photo to the editor,
+    /// one video to the video cleaner, several photos to the batch, and
+    /// several videos — or photos and videos together — to one batch for all.
+    private func openLibrarySelection(_ items: [PhotosPickerItem]) {
+        guard !items.isEmpty else { return }
+        defer { libraryItems = [] }
+        let selection = LibrarySelection(items.map { (item: $0, isVideo: Self.isVideo($0)) })
+        switch selection.route {
+        case .photo(let item):
+            viewModel.selectedItem = item
+        case .video(let item):
+            selectedVideoItem = item
+        case .photoBatch(let photos):
+            viewModel.batchVideoItems = []
+            viewModel.batchItems = photos
+        case .mixedBatch(let photos, let videos):
+            viewModel.batchVideoItems = videos
+            viewModel.batchItems = photos
+            viewModel.activeSheet = .batch
+        }
+    }
+
+    /// A movie, not a photo — a Live Photo carries a movie too, but is a photo.
+    private static func isVideo(_ item: PhotosPickerItem) -> Bool {
+        let types = item.supportedContentTypes
+        return types.contains { $0.conforms(to: .movie) }
+            && !types.contains { $0.conforms(to: .image) || $0 == .livePhoto }
+    }
+
+    /// A video chosen in Files, copied into the protected store while access lasts.
+    private func openVideoFile(_ url: URL) {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+        do {
+            importedVideo = try PrivateFileStore.exports.copy(url, extension: url.pathExtension.isEmpty ? "mov" : url.pathExtension)
+        } catch {
+            viewModel.errorMessage = String(localized: "The selected video could not be opened.")
         }
     }
 
@@ -586,10 +646,10 @@ struct ContentView: View {
 
     private enum HapticWeight { case light, medium }
 
-    // MARK: - Document camera
+    // MARK: - Camera
 
     /// Runs `present` once the camera may be used, asking for or explaining the
-    /// permission first.  Shared by the photo camera and the document camera.
+    /// permission first.
     private func openCamera(_ present: @escaping () -> Void) {
         switch DocumentScanFlow.step(for: AVCaptureDevice.authorizationStatus(for: .video)) {
         case .present:
@@ -607,12 +667,27 @@ struct ContentView: View {
         }
     }
 
+    private struct CameraRequest: Identifiable {
+        let mode: CameraView.Mode
+        let id = UUID()
+    }
+
+    private func showCamera(_ mode: CameraView.Mode) {
+        cameraRequest = CameraRequest(mode: mode)
+    }
+
     private func handleLiveCameraOutcome() {
         defer { liveCameraOutcome = nil }
         switch liveCameraOutcome {
         case .captured(let data):
             // The camera's own bytes: metadata intact, exactly like a library photo.
             Task { await viewModel.loadCaptured(CapturedPages(count: 1) { _ in data }) }
+        case .recorded(let url):
+            recordedVideo = url
+        case .scanned(let document):
+            Task { await viewModel.loadCaptured(document.pages) }
+        case .scanFailed:
+            viewModel.errorMessage = String(localized: "The document could not be scanned.")
         case .unavailable:
             isShowingCamera = true
         case .cancelled, nil:
@@ -624,18 +699,6 @@ struct ContentView: View {
         defer { cameraOutcome = nil }
         guard case .captured(let photo) = cameraOutcome else { return }
         Task { await viewModel.loadCaptured(CapturedPages(photo: photo)) }
-    }
-
-    private func handleScanOutcome() {
-        defer { scanOutcome = nil }
-        switch scanOutcome {
-        case .scanned(let document):
-            Task { await viewModel.loadCaptured(document.pages) }
-        case .failed:
-            viewModel.errorMessage = String(localized: "The document could not be scanned.")
-        case .cancelled, nil:
-            break
-        }
     }
 
     // MARK: - Drag-and-drop / paste

@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — Controlla e condividi
+PicStrip 1.7 è un grande aggiornamento: ora pulisce i video, e la sua fotocamera mostra cosa coprirebbe prima dello scatto.
 
-• Prova un esempio. Una foto inventata. Nessun accesso alla libreria necessario.
-• Esamina l’intera immagine. Mostra originale.
-• Condividi immagine pulita. Preset di condivisione. Dimensione attuale del file.
-• Aggiungi area centrata. Posizione e dimensioni.
-• Alcuni controlli non sono terminati. Forza della corrispondenza.
-• Salvataggio in Foto più affidabile, migliore copertura dei blocchi di chiavi private e file temporanei protetti.
-• L’azione Comandi Rapidi in background rimuove solo i metadati. Apri PicStrip per controllare e oscurare il contenuto visibile.
+• Video: volti, testo, codici e le tue parole di Copri sempre vengono trovati, seguiti mentre si muovono e coperti — con una sfocatura, un riquadro pieno o un’emoji per ogni volto.
+• Copri qualsiasi oggetto in un video tracciandogli intorno un riquadro; PicStrip lo segue in avanti e all’indietro.
+• Accorcia ogni copertura su una timeline da editor video, e copri con un bip o silenzia ciò che è stato detto.
+• Un’unica fotocamera per foto, video e documenti. Registra fino a 4K con HDR usando i controlli che conosci dall’app Fotocamera; in modalità Foto, un mirino dal vivo evidenzia ciò che oscurerebbe.
+• Scegli foto e video insieme: un solo elemento apre l’editor, più elementi vengono puliti in una volta sola.
+• Copri con un’emoji, tocca un oggetto per coprirlo su iOS 27, e lascia visibili le ultime cifre di una carta o di un numero di telefono.
+• Copri sempre: il tuo nome, una targa o la tua via, coperti ovunque PicStrip li legga.
+• Scansiona documenti, scegli solo le tue schermate, mantieni il movimento di una Live Photo e confronta prima e dopo.
+• Preset di condivisione, dimensione del file visibile e un riepilogo di ciò che è stato rimosso.
 
-Controlla la foto prima di condividerla. Il rilevamento automatico può perdere dettagli.
+Il rilevamento automatico può perdere dettagli. Controlla l’intera foto o l’intero video prima di condividerli.

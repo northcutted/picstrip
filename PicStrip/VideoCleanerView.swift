@@ -14,6 +14,9 @@ struct VideoCleanerView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var model = VideoCleanerModel()
     @State private var saveState = SaveState.idle
+    /// A cleaned copy of a recording went to Photos at some point.
+    @State private var hasSavedRecording = false
+    @State private var isConfirmingDiscard = false
     @State private var emojiFace: FaceTrack?
     /// The playhead time a new cover is being drawn at.
     @State private var drawingAt: DrawingTime?
@@ -21,6 +24,11 @@ struct VideoCleanerView: View {
     struct DrawingTime: Identifiable {
         let time: Double
         var id: Double { time }
+    }
+
+    /// A video recorded in PicStrip exists only here until a cleaned copy is saved.
+    private var mayLoseRecording: Bool {
+        source.isRecording && !hasSavedRecording
     }
 
     enum SaveState: Equatable {
@@ -50,10 +58,21 @@ struct VideoCleanerView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                        .accessibilityIdentifier("videoDoneButton")
+                    Button("Done") {
+                        if mayLoseRecording { isConfirmingDiscard = true } else { dismiss() }
+                    }
+                    .accessibilityIdentifier("videoDoneButton")
+                    .confirmationDialog("Discard This Video?", isPresented: $isConfirmingDiscard, titleVisibility: .visible) {
+                        Button("Discard Video", role: .destructive) { dismiss() }
+                            .accessibilityIdentifier("discardRecordingButton")
+                        Button("Keep Editing", role: .cancel) { }
+                    } message: {
+                        Text("PicStrip doesn’t keep what you record. Save a cleaned copy to keep this video.")
+                    }
                 }
             }
+            // A swipe down would lose a recording that has not been saved.
+            .interactiveDismissDisabled(mayLoseRecording)
         }
         .task { await model.start(source) }
         .onDisappear { model.discard() }
@@ -914,6 +933,7 @@ struct VideoCleanerView: View {
         do {
             try await PhotoLibraryWriter.saveVideo(at: url)
             saveState = .saved
+            hasSavedRecording = true
         } catch {
             saveState = .failed(String(localized: "Could not save to Photos: \(error.localizedDescription)"))
         }

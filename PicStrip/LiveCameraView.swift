@@ -12,11 +12,19 @@ struct LiveCameraView: View {
 
     enum Outcome {
         case captured(Data)
+        /// A video recorded in Video mode, in PicStrip's protected temporary store.
+        case recorded(URL)
+        /// Pages from Document mode, Apple's document scanner.
+        case scanned(ScannedDocument)
+        /// The document scanner could not finish.
+        case scanFailed
         case cancelled
         /// The capture session could not be set up; the caller falls back to the system camera.
         case unavailable
     }
 
+    /// Photo or Video, when this is the camera's Photo mode.
+    var mode: Binding<CameraView.Mode>?
     let onFinish: (Outcome) -> Void
 
     @State private var model = LiveCameraModel()
@@ -36,8 +44,12 @@ struct LiveCameraView: View {
         ZStack {
             Color.black.ignoresSafeArea()
             viewfinder
-            controls
+            if !model.areControlsHidden {
+                controls
+                    .transition(.opacity)
+            }
         }
+        .animation(.easeInOut(duration: 0.2), value: model.areControlsHidden)
         .statusBarHidden()
         // The volume buttons and Camera Control take the photo, as in the Camera app.
         .onCameraCaptureEvent(isEnabled: canCapture) { event in
@@ -100,6 +112,8 @@ struct LiveCameraView: View {
                     FocusReticle(reduceMotion: reduceMotion)
                         .position(point)
                         .id("\(point.x),\(point.y)")
+                    ExposureIndicator(bias: model.exposureBias)
+                        .position(x: min(point.x + 52, geo.size.width - 20), y: point.y)
                 }
 
                 Color.white
@@ -109,8 +123,13 @@ struct LiveCameraView: View {
             }
             // Vision/video rectangles use pixel coordinates, not reading order.
             .environment(\.layoutDirection, .leftToRight)
-            .contentShape(Rectangle())
-            .onTapGesture { location in model.focus(at: location) }
+            .cameraGestures(
+                focus: { model.focus(at: $0) },
+                pinch: { model.pinch($0) },
+                endPinch: { model.endPinch() },
+                exposure: { model.adjustExposure(by: $0) },
+                endExposure: { model.endExposureAdjustment() }
+            )
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
@@ -154,14 +173,33 @@ struct LiveCameraView: View {
                         hasScanned: model.hasScanned,
                         summary: model.summary
                     )
-                    if model.capabilities.zoomLevels.count > 1 { zoomPicker }
+                    if model.capabilities.zoomLevels.count > 1 {
+                        CameraZoomButtons(levels: model.capabilities.zoomLevels, zoom: model.zoomLevel) { model.setZoom($0) }
+                            .disabled(model.state != .running)
+                    }
+                    if let mode, !model.isCapturing { CameraModePicker(mode: mode) }
                 }
             }
             .animation(reduceMotion ? nil : .snappy, value: model.summary)
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[1] = $0 }
 
-            shutterButton
-                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[2] = $0 }
+            HStack {
+                Color.clear.frame(width: 60, height: 44)
+                Spacer()
+                shutterButton
+                Spacer()
+                Group {
+                    if model.capabilities.canFlip {
+                        CameraFlipButton(position: model.capabilities.position) { model.flip() }
+                            .disabled(model.state != .running || model.isCapturing)
+                            .accessibilityIdentifier("liveCameraFlipButton")
+                    } else {
+                        Color.clear.frame(width: 44, height: 44)
+                    }
+                }
+                .frame(width: 60)
+            }
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[2] = $0 }
         }
         .padding(.horizontal, 20)
         .padding(.top, 12)
@@ -208,33 +246,6 @@ struct LiveCameraView: View {
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
         .accessibilityIdentifier("liveCameraPreviewToggle")
-    }
-
-    private var zoomPicker: some View {
-        HStack(spacing: 6) {
-            ForEach(model.capabilities.zoomLevels, id: \.self) { level in
-                let isSelected = level == model.zoomLevel
-                Button {
-                    model.setZoom(level)
-                } label: {
-                    Text(verbatim: Self.zoomLabel(level))
-                        .font(.caption.weight(.bold))
-                        .monospacedDigit()
-                        .foregroundStyle(isSelected ? .yellow : .primary)
-                        .frame(width: 28, height: 20)
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .accessibilityLabel("Zoom")
-                .accessibilityValue(Text(verbatim: Self.zoomLabel(level)))
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
-        }
-        .disabled(model.state != .running)
-    }
-
-    private static func zoomLabel(_ level: CGFloat) -> String {
-        Double(level).formatted(.number.precision(.fractionLength(0...1))) + "×"
     }
 
     private var shutterButton: some View {
@@ -526,7 +537,7 @@ private struct LiveDetectionLabel: View {
 // MARK: - FocusReticle
 
 /// The Camera app's yellow square where the user tapped to focus.
-private struct FocusReticle: View {
+struct FocusReticle: View {
     let reduceMotion: Bool
     @State private var isSettled = false
 
@@ -545,7 +556,7 @@ private struct FocusReticle: View {
 
 // MARK: - CameraPreview
 
-private struct CameraPreview: UIViewRepresentable {
+struct CameraPreview: UIViewRepresentable {
     let layer: AVCaptureVideoPreviewLayer
 
     func makeUIView(context: Context) -> PreviewHostView {

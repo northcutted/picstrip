@@ -161,12 +161,12 @@ BatchSummaryView shows saved and failed counts and the downloadable audit JSON
 ### Document Scan Flow
 
 ```
-User taps "Scan Document"
+User chooses Document in the camera (`CameraView`)
     ↓
 DocumentScanFlow.step(for: camera permission) → present / request access / explain denial
     ↓
 DocumentScannerView (VNDocumentCameraViewController) → ScannedDocument, held in memory
-   ("Take Photo" is the same flow with LiveCameraView → the camera's own bytes, without the document hint;
+   (Photo mode is the same flow with LiveCameraView → the camera's own bytes, without the document hint;
     CameraCaptureView → CapturedPages(photo:) is the fallback)
     ↓  (acted on in the cover's onDismiss — presenting a sheet mid-dismissal can drop it)
 ScrubberViewModel.loadCaptured(CapturedPages)
@@ -340,7 +340,8 @@ Re-audit declarations when adding file, timing or other required-reason API use.
 |-----------|-------|------|
 | `NSPhotoLibraryAddUsageDescription` | Add-only | Saving a new cleaned asset |
 | `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" — needs read access to delete the source asset |
-| `NSCameraUsageDescription` | Camera | First tap on "Take Photo" or "Scan Document" |
+| `NSCameraUsageDescription` | Camera | First tap on "Camera" |
+| `NSMicrophoneUsageDescription` | Microphone | First recording in Video mode |
 
 The app defaults to `.addOnly` authorization. Users must explicitly grant read+write if they want "Replace Original."
 
@@ -405,9 +406,29 @@ Concurrent batch processing would hold several decoded images and intermediate b
 - **Motion.** Between passes, `FrameRegistration` (Vision translational image registration, about 15 Hz) measures how far the picture slid, and `LiveMotion` accumulates it. Findings are stored in that stabilised space and drawn at their position plus the offset, so boxes stay on their content while the phone moves and the pass's latency is hidden. Passes are skipped while the picture moves faster than 0.8 frame lengths per second, when OCR reads only blur. Zoom, rotation, interruptions and thermal pauses clear the findings and restart the measurement.
 - **Stability.** `LiveDetectionTracker` matches each pass to the findings on screen by type and overlap, eases a moved box into place and keeps a missed one for two passes, faded, so the overlay neither swaps boxes between findings nor blinks when OCR misses a line.
 - **Presentation.** Findings are outlined in their risk colour (`RiskLevel.color`, shared with the editor and About) and labelled with their type and match strength — the editor's `ConfidenceLevel.matchLabel`, never a percentage, because About promises the score is not a probability. The outline repeats the strength for findings that only get a badge: solid for strong, dashed for possible, dotted for tentative. The tracker smooths each finding's score across passes and changes its band only once the score is 0.03 past a boundary. Live frames read less cleanly than a still photo, so the editor's strength for the same finding may be higher; `LiveLabelLayout` keeps labels off other findings, the controls and, where it can, text. A toggle shows black boxes instead, as a preview of the result; the choice is not remembered, because PicStrip keeps no preferences. The status line above the shutter summarises what is in view and carries the VoiceOver label; VoiceOver announces a kind of finding when it comes into view.
-- **Camera.** The back camera is a virtual device where there is one, started at the Camera app's 1× (`displayVideoZoomFactorMultiplier`), so close-ups switch to the macro-capable lens on their own. Tap to focus and expose, a 1×/2× zoom, the flashlight, and the volume buttons or Camera Control (`onCameraCaptureEvent`) as a shutter. Session interruptions show "Camera paused"; a runtime error restarts the session.
+- **Camera.** The back camera is a virtual device where there is one, started at the Camera app's 1× (`displayVideoZoomFactorMultiplier`), so close-ups switch to the macro-capable lens on their own. The same controls as Video mode (`CameraControls.swift`): the Camera app's lens buttons and pinch to zoom (the boxes are cleared when a pinch ends — they describe the old view), tap to focus and drag for exposure, the front camera, the flashlight, the Camera Control's zoom and exposure sliders, and the volume buttons or Camera Control (`onCameraCaptureEvent`) as a shutter. Session interruptions show "Camera paused"; a runtime error restarts the session.
 
 If the capture session cannot be configured, `LiveCameraView` reports `.unavailable` and the system camera (`CameraCaptureView`) is presented instead. The simulator has no camera: launch with `PICSTRIP_LIVE_CAMERA_FIXTURE=<path to an image>` and the app opens the viewfinder on that still image (`LiveCameraFixture`), which `testLiveViewfinderNamesFindingsAndCaptures` uses. Faces and barcodes are not detected there — those Vision requests fail on the simulator — and focus, zoom, the flashlight and motion need a device.
+
+### Video Mode Records at the Camera App's Quality
+
+The camera (`CameraView`) has three modes, Video, Photo and Document, switched by `CameraModePicker` above the shutter; Photo is the live viewfinder above, and Document presents Apple's document scanner over an empty camera (the scanner needs the camera to itself) — cancelling it returns to the mode before. Video mode (`VideoCameraView`, `VideoCameraModel`, `VideoCaptureSession`) is a separate `AVCaptureSession` with an `AVCaptureMovieFileOutput` and no frame analysis, so nothing competes with the recording for power or heat. Home's Camera button opens it in Photo mode; the "Take a Photo" shortcut and the fixtures can open it in another (`ContentView.CameraRequest` — a `fullScreenCover(item:)`, because a flag set beside a separate mode is read before the mode lands).
+
+- **Formats.** `VideoFormatCatalog` works on `VideoFormatTraits` — each 16:9 format's size, top frame rate, HLG support, enhanced-stabilisation support, binning and range — so choosing is unit-tested without a camera. It offers 4K and HD at 24, 30, 60 and 120 fps where a format reaches them, HDR where the format takes HLG BT.2020, and enhanced stabilisation (`cinematicExtendedEnhanced`) where it is supported; `nearest(to:)` keeps the resolution, then the nearest frame rate, then HDR and stabilisation, and `bestFormat(for:)` prefers unbinned, video-range, 8-bit-for-SDR formats with the lowest sufficient frame rate. Recording starts at 4K, 30 fps, HDR.
+- **Encoding.** The format is set directly (`activeFormat`, both frame durations held at the chosen rate), with `automaticallyConfiguresCaptureDeviceForWideColor` off so the colour space follows the choice: HLG BT.2020 for HDR (Dolby Vision on iPhone), P3 otherwise. The movie output records HEVC; low-light noise reduction is on by default for movie outputs on iOS 27 and low-light boost is enabled where supported. At `systemPressureState` `.critical` the frame rate drops to 30 rather than the session stopping.
+- **Sound.** Stereo (`multichannelAudioMode`) with wind-noise removal where the microphones support it; audio zoom (iOS 26.4) is on by default. Without microphone permission the session records video only, and the view says so.
+- **Controls.** The Camera app's lens buttons (`lensLevels`: widest, each `virtualDeviceSwitchOverVideoZoomFactors` lens, and 2× from the main lens) and pinch to zoom; tap to focus, then a vertical drag for exposure bias (±2 stops); the torch; the front camera; volume buttons and Camera Control (`onCameraCaptureEvent`) to start and stop; and, where `session.supportsControls`, the Camera Control's own `AVCaptureSystemZoomSlider` and `AVCaptureSystemExposureBiasSlider` — PicStrip's controls fade while their overlay is full screen. The preview is stabilised like the recording (`previewOptimized`), and the movie connection takes the rotation coordinator's capture angle when recording starts.
+- **Where it goes.** The recording is written to `PrivateFileStore.exports` and opens in the video cleaner as `VideoSource.recorded`, used in place and deleted with the screen like any copy. It is never saved to Photos as it is; closing the cleaner before a copy has been saved asks first, and the sheet cannot be swiped away meanwhile. A recording ended by the system (a call, a full disk) is kept if AVFoundation reports it finished; one under way when the camera closes is deleted.
+
+The simulator has no camera: launch with `PICSTRIP_VIDEO_CAMERA_FIXTURE=<path to a movie>` and the camera opens in Video mode on the movie's first frame (`VideoCameraFixture`), with a typical back camera's choices; stopping hands over a copy of the movie. `testAVideoIsRecordedIntoTheEditor` uses it.
+
+### One Library Button, Routed by What Is Picked
+
+Home has three ways in: the Camera, Photos & Videos, and Files. Photos & Videos is one `PhotosPicker` for images and videos, any number, `.current` encoding; `LibrarySelection` (generic, unit-tested) sends one photo to the editor, one video to the video cleaner, several photos to the photo batch, and several videos — or photos with videos — to one batch. A Live Photo is a photo, though it carries a movie. Screenshots are a collection inside the system picker; the "Clean a Screenshot" shortcut still opens a picker filtered to them. Files accepts images and movies; a movie is copied into the protected store while its security scope lasts and opened as `VideoSource.imported`.
+
+### Batches Take Videos Too
+
+`processBatch` runs the photos first (`runBatch`, with `total` and `finishes: false` when videos follow), then the videos (`runVideoBatch`), with one progress count. Each video is copied into the protected store (`IncomingVideo`), cleaned by `VideoBatchCleaner` — the video editor's defaults with no review: faces blurred, text and codes solid, when "Redact Sensitive Visual Data" is on; the hidden details always removed — saved with `PhotoLibraryWriter.saveVideo(at:deleting:)` (replace mode deletes the original in the same change), and its temporary files deleted before the next. It fails closed like the photos. Stop cancels the video under way (`batchVideoTask`). The screen stays awake during a batch (`isIdleTimerDisabled`); running on in the background would need `BGContinuedProcessingTask` with the background-GPU entitlement, since the covers are drawn with Core Image on the GPU — not added yet.
 
 ### Sharing Presets Decide the Format and the First Selection
 

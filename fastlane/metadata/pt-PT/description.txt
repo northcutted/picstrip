@@ -1,19 +1,27 @@
-Encontre e cubra detalhes privados antes de partilhar fotografias. Análise, ocultação e remoção de metadados acontecem no dispositivo. As fotos só vão para outro app ou serviço pelas ações de importar, guardar e partilhar que escolher.
+Partilhe o momento, não a história por detrás dele. O PicStrip encontra o que uma foto ou um vídeo revela — rostos, números de telefone, e-mails, números de cartão, códigos QR, onde foi captado e o dispositivo usado — e ajuda a cobrir ou remover isso antes de partilhar. Tudo é processado no seu iPhone ou iPad.
 
-Experimentar um exemplo
-Uma foto fictícia. Não é necessário aceder à fototeca.
+Vídeos ocultados em movimento
+Grave com a câmara do PicStrip ou escolha um vídeo — ou vários, para os limpar de uma vez. O PicStrip encontra rostos, texto, códigos e as suas palavras de Ocultar sempre, segue-os fotograma a fotograma e oculta-os: rostos com um desfoque forte, uma caixa sólida ou um emoji à sua escolha. Desenhe uma caixa à volta de qualquer outra coisa — uma pessoa, um carro, um ecrã, uma placa — e esta é seguida para a frente e para trás. Numa linha temporal de editor de vídeo, cada ocultação e edição de som é um clipe recortável; selecione um excerto do som para pôr um bipe ou silenciar. A pré-visualização mostra a cópia como é guardada, e esta sai sem localização, dispositivo e datas.
 
-Reveja as detecções no editor. Cada resultado mostra a força da correspondência e um nível de risco para ajudar a escolher o que cobrir. Reveja a foto antes de partilhar. A deteção automática pode deixar passar detalhes. As sugestões de nomes exigem Apple Intelligence e não são cobertas automaticamente. Um modelo opcional de seleção de objetos pode ser descarregado da Apple após o seu consentimento.
+Grave sem cedências
+Uma câmara para fotos, vídeos e documentos. O modo Vídeo grava como a app Câmara: 4K ou HD, 24 a 120 fps, HDR, estabilização melhorada, todas as objetivas com zoom por pinça, focagem e exposição, a lanterna e os botões de volume ou o Controlo da câmara para iniciar e parar. As gravações vão diretamente para limpeza e nunca são guardadas na fototeca tal como estão.
 
-Ajuste as ocultações arrastando ou usando Posição e tamanho. Adicione uma área centrada sem desenhar. Utilize Selecionar para alterar várias áreas. Desfoque e pixelização podem deixar detalhes reconhecíveis. Utilize cobertura sólida para segredos e textos de identificação.
+Veja antes de fotografar
+O visor ao vivo do modo Foto contorna e nomeia o que iria ocultar, com a força da correspondência, e pode pré-visualizar o resultado. Após a captura, a foto passa por análise completa e revisão.
 
-Reveja os metadados ocultos, como localização, câmara e datas. Escolha o que remover e confira o resultado limpo.
-PNG: Qualidade sem perdas para capturas de ecrã e texto. Ficheiros maiores.
-JPEG: Ficheiros menores para fotos do dia a dia. Ampla compatibilidade.
-HEIC: Fotografias compactas com alta qualidade. Confira a compatibilidade do destinatário.
+Reveja antes de partilhar
+Procure rostos, códigos de barras, dados de contacto, identificadores financeiros e segredos comuns de programadores. Reveja a força da correspondência e o estado da análise e decida o que ocultar. Sugestões de nomes exigem Apple Intelligence e não são ocultadas automaticamente.
 
-Reveja e partilhe a imagem limpa ou guarde uma cópia em Fotografias. A extensão de partilha também oferece limpeza direta ou transferência protegida para edição. Editar abre a primeira imagem original para revisão. Uma cópia local protegida expira após 15 minutos. Fotografias grandes precisam de cópias menores na extensão: até 6 megapixels para ocultar conteúdo ou 12 só para metadados. Edite no PicStrip para uma revisão completa.
+Torne a cópia sua
+Desenhe uma caixa, ou toque num objeto no iOS 27, e mova-a e redimensione-a com controlos acessíveis. Escolha sólido, hachura cruzada, pixelizado, desfocado ou um emoji, com cores, intensidade e desfazer/refazer. A cobertura sólida é recomendada para segredos: desfoque e pixelização podem deixar detalhes reconhecíveis. Se quiser, deixe visíveis os últimos dígitos de um cartão ou telefone e compare com o original antes de partilhar. Adicione palavras a Ocultar sempre — o seu nome, uma matrícula, a sua rua — e serão ocultadas onde o PicStrip as ler.
 
-A ação dos Atalhos em segundo plano remove apenas metadados. Abra o PicStrip para rever e ocultar conteúdo visível.
+Remova detalhes ocultos
+Reveja metadados de localização, câmara, data, legenda e dispositivo. Escolha o que remover e verifique o resultado. Exporte em PNG, JPEG, HEIC ou num formato de origem suportado, vendo o tamanho do ficheiro. Predefinições de partilha ajudam a escolher o formato de fotos, capturas de ecrã e documentos. Mantenha o movimento da Live Photo quando nada nela for ocultado.
 
-Este relatório contém nomes e contagens de campos, nunca os valores originais dos metadados ou o texto detetado.
+Mais formas de começar
+Experimente o exemplo fictício incluído. Escolha fotos e vídeos — um ou vários, ou só capturas de ecrã — digitalize um documento, navegue nos Ficheiros, cole ou arraste e largue. Limpe várias fotos e vídeos de uma vez com uma política comum, use a extensão de partilha ou comece pelos Atalhos — a ação em segundo plano remove apenas metadados.
+
+Privacidade no dispositivo
+Sem conta, anúncios, rastreio, subscrições ou servidor de fotos do programador. Em sistemas suportados, um modelo opcional de seleção de objetos pode ser descarregado da Apple se concordar. Importar de serviços na nuvem, guardar numa fototeca sincronizada e partilhar com uma app à sua escolha segue as definições desses serviços. Ficheiros temporários protegidos são eliminados como descrito na política de privacidade. O PicStrip é de código aberto, com proveniência de compilação verificável nas versões publicadas.
+
+A deteção automática pode deixar passar detalhes, e ocultar o que encontra não torna ninguém anónimo. Reveja sempre a fotografia ou o vídeo completo antes de partilhar.

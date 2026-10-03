@@ -1,11 +1,13 @@
-PicStrip 1.7.0 — İncele ve paylaş
+PicStrip 1.7 büyük bir güncelleme: Artık videoları temizliyor ve kamerası, siz çekmeden önce neleri karartacağını gösteriyor.
 
-• Bir örnek dene. Kurgusal bir fotoğraf. Arşivinize erişim gerekmez.
-• Tüm görüntüyü incele. Özgünü göster.
-• Temizlenmiş görüntüyü paylaş. Paylaşım ön ayarı. Geçerli dosya boyutu.
-• Ortalanmış alan ekle. Konum ve boyut.
-• Bazı kontroller tamamlanamadı. Eşleşme gücü.
-• Fotoğraflar’a daha güvenilir kaydetme, özel anahtar blokları için daha iyi kapsama ve korumalı geçici dosyalar.
-• Arka plandaki Kestirmeler eylemi yalnızca meta verileri kaldırır. Görünür içeriği inceleyip karartmak için PicStrip’i açın.
+• Videolar: Yüzler, metinler, kodlar ve Her zaman karart sözcükleriniz bulunur, hareket ettikçe takip edilir ve karartılır — her yüz için bulanıklık, düz bir kutu veya bir emoji ile.
+• Videodaki herhangi bir nesnenin çevresini çizerek onu karartın; PicStrip onu ileri ve geri takip eder.
+• Video düzenleyici tarzı bir zaman çizelgesinde her karartmayı kırpın, söylenenlere bip ekleyin veya sessize alın.
+• Fotoğraf, video ve belgeler için tek bir kamera. Kamera uygulamasından tanıdığınız denetimlerle 4K’ya kadar HDR video çekin; Fotoğraf modunda canlı vizör, neleri karartacağını çerçeveler.
+• Fotoğrafları ve videoları birlikte seçin: Tek bir öğe düzenleyicide açılır, birden fazlası aynı anda temizlenir.
+• Emoji ile karartın, iOS 27’de bir nesneye dokunarak onu karartın ve kart ya da telefon numaralarının son hanelerini görünür bırakın.
+• Her zaman karart: Adınız, bir plaka veya sokağınız, PicStrip nerede okursa okusun karartılır.
+• Belgeleri tarayın, yalnızca ekran görüntülerinizi seçin, Live Photo hareketini koruyun ve öncesiyle sonrasını karşılaştırın.
+• Paylaşım ön ayarları, görünür dosya boyutu ve nelerin kaldırıldığına dair bir özet.
 
-Paylaşmadan önce fotoğrafı inceleyin. Otomatik tespit ayrıntıları kaçırabilir.
+Otomatik algılama ayrıntıları kaçırabilir. Paylaşmadan önce fotoğrafın veya videonun tamamını inceleyin.

@@ -1,1 +1,1 @@
-privacidade,EXIF,metadados,GPS,redação,desfoque,PII,rosto,risco,detecção,anônimo,seguro,OCR,visão
+vídeo,censurar,desfocar,embaçar,EXIF,GPS,localização,anônimo,privacidade,pixelar,bipe,câmera,print

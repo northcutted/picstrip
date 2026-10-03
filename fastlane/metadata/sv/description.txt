@@ -1,19 +1,27 @@
-Hitta och dölj privata uppgifter innan du delar foton. Analys, maskering och borttagning av metadata sker på din enhet. Foton går till en annan app eller tjänst endast genom de import-, spar- och delningsåtgärder du väljer.
+Dela ögonblicket, inte historien bakom det. PicStrip hittar det en bild eller video avslöjar – ansikten, telefonnummer, e-postadresser, kortnummer, QR-koder, var den togs och vilken enhet som tog den – och hjälper dig att dölja eller ta bort det innan du delar. Bearbetningen sker på din iPhone eller iPad.
 
-Prova ett exempel
-Ett påhittat foto. Ingen åtkomst till bildbiblioteket behövs.
+Videor som maskeras i rörelse
+Spela in med PicStrips kamera eller välj en video – eller flera, för att rensa alla på en gång. PicStrip hittar ansikten, text, koder och dina Maskera alltid-ord, följer dem bildruta för bildruta och maskerar dem: ansikten med kraftig oskärpa, en fylld ruta eller en emoji du väljer. Rita en ruta runt något annat – en person, en bil, en skärm, en skylt – så följs det framåt och bakåt. En tidslinje som i en videoredigerare visar varje maskering och ljudändring som ett klipp du kan korta; markera ett ljudavsnitt för att lägga pip över det eller tysta det. Förhandsvisningen ritas på samma sätt som kopian sparas, och kopian lämnar enheten utan plats, enhetsuppgifter och datum.
 
-Granska upptäckter i maskeringsredigeraren. Varje träff visar matchningsstyrka och risknivå så att du kan välja vad som ska döljas. Granska fotot innan du delar. Automatisk upptäckt kan missa detaljer. Namnförslag kräver Apple Intelligence och döljs inte automatiskt. En valfri modell för objektmarkering kan hämtas från Apple efter ditt godkännande.
+Spela in utan kompromisser
+En enda kamera för bilder, video och dokument. Videoläget spelar in som appen Kamera: 4K eller HD, 24 till 120 bilder/s, HDR, förbättrad stabilisering, alla objektiv med nypzoom, fokus och exponering, ficklampan samt volymknapparna eller Kamerakontroll för att starta och stoppa. Inspelningar går direkt till rensning och sparas aldrig som de är i ditt bildbibliotek.
 
-Justera maskeringar genom att dra eller använda Position och storlek. Lägg till ett centrerat område utan att rita. Använd Markera för att ändra flera områden. Oskärpa och pixling kan lämna igenkännbara detaljer. Använd heltäckande maskering för hemligheter och identifierande text.
+Se det innan du tar bilden
+Bildlägets livesökare ringar in och namnger det som skulle maskeras, med matchningsstyrka, och kan förhandsvisa resultatet. Efter fotograferingen får bilden en fullständig sökning och granskning.
 
-Granska dolda metadata, som plats, kamerauppgifter och datum. Välj vad du tar bort och kontrollera det rensade resultatet.
-PNG: Förlustfri kvalitet för skärmbilder och text. Större filer.
-JPEG: Mindre filer för vardagsfoton. Brett stöd.
-HEIC: Kompakta foton med hög kvalitet. Kontrollera mottagarens kompatibilitet.
+Granska innan du delar
+Sök efter ansikten, streckkoder, kontaktuppgifter, finansiella identifierare och vanliga utvecklarhemligheter. Granska matchningsstyrka och sökstatus och bestäm sedan vad som ska maskeras. Namnförslag kräver Apple Intelligence och maskeras inte automatiskt.
 
-Granska och dela den rensade bilden, eller spara en kopia i Bilder. Delningstillägget erbjuder även direkt rensning eller skyddad överföring för redigering. Redigera öppnar den första originalbilden för granskning. En skyddad lokal kopia upphör att gälla efter 15 minuter. Stora foton kräver mindre kopior i tillägget: upp till 6 megapixlar för maskering, eller 12 för enbart metadata. Redigera i PicStrip för fullständig granskning.
+Gör kopian till din
+Rita en ruta, eller tryck på ett objekt i iOS 27, och flytta och ändra sedan storlek med tillgänglighetsanpassade reglage. Välj fylld, korsskrafferad, pixlad, suddig eller en emoji, med färger, styrka och ångra/gör om. Fylld maskering rekommenderas för hemligheter: oskärpa och pixling kan lämna detaljer igenkännbara. Låt de sista siffrorna i ett kort- eller telefonnummer synas om du vill, och jämför med originalet innan du delar. Lägg till ord i Maskera alltid – ditt namn, en registreringsskylt, din gata – så maskeras de var PicStrip än läser dem.
 
-Bakgrundsåtgärden i Genvägar tar bara bort metadata. Öppna PicStrip för att granska och dölja synligt innehåll.
+Ta bort dolda uppgifter
+Granska metadata om plats, kamera, datum, bildtext och enhet. Välj vad du tar bort och kontrollera resultatet. Exportera som PNG, JPEG, HEIC eller i källformatet om det stöds, med synlig filstorlek. Delningsförinställningar hjälper dig att välja format för bilder, skärmbilder och dokument. Behåll rörelsen i Live Photo-bilder när inget i dem är maskerat.
 
-Rapporten innehåller fältnamn och antal, aldrig ursprungliga metadatavärden eller upptäckt text.
+Fler sätt att börja
+Prova det påhittade inbyggda exemplet. Välj bilder och videor – en eller flera, eller bara dina skärmbilder – skanna ett dokument, bläddra i Filer, klistra in eller dra och släpp. Rensa många bilder och videor på en gång med gemensamma inställningar, använd delningstillägget eller börja i Genvägar – bakgrundsåtgärden tar bara bort metadata.
+
+Integritet på enheten
+Inget konto, inga annonser, ingen spårning, inga prenumerationer och ingen bildserver hos utvecklaren. En valfri modell för objektmarkering kan på system som stöds hämtas från Apple efter ditt godkännande. Import från molntjänster, sparande i ett synkroniserat bibliotek och delning till en app du väljer följer de tjänsternas inställningar. Skyddade tillfälliga filer rensas enligt beskrivningen i integritetspolicyn. PicStrip har öppen källkod, med verifierbart byggursprung för publicerade versioner.
+
+Automatisk upptäckt kan missa detaljer, och att maskera det den hittar gör ingen anonym. Granska alltid hela bilden eller videon innan du delar.

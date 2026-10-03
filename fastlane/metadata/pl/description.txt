@@ -1,19 +1,27 @@
-Znajdź i zasłoń prywatne informacje przed udostępnieniem zdjęć. Skanowanie, zamazywanie i usuwanie metadanych odbywa się na urządzeniu. Zdjęcia trafiają do innych aplikacji lub usług wyłącznie przez wybrane przez Ciebie działania importowania, zapisywania i udostępniania.
+Udostępnij chwilę, nie historię, która się za nią kryje. PicStrip znajduje to, co zdradza zdjęcie lub wideo – twarze, numery telefonów, adresy e-mail, numery kart, kody QR, miejsce nagrania i urządzenie, którym je zrobiono – i pomaga to zamazać lub usunąć przed udostępnieniem. Przetwarzanie odbywa się na Twoim iPhonie lub iPadzie.
 
-Wypróbuj przykład
-Fikcyjne zdjęcie. Dostęp do biblioteki nie jest potrzebny.
+Wideo zamazane w ruchu
+Nagrywaj aparatem PicStrip lub wybierz wideo – albo wiele, aby wyczyścić je naraz. PicStrip znajduje twarze, tekst, kody i Twoje słowa z listy Zawsze zamazuj, śledzi je klatka po klatce i zamazuje: twarze mocnym rozmyciem, jednolitym prostokątem lub wybranym emoji. Obrysuj prostokątem cokolwiek innego – osobę, samochód, ekran, znak – a będzie śledzone w przód i w tył. Oś czasu jak w edytorze wideo pokazuje każde zamazanie i edycję dźwięku jako klip do przycięcia; zaznacz fragment dźwięku, aby zagłuszyć go piskiem lub wyciszyć. Podgląd wygląda dokładnie jak zachowana kopia, która trafia dalej bez lokalizacji, danych urządzenia i dat.
 
-Sprawdź wykryte dane w edytorze. Każdy wynik pokazuje siłę dopasowania i poziom ryzyka, aby ułatwić wybór treści do zamazania. Sprawdź zdjęcie przed udostępnieniem. Automatyczne wykrywanie może pomijać szczegóły. Sugestie nazw osób wymagają Apple Intelligence i nie są automatycznie zasłaniane. Opcjonalny model zaznaczania obiektów może zostać pobrany od Apple po wyrażeniu zgody.
+Nagrywaj bez kompromisów
+Jeden aparat do zdjęć, wideo i dokumentów. Tryb Wideo nagrywa jak aplikacja Aparat: 4K lub HD, od 24 do 120 kl./s, HDR, ulepszona stabilizacja, każdy obiektyw z zoomem dwoma palcami, ostrość i ekspozycja, latarka oraz przyciski głośności lub Sterowanie aparatem do rozpoczynania i zatrzymywania nagrania. Nagrania trafiają prosto do czyszczenia; oryginał nigdy nie jest zachowywany w bibliotece.
 
-Dostosuj zamazania, przeciągając je lub używając opcji Pozycja i rozmiar. Dodaj wyśrodkowany obszar bez rysowania. Użyj Zaznacz, aby zmienić kilka obszarów. Rozmycie i pikselizacja mogą pozostawić rozpoznawalne szczegóły. Do sekretów i danych identyfikacyjnych używaj pełnego krycia.
+Zobacz, zanim zrobisz zdjęcie
+Wizjer na żywo w trybie Zdjęcie obrysowuje i nazywa to, co by zamazał, wraz z siłą dopasowania, i może pokazać podgląd wyniku. Po zrobieniu zdjęcia następuje pełny skan i przegląd.
 
-Sprawdź ukryte metadane, takie jak lokalizacja, aparat i daty. Wybierz dane do usunięcia i sprawdź wyczyszczony wynik.
-PNG: Bezstratna jakość dla zrzutów ekranu i tekstu. Większe pliki.
-JPEG: Mniejsze pliki dla zwykłych zdjęć. Szeroka zgodność.
-HEIC: Kompaktowe zdjęcia wysokiej jakości. Sprawdź zgodność u odbiorcy.
+Sprawdź przed udostępnieniem
+Skanuj w poszukiwaniu twarzy, kodów kreskowych, danych kontaktowych, identyfikatorów finansowych i typowych sekretów programistów. Sprawdź siłę dopasowania i stan skanowania, a potem zdecyduj, co zamazać. Sugestie nazw osób zależą od Apple Intelligence i nie są zamazywane automatycznie.
 
-Sprawdź i udostępnij wyczyszczony obraz lub zachowaj kopię w Zdjęciach. Rozszerzenie udostępniania pozwala też oczyścić obraz bezpośrednio albo bezpiecznie przekazać go do edycji. Edycja otwiera pierwszy oryginalny obraz do sprawdzenia. Chroniona kopia lokalna wygasa po 15 minutach. Duże zdjęcia wymagają w rozszerzeniu mniejszych kopii: do 6 megapikseli przy zasłanianiu lub 12 przy samych metadanych. Edytuj w PicStrip, aby przeprowadzić pełny przegląd.
+Kopia na Twoich warunkach
+Narysuj prostokąt lub stuknij obiekt w iOS 27, a potem przesuń go i zmień rozmiar elementami sterującymi z obsługą dostępności. Wybierz styl jednolity, kreskowany, pikselowy, rozmyty lub emoji, z kolorami, intensywnością oraz cofaniem i ponawianiem. Do sekretów zalecane jest pełne krycie: rozmycie i pikselizacja mogą pozostawić rozpoznawalne szczegóły. Jeśli chcesz, pozostaw widoczne ostatnie cyfry numeru karty lub telefonu i porównaj z oryginałem przed udostępnieniem. Dodaj słowa do listy Zawsze zamazuj – swoje imię i nazwisko, numer rejestracyjny, nazwę ulicy – a zostaną zamazane wszędzie, gdzie PicStrip je odczyta.
 
-Działanie Skrótów w tle usuwa tylko metadane. Otwórz PicStrip, aby sprawdzić i zasłonić widoczne treści.
+Usuń ukryte szczegóły
+Sprawdź metadane lokalizacji, aparatu, daty, podpisu i urządzenia. Wybierz, co usunąć, i sprawdź wynik. Eksportuj do PNG, JPEG, HEIC lub obsługiwanego formatu źródłowego, z widocznym rozmiarem pliku. Ustawienia udostępniania pomagają wybrać format. Zachowaj ruch zdjęcia Live Photo, gdy nic na nim nie jest zamazane.
 
-Raport zawiera nazwy i liczby pól, nigdy oryginalne wartości metadanych ani wykryty tekst.
+Więcej sposobów na start
+Wypróbuj wbudowany, fikcyjny przykład. Wybierz zdjęcia i wideo – jedno lub wiele albo tylko zrzuty ekranu – zeskanuj dokument, przeglądaj Pliki, wklej lub przeciągnij i upuść. Czyść wiele zdjęć i wideo naraz według wspólnej polityki, użyj rozszerzenia udostępniania lub zacznij od Skrótów – działanie w tle usuwa tylko metadane.
+
+Prywatność na urządzeniu
+Bez konta, reklam, śledzenia, subskrypcji i serwera zdjęć dewelopera. W obsługiwanych systemach opcjonalny model zaznaczania obiektów może zostać pobrany od Apple za Twoją zgodą. Importowanie z chmury, zachowywanie w synchronizowanej bibliotece i udostępnianie do wybranej aplikacji podlegają ustawieniom tych usług. Chronione pliki tymczasowe są usuwane zgodnie z opisem w polityce prywatności. PicStrip ma otwarty kod źródłowy i weryfikowalne pochodzenie kompilacji dla opublikowanych wersji.
+
+Automatyczne wykrywanie może pomijać szczegóły, a zamazanie tego, co znajdzie, nie czyni nikogo anonimowym. Zawsze sprawdź całe zdjęcie lub wideo przed udostępnieniem.

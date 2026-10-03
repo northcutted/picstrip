@@ -4,12 +4,14 @@ The upload source is [fastlane/metadata](../../fastlane/metadata). Review the ac
 
 ## The promise
 
-PicStrip helps people find and cover private details, remove hidden metadata, and inspect a cleaned copy before sharing. Scanning, redaction and metadata removal run on the device. Automatic detection can miss details, and the user decides what to share.
+PicStrip helps people find and cover private details in photos and videos, remove hidden metadata, and inspect a cleaned copy before sharing. Scanning, redaction and metadata removal run on the device. Automatic detection can miss details, and the user decides what to share.
 
 ## Match the exact binary
 
 - Names require available Apple Intelligence and remain opt-in for coverage. Object selection on supported systems may require an Apple model download after consent.
-- Four styles are available: solid, crosshatch, pixelate and blur. Use solid opaque coverage for secrets; blur and pixelation can leave recognizable structure.
+- Photo styles are solid, crosshatch, pixelate, blur and emoji (an emoji sits on a full-strength blur). Use solid opaque coverage for secrets; blur and pixelation can leave recognizable structure.
+- Video covering is assistive: faces, text and drawn objects are tracked, and one can be missed for a moment. Never claim anonymity; the app tells people to watch the preview before sharing.
+- Record Video records at the Camera app's quality where the device supports it (4K/HD, 24–120 fps, HDR, enhanced stabilization) — say "up to", since formats vary by device. Recordings are never saved to Photos as they are, and the microphone is used only while recording.
 - Background Shortcuts remove metadata only. Visible-content review and redaction happen in PicStrip.
 - The sharing preset chooses an output format and restores default removal choices. It does not promise that every sensitive detail was detected.
 - Review reports contain field names, counts and status, never original metadata values or detected text.

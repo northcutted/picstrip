@@ -1,1 +1,1 @@
-privacidad,EXIF,metadatos,GPS,redactar,difuminar,rostro,riesgo,detección,anonimizar,OCR,visión
+vídeo,difuminar,pixelar,ocultar,EXIF,GPS,ubicación,eliminar,anonimizar,privacidad,pitido,captura

@@ -1,1 +1,1 @@
-gizlilik,EXIF,metadata,GPS,sansürle,bulanıklık,PII,yüz,risk,tespit,anonim,güvenli,paylaş,OCR,görme
+video,sansür,karart,meta veri,konum,GPS,anonim,gizlilik,piksel,bip,kamera,ekran görüntüsü,plaka
