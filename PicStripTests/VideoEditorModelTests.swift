@@ -61,4 +61,43 @@ final class VideoEditorModelTests: XCTestCase {
         XCTAssertFalse(model.hasAudio, "No sound, no audio lane.")
         XCTAssertEqual(model.filmstrip.count, 10)
     }
+
+    func testTheTimelinesClipsFollowTheCovers() async throws {
+        let movie = try await FaceMovie.make(face: "🧑🏽", fontSize: 220)
+        cleanup.append(movie.url)
+        let model = try await openEditor(on: movie.url)
+        let face = try XCTUnwrap(model.faces.first, "Vision found the face.")
+        func clip(_ id: String) -> EditorTimeline.Clip? { model.timelineClips.first { $0.id == id } }
+
+        XCTAssertEqual(clip("face-\(face.id)")?.range, model.range(of: face))
+        XCTAssertEqual(clip("face-\(face.id)")?.lane, .faces)
+        model.setRange(0.5...1.2, for: face)
+        XCTAssertEqual(clip("face-\(face.id)")?.range, 0.5...1.2, "A new timing moves the clip.")
+        model.setVisible(true, for: face)
+        XCTAssertNil(clip("face-\(face.id)"), "A face left visible has no clip.")
+        model.setVisible(false, for: face)
+        model.coversFaces = false
+        XCTAssertNil(clip("face-\(face.id)"), "Nor do faces when none are covered.")
+        model.coversFaces = true
+        XCTAssertNotNil(clip("face-\(face.id)"))
+
+        model.addAudioEdit(.mute, over: 0.2...0.6)
+        let edit = try XCTUnwrap(model.audioEdits.first)
+        XCTAssertEqual(clip("audio-\(edit.id)")?.range, 0.2...0.6)
+        model.setKind(.bleep, of: edit)
+        XCTAssertEqual(clip("audio-\(edit.id)")?.label, String(localized: "Bleep"))
+        model.deleteAudioEdit(edit)
+        XCTAssertNil(clip("audio-\(edit.id)"))
+    }
+
+    func testThePlayheadIsWhereThePreviewWasMoved() async throws {
+        let movie = try await SoundMovie.make(seconds: 2)
+        cleanup.append(movie)
+        let model = try await openEditor(on: movie)
+        model.scrub(to: 1.2)
+        XCTAssertEqual(model.playhead.time, 1.2)
+        XCTAssertEqual(model.currentTime, 1.2)
+        model.scrub(to: 9)
+        XCTAssertEqual(model.currentTime, model.duration, accuracy: 0.001, "Within the video.")
+    }
 }

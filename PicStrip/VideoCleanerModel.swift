@@ -43,39 +43,63 @@ final class VideoCleanerModel {
     /// How far opening the video has got, 0 … 1, or `nil` while unknown.
     private(set) var loadProgress: Double?
     /// Seconds.
-    private(set) var duration: Double = 0
+    private(set) var duration: Double = 0 {
+        didSet { updateTimelineClips() }
+    }
     private(set) var scanProgress = VideoScanner.Progress(fraction: 0, isCooling: false)
     /// The latest look at the frame being scanned, kept between glimpses.
     private(set) var glimpse: VideoScanner.Glimpse?
     private(set) var saveProgress: Double = 0
 
-    private(set) var faces: [FaceTrack] = []
+    private(set) var faces: [FaceTrack] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// A face's cover; faces not in here are blurred.
     private(set) var covers: [Int: FaceCover] = [:]
     /// Faces the user chose to leave showing.
-    private(set) var visibleFaces: Set<Int> = []
+    private(set) var visibleFaces: Set<Int> = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Off to keep every face visible.
     var coversFaces = true {
-        didSet { if coversFaces != oldValue { refreshPreview() } }
+        didSet {
+            guard coversFaces != oldValue else { return }
+            updateTimelineClips()
+            refreshPreview()
+        }
     }
 
     /// Sensitive text and codes, one row per distinct reading.
-    private(set) var findingGroups: [FindingGroup] = []
+    private(set) var findingGroups: [FindingGroup] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Groups the user chose to leave showing.
-    private(set) var uncoveredGroups: Set<String> = []
+    private(set) var uncoveredGroups: Set<String> = [] {
+        didSet { updateTimelineClips() }
+    }
     /// How text and codes are covered: `.solid`, `.pixelate` or `.blur`.
     var textStyle = RedactionStyle.solid {
         didSet { if textStyle != oldValue { refreshPreview() } }
     }
 
     /// Covers the user drew, each followed through the video (`isDrawn`).
-    private(set) var drawnCovers: [FaceTrack] = []
+    private(set) var drawnCovers: [FaceTrack] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// When a face or drawn cover is on, where set on the timeline (by track id).
-    private(set) var ranges: [Int: ClosedRange<Double>] = [:]
+    private(set) var ranges: [Int: ClosedRange<Double>] = [:] {
+        didSet { updateTimelineClips() }
+    }
+    /// Every cover and sound edit as a clip on the timeline, made again only
+    /// when one of them changes.
+    private(set) var timelineClips: [EditorTimeline.Clip] = []
     /// The row picked in the list, shown on the timeline.
     var selection: Selection?
+    /// Where the preview is.  Only views that show the time should read it,
+    /// so that playing redraws the playhead, not the whole editor.
+    let playhead = Playhead()
     /// Where the preview is, in seconds.
-    private(set) var currentTime: Double = 0
+    var currentTime: Double { playhead.time }
     /// How far following a drawn box has got, 0 … 1; `nil` when not following.
     private(set) var followProgress: Double?
 
@@ -107,7 +131,9 @@ final class VideoCleanerModel {
     private(set) var editedAudioCount = 0
 
     /// Stretches of sound to bleep or mute.
-    private(set) var audioEdits: [AudioEdit] = []
+    private(set) var audioEdits: [AudioEdit] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Whether the video has sound at all.
     private(set) var hasAudio = false
     /// How loud the sound is along the video, 0 … 1, for the timeline.
@@ -312,7 +338,7 @@ final class VideoCleanerModel {
     /// Moves the preview to `time` — the timeline's playhead.
     func scrub(to time: Double) {
         let time = min(max(0, time), duration)
-        currentTime = time
+        playhead.time = time
         player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
         if previewStill != nil {
             stillTime = time
@@ -361,7 +387,7 @@ final class VideoCleanerModel {
                 self?.stopAtBoundary()
             }
         }
-        currentTime = range.lowerBound
+        playhead.time = range.lowerBound
         Task {
             _ = await player.seek(
                 to: CMTime(seconds: range.lowerBound, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero
@@ -415,7 +441,7 @@ final class VideoCleanerModel {
             forInterval: CMTime(seconds: 0.05, preferredTimescale: 600), queue: .main
         ) { [weak self] time in
             MainActor.assumeIsolated {
-                self?.currentTime = time.seconds
+                self?.playhead.time = time.seconds
             }
         }
     }
@@ -495,11 +521,11 @@ final class VideoCleanerModel {
 
     private func seek(start: Double, showing time: Double?) {
         let start = max(0, start)
-        currentTime = start
+        playhead.time = start
         player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
         if previewStill != nil, let time {
             stillTime = time
-            currentTime = time
+            playhead.time = time
             refreshPreview()
         }
     }
@@ -518,6 +544,45 @@ final class VideoCleanerModel {
         PrivateFileStore.exports.remove(source)
         PrivateFileStore.exports.remove(output)
         toneFiles.forEach { PrivateFileStore.exports.remove($0) }
+    }
+
+    // MARK: Timeline
+
+    /// Every cover and sound edit as a clip, in its lane and colour.
+    private func updateTimelineClips() {
+        var clips: [EditorTimeline.Clip] = []
+        if coversFaces {
+            for (index, face) in faces.enumerated() where !isVisible(face) {
+                clips.append(.init(
+                    id: "face-\(face.id)", lane: .faces, range: range(of: face),
+                    color: PIIType.face.riskLevel.color, label: String(localized: "Face \(index + 1)")
+                ))
+            }
+        }
+        for group in findingGroups where isCovered(group) {
+            for track in group.tracks {
+                clips.append(.init(
+                    id: "text-\(track.id)", lane: .text,
+                    range: clamped((track.start - FindingTracking.hold)...(track.end + FindingTracking.hold)),
+                    color: group.type.riskLevel.color, label: group.type.description, symbol: group.type.symbolName
+                ))
+            }
+        }
+        for (index, cover) in drawnCovers.enumerated() {
+            clips.append(.init(
+                id: "face-\(cover.id)", lane: .objects, range: range(of: cover),
+                color: .accentColor, label: String(localized: "Object \(index + 1)"), symbol: "viewfinder"
+            ))
+        }
+        for edit in audioEdits {
+            clips.append(.init(
+                id: "audio-\(edit.id)", lane: .audio, range: edit.range,
+                color: edit.kind == .bleep ? .red : .gray,
+                label: edit.kind == .bleep ? String(localized: "Bleep") : String(localized: "Mute"),
+                symbol: edit.kind == .bleep ? "waveform.badge.exclamationmark" : "speaker.slash.fill"
+            ))
+        }
+        if clips != timelineClips { timelineClips = clips }
     }
 
     // MARK: Helpers
@@ -589,7 +654,7 @@ final class VideoCleanerModel {
             let still = await Self.still(of: source, at: stillTime, plan: plan)
             guard generation == previewGeneration, stage == .review else { return }
             previewStill = still
-            currentTime = stillTime
+            playhead.time = stillTime
             // A failed item cannot be reused: start the next refresh afresh.
             player.replaceCurrentItem(with: nil)
         }
@@ -748,6 +813,17 @@ final class VideoCleanerModel {
         }
         return images
     }
+}
+
+// MARK: - Playhead
+
+/// Where the video editor's preview is.  Kept apart from the model, which the
+/// whole editor reads: as the video plays this changes twenty times a second,
+/// and only the views that show the time — the playhead, its label — redraw.
+@Observable
+final class Playhead {
+    /// Seconds.
+    fileprivate(set) var time: Double = 0
 }
 
 /// The system's progress handing over a picked video, read from the main actor

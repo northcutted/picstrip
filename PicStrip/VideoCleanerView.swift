@@ -168,11 +168,11 @@ struct VideoCleanerView: View {
                 }
                 EditorTimeline(
                     duration: model.duration,
-                    time: model.currentTime,
+                    playhead: model.playhead,
                     lanes: timelineLanes,
                     frames: model.filmstrip,
                     levels: model.audioLevels,
-                    clips: timelineClips,
+                    clips: model.timelineClips,
                     selected: selectedClipIDs,
                     trimmable: trimmableClipID,
                     selectionActions: soundActions,
@@ -212,10 +212,7 @@ struct VideoCleanerView: View {
                     Label {
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Cover an Object…")
-                            Text("Draw on the frame at \(Self.clock(model.currentTime))")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .monospacedDigit()
+                            DrawingTimeLabel(playhead: model.playhead)
                         }
                     } icon: {
                         Image(systemName: "plus.viewfinder")
@@ -494,43 +491,6 @@ struct VideoCleanerView: View {
         lanes.append(.objects)
         if model.hasAudio { lanes.append(.audio) }
         return lanes
-    }
-
-    /// Every cover and sound edit as a clip, in its lane and colour.
-    private var timelineClips: [EditorTimeline.Clip] {
-        var clips: [EditorTimeline.Clip] = []
-        if model.coversFaces {
-            for (index, face) in model.faces.enumerated() where !model.isVisible(face) {
-                clips.append(.init(
-                    id: "face-\(face.id)", lane: .faces, range: model.range(of: face),
-                    color: PIIType.face.riskLevel.color, label: String(localized: "Face \(index + 1)")
-                ))
-            }
-        }
-        for group in model.findingGroups where model.isCovered(group) {
-            for track in group.tracks {
-                clips.append(.init(
-                    id: "text-\(track.id)", lane: .text,
-                    range: model.clamped((track.start - FindingTracking.hold)...(track.end + FindingTracking.hold)),
-                    color: group.type.riskLevel.color, label: group.type.description, symbol: group.type.symbolName
-                ))
-            }
-        }
-        for (index, cover) in model.drawnCovers.enumerated() {
-            clips.append(.init(
-                id: "face-\(cover.id)", lane: .objects, range: model.range(of: cover),
-                color: .accentColor, label: String(localized: "Object \(index + 1)"), symbol: "viewfinder"
-            ))
-        }
-        for edit in model.audioEdits {
-            clips.append(.init(
-                id: "audio-\(edit.id)", lane: .audio, range: edit.range,
-                color: edit.kind == .bleep ? .red : .gray,
-                label: edit.kind == .bleep ? String(localized: "Bleep") : String(localized: "Mute"),
-                symbol: edit.kind == .bleep ? "waveform.badge.exclamationmark" : "speaker.slash.fill"
-            ))
-        }
-        return clips
     }
 
     private var selectedClipIDs: Set<String> {
@@ -939,6 +899,21 @@ struct VideoCleanerView: View {
         } catch {
             saveState = .failed(String(localized: "Could not save to Photos: \(error.localizedDescription)"))
         }
+    }
+}
+
+// MARK: - DrawingTimeLabel
+
+/// "Draw on the frame at 0:12", following the playhead: on its own, so the
+/// list around it is not redrawn as the video plays.
+private struct DrawingTimeLabel: View {
+    let playhead: Playhead
+
+    var body: some View {
+        Text("Draw on the frame at \(VideoCleanerView.clock(playhead.time))")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .monospacedDigit()
     }
 }
 

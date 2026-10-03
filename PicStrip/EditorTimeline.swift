@@ -65,7 +65,9 @@ struct EditorTimeline: View {
     }
 
     let duration: Double
-    let time: Double
+    /// Where the preview is.  Read only by the parts that show it, so that as
+    /// the video plays the playhead moves without the lanes being redrawn.
+    let playhead: Playhead
     let lanes: [Lane]
     let frames: [UIImage]
     /// The sound's loudness along the video, 0 … 1, drawn in the audio lane.
@@ -140,14 +142,18 @@ struct EditorTimeline: View {
                     .transition(.opacity)
             }
         }
-        .overlay(alignment: .topLeading) { playhead }
+        .overlay(alignment: .topLeading) {
+            PlayheadLine(playhead: playhead, window: window, trackWidth: trackWidth, height: tracksHeight)
+        }
+        .background {
+            PlayheadWatcher(playhead: playhead) { time in
+                // Zoomed in, the part in view follows the playhead as it plays.
+                guard edgeDirection == 0, pinchStart == nil else { return }
+                show(window.revealing(time))
+            }
+        }
         .onGeometryChange(for: CGFloat.self) { $0.size.width } action: { width = $0 }
         .simultaneousGesture(pinch)
-        .onChange(of: time) { _, time in
-            // Zoomed in, the part in view follows the playhead as it plays.
-            guard edgeDirection == 0, pinchStart == nil else { return }
-            show(window.revealing(time))
-        }
         .sensoryFeedback(.impact(weight: .medium), trigger: selectionStarts)
         .animation(.snappy(duration: 0.2), value: window.isZoomed)
         .accessibilityElement(children: .contain)
@@ -237,9 +243,9 @@ struct EditorTimeline: View {
         .gesture(scrub(mapping))
         .accessibilityElement()
         .accessibilityLabel("Timeline")
-        .accessibilityValue(Text("\(VideoCleanerView.clock(time)) of \(VideoCleanerView.clock(duration))"))
+        .modifier(PlayheadValue(playhead: playhead, duration: duration))
         .accessibilityAdjustableAction { direction in
-            onSeek(clamp(time + (direction == .increment ? 1 : -1)))
+            onSeek(clamp(playhead.time + (direction == .increment ? 1 : -1)))
         }
         .accessibilityAction(named: Text("Zoom In")) { zoom(by: 2) }
         .accessibilityAction(named: Text("Zoom Out")) { zoom(by: 0.5) }
@@ -261,7 +267,8 @@ struct EditorTimeline: View {
                 .simultaneousGesture(hold(mapping), including: selectsAudio ? .all : .none)
                 .modifier(AudioLaneAccessibility(isAudio: selectsAudio, actions: playheadActions))
             if lane == .audio, !levels.isEmpty {
-                waveform(mapping)
+                Waveform(levels: levels, duration: duration, window: mapping.window)
+                    .equatable()
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
@@ -289,26 +296,6 @@ struct EditorTimeline: View {
             }
         }
         .coordinateSpace(.named(Self.laneSpace))
-    }
-
-    private func waveform(_ mapping: TimelineMapping) -> some View {
-        Canvas { context, size in
-            guard duration > 0 else { return }
-            let count = levels.count
-            let seconds = duration / Double(count)
-            let first = max(0, Int(mapping.window.start / seconds))
-            let last = min(count, Int((mapping.window.end / seconds).rounded(.up)))
-            guard first < last else { return }
-            let barWidth = CGFloat(seconds) * mapping.pointsPerSecond
-            for index in first..<last {
-                let height = max(1, CGFloat(levels[index]) * (size.height - 6))
-                let bar = CGRect(
-                    x: mapping.x(Double(index) * seconds), y: (size.height - height) / 2,
-                    width: max(1, barWidth - 0.5), height: height
-                )
-                context.fill(Path(bar), with: .color(.secondary.opacity(0.45)))
-            }
-        }
     }
 
     private func clipView(_ clip: Clip, showing visible: ClosedRange<Double>, _ mapping: TimelineMapping) -> some View {
@@ -347,24 +334,6 @@ struct EditorTimeline: View {
         .accessibilityValue(Text("\(VideoCleanerView.clock(clip.range.lowerBound)) – \(VideoCleanerView.clock(clip.range.upperBound))"))
         .accessibilityAddTraits(isSelected ? .isSelected : [])
         .accessibilityIdentifier("clip-\(clip.id)")
-    }
-
-    // MARK: Playhead
-
-    private var playhead: some View {
-        let x = Self.labelWidth + window.x(time, width: trackWidth)
-        return ZStack(alignment: .top) {
-            Rectangle()
-                .fill(Color.red)
-                .frame(width: 2, height: tracksHeight)
-            RoundedRectangle(cornerRadius: 2)
-                .fill(Color.red)
-                .frame(width: 10, height: 12)
-        }
-        .offset(x: x - 5)
-        .opacity(window.contains(time) ? 1 : 0)
-        .allowsHitTesting(false)
-        .accessibilityHidden(true)
     }
 
     // MARK: Zoom
@@ -411,10 +380,7 @@ struct EditorTimeline: View {
                         .strokeBorder(Color.primary.opacity(0.45), lineWidth: 1.5)
                         .frame(width: max(14, window.length * scale), height: Self.overviewHeight - 4)
                         .offset(x: window.start * scale)
-                    Rectangle()
-                        .fill(Color.red)
-                        .frame(width: 2, height: Self.overviewHeight - 6)
-                        .offset(x: time * scale - 1)
+                    OverviewPlayhead(playhead: playhead, scale: scale, height: Self.overviewHeight - 6)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
@@ -455,7 +421,7 @@ struct EditorTimeline: View {
 
     /// Zooms around the playhead — for VoiceOver.
     private func zoom(by factor: Double) {
-        let fraction = window.length > 0 ? (time - window.start) / window.length : 0
+        let fraction = window.length > 0 ? (playhead.time - window.start) / window.length : 0
         show(window.zoomed(to: zoom * factor, keeping: min(max(fraction, 0), 1)))
     }
 
@@ -471,7 +437,7 @@ struct EditorTimeline: View {
         DragGesture(minimumDistance: 0)
             .onChanged { value in
                 guard pinchStart == nil, mapping.width > 0 else { return }
-                if timeBeforeTouch == nil { timeBeforeTouch = time }
+                if timeBeforeTouch == nil { timeBeforeTouch = playhead.time }
                 if selectsAudio { lastAudioTouchX = value.location.x }
                 carryOn(at: value.location.x, width: mapping.width)
                 let now = clamp(mapping.time(min(max(value.location.x, 0), mapping.width)))
@@ -653,6 +619,7 @@ struct EditorTimeline: View {
         selectionActions.compactMap { action in
             action.playheadTitle.map { title in
                 AudioLaneAccessibility.Action(title: title) {
+                    let time = playhead.time
                     action.perform(Self.selection(from: time, to: time + 1, duration: duration))
                 }
             }
@@ -769,6 +736,116 @@ private struct TimelineMapping {
     var pointsPerSecond: CGFloat { window.length > 0 ? width / CGFloat(window.length) : 0 }
     func x(_ time: Double) -> CGFloat { window.x(time, width: width) }
     func time(_ x: CGFloat) -> Double { window.time(at: x, width: width) }
+}
+
+// MARK: - Playhead views
+
+/// The red line across the lanes at the preview's time.
+private struct PlayheadLine: View {
+    let playhead: Playhead
+    let window: TimelineWindow
+    let trackWidth: CGFloat
+    let height: CGFloat
+
+    var body: some View {
+        let time = playhead.time
+        ZStack(alignment: .top) {
+            Rectangle()
+                .fill(Color.red)
+                .frame(width: 2, height: height)
+            RoundedRectangle(cornerRadius: 2)
+                .fill(Color.red)
+                .frame(width: 10, height: 12)
+        }
+        .offset(x: EditorTimeline.labelWidth + window.x(time, width: trackWidth) - 5)
+        .opacity(window.contains(time) ? 1 : 0)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+/// The playhead in the zoomed-in overview of the whole video.
+private struct OverviewPlayhead: View {
+    let playhead: Playhead
+    /// Points a second.
+    let scale: Double
+    let height: CGFloat
+
+    var body: some View {
+        Rectangle()
+            .fill(Color.red)
+            .frame(width: 2, height: height)
+            .offset(x: playhead.time * scale - 1)
+    }
+}
+
+/// Tells `onMove` each time the playhead moves; draws nothing.
+private struct PlayheadWatcher: View {
+    let playhead: Playhead
+    let onMove: (Double) -> Void
+
+    var body: some View {
+        Color.clear
+            .onChange(of: playhead.time) { _, time in onMove(time) }
+            .accessibilityHidden(true)
+    }
+}
+
+/// The timeline's VoiceOver value: where the playhead is.
+private struct PlayheadValue: ViewModifier {
+    let playhead: Playhead
+    let duration: Double
+
+    func body(content: Content) -> some View {
+        content.accessibilityValue(Text("\(VideoCleanerView.clock(playhead.time)) of \(VideoCleanerView.clock(duration))"))
+    }
+}
+
+// MARK: - Waveform
+
+/// The sound's loudness in the audio lane, as one shape.  Zoomed out there
+/// are more readings than points, so each point shows the loudest reading in
+/// it: a long video's thousands of readings are drawn as a few hundred bars.
+private struct Waveform: View, Equatable {
+    let levels: [Float]
+    let duration: Double
+    let window: TimelineWindow
+
+    var body: some View {
+        Canvas { context, size in
+            guard duration > 0, !levels.isEmpty, size.width > 0 else { return }
+            let mapping = TimelineMapping(window: window, width: size.width)
+            let seconds = duration / Double(levels.count)
+            let first = max(0, Int(window.start / seconds))
+            let last = min(levels.count, Int((window.end / seconds).rounded(.up)))
+            guard first < last else { return }
+            let barWidth = CGFloat(seconds) * mapping.pointsPerSecond
+            func bar(at x: CGFloat, width: CGFloat, level: Float) -> CGRect {
+                let height = max(1, CGFloat(level) * (size.height - 6))
+                return CGRect(x: x, y: (size.height - height) / 2, width: width, height: height)
+            }
+            var shape = Path()
+            if barWidth >= 1 {
+                for index in first..<last {
+                    shape.addRect(bar(at: mapping.x(Double(index) * seconds), width: max(1, barWidth - 0.5), level: levels[index]))
+                }
+            } else {
+                var column = mapping.x(Double(first) * seconds).rounded(.down)
+                var loudest: Float = 0
+                for index in first..<last {
+                    let x = mapping.x(Double(index) * seconds).rounded(.down)
+                    if x != column {
+                        shape.addRect(bar(at: column, width: 1, level: loudest))
+                        column = x
+                        loudest = 0
+                    }
+                    loudest = max(loudest, levels[index])
+                }
+                shape.addRect(bar(at: column, width: 1, level: loudest))
+            }
+            context.fill(shape, with: .color(.secondary.opacity(0.45)))
+        }
+    }
 }
 
 // MARK: - AudioLaneAccessibility
