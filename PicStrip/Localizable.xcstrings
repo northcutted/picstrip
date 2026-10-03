@@ -42451,6 +42451,9 @@
         }
       }
     },
+    "PicStrip could not read “%@”. No videos were returned." : {
+      "comment" : "Shortcuts error from “Strip Metadata from Videos”; %@ is the file name."
+    },
     "PicStrip could not remove the metadata from “%@”. No images were returned." : {
       "localizations" : {
         "ar" : {
@@ -42550,6 +42553,9 @@
           }
         }
       }
+    },
+    "PicStrip could not remove the metadata from “%@”. No videos were returned." : {
+      "comment" : "Shortcuts error from “Strip Metadata from Videos”; %@ is the file name."
     },
     "PicStrip covers these wherever it can read them: in the editor, in batches and in the live camera. Your name, a license plate or your street, for example." : {
       "comment" : "Explanation under the field that adds Always Cover words and phrases.",
@@ -48013,6 +48019,9 @@
           }
         }
       }
+    },
+    "Removes location, device, date and other private metadata from videos and returns clean copies. Runs on this device without opening PicStrip. The frames are copied as they are, so faces and text are not covered." : {
+      "comment" : "Shortcuts action description for “Strip Metadata from Videos”."
     },
     "Replace" : {
       "localizations" : {
@@ -56198,6 +56207,9 @@
         }
       }
     },
+    "Strip Metadata from Videos" : {
+      "comment" : "Shortcuts action title (background, metadata only); pairs with “Strip Metadata from Images”."
+    },
     "Strip Privacy Metadata" : {
       "localizations" : {
         "ar" : {
@@ -56497,6 +56509,9 @@
           }
         }
       }
+    },
+    "Strip metadata from ${videos}" : {
+      "comment" : "Shortcuts action summary; ${videos} is the action's input (the videos). Pairs with “Strip metadata from ${images} as ${format}”."
     },
     "Stripe Key" : {
       "localizations" : {
@@ -63931,7 +63946,7 @@
       "comment" : "Share sheet title after a video was handed to PicStrip for editing (pairs with “Image Prepared”)."
     },
     "Videos" : {
-      "comment" : "Home screen tile that opens the photo picker filtered to videos.",
+      "comment" : "Help page section header, batch title when only videos are in it, and the input of the “Strip Metadata from Videos” Shortcuts action.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
