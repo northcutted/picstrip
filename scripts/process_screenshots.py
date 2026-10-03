@@ -266,16 +266,17 @@ def _shape_for_display(
 # ``fastlane/MarketingHeadlines.xcstrings`` is missing. Kept in sync with the
 # canonical English values in that file.
 HEADLINES: dict[str, str] = {
-    "04_ReviewAndShare": "Review & Share\nProcessed on your device",
-    "02_RedactionEditor": "Position & size\nAdd centered region",
-    "03_Metadata": "Location · Camera & date\nImage details",
+    "05_ReviewAndShare": "Review & Share\nProcessed on your device",
+    "03_RedactionEditor": "Position & size\nAdd centered region",
+    "04_Metadata": "Location · Camera & date\nImage details",
     "01_FullPreview": "Inspect full image",
-    "05_Sample": "Try a sample\nA fictional photo",
+    "02_VideoEditor": "Clean your videos\nFaces, text and sound covered",
+    "06_Sample": "Try a sample\nA fictional photo",
 }
 
 DEFAULT_HEADLINE = "Review & Share"
 
-# Show the result first, then editing, metadata, full inspection and the demo.
+# Show the result first, then video, editing, metadata, full inspection and the demo.
 SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {key: key for key in HEADLINES}
 CAPTURE_HEADLINE_KEYS: dict[str, str] = {}
 

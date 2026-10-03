@@ -43,13 +43,16 @@ struct LiveCameraView: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            viewfinder
-            if !model.areControlsHidden {
-                controls
-                    .transition(.opacity)
+            CameraFrameLayout(aspect: pictureAspect, controlsHidden: model.areControlsHidden) {
+                topBar
+            } viewfinder: {
+                viewfinder
+            } inPicture: {
+                inPicture
+            } bottom: {
+                bottomBar
             }
         }
-        .animation(.easeInOut(duration: 0.2), value: model.areControlsHidden)
         .statusBarHidden()
         // The volume buttons and Camera Control take the photo, as in the Camera app.
         .onCameraCaptureEvent(isEnabled: canCapture) { event in
@@ -77,10 +80,7 @@ struct LiveCameraView: View {
     private var viewfinder: some View {
         GeometryReader { geo in
             let videoRect = LiveOverlayGeometry.videoRect(videoSize: model.videoSize, in: geo.size)
-            let safeBounds = CGRect(origin: .zero, size: geo.size).inset(by: UIEdgeInsets(
-                top: geo.safeAreaInsets.top, left: geo.safeAreaInsets.leading,
-                bottom: geo.safeAreaInsets.bottom, right: geo.safeAreaInsets.trailing
-            ))
+            let safeBounds = CGRect(origin: .zero, size: geo.size)
             let origin = geo.frame(in: .global).origin
             let textLines = model.textLines.map(model.displayBox)
             ZStack(alignment: .topLeading) {
@@ -131,39 +131,48 @@ struct LiveCameraView: View {
                 endExposure: { model.endExposureAdjustment() }
             )
         }
-        .ignoresSafeArea()
         .accessibilityHidden(true)
+    }
+
+    /// The frames' shape once they arrive; a phone camera's 4:3 until then.
+    private func pictureAspect(for size: CGSize) -> CGFloat? {
+        if model.videoSize.width > 0, model.videoSize.height > 0 {
+            return model.videoSize.width / model.videoSize.height
+        }
+        return size.height > size.width ? 3 / 4 : 4 / 3
     }
 
     // MARK: Controls
 
-    private var controls: some View {
-        VStack(spacing: 12) {
-            // The glass elements at the top share one container, as do those at the bottom.
-            GlassEffectContainer(spacing: 10) {
-                VStack(spacing: 8) {
-                    HStack(spacing: 10) {
-                        closeButton
-                        Spacer()
-                        if model.capabilities.hasTorch { torchToggle }
-                        previewToggle
-                    }
-
-                    if isShowingGuide {
-                        Text("Live preview is a guide. After capture, review the full scan and choose what to cover.")
-                            .font(.caption.weight(.semibold))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 8)
-                            .glassEffect(in: .rect(cornerRadius: 16))
-                            .transition(.opacity)
-                    }
-                }
+    /// Above the picture: close, the flashlight and the redaction preview.
+    private var topBar: some View {
+        GlassEffectContainer(spacing: 10) {
+            HStack(spacing: 10) {
+                closeButton
+                Spacer()
+                if model.capabilities.hasTorch { torchToggle }
+                previewToggle
             }
-            .animation(.easeInOut(duration: 0.3), value: isShowingGuide)
-            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[0] = $0 }
+            .frame(height: 44)
+        }
+    }
 
-            Spacer()
+    /// On the picture, inside its edges: the guide at the top; what is in
+    /// view and the lens buttons at the bottom.
+    private var inPicture: some View {
+        VStack(spacing: 12) {
+            if isShowingGuide {
+                Text("Live preview is a guide. After capture, review the full scan and choose what to cover.")
+                    .font(.caption.weight(.semibold))
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .glassEffect(in: .rect(cornerRadius: 16))
+                    .transition(.opacity)
+                    .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[0] = $0 }
+            }
+
+            Spacer(minLength: 0)
 
             GlassEffectContainer(spacing: 10) {
                 VStack(spacing: 12) {
@@ -177,12 +186,25 @@ struct LiveCameraView: View {
                         CameraZoomButtons(levels: model.capabilities.zoomLevels, zoom: model.zoomLevel) { model.setZoom($0) }
                             .disabled(model.state != .running)
                     }
-                    if let mode, !model.isCapturing { CameraModePicker(mode: mode) }
                 }
             }
             .animation(reduceMotion ? nil : .snappy, value: model.summary)
             .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[1] = $0 }
+        }
+        .animation(.easeInOut(duration: 0.3), value: isShowingGuide)
+        .onChange(of: isShowingGuide) { _, isShowing in
+            if !isShowing { controlFrames[0] = nil }
+        }
+    }
 
+    /// Below the picture: the mode, and the shutter with the camera switch.
+    private var bottomBar: some View {
+        VStack(spacing: 12) {
+            if let mode {
+                CameraModePicker(mode: mode)
+                    .opacity(model.isCapturing ? 0 : 1)
+                    .allowsHitTesting(!model.isCapturing)
+            }
             HStack {
                 Color.clear.frame(width: 60, height: 44)
                 Spacer()
@@ -199,11 +221,7 @@ struct LiveCameraView: View {
                 }
                 .frame(width: 60)
             }
-            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[2] = $0 }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 12)
-        .padding(.bottom, 24)
     }
 
     private var closeButton: some View {

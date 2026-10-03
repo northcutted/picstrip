@@ -113,3 +113,64 @@ extension View {
             )
     }
 }
+
+// MARK: - CameraFrameLayout
+
+/// The Camera app's layout: the controls on the black above and below the
+/// picture, and the picture fitted between them — so no control sits half on
+/// the picture and half on the black.  `inPicture` is laid over the picture
+/// itself, inside its edges: what is in view, and the lens buttons.
+struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: View>: View {
+    /// The picture's width over its height, for a viewfinder of the given size.
+    let aspect: (CGSize) -> CGFloat?
+    /// The Camera Control's overlay is showing: everything but the picture makes way.
+    let controlsHidden: Bool
+    @ViewBuilder let top: () -> Top
+    @ViewBuilder let viewfinder: () -> Viewfinder
+    @ViewBuilder let inPicture: () -> InPicture
+    @ViewBuilder let bottom: () -> Bottom
+
+    var body: some View {
+        VStack(spacing: 0) {
+            top()
+                .padding(.horizontal, 20)
+                .padding(.vertical, 8)
+                .opacity(controlsHidden ? 0 : 1)
+                .allowsHitTesting(!controlsHidden)
+            GeometryReader { geometry in
+                let picture = CameraFrame.fitted(aspect(geometry.size), in: geometry.size)
+                ZStack(alignment: .topLeading) {
+                    viewfinder()
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                    inPicture()
+                        .padding(12)
+                        .frame(width: picture.width, height: picture.height)
+                        .offset(x: picture.minX, y: picture.minY)
+                        .opacity(controlsHidden ? 0 : 1)
+                        .allowsHitTesting(!controlsHidden)
+                }
+            }
+            bottom()
+                .padding(.horizontal, 20)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+                .opacity(controlsHidden ? 0 : 1)
+                .allowsHitTesting(!controlsHidden)
+        }
+        .animation(.easeInOut(duration: 0.2), value: controlsHidden)
+    }
+}
+
+nonisolated enum CameraFrame {
+    /// The largest rectangle of `aspect` (width over height) centred in
+    /// `size`, as the preview layer draws the picture; all of `size` without one.
+    static func fitted(_ aspect: CGFloat?, in size: CGSize) -> CGRect {
+        guard let aspect, aspect > 0, size.width > 0, size.height > 0 else { return CGRect(origin: .zero, size: size) }
+        if size.width / size.height > aspect {
+            let width = size.height * aspect
+            return CGRect(x: (size.width - width) / 2, y: 0, width: width, height: size.height)
+        }
+        let height = size.width / aspect
+        return CGRect(x: 0, y: (size.height - height) / 2, width: size.width, height: height)
+    }
+}

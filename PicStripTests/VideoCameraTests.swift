@@ -79,3 +79,20 @@ final class VideoFormatCatalogTests: XCTestCase {
         XCTAssertEqual(CameraZoomButtons.label(4, suffix: false), "4")
     }
 }
+
+/// Where the picture sits between the camera's control bands.
+final class CameraFrameTests: XCTestCase {
+
+    func testThePictureFitsBetweenTheBands() {
+        // A tall region: an upright 9:16 video fills its height, centred.
+        let tall = CameraFrame.fitted(9.0 / 16, in: CGSize(width: 440, height: 650))
+        XCTAssertEqual(tall.height, 650)
+        XCTAssertEqual(tall.width, 365.625, accuracy: 0.001)
+        XCTAssertEqual(tall.midX, 220, accuracy: 0.001)
+        // A 3:4 photo in the same region: full width, centred vertically.
+        let photo = CameraFrame.fitted(3.0 / 4, in: CGSize(width: 440, height: 650))
+        XCTAssertEqual(photo.width, 440)
+        XCTAssertEqual(photo.midY, 325, accuracy: 0.001)
+        XCTAssertEqual(CameraFrame.fitted(nil, in: CGSize(width: 10, height: 20)), CGRect(x: 0, y: 0, width: 10, height: 20))
+    }
+}
