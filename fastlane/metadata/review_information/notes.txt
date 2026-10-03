@@ -6,9 +6,9 @@ Camera permission is requested only when the Camera (Photo, Video or Document mo
 
 Videos: picking one video in “Photos & Videos”, or recording one, opens the cleaner, which finds faces, text and codes on device, tracks them, and covers them in a re-encoded copy without location, device and date metadata. Users can cover any object by drawing a box (tracked with Vision), trim covers on a timeline, and bleep or mute stretches of sound. Picking several videos cleans them as a batch with the same defaults and no review. To try it without a library video, record a few seconds in the camera's Video mode.
 
-Share Extension: Process & Save makes cleaned copies. Edit prepares the first original in a protected, backup-excluded app-group file and tells the user to open PicStrip within 15 minutes; it does not launch the app through unsupported extension APIs. Imported or discarded handoffs are deleted; expired files are rejected and cleaned on access.
+Share Extension (photos, videos): Process & Save makes cleaned copies; a video only loses its metadata there (frames copied, faces not covered), as the sheet says. Edit prepares the first original in a protected, backup-excluded app-group file and tells the user to open PicStrip within 15 minutes; it does not launch the app through unsupported extension APIs. Imported or discarded handoffs are deleted; expired files are rejected and cleaned on access.
 
-Shortcuts: “Strip Metadata from Images” is a background, metadata-only action that does not redact visible text or faces. The app-opening actions are used for interactive review.
+Shortcuts: “Strip Metadata from Images” and “Strip Metadata from Videos” are background, metadata-only actions that do not redact visible text or faces. The app-opening actions are used for interactive review.
 
 Network: PicStrip does not upload images, videos or scan results. On iOS 27 an optional Apple object-selection model may download from Apple after explicit consent. Photo/file providers may download the user's selected item; saving to synced Photos or a chosen sharing destination follows that service's settings. Core processing runs locally.
 

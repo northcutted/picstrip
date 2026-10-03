@@ -48,8 +48,8 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Accessible Editing** | Add a centered box and adjust its position and size without drawing; changes remain undoable |
 | **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG for screenshots and documents, JPEG for everyday photos (both chosen by the sharing preset), HEIC, or the original format |
 | **Audit Reports** | Export field names, counts and scan status without original values or detected text |
-| **Share Extension** | Save cleaned copies from the share sheet, or prepare the first original for editing using a protected, expiring handoff |
-| **Shortcuts** | "Clean Photos with PicStrip" opens the picker, "Take a Photo" opens the camera and "Clean a Screenshot" opens your screenshots — all usable from the Action Button or a Control Center shortcut; "Strip Metadata from Images" removes metadata only in the background |
+| **Share Extension** | Save cleaned copies of photos and videos from the share sheet (videos have their metadata removed there; covering faces and text in a video happens in the app), or prepare the first original photo or video for editing using a protected, expiring handoff |
+| **Shortcuts** | "Clean Photos with PicStrip" opens the picker, "Take a Photo" opens the camera and "Clean a Screenshot" opens your screenshots — all usable from the Action Button or a Control Center shortcut; "Strip Metadata from Images" and "Strip Metadata from Videos" remove metadata only, in the background, and return the cleaned files |
 
 Available in English and 16 more localizations, including separate Spanish for Spain and Latin America.
 
