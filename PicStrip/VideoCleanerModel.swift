@@ -681,6 +681,10 @@ final class VideoCleanerModel {
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 1280, height: 1280)
+        // The box is where the face was in that very frame: a nearby keyframe
+        // would show it, or someone else, somewhere else.
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
         var images: [Int: UIImage] = [:]
         for (index, item) in items.enumerated() {
             guard let frame = try? await generator.image(at: CMTime(seconds: item.time, preferredTimescale: 600)).image else { continue }
