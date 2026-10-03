@@ -13625,6 +13625,9 @@
         }
       }
     },
+    "Closes the extension. Open PicStrip to edit your prepared video." : {
+      "comment" : "Share sheet: VoiceOver hint for Done after a video was handed to PicStrip."
+    },
     "Colon or hyphen-separated hardware addresses" : {
       "localizations" : {
         "ar" : {
@@ -19658,6 +19661,9 @@
         }
       }
     },
+    "Discard prepared video" : {
+      "comment" : "Share sheet button that deletes the video handed to PicStrip (pairs with “Discard prepared image”)."
+    },
     "Dismiss" : {
       "comment" : "VoiceOver action that closes the save confirmation.",
       "localizations" : {
@@ -23173,6 +23179,9 @@
           }
         }
       }
+    },
+    "Edit opens the first video in PicStrip, where you can cover faces and text. A protected local copy expires after 15 minutes." : {
+      "comment" : "Share sheet caption under the “Edit in PicStrip” button when the first shared item is a video."
     },
     "Edit redactions. None active." : {
       "localizations" : {
@@ -36577,206 +36586,6 @@
         }
       }
     },
-    "No image attachments found." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "لم يتم العثور على مرفقات صور."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Bildanhänge gefunden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se han encontrado imágenes adjuntas."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se encontraron imágenes adjuntas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune image jointe trouvée."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna immagine allegata trovata."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "画像の添付ファイルが見つかりません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이미지 첨부 파일을 찾을 수 없습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen afbeeldingsbijlagen gevonden."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie znaleziono załączonych obrazów."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhuma imagem anexada encontrada."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foram encontradas imagens anexadas."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inga bildbilagor hittades."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Görüntü eki bulunamadı."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未找到图像附件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "找不到影像附件。"
-          }
-        }
-      }
-    },
-    "No images could be processed." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تعذّرت معالجة أي صورة."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es konnten keine Bilder verarbeitet werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido procesar ninguna imagen."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo procesar ninguna imagen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune image n’a pu être traitée."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non è stato possibile elaborare alcuna immagine."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "処理できる画像がありませんでした。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "처리할 수 있는 이미지가 없습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Er konden geen afbeeldingen worden verwerkt."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie udało się przetworzyć żadnego obrazu."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhuma imagem pôde ser processada."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível processar nenhuma imagem."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inga bilder kunde bearbetas."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hiçbir görüntü işlenemedi."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法处理任何图像。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無法處理任何影像。"
-          }
-        }
-      }
-    },
     "No input items found." : {
       "localizations" : {
         "ar" : {
@@ -36976,6 +36785,12 @@
           }
         }
       }
+    },
+    "No photos or videos could be processed." : {
+      "comment" : "Share sheet error: none of the shared photos or videos could be cleaned, saved or prepared."
+    },
+    "No photos or videos found." : {
+      "comment" : "Share sheet error: nothing shared was a photo or a video."
     },
     "No redaction regions" : {
       "localizations" : {
@@ -39499,6 +39314,9 @@
           }
         }
       }
+    },
+    "Opens the first selected video in PicStrip to cover faces and text." : {
+      "comment" : "Share sheet: VoiceOver hint for the “Edit in PicStrip” button when the first shared item is a video."
     },
     "Opens the redaction editor" : {
       "localizations" : {
@@ -42227,7 +42045,7 @@
       }
     },
     "Photos: %lld · Videos: %lld" : {
-      "comment" : "Batch settings: how many of each were picked.",
+      "comment" : "Batch settings and the share sheet: how many of each were picked or shared.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -64109,6 +63927,9 @@
         }
       }
     },
+    "Video Prepared" : {
+      "comment" : "Share sheet title after a video was handed to PicStrip for editing (pairs with “Image Prepared”)."
+    },
     "Videos" : {
       "comment" : "Home screen tile that opens the photo picker filtered to videos.",
       "localizations" : {
@@ -64412,8 +64233,11 @@
         }
       }
     },
+    "Videos have their metadata removed here. To cover faces and text, choose Edit in PicStrip." : {
+      "comment" : "Share sheet note shown when videos are shared. “Edit in PicStrip” is the button below it (existing key)."
+    },
     "Videos: %lld" : {
-      "comment" : "Batch settings: how many videos were picked (videos only).",
+      "comment" : "Batch settings and the share sheet: how many videos were picked or shared (videos only).",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

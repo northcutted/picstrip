@@ -32,6 +32,7 @@
 		C0DEF001000000000000000D /* PrivateKeyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000D /* PrivateKeyDetector.swift */; };
 		C0DEF001000000000000000E /* ImageResourceBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000E /* ImageResourceBudget.swift */; };
 		C0DEF001000000000000000F /* VideoMetadataCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000F /* VideoMetadataCleaner.swift */; };
+		C0DEF0010000000000000010 /* SharedItemKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000010 /* SharedItemKind.swift */; };
 		C0DEF0030000000000000008 /* PhotoLibraryWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000008 /* PhotoLibraryWriter.swift */; };
 		C0DEF0030000000000000009 /* ScanCoverage.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000009 /* ScanCoverage.swift */; };
 		C0DEF003000000000000000A /* PrivateFileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000A /* PrivateFileStore.swift */; };
@@ -40,6 +41,7 @@
 		C0DEF003000000000000000D /* PrivateKeyDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000D /* PrivateKeyDetector.swift */; };
 		C0DEF003000000000000000E /* ImageResourceBudget.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000E /* ImageResourceBudget.swift */; };
 		C0DEF003000000000000000F /* VideoMetadataCleaner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF002000000000000000F /* VideoMetadataCleaner.swift */; };
+		C0DEF0030000000000000010 /* SharedItemKind.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DEF0020000000000000010 /* SharedItemKind.swift */; };
 		C0DEF2010000000000000001 /* Localizable.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C0DEF2000000000000000001 /* Localizable.xcstrings */; };
 		C0DEF3010000000000000001 /* InfoPlist.xcstrings in Resources */ = {isa = PBXBuildFile; fileRef = C0DEF3000000000000000001 /* InfoPlist.xcstrings */; };
 		C46ED0583BAA9E5C0457C69A /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236B3FFCD20408D51F7AE2C8 /* ShareViewController.swift */; };
@@ -112,6 +114,7 @@
 		C0DEF002000000000000000D /* PrivateKeyDetector.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PrivateKeyDetector.swift; path = PicStripCore/PrivateKeyDetector.swift; sourceTree = SOURCE_ROOT; };
 		C0DEF002000000000000000E /* ImageResourceBudget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ImageResourceBudget.swift; path = PicStripCore/ImageResourceBudget.swift; sourceTree = SOURCE_ROOT; };
 		C0DEF002000000000000000F /* VideoMetadataCleaner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = VideoMetadataCleaner.swift; path = PicStripCore/VideoMetadataCleaner.swift; sourceTree = SOURCE_ROOT; };
+		C0DEF0020000000000000010 /* SharedItemKind.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SharedItemKind.swift; path = PicStripCore/SharedItemKind.swift; sourceTree = SOURCE_ROOT; };
 		C0DEF2000000000000000001 /* Localizable.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; name = Localizable.xcstrings; path = PicStrip/Localizable.xcstrings; sourceTree = SOURCE_ROOT; };
 		C0DEF3000000000000000001 /* InfoPlist.xcstrings */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.json.xcstrings; path = InfoPlist.xcstrings; sourceTree = "<group>"; };
 		C110F60F96DA85FC4F60BA89 /* DetectionModels.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = DetectionModels.swift; path = PicStripCore/DetectionModels.swift; sourceTree = SOURCE_ROOT; };
@@ -249,6 +252,7 @@
 				C0DEF002000000000000000A /* PrivateFileStore.swift */,
 				C0DEF0020000000000000009 /* ScanCoverage.swift */,
 				C0DEF002000000000000000F /* VideoMetadataCleaner.swift */,
+				C0DEF0020000000000000010 /* SharedItemKind.swift */,
 				C0DEF2000000000000000001 /* Localizable.xcstrings */,
 			);
 			path = PicStripCore;
@@ -455,6 +459,7 @@
 				C0DEF001000000000000000A /* PrivateFileStore.swift in Sources */,
 				C0DEF0010000000000000009 /* ScanCoverage.swift in Sources */,
 				C0DEF001000000000000000F /* VideoMetadataCleaner.swift in Sources */,
+				C0DEF0010000000000000010 /* SharedItemKind.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -492,6 +497,7 @@
 				C0DEF003000000000000000A /* PrivateFileStore.swift in Sources */,
 				C0DEF0030000000000000009 /* ScanCoverage.swift in Sources */,
 				C0DEF003000000000000000F /* VideoMetadataCleaner.swift in Sources */,
+				C0DEF0030000000000000010 /* SharedItemKind.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

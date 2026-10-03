@@ -133,6 +133,26 @@ final class VideoMetadataCleanerTests: XCTestCase {
         }
     }
 
+    /// A shared video in another MPEG-4 format is copied in under a `.mov`
+    /// name (`SharedItemKind.videoFileExtension`); it must still open.
+    func testAnMPEG4FileUnderAQuickTimeNameIsCleaned() async throws {
+        let movie = try await makeMovieWithMetadata()
+        cleanup.append(movie)
+        let mp4 = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripShareVideo-\(UUID().uuidString).mp4")
+        cleanup.append(mp4)
+        let session = try XCTUnwrap(AVAssetExportSession(asset: AVURLAsset(url: movie), presetName: AVAssetExportPresetPassthrough))
+        try await session.export(to: mp4, as: .mp4)
+        let renamed = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripShareVideo-\(UUID().uuidString).mov")
+        try FileManager.default.copyItem(at: mp4, to: renamed)
+        cleanup.append(renamed)
+        let output = outputURL()
+
+        try await VideoMetadataCleaner.clean(renamed, to: output)
+
+        let summary = try await videoTrackSummary(of: output)
+        XCTAssertEqual(summary.sampleCount, 6)
+    }
+
     /// The video cleaner keeps its API and uses the same policy.
     func testTheVideoCleanerUsesTheSamePolicy() async throws {
         let movie = try await makeMovieWithMetadata()
@@ -267,5 +287,70 @@ final class VideoHandoffTests: XCTestCase {
         XCTAssertEqual(router.requestedVideo, url, "Kept while another video is open.")
         router.videoPresented()
         XCTAssertNil(router.requestedVideo)
+    }
+}
+
+// MARK: - Share Extension
+
+/// What the share sheet offers PicStrip, and how each shared item is sorted.
+final class ShareExtensionInputTests: XCTestCase {
+
+    func testItemsAreSortedLikeTheLibraryPicker() {
+        XCTAssertEqual(SharedItemKind(registeredTypeIdentifiers: ["public.heic", "public.jpeg"]), .photo(typeIdentifier: "public.heic"))
+        XCTAssertEqual(SharedItemKind(registeredTypeIdentifiers: ["com.apple.quicktime-movie"]), .video(typeIdentifier: "com.apple.quicktime-movie"))
+        XCTAssertEqual(SharedItemKind(registeredTypeIdentifiers: ["public.mpeg-4"]), .video(typeIdentifier: "public.mpeg-4"))
+        // A Live Photo carries its movie, but it is a photo.
+        XCTAssertEqual(
+            SharedItemKind(registeredTypeIdentifiers: ["com.apple.quicktime-movie", "public.heic", "com.apple.live-photo"]),
+            .photo(typeIdentifier: "public.heic")
+        )
+        XCTAssertNil(SharedItemKind(registeredTypeIdentifiers: ["com.apple.live-photo", "com.apple.quicktime-movie"]))
+        XCTAssertNil(SharedItemKind(registeredTypeIdentifiers: ["public.url", "public.plain-text"]))
+        XCTAssertNil(SharedItemKind(registeredTypeIdentifiers: []))
+    }
+
+    func testVideoCopiesKeepAMovieExtensionTheAppOpens() {
+        XCTAssertEqual(SharedItemKind.videoFileExtension(for: "com.apple.quicktime-movie"), "mov")
+        XCTAssertEqual(SharedItemKind.videoFileExtension(for: "public.mpeg-4"), "mp4")
+        XCTAssertEqual(SharedItemKind.videoFileExtension(for: "com.apple.m4v-video"), "m4v")
+        XCTAssertEqual(SharedItemKind.videoFileExtension(for: "public.3gpp"), "mov")
+        XCTAssertEqual(SharedItemKind.videoFileExtension(for: "public.movie"), "mov")
+    }
+
+    // MARK: Activation rule
+
+    private func activationRule() throws -> NSPredicate {
+        let plugIns = try XCTUnwrap(Bundle.main.builtInPlugInsURL)
+        let bundle = try XCTUnwrap(Bundle(url: plugIns.appendingPathComponent("PicStripShareExtension.appex")),
+                                   "The app should embed the share extension.")
+        let attributes = try XCTUnwrap((bundle.infoDictionary?["NSExtension"] as? [String: Any])?["NSExtensionAttributes"] as? [String: Any])
+        return NSPredicate(format: try XCTUnwrap(attributes["NSExtensionActivationRule"] as? String))
+    }
+
+    private func offered(_ attachments: [[String]], itemsEach: Bool = false) throws -> Bool {
+        let wrapped = attachments.map { ["registeredTypeIdentifiers": $0] }
+        let items: [[String: Any]] = itemsEach ? wrapped.map { ["attachments": [$0]] } : [["attachments": wrapped]]
+        return try activationRule().evaluate(with: ["extensionItems": items])
+    }
+
+    func testTheShareSheetOffersPicStripForPhotosAndVideos() throws {
+        XCTAssertTrue(try offered([["public.jpeg"]]))
+        XCTAssertTrue(try offered(Array(repeating: ["public.heic"], count: 40)), "Photos have no limit.")
+        XCTAssertTrue(try offered([["com.apple.quicktime-movie"]]))
+        XCTAssertTrue(try offered([["public.heic"], ["public.mpeg-4"]]), "Photos and videos together.")
+        XCTAssertFalse(try offered([["public.url"]]))
+        XCTAssertFalse(try offered([["public.plain-text"], ["com.adobe.pdf"]]))
+    }
+
+    /// Ten videos at most, however the host app groups its attachments; Live
+    /// Photos count as photos.
+    func testVideosAreLimitedToTen() throws {
+        let movie = ["com.apple.quicktime-movie"]
+        XCTAssertTrue(try offered(Array(repeating: movie, count: 10)))
+        XCTAssertFalse(try offered(Array(repeating: movie, count: 11)))
+        XCTAssertTrue(try offered(Array(repeating: movie, count: 10), itemsEach: true))
+        XCTAssertFalse(try offered(Array(repeating: movie, count: 11), itemsEach: true))
+        let livePhoto = ["public.heic", "com.apple.quicktime-movie", "com.apple.live-photo"]
+        XCTAssertTrue(try offered(Array(repeating: livePhoto, count: 20)))
     }
 }
