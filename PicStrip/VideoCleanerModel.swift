@@ -194,23 +194,36 @@ final class VideoCleanerModel {
                 return
             }
             // Even with nothing found the editor opens: objects can be covered
-            // and sound bleeped by hand.
-            await makeThumbnails(from: url)
-            hasAudio = !((try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []).isEmpty
-            // Enough detail for the timeline zoomed all the way in.
-            if hasAudio { audioLevels = await VideoAudioEditor.levels(of: url, count: Self.levelCount(for: duration)) }
-            filmstrip = await Self.filmstrip(of: url, duration: duration, count: 10)
+            // and sound bleeped by hand.  The thumbnails, the sound's levels and
+            // the first look at the filmstrip are made side by side.
+            let strip = Self.filmstripTimes(duration: duration, count: Self.filmstripCount(for: duration))
+            let firstLook = Self.evenlySpread(strip.count, picking: 10)
+            let crops = thumbnailCrops
+            async let thumbnails = Self.crops(crops, from: url)
+            async let sound = Self.sound(of: url, duration: duration)
+            async let opening = Self.frames(of: url, at: firstLook.map { strip[$0] })
+            let (images, (audible, levels), firstFrames) = await (thumbnails, sound, opening)
+            showThumbnails(images)
+            hasAudio = audible
+            audioLevels = levels
+            filmstrip = firstFrames.sorted { $0.key < $1.key }.map(\.value)
             stillTime = faces.first?.representativeSample?.time
                 ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
             usePlaybackAudio(true)
             observePlayhead()
-            // A frame about every second, for the zoomed-in timeline, once the
-            // editor is open.
-            let duration = duration
-            filmstripTask = Task { [weak self] in
-                let frames = await Self.filmstrip(of: url, duration: duration, count: Self.filmstripCount(for: duration))
-                guard !Task.isCancelled, !frames.isEmpty else { return }
-                self?.filmstrip = frames
+            // The rest of the strip, a frame about every second for the
+            // zoomed-in timeline, once the editor is open.
+            let rest = strip.indices.filter { !firstLook.contains($0) }
+            if !rest.isEmpty {
+                filmstripTask = Task { [weak self] in
+                    let restFrames = await Self.frames(of: url, at: rest.map { strip[$0] })
+                    guard !Task.isCancelled else { return }
+                    var frames: [Int: UIImage] = [:]
+                    for (place, index) in firstLook.enumerated() { frames[index] = firstFrames[place] }
+                    for (place, index) in rest.enumerated() { frames[index] = restFrames[place] }
+                    guard !frames.isEmpty else { return }
+                    self?.filmstrip = frames.sorted { $0.key < $1.key }.map(\.value)
+                }
             }
             refreshPreview()
             stage = .review
@@ -644,30 +657,60 @@ final class VideoCleanerModel {
         min(4_000, max(160, Int((duration * 20).rounded(.up))))
     }
 
-    /// `count` small frames spread evenly along the video.
-    nonisolated private static func filmstrip(of url: URL, duration: Double, count: Int) async -> [UIImage] {
+    /// The times of `count` small frames spread evenly along the video.
+    nonisolated static func filmstripTimes(duration: Double, count: Int) -> [Double] {
         guard duration > 0, count > 0 else { return [] }
+        return (0..<count).map { duration * (Double($0) + 0.5) / Double(count) }
+    }
+
+    /// `wanted` of `count` frames, as evenly spread as they can be: the
+    /// filmstrip's first look, made before the rest.
+    nonisolated static func evenlySpread(_ count: Int, picking wanted: Int) -> [Int] {
+        guard count > wanted, wanted > 0 else { return Array(0..<count) }
+        return (0..<wanted).map { min(count - 1, Int((Double($0) + 0.5) * Double(count) / Double(wanted))) }
+    }
+
+    /// Small upright frames at `times`, by their place in `times`; one that
+    /// cannot be made is left out.
+    @concurrent
+    nonisolated private static func frames(of url: URL, at times: [Double]) async -> [Int: UIImage] {
+        guard !times.isEmpty else { return [:] }
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 160, height: 160)
-        var frames: [UIImage] = []
-        for index in 0..<count {
-            let time = duration * (Double(index) + 0.5) / Double(count)
-            guard let image = try? await generator.image(at: CMTime(seconds: time, preferredTimescale: 600)).image else { continue }
-            frames.append(UIImage(cgImage: image))
+        let requested = times.map { CMTime(seconds: $0, preferredTimescale: 600) }
+        let places = Dictionary(requested.indices.map { (requested[$0].seconds, $0) }) { first, _ in first }
+        var frames: [Int: UIImage] = [:]
+        for await result in generator.images(for: requested) {
+            guard let place = places[result.requestedTime.seconds], let image = try? result.image else { continue }
+            frames[place] = UIImage(cgImage: image)
         }
         return frames
     }
 
-    /// Each face and each group as it looks in the middle of its first track.
-    private func makeThumbnails(from url: URL) async {
+    /// Whether the video has sound, and how loud it is along the video.
+    @concurrent
+    nonisolated private static func sound(of url: URL, duration: Double) async -> (hasAudio: Bool, levels: [Float]) {
+        let tracks = (try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []
+        guard !tracks.isEmpty else { return (false, []) }
+        // Enough detail for the timeline zoomed all the way in.
+        return (true, await VideoAudioEditor.levels(of: url, count: levelCount(for: duration)))
+    }
+
+    /// Where each face and each group looks as it does in the middle of its
+    /// first track, for its thumbnail.
+    private var thumbnailCrops: [(time: Double, box: CGRect)] {
         let faceCrops = faces.compactMap { face in
             face.representativeSample.map { (time: $0.time, box: FaceTracking.padded($0.box)) }
         }
         let groupCrops = findingGroups.compactMap { group in
             group.tracks.first?.representativeSample.map { (time: $0.time, box: FindingTracking.padded($0.box)) }
         }
-        let images = await Self.crops(faceCrops + groupCrops, from: url)
+        return faceCrops + groupCrops
+    }
+
+    /// The crops of `thumbnailCrops` as each face's and each group's thumbnail.
+    private func showThumbnails(_ images: [Int: UIImage]) {
         var faceImages: [Int: UIImage] = [:]
         for (index, face) in faces.enumerated() { faceImages[face.id] = images[index] }
         var groupImages: [String: UIImage] = [:]
@@ -677,7 +720,9 @@ final class VideoCleanerModel {
     }
 
     /// The frame at each `time`, cropped to `box` (normalised, top-left origin).
+    @concurrent
     nonisolated private static func crops(_ items: [(time: Double, box: CGRect)], from url: URL) async -> [Int: UIImage] {
+        guard !items.isEmpty else { return [:] }
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 1280, height: 1280)
@@ -685,15 +730,21 @@ final class VideoCleanerModel {
         // would show it, or someone else, somewhere else.
         generator.requestedTimeToleranceBefore = .zero
         generator.requestedTimeToleranceAfter = .zero
+        // Each frame is made once, however many crops come from it.
+        let requested = items.map { CMTime(seconds: $0.time, preferredTimescale: 600) }
+        let wanted = Dictionary(grouping: requested.indices) { requested[$0].seconds }
+        let times = wanted.keys.sorted().map { CMTime(seconds: $0, preferredTimescale: 600) }
         var images: [Int: UIImage] = [:]
-        for (index, item) in items.enumerated() {
-            guard let frame = try? await generator.image(at: CMTime(seconds: item.time, preferredTimescale: 600)).image else { continue }
-            let box = item.box.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
-            let crop = CGRect(
-                x: box.minX * CGFloat(frame.width), y: box.minY * CGFloat(frame.height),
-                width: box.width * CGFloat(frame.width), height: box.height * CGFloat(frame.height)
-            ).integral
-            if let cropped = frame.cropping(to: crop) { images[index] = UIImage(cgImage: cropped) }
+        for await result in generator.images(for: times) {
+            guard let indices = wanted[result.requestedTime.seconds], let frame = try? result.image else { continue }
+            for index in indices {
+                let box = items[index].box.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
+                let crop = CGRect(
+                    x: box.minX * CGFloat(frame.width), y: box.minY * CGFloat(frame.height),
+                    width: box.width * CGFloat(frame.width), height: box.height * CGFloat(frame.height)
+                ).integral
+                if let cropped = frame.cropping(to: crop) { images[index] = UIImage(cgImage: cropped) }
+            }
         }
         return images
     }

@@ -67,8 +67,59 @@ final class VideoAudioTests: XCTestCase {
 
     /// A movie with plain frames and a 440 Hz tone, silent from `silentAfter` on.
     private func makeMovie(seconds: Double, silentAfter: Double = .infinity) async throws -> URL {
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudio-\(UUID().uuidString).mov")
+        let url = try await SoundMovie.make(seconds: seconds, silentAfter: silentAfter)
         cleanup.append(url)
+        return url
+    }
+
+    /// The saved sound, mixed to one channel at 8 kHz, −1 … 1.
+    private func monoSamples(of url: URL) async throws -> [Float] {
+        let asset = AVURLAsset(url: url)
+        let tracks = try await asset.loadTracks(withMediaType: .audio)
+        XCTAssertEqual(tracks.count, 1, "One mixed sound track in the saved copy.")
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderAudioMixOutput(audioTracks: tracks, audioSettings: [
+            AVFormatIDKey: kAudioFormatLinearPCM, AVLinearPCMBitDepthKey: 16, AVLinearPCMIsFloatKey: false,
+            AVLinearPCMIsBigEndianKey: false, AVLinearPCMIsNonInterleaved: false, AVNumberOfChannelsKey: 1, AVSampleRateKey: 8_000
+        ])
+        reader.add(output)
+        XCTAssertTrue(reader.startReading())
+        var samples: [Float] = []
+        while let buffer = output.copyNextSampleBuffer() {
+            guard let block = CMSampleBufferGetDataBuffer(buffer) else { continue }
+            let length = CMBlockBufferGetDataLength(block)
+            var bytes = [Int16](repeating: 0, count: length / 2)
+            _ = bytes.withUnsafeMutableBytes { CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: length, destination: $0.baseAddress!) }
+            samples += bytes.map { Float($0) / Float(Int16.max) }
+        }
+        return samples
+    }
+
+    private func rms(_ samples: ArraySlice<Float>) -> Float {
+        guard !samples.isEmpty else { return 0 }
+        return (samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count)).squareRoot()
+    }
+
+    /// The dominant frequency, from zero crossings, in Hz at 8 kHz.
+    private func frequency(_ samples: ArraySlice<Float>) -> Double {
+        let values = Array(samples)
+        guard values.count > 1 else { return 0 }
+        var crossings = 0
+        for index in 1..<values.count where (values[index - 1] < 0) != (values[index] < 0) {
+            crossings += 1
+        }
+        return Double(crossings) / 2 / (Double(values.count) / 8_000)
+    }
+}
+
+// MARK: - SoundMovie
+
+/// Movies with sound, for the audio tests and the editor's.
+enum SoundMovie {
+
+    /// A movie with plain frames and a 440 Hz tone, silent from `silentAfter` on.
+    static func make(seconds: Double, silentAfter: Double = .infinity) async throws -> URL {
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudio-\(UUID().uuidString).mov")
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
         let video = AVAssetWriterInput(mediaType: .video, outputSettings: [
             AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: 64, AVVideoHeightKey: 64
@@ -111,7 +162,7 @@ final class VideoAudioTests: XCTestCase {
                     samples[index] = Int16(12_000 * sin(2 * Double.pi * 440 * time))
                 }
             }
-            let buffer = try sampleBuffer(samples, format: format, at: CMTime(value: CMTimeValue(first), timescale: CMTimeScale(rate)))
+            let buffer = try Self.sampleBuffer(samples, format: format, at: CMTime(value: CMTimeValue(first), timescale: CMTimeScale(rate)))
             XCTAssertTrue(audio.append(buffer))
         }
         video.markAsFinished()
@@ -121,7 +172,7 @@ final class VideoAudioTests: XCTestCase {
         return url
     }
 
-    private func sampleBuffer(_ samples: [Int16], format: AVAudioFormat, at time: CMTime) throws -> CMSampleBuffer {
+    private static func sampleBuffer(_ samples: [Int16], format: AVAudioFormat, at time: CMTime) throws -> CMSampleBuffer {
         var block: CMBlockBuffer?
         let length = samples.count * 2
         CMBlockBufferCreateWithMemoryBlock(
@@ -140,44 +191,5 @@ final class VideoAudioTests: XCTestCase {
             sampleBufferOut: &buffer
         )
         return try XCTUnwrap(buffer)
-    }
-
-    /// The saved sound, mixed to one channel at 8 kHz, −1 … 1.
-    private func monoSamples(of url: URL) async throws -> [Float] {
-        let asset = AVURLAsset(url: url)
-        let tracks = try await asset.loadTracks(withMediaType: .audio)
-        XCTAssertEqual(tracks.count, 1, "One mixed sound track in the saved copy.")
-        let reader = try AVAssetReader(asset: asset)
-        let output = AVAssetReaderAudioMixOutput(audioTracks: tracks, audioSettings: [
-            AVFormatIDKey: kAudioFormatLinearPCM, AVLinearPCMBitDepthKey: 16, AVLinearPCMIsFloatKey: false,
-            AVLinearPCMIsBigEndianKey: false, AVLinearPCMIsNonInterleaved: false, AVNumberOfChannelsKey: 1, AVSampleRateKey: 8_000
-        ])
-        reader.add(output)
-        XCTAssertTrue(reader.startReading())
-        var samples: [Float] = []
-        while let buffer = output.copyNextSampleBuffer() {
-            guard let block = CMSampleBufferGetDataBuffer(buffer) else { continue }
-            let length = CMBlockBufferGetDataLength(block)
-            var bytes = [Int16](repeating: 0, count: length / 2)
-            _ = bytes.withUnsafeMutableBytes { CMBlockBufferCopyDataBytes(block, atOffset: 0, dataLength: length, destination: $0.baseAddress!) }
-            samples += bytes.map { Float($0) / Float(Int16.max) }
-        }
-        return samples
-    }
-
-    private func rms(_ samples: ArraySlice<Float>) -> Float {
-        guard !samples.isEmpty else { return 0 }
-        return (samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count)).squareRoot()
-    }
-
-    /// The dominant frequency, from zero crossings, in Hz at 8 kHz.
-    private func frequency(_ samples: ArraySlice<Float>) -> Double {
-        let values = Array(samples)
-        guard values.count > 1 else { return 0 }
-        var crossings = 0
-        for index in 1..<values.count where (values[index - 1] < 0) != (values[index] < 0) {
-            crossings += 1
-        }
-        return Double(crossings) / 2 / (Double(values.count) / 8_000)
     }
 }
