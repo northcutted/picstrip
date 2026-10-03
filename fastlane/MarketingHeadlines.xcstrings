@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "04_ReviewAndShare" : {
+    "05_ReviewAndShare" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -107,7 +107,7 @@
         }
       }
     },
-    "02_RedactionEditor" : {
+    "03_RedactionEditor" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -213,7 +213,7 @@
         }
       }
     },
-    "03_Metadata" : {
+    "04_Metadata" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -260,7 +260,7 @@
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "الموقع · الكاميرا والتاريخ\nتفاصيل الصورة"
+            "value" : "الموقع، الكاميرا والتاريخ\nتفاصيل الصورة"
           }
         },
         "nl" : {
@@ -425,7 +425,113 @@
         }
       }
     },
-    "05_Sample" : {
+    "02_VideoEditor" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Clean your videos\nFaces, text and sound covered"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rensa dina videor\nAnsikten, text och ljud maskeras"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść nagrania wideo\nTwarze, tekst i dźwięk ukryte"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオをクリーンアップ\n顔・文字・音声をマスク"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar tus videos\nCaras, texto y sonido censurados"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyer vos vidéos\nVisages, texte et son masqués"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videolarını temizle\nYüzler, metin ve ses gizlenir"
+          }
+        },
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تنظيف مقاطع الفيديو\nحجب الوجوه والنصوص والصوت"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Je video’s opschonen\nGezichten, tekst, geluid afgedekt"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar seus vídeos\nRostos, texto e som ocultados"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 정리\n얼굴, 텍스트, 소리 가림 처리"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpiar tus vídeos\nCaras, texto y sonido censurados"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理你的视频\n遮盖人脸、文字和声音"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpar os seus vídeos\nRostos, texto e som ocultados"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理你的影片\n遮蓋人臉、文字和聲音"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulisci i tuoi video\nVolti, testo e audio coperti"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videos bereinigen\nGesichter, Text & Ton verdeckt"
+          }
+        }
+      }
+    },
+    "06_Sample" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {

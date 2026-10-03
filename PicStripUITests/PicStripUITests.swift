@@ -55,7 +55,7 @@ final class PicStripUITests: XCTestCase {
     /// Captures every App Store screenshot in one continuous session.
     /// Launch 1: fictional sample. Launch 2: editable fixture and final output.
     @MainActor
-    func testAllScreenshots() throws {
+    func testAllScreenshots() async throws {
 
         let app = XCUIApplication()
         setupSnapshot(app)
@@ -70,14 +70,14 @@ final class PicStripUITests: XCTestCase {
         app.launch()
 
         // Home: hero animation has started, wait for it to settle.
-        Thread.sleep(forTimeInterval: 1.5)
+        try await Task.sleep(for: .seconds(1.5))
         attachScreen("Home")
 
         // Demo shows value without requesting library permission.
         app.buttons["tryDemoButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 30))
-        snapshot("05_Sample")
-        attachScreen("05_Sample")
+        snapshot("06_Sample")
+        attachScreen("06_Sample")
 
         // ─────────────────────────────────────────────────────────────────────
         // LAUNCH 2: With fixture — photo loaded screens
@@ -123,8 +123,8 @@ final class PicStripUITests: XCTestCase {
             app.descendants(matching: .any)["metadataFoundLabel"].exists,
             "Metadata should remain its own section when visual sensitive data is present."
         )
-        snapshot("03_Metadata")
-        attachScreen("03_Metadata")
+        snapshot("04_Metadata")
+        attachScreen("04_Metadata")
 
         // 04 — Redaction editor: create one manual redaction on top of detected regions.
         editRedactionsButton.tap()
@@ -137,18 +137,18 @@ final class PicStripUITests: XCTestCase {
         let start = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.30))
         let end = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.45))
         start.press(forDuration: 0.1, thenDragTo: end)
-        Thread.sleep(forTimeInterval: 0.5)
-        snapshot("02_RedactionEditor")
-        attachScreen("02_RedactionEditor")
+        try await Task.sleep(for: .seconds(0.5))
+        snapshot("03_RedactionEditor")
+        attachScreen("03_RedactionEditor")
         app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
-        Thread.sleep(forTimeInterval: 0.3)
+        try await Task.sleep(for: .seconds(0.3))
 
         // 05 — Review & save sheet: tap Save to Photos.
         let saveButton = app.buttons["saveButton"]
         XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
         saveButton.tap()
         // Wait for the pre-save review sheet to slide up.
-        Thread.sleep(forTimeInterval: 1.2)
+        try await Task.sleep(for: .seconds(1.2))
         XCTAssertTrue(
             app.descendants(matching: .any)["savePreviewImage"].waitForExistence(timeout: 5),
             "Review sheet should show the processed image preview before saving."
@@ -159,14 +159,38 @@ final class PicStripUITests: XCTestCase {
         )
         XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable,
                       "The primary share action must remain visible while reviewing the photo")
-        snapshot("04_ReviewAndShare")
-        attachScreen("04_ReviewAndShare")
+        snapshot("05_ReviewAndShare")
+        attachScreen("05_ReviewAndShare")
         // The review is a short form sheet on iPad; the button may be below the fold.
         reveal(app.buttons["inspectFullImageButton"], in: app)
         app.buttons["inspectFullImageButton"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
         snapshot("01_FullPreview")
         attachScreen("01_FullPreview")
+
+        // ─────────────────────────────────────────────────────────────────────
+        // LAUNCH 3: A video — the editor with its covers, timeline and a bleep
+        // ─────────────────────────────────────────────────────────────────────
+        app.terminate()
+        let videoPath = "/tmp/picstrip_screenshot_video.mov"
+        try await writeFaceMovie(to: URL(fileURLWithPath: videoPath))
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = nil
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = videoPath
+        app.launch()
+        XCTAssertTrue(app.buttons["addCoverButton"].waitForExistence(timeout: 180), "The video opens in its editor.")
+        // A stretch of sound bleeped from the audio lane's menu (its first item,
+        // whatever the language).
+        let audio = app.descendants(matching: .any)["audioLane"]
+        if audio.exists {
+            audio.coordinate(withNormalizedOffset: CGVector(dx: 0.35, dy: 0.5)).press(
+                forDuration: 0.8, thenDragTo: audio.coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.5))
+            )
+            let bleep = app.menuItems.firstMatch
+            if bleep.waitForExistence(timeout: 5) { bleep.tap() }
+        }
+        try await Task.sleep(for: .seconds(1.0))
+        snapshot("02_VideoEditor")
+        attachScreen("02_VideoEditor")
     }
 
     /// The simulator has no camera, so by default the home screen must not offer a scan.
@@ -629,7 +653,8 @@ final class PicStripUITests: XCTestCase {
 
         record.tap()
         XCTAssertTrue(app.descendants(matching: .any)["videoRecordingTimer"].waitForExistence(timeout: 5), "Recording shows its time.")
-        XCTAssertFalse(app.buttons["cameraMode-photo"].exists, "The mode cannot change while recording.")
+        let photoMode = app.buttons["cameraMode-photo"]
+        XCTAssertTrue(!photoMode.exists || !photoMode.isEnabled, "The mode cannot change while recording.")
         XCTAssertFalse(resolution.exists, "…nor the quality.")
         attachScreen("video_camera_recording")
         try await Task.sleep(for: .seconds(1.5))

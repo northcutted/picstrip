@@ -138,10 +138,11 @@
     ],
     "screens": [
       "01_FullPreview",
-      "02_RedactionEditor",
-      "03_Metadata",
-      "04_ReviewAndShare",
-      "05_Sample"
+      "02_VideoEditor",
+      "03_RedactionEditor",
+      "04_Metadata",
+      "05_ReviewAndShare",
+      "06_Sample"
     ],
     "replacement_release": {
       "version": "1.7.0",
@@ -155,7 +156,7 @@
       "testflight_groups": []
     },
     "developer_ruby": "3.4.10",
-    "expected_screenshots": 170
+    "expected_screenshots": 204
   },
   "change_examples": [
     {
