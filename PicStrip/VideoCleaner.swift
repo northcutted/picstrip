@@ -4,39 +4,6 @@ import ImageIO
 import Photos
 import UniformTypeIdentifiers
 
-// MARK: - VideoFinding
-
-/// One piece of hidden information found in a video.
-nonisolated struct VideoFinding: Identifiable, Hashable, Sendable {
-    enum Kind: Int, Comparable, CaseIterable, Sendable {
-        case location, device, date, other
-
-        static func < (lhs: Kind, rhs: Kind) -> Bool { lhs.rawValue < rhs.rawValue }
-
-        var title: String {
-            switch self {
-            case .location: String(localized: "Location")
-            case .device: String(localized: "Device and software")
-            case .date: String(localized: "Date recorded")
-            case .other: String(localized: "Other details")
-            }
-        }
-
-        var symbolName: String {
-            switch self {
-            case .location: "location.fill"
-            case .device: "iphone.gen2"
-            case .date: "calendar"
-            case .other: "tag.fill"
-            }
-        }
-    }
-
-    let id: Int
-    let kind: Kind
-    let value: String
-}
-
 // MARK: - VideoCleaner
 
 /// Removes the hidden details from a video without re-encoding it: where it was
@@ -44,56 +11,21 @@ nonisolated struct VideoFinding: Identifiable, Hashable, Sendable {
 /// are copied as they are — faces and text in a video stay visible.
 nonisolated enum VideoCleaner {
 
-    enum Failure: LocalizedError {
-        case cannotExport
-        case detailsRemain
-
-        var errorDescription: String? {
-            switch self {
-            case .cannotExport:
-                String(localized: "This video could not be cleaned.")
-            case .detailsRemain:
-                String(localized: "Hidden details could not be removed from this video, so it was not kept.")
-            }
-        }
-    }
+    typealias Failure = VideoMetadataCleaner.Failure
 
     /// Every metadata item in the file, at the asset and the track level.
     static func findings(in url: URL) async throws -> [VideoFinding] {
-        let asset = AVURLAsset(url: url)
-        var items = try await asset.load(.metadata)
-        for track in try await asset.load(.tracks) {
-            items += try await track.load(.metadata)
-        }
-        var findings: [VideoFinding] = []
-        for item in items {
-            let key = item.identifier?.rawValue ?? ""
-            var value = (try? await item.load(.stringValue)) ?? ""
-            if value.isEmpty, let date = try? await item.load(.dateValue) {
-                value = date.formatted(date: .abbreviated, time: .shortened)
-            }
-            findings.append(VideoFinding(id: findings.count, kind: kind(ofKey: key), value: value))
-        }
-        return findings.sorted { $0.kind < $1.kind }
+        try await VideoMetadataCleaner.findings(in: url)
     }
 
     /// A random content identifier: the one metadata item a cleaned video keeps.
     static func newContentIdentifier() -> AVMetadataItem {
-        let item = AVMutableMetadataItem()
-        item.identifier = .quickTimeMetadataContentIdentifier
-        item.value = UUID().uuidString as NSString
-        item.dataType = kCMMetadataBaseDataType_UTF8 as String
-        return item
+        VideoMetadataCleaner.newContentIdentifier()
     }
 
-    /// What a metadata key describes, from its identifier — QuickTime metadata
-    /// (`mdta/com.apple.quicktime.location.ISO6709`) or user data (`udta/%A9xyz`).
+    /// What a metadata key describes; see `VideoMetadataCleaner.kind(ofKey:)`.
     static func kind(ofKey key: String) -> VideoFinding.Kind {
-        let key = key.lowercased()
-        if key.contains("location") || key.contains("%a9xyz") || key.hasSuffix("/loci") { return .location }
-        if [".make", ".model", ".software", "%a9mak", "%a9mod", "%a9swr", "%a9too"].contains(where: key.contains) { return .device }
-        if key.contains("creationdate") || key.contains("%a9day") || key.hasSuffix(".date") { return .date }
-        return .other
+        VideoMetadataCleaner.kind(ofKey: key)
     }
 
     /// Writes a copy of `source` to `output` with no hidden details, except the
@@ -134,12 +66,8 @@ nonisolated enum VideoCleaner {
         }
         session.videoComposition = videoComposition
         session.audioMix = audioMix
-        // A non-empty list replaces the file's own metadata — an empty one is
-        // read as "keep it all" — so a plain video gets a new random identifier,
-        // tied to nothing.  The filter drops identifying items from the tracks.
-        session.metadata = keeping.isEmpty ? [newContentIdentifier()] : keeping
-        session.metadataItemFilter = .forSharing()
-        let type: AVFileType = session.supportedFileTypes.contains(.mov) ? .mov : (session.supportedFileTypes.first ?? .mov)
+        VideoMetadataCleaner.applyPolicy(to: session, keeping: keeping)
+        let type = VideoMetadataCleaner.fileType(for: session)
         let states = session.states(updateInterval: 0.25)
         let reporter = progress.map { report in
             Task {
@@ -150,12 +78,7 @@ nonisolated enum VideoCleaner {
         }
         defer { reporter?.cancel() }
         try await session.export(to: output, as: type)
-
-        let left = try await findings(in: output).filter { $0.kind != .other }
-        guard left.isEmpty else {
-            try? FileManager.default.removeItem(at: output)
-            throw Failure.detailsRemain
-        }
+        try await VideoMetadataCleaner.verify(output)
     }
 
     /// HEVC at the best quality where the video can take it, else the best H.264.
