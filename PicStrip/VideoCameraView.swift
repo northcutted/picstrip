@@ -5,13 +5,14 @@ import UIKit
 
 // MARK: - CameraView
 
-/// PicStrip's camera: Photo mode is the live viewfinder that shows what would
-/// be redacted, Video mode records at the Camera app's quality.  Either hands
-/// what it captured straight to its editor.
+/// PicStrip's camera, one place for every capture: Photo mode is the live
+/// viewfinder that shows what would be redacted, Video mode records at the
+/// Camera app's quality, and Document mode is Apple's document scanner.  Each
+/// hands what it captured straight to its editor.
 struct CameraView: View {
 
     enum Mode: String, CaseIterable, Identifiable {
-        case video, photo
+        case video, photo, document
 
         var id: String { rawValue }
 
@@ -19,15 +20,24 @@ struct CameraView: View {
             switch self {
             case .video: "Video"
             case .photo: "Photo"
+            case .document: "Document"
             }
+        }
+
+        /// The modes this device offers: Document needs Apple's document scanner.
+        static var available: [Mode] {
+            DocumentScannerView.isAvailable ? allCases : [.video, .photo]
         }
     }
 
     let onFinish: (LiveCameraView.Outcome) -> Void
     @State private var mode: Mode
+    /// Photo or Video: where Document mode goes back to when the scan is cancelled.
+    @State private var lastCaptureMode: Mode
 
     init(mode: Mode, onFinish: @escaping (LiveCameraView.Outcome) -> Void) {
         _mode = State(initialValue: mode)
+        _lastCaptureMode = State(initialValue: mode == .document ? .photo : mode)
         self.onFinish = onFinish
     }
 
@@ -41,21 +51,44 @@ struct CameraView: View {
             case .video:
                 VideoCameraView(mode: $mode, onFinish: onFinish)
                     .transition(.opacity)
+            case .document:
+                // The scanner has the camera to itself; it is presented over this.
+                EmptyView()
             }
         }
         .animation(.easeInOut(duration: 0.2), value: mode)
+        .onChange(of: mode) { _, mode in
+            if mode != .document { lastCaptureMode = mode }
+        }
+        .fullScreenCover(isPresented: Binding(
+            get: { mode == .document },
+            set: { if !$0, mode == .document { mode = lastCaptureMode } }
+        )) {
+            DocumentScannerView { outcome in
+                switch outcome {
+                case .scanned(let document):
+                    onFinish(.scanned(document))
+                case .failed:
+                    onFinish(.scanFailed)
+                case .cancelled:
+                    // Back to the camera as it was.
+                    mode = lastCaptureMode
+                }
+            }
+            .ignoresSafeArea()
+        }
     }
 }
 
 // MARK: - CameraModePicker
 
-/// Video or Photo, as in the Camera app, just above the shutter.
+/// Video, Photo or Document, as in the Camera app, just above the shutter.
 struct CameraModePicker: View {
     @Binding var mode: CameraView.Mode
 
     var body: some View {
         HStack(spacing: 2) {
-            ForEach(CameraView.Mode.allCases) { option in
+            ForEach(CameraView.Mode.available) { option in
                 let isSelected = option == mode
                 Button {
                     mode = option
@@ -158,43 +191,20 @@ struct VideoCameraView: View {
                     FocusReticle(reduceMotion: reduceMotion)
                         .position(point)
                         .id("\(point.x),\(point.y)")
-                    exposureIndicator
+                    ExposureIndicator(bias: model.exposureBias)
                         .position(x: min(point.x + 52, geometry.size.width - 20), y: point.y)
                 }
             }
-            .contentShape(Rectangle())
-            .onTapGesture { location in model.focus(at: location) }
-            .gesture(
-                MagnifyGesture()
-                    .onChanged { model.pinch($0.magnification) }
-                    .onEnded { _ in model.endPinch() }
-            )
-            .simultaneousGesture(
-                // Up or down after focusing, as in the Camera app: brighter or darker.
-                DragGesture(minimumDistance: 12)
-                    .onChanged { drag in
-                        guard abs(drag.translation.height) > abs(drag.translation.width) else { return }
-                        model.adjustExposure(by: Float(-drag.translation.height / 120))
-                    }
-                    .onEnded { _ in model.endExposureAdjustment() }
+            .cameraGestures(
+                focus: { model.focus(at: $0) },
+                pinch: { model.pinch($0) },
+                endPinch: { model.endPinch() },
+                exposure: { model.adjustExposure(by: $0) },
+                endExposure: { model.endExposureAdjustment() }
             )
         }
         .ignoresSafeArea()
         .accessibilityHidden(true)
-    }
-
-    private var exposureIndicator: some View {
-        VStack(spacing: 2) {
-            Image(systemName: "sun.max.fill")
-                .font(.body.weight(.semibold))
-            if model.exposureBias != 0 {
-                Text(model.exposureBias, format: .number.precision(.fractionLength(1)).sign(strategy: .always()))
-                    .font(.caption2.weight(.semibold).monospacedDigit())
-            }
-        }
-        .foregroundStyle(.yellow)
-        .shadow(radius: 2)
-        .allowsHitTesting(false)
     }
 
     // MARK: Controls
@@ -227,7 +237,10 @@ struct VideoCameraView: View {
 
             GlassEffectContainer(spacing: 10) {
                 VStack(spacing: 12) {
-                    if model.setup.zoomLevels.count > 1 { zoomButtons }
+                    if model.setup.zoomLevels.count > 1 {
+                        CameraZoomButtons(levels: model.setup.zoomLevels, zoom: model.zoomLevel) { model.setZoom($0) }
+                            .disabled(model.state != .running)
+                    }
                     if !model.isRecording { CameraModePicker(mode: $mode) }
                 }
             }
@@ -368,39 +381,6 @@ struct VideoCameraView: View {
         .glassEffect(.regular.interactive(), in: .capsule)
     }
 
-    private var zoomButtons: some View {
-        let levels = model.setup.zoomLevels
-        // The lens in use: the last one at or below the zoom.
-        let current = levels.last { $0 <= model.zoomLevel + 0.01 } ?? levels.first
-        return HStack(spacing: 6) {
-            ForEach(levels, id: \.self) { level in
-                let isCurrent = level == current
-                Button {
-                    model.setZoom(level)
-                } label: {
-                    Text(verbatim: isCurrent ? Self.zoomLabel(model.zoomLevel, suffix: true) : Self.zoomLabel(level, suffix: false))
-                        .font(.caption.weight(.bold))
-                        .monospacedDigit()
-                        .foregroundStyle(isCurrent ? .yellow : .primary)
-                        .frame(width: 34, height: 20)
-                }
-                .buttonStyle(.glass)
-                .buttonBorderShape(.circle)
-                .accessibilityLabel("Zoom")
-                .accessibilityValue(Text(verbatim: Self.zoomLabel(level, suffix: true)))
-                .accessibilityAddTraits(isCurrent ? .isSelected : [])
-            }
-        }
-        .disabled(model.state != .running)
-    }
-
-    /// "1×", "1.6×"; ".5" and "2" on the lenses not in use, as in the Camera app.
-    static func zoomLabel(_ level: CGFloat, suffix: Bool) -> String {
-        let text = Double(level).formatted(.number.precision(.fractionLength(0...1)))
-        let short = level < 1 && text.hasPrefix("0") ? String(text.dropFirst()) : text
-        return suffix ? text + "×" : short
-    }
-
     private var recordButton: some View {
         Button {
             toggleRecording()
@@ -427,18 +407,9 @@ struct VideoCameraView: View {
     @ViewBuilder
     private var flipButton: some View {
         if model.setup.canFlip, !model.isRecording {
-            Button {
-                model.flip()
-            } label: {
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.title3.weight(.semibold))
-                    .frame(width: 28, height: 28)
-            }
-            .buttonStyle(.glass)
-            .buttonBorderShape(.circle)
-            .disabled(!model.canChangeSettings)
-            .accessibilityLabel(model.setup.position == .back ? Text("Switch to the front camera") : Text("Switch to the back camera"))
-            .accessibilityIdentifier("videoFlipButton")
+            CameraFlipButton(position: model.setup.position) { model.flip() }
+                .disabled(!model.canChangeSettings)
+                .accessibilityIdentifier("videoFlipButton")
         } else {
             Color.clear.frame(width: 44, height: 44)
         }

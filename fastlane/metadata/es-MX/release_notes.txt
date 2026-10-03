@@ -3,8 +3,8 @@ PicStrip 1.7 es una gran actualización: ahora limpia videos, y su cámara muest
 • Videos: se encuentran caras, texto, códigos y tus palabras de “Censurar siempre”, se siguen mientras se mueven y se censuran, con un desenfoque, un recuadro opaco o un emoji para cada cara.
 • Censura cualquier objeto de un video dibujando un recuadro a su alrededor; PicStrip lo sigue hacia adelante y hacia atrás.
 • Recorta cada censura en una línea de tiempo de editor de video, y pon un pitido o silencia lo que se dijo.
-• Graba video en PicStrip hasta en 4K con HDR, con los controles que ya conoces de la app Cámara.
-• “Tomar una foto” abre un visor en vivo que marca lo que censuraría.
+• Una sola cámara para fotos, video y documentos. Graba hasta en 4K con HDR con los controles que ya conoces de la app Cámara; en el modo Foto, un visor en vivo marca lo que censuraría.
+• Elige fotos y videos juntos: uno solo se abre en el editor y varios se limpian a la vez.
 • Censura con un emoji, toca un objeto para censurarlo en iOS 27 y deja visibles los últimos dígitos de una tarjeta o un número de teléfono.
 • Censurar siempre: tu nombre, una placa o tu calle, censurados dondequiera que PicStrip los lea.
 • Escanea documentos, elige solo tus capturas de pantalla, conserva el movimiento de una Live Photo y compara el antes y el después.

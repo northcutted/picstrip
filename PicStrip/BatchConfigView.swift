@@ -2,7 +2,8 @@ import SwiftUI
 
 // MARK: - BatchConfigView
 
-/// Half-sheet presented when the user selects multiple photos.
+/// Sheet presented when the user picks several photos, several videos, or
+/// photos and videos together.
 /// Collects a global privacy policy (BatchConfig) and drives the sequential
 /// processing loop.  Transitions to BatchSummaryView via a NavigationStack
 /// push once `viewModel.batchComplete` becomes true.
@@ -37,12 +38,20 @@ struct BatchConfigView: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
         .interactiveDismissDisabled(viewModel.isBatchProcessing)
+        // A long batch must not stop because the phone locked itself.
+        .onChange(of: viewModel.isBatchProcessing) { _, isProcessing in
+            UIApplication.shared.isIdleTimerDisabled = isProcessing
+        }
+        .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .onAppear {
             // Default export format for batch is PNG (maximum privacy).
             viewModel.selectedExportFormat = .png
             config.outputFormat = .png
         }
     }
+
+    private var hasVideos: Bool { viewModel.batchVideoCount > 0 }
+    private var hasPhotos: Bool { viewModel.batchCount > 0 }
 
     // MARK: - Content switcher
 
@@ -63,13 +72,23 @@ struct BatchConfigView: View {
 
                 // ── Header ─────────────────────────────────────────────────
                 HStack(spacing: 14) {
-                    Image(systemName: "photo.stack")
+                    Image(systemName: hasVideos ? "photo.on.rectangle.angled" : "photo.stack")
                         .font(.title2)
                         .foregroundStyle(.tint)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
-                        Text("^[\(viewModel.batchCount) Photo](inflect: true) Selected")
-                            .font(.headline)
+                        if hasVideos {
+                            Text(hasPhotos ? "Photos and Videos" : "Videos")
+                                .font(.headline)
+                            Text(hasPhotos
+                                 ? "Photos: \(viewModel.batchCount) · Videos: \(viewModel.batchVideoCount)"
+                                 : "Videos: \(viewModel.batchVideoCount)")
+                                .font(.subheadline)
+                                .monospacedDigit()
+                        } else {
+                            Text("^[\(viewModel.batchCount) Photo](inflect: true) Selected")
+                                .font(.headline)
+                        }
                         Text("Apply a single privacy policy to all of them.")
                             .font(.caption)
                             .foregroundStyle(.secondary)
@@ -100,6 +119,29 @@ struct BatchConfigView: View {
                             .padding(.vertical, 14)
                     }
                     .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+
+                    if hasVideos {
+                        Text(config.redactVisualPII
+                             ? "In videos, every face found is blurred and text and codes are covered, with nothing reviewed — open a video on its own to check each cover. Videos always lose their location, device and dates."
+                             : "Videos always lose their location, device and dates.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
+                    }
+                }
+
+                if hasVideos {
+                    Label {
+                        Text("Videos are scanned frame by frame and saved again, which can take several minutes each. Keep PicStrip open; the screen stays on until the batch is done.")
+                            .foregroundStyle(.primary)
+                    } icon: {
+                        Image(systemName: "clock").foregroundStyle(.orange)
+                    }
+                    .font(.footnote)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(12)
+                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 12))
+                    .accessibilityIdentifier("videoBatchNote")
                 }
 
                 // ── Save Mode picker ────────────────────────────────────────
@@ -120,7 +162,9 @@ struct BatchConfigView: View {
 
                         if config.saveMode == .replaceOriginal {
                             Label {
-                                Text("Original photos will be permanently deleted after cleaning.")
+                                Text(hasVideos
+                                     ? "The originals will be permanently deleted after cleaning."
+                                     : "Original photos will be permanently deleted after cleaning.")
                                     .foregroundStyle(.primary)
                             } icon: {
                                 Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.red)
@@ -131,18 +175,20 @@ struct BatchConfigView: View {
                     }
                 }
 
-                // ── Export Format picker ────────────────────────────────────
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("EXPORT FORMAT")
-                        .accessibilityAddTraits(.isHeader)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 4)
+                // ── Export Format picker (photos; videos stay videos) ───────
+                if hasPhotos {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("EXPORT FORMAT")
+                            .accessibilityAddTraits(.isHeader)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .padding(.horizontal, 4)
 
-                    AdvancedOptionsView(
-                        viewModel: viewModel,
-                        hasPII: config.redactVisualPII
-                    )
+                        AdvancedOptionsView(
+                            viewModel: viewModel,
+                            hasPII: config.redactVisualPII
+                        )
+                    }
                 }
 
                 // ── Start button ────────────────────────────────────────────
@@ -164,7 +210,7 @@ struct BatchConfigView: View {
                 .disabled(!config.hasWork)
                 .accessibilityHint(config.hasWork ? "" : "Turn on at least one privacy option to start.")
                 .alert(
-                    "Replace ^[\(viewModel.batchCount) Original Photo](inflect: true)?",
+                    hasVideos ? "Replace the Originals?" : "Replace ^[\(viewModel.batchCount) Original Photo](inflect: true)?",
                     isPresented: $showReplaceConfirm
                 ) {
                     Button("Replace", role: .destructive) {
@@ -172,7 +218,9 @@ struct BatchConfigView: View {
                     }
                     Button("Cancel", role: .cancel) { }
                 } message: {
-                    Text("The original photos will be permanently deleted after cleaning. This cannot be undone.")
+                    Text(hasVideos
+                         ? "The original photos and videos will be permanently deleted after cleaning. This cannot be undone."
+                         : "The original photos will be permanently deleted after cleaning. This cannot be undone.")
                 }
 
                 if !config.hasWork {
@@ -212,7 +260,7 @@ struct BatchConfigView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: 8) {
-                Text("Processing Photos")
+                Text(hasVideos ? "Cleaning Photos and Videos" : "Processing Photos")
                     .font(.title3.weight(.semibold))
                 Text("\(viewModel.batchProgress.current) of \(viewModel.batchProgress.total)")
                     .font(.body)
@@ -230,10 +278,24 @@ struct BatchConfigView: View {
             .animation(.easeInOut(duration: 0.4), value: viewModel.batchProgress.current)
             .accessibilityLabel("Processing photos, \(viewModel.batchProgress.current) of \(viewModel.batchProgress.total) complete")
 
+            if let fraction = viewModel.batchVideoFraction {
+                VStack(spacing: 6) {
+                    ProgressView(value: fraction)
+                        .progressViewStyle(.linear)
+                    Text("This video: \(fraction, format: .percent.precision(.fractionLength(0)))")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .monospacedDigit()
+                }
+                .padding(.horizontal, 40)
+                .accessibilityElement(children: .combine)
+                .accessibilityIdentifier("batchVideoProgress")
+            }
+
             Button("Stop batch") { viewModel.cancelBatch() }
                 .buttonStyle(.bordered)
                 .accessibilityIdentifier("stopBatchButton")
-            Text("Please keep the app open.")
+            Text(hasVideos ? "Keep PicStrip open. The screen stays on until the batch is done." : "Please keep the app open.")
                 .font(.caption)
                 .foregroundStyle(.tertiary)
 

@@ -3,8 +3,8 @@ O PicStrip 1.7 é uma grande atualização: agora limpa vídeos, e a câmara mos
 • Vídeos: rostos, texto, códigos e as suas palavras de Ocultar sempre são encontrados, seguidos enquanto se movem e ocultados — com desfoque, uma caixa sólida ou um emoji para cada rosto.
 • Oculte qualquer objeto num vídeo desenhando à sua volta; o PicStrip segue-o para a frente e para trás.
 • Ajuste cada ocultação numa linha temporal de editor de vídeo e ponha um bipe ou silencie o que foi dito.
-• Grave vídeo no PicStrip até 4K com HDR, com os controlos que já conhece da app Câmara.
-• Tirar fotografia abre um visor ao vivo que contorna o que iria ocultar.
+• Uma câmara para fotografias, vídeos e documentos. Grave até 4K com HDR, com os controlos que já conhece da app Câmara; no modo Foto, um visor ao vivo contorna o que iria ocultar.
+• Escolha fotografias e vídeos em conjunto: um item abre o editor, vários são limpos de uma vez.
 • Oculte com um emoji, toque num objeto para o ocultar no iOS 27 e deixe visíveis os últimos dígitos de um cartão ou número de telefone.
 • Ocultar sempre: o seu nome, uma matrícula ou a sua rua, ocultados onde quer que o PicStrip os leia.
 • Digitalize documentos, escolha apenas as suas capturas de ecrã, mantenha o movimento de uma Live Photo e compare o antes e o depois.

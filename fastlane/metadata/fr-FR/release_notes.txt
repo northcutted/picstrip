@@ -3,8 +3,8 @@ PicStrip 1.7 est une mise à jour majeure : l’app nettoie désormais les vid
 • Vidéos : les visages, le texte, les codes et vos mots Toujours masquer sont repérés, suivis en mouvement et masqués — avec un flou, un aplat opaque ou un emoji pour chaque visage.
 • Masquez n’importe quel objet d’une vidéo en l’encadrant ; PicStrip le suit vers l’avant comme vers l’arrière.
 • Raccourcissez chaque masquage sur une chronologie de montage vidéo, et couvrez les paroles d’un bip ou coupez le son.
-• Filmez dans PicStrip jusqu’en 4K avec HDR, avec les commandes que vous connaissez dans l’app Appareil photo.
-• Prendre une photo ouvre un viseur en direct qui encadre ce qu’il masquerait.
+• Un seul appareil photo pour les photos, les vidéos et les documents. Filmez jusqu’en 4K avec HDR, avec les commandes que vous connaissez dans l’app Appareil photo ; en mode Photo, un viseur en direct encadre ce qu’il masquerait.
+• Choisissez des photos et des vidéos ensemble : un seul élément ouvre l’éditeur, plusieurs sont nettoyés d’un coup.
 • Masquez avec un emoji, touchez un objet pour le masquer sous iOS 27, et laissez visibles les derniers chiffres d’une carte ou d’un numéro de téléphone.
 • Toujours masquer : votre nom, une plaque ou votre rue, masqués partout où PicStrip les lit.
 • Scannez des documents, choisissez uniquement vos captures d’écran, conservez l’animation d’une Live Photo et comparez avant/après.

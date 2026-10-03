@@ -19,9 +19,9 @@ PicStrip does not identify people, compare faces, create faceprints, biometric t
 Detection rectangles and recognised text are held in memory for the current editing session and discarded when that session is cleared. PicStrip keeps no history of scan results or separate face records. Your saved or shared image can still contain a face if it was missed or you chose not to cover it.
 
 ## Camera, Microphone and Document Scanning
-PicStrip requests camera access when you choose Take Photo, Record Video or Scan Document, and microphone access the first time you record a video. Take Photo uses an on-device viewfinder, with Apple's camera as a fallback; Scan Document uses Apple's document scanner. Captures enter the current editing session without being saved as originals to your photo library.
+PicStrip requests camera access when you open its camera, and microphone access the first time you record a video. Photo mode uses an on-device viewfinder, with Apple's camera as a fallback; Document mode uses Apple's document scanner. Captures enter the current editing session without being saved as originals to your photo library.
 
-Record Video writes the recording, with its sound, to PicStrip's protected temporary storage and opens it to be cleaned. It is not saved to your photo library as it is: only a cleaned copy you choose to save or share leaves PicStrip, and the recording is deleted when you close the video screen — PicStrip asks first if you have not saved a copy. PicStrip does not add your location to recordings. If you do not allow the microphone, videos are recorded without sound.
+Video mode writes the recording, with its sound, to PicStrip's protected temporary storage and opens it to be cleaned. It is not saved to your photo library as it is: only a cleaned copy you choose to save or share leaves PicStrip, and the recording is deleted when you close the video screen — PicStrip asks first if you have not saved a copy. PicStrip does not add your location to recordings. If you do not allow the microphone, videos are recorded without sound.
 
 Live camera analysis is a guide. Frames and their detections are not recorded. After capture, the full still image is scanned for review. PicStrip saves or shares a copy only when you ask it to. Clearing the session discards the in-memory original.
 
@@ -29,6 +29,8 @@ Screenshots and videos are chosen with Apple's photo picker, which hands PicStri
 
 ## Videos and Live Photos
 When you clean a video, PicStrip copies it into protected temporary storage, looks for faces, sensitive text, codes and your Always Cover words in it on your device, and writes a copy without its location, device, software and date metadata. What it finds, and any object you draw around, is covered in the copy unless you choose to leave it visible, and any stretch of sound you bleep or mute is replaced in the copy; this means the video is re-encoded. Anything missed stays visible. If nothing is found, or you skip covering, the frames are copied unchanged. PicStrip checks the copy and does not keep it if any of those details remain. Both files are deleted when you close the video screen.
+
+If you clean several videos at once, each is copied into protected temporary storage in turn, cleaned the same way without your review — every face found blurred and sensitive text and codes covered, if you choose covering — saved to your photo library, and its temporary files deleted before the next.
 
 If you keep a Live Photo's motion, its video is cleaned the same way, except for a random identifier that pairs it with the still photo. The motion is not covered, so PicStrip offers it only when nothing in the photo is covered.
 

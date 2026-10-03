@@ -3,8 +3,8 @@ PicStrip 1.7 är en stor uppdatering: nu rensar appen videor, och kameran visar 
 • Videor: ansikten, text, koder och dina Maskera alltid-ord hittas, följs när de rör sig och maskeras – med oskärpa, en fylld ruta eller en emoji för varje ansikte.
 • Maskera vilket objekt som helst i en video genom att rita runt det; PicStrip följer det framåt och bakåt.
 • Korta varje maskering på en tidslinje som i en videoredigerare, och lägg pip över eller tysta det som sägs.
-• Spela in video i PicStrip i upp till 4K med HDR, med reglagen du känner igen från appen Kamera.
-• Ta bild öppnar en livesökare som ringar in det som skulle maskeras.
+• En enda kamera för bilder, video och dokument. Spela in i upp till 4K med HDR, med reglagen du känner igen från appen Kamera; i läget Bild ringar en livesökare in det som skulle maskeras.
+• Välj bilder och videor tillsammans: en öppnas i redigeraren, flera rensas på en gång.
 • Maskera med en emoji, tryck på ett objekt för att maskera det i iOS 27 och låt de sista siffrorna i ett kort- eller telefonnummer synas.
 • Maskera alltid: ditt namn, en registreringsskylt eller din gata maskeras var PicStrip än läser dem.
 • Skanna dokument, välj bara bland dina skärmbilder, behåll rörelsen i Live Photo-bilder och jämför före och efter.

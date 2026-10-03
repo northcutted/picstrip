@@ -1,10 +1,10 @@
 Share the moment, not the story behind it. PicStrip finds what a photo or video gives away — faces, phone numbers, email addresses, card numbers, QR codes, where it was taken and the device that took it — and helps you cover or remove it before you share. Processing happens on your iPhone or iPad.
 
 VIDEOS, COVERED AS THEY MOVE
-Record with PicStrip's camera or pick a video. PicStrip finds faces, text, codes and your Always Cover words, follows them frame by frame and covers them: faces with a strong blur, a solid box or an emoji you choose. Draw a box around anything else — a person, a car, a screen, a sign — and it is tracked forwards and back. A video-editor timeline shows every cover and sound edit as a clip you can trim; select a stretch of sound to bleep or mute it. The preview is drawn the way the copy is saved, and the copy leaves without its location, device and dates.
+Record with PicStrip's camera or pick a video — or many, to clean them all at once. PicStrip finds faces, text, codes and your Always Cover words, follows them frame by frame and covers them: faces with a strong blur, a solid box or an emoji you choose. Draw a box around anything else — a person, a car, a screen, a sign — and it is tracked forwards and back. A video-editor timeline shows every cover and sound edit as a clip you can trim; select a stretch of sound to bleep or mute it. The preview is drawn the way the copy is saved, and the copy leaves without its location, device and dates.
 
 RECORD WITHOUT COMPROMISE
-Video mode records like the Camera app: 4K or HD, 24 to 120 fps, HDR, enhanced stabilization, every lens with pinch to zoom, focus and exposure, the flashlight, and the volume buttons or Camera Control to start and stop. Recordings go straight to cleaning and are never saved to your library as they are.
+One camera for photos, video and documents. Video mode records like the Camera app: 4K or HD, 24 to 120 fps, HDR, enhanced stabilization, every lens with pinch to zoom, focus and exposure, the flashlight, and the volume buttons or Camera Control to start and stop. Recordings go straight to cleaning and are never saved to your library as they are.
 
 SEE IT BEFORE YOU SHOOT
 Photo mode's live viewfinder outlines and names what it would redact, with its match strength, and can preview the result. After capture, the photo gets a full scan and review.
@@ -19,7 +19,7 @@ REMOVE HIDDEN DETAILS
 Review location, camera, date, caption and device metadata. Choose what to remove and check the output. Export PNG, JPEG, HEIC or a supported source format, with a visible file size. Sharing presets help choose a format for photos, screenshots and documents. Keep a Live Photo's motion when nothing in it is covered.
 
 MORE WAYS IN
-Try the fictional built-in sample. Pick photos, videos or just your screenshots, scan a document, browse Files, paste or drag and drop. Clean many photos at once with a shared policy, use the Share Extension, or start from Shortcuts — the background action removes metadata only.
+Try the fictional built-in sample. Pick photos and videos — one or many, or just your screenshots — scan a document, browse Files, paste or drag and drop. Clean many photos and videos at once with a shared policy, use the Share Extension, or start from Shortcuts — the background action removes metadata only.
 
 ON-DEVICE PRIVACY
 No account, ads, tracking, subscriptions or developer photo server. An optional object-selection model on supported systems may download from Apple after you agree. Importing from cloud providers, saving to a synced library, and sharing to an app you choose follow those services' settings. Protected temporary files are cleaned up as described in the privacy policy. PicStrip is open source, with verifiable build provenance for published releases.

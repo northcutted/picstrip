@@ -171,37 +171,17 @@ struct AboutView: View {
                         instructionRow(
                             icon: "camera",
                             color: .pink,
-                            text: "**Take Photo** — tap \u{201C}Take Photo\u{201D} to shoot straight into PicStrip. The original photo is never saved to your photo library; only the cleaned copy is."
+                            text: "**Camera** — tap \u{201C}Camera\u{201D}, then choose Photo, Video or Document. Photo shows live what would be covered, Video records in 4K or HD with HDR, and Document scans paper. Nothing you capture is saved to your photo library as it is; only the cleaned copy is."
                         )
                         instructionRow(
-                            icon: "video",
-                            color: .red,
-                            text: "**Record Video** — tap \u{201C}Record Video\u{201D} to film in 4K or HD with HDR, as in the Camera app. The recording opens to be cleaned and is never saved to your photo library as it is; only the cleaned copy is."
-                        )
-                        instructionRow(
-                            icon: "photo",
+                            icon: "photo.on.rectangle.angled",
                             color: .blue,
-                            text: "**Photos Library** — tap \u{201C}Select a Photo\u{201D} or \u{201C}Select Multiple Photos\u{201D} to pick from your camera roll."
-                        )
-                        instructionRow(
-                            icon: "film",
-                            color: .orange,
-                            text: "**Videos** — tap \u{201C}Select a Video\u{201D} to clean a video from your library. See Videos below."
-                        )
-                        instructionRow(
-                            icon: "camera.viewfinder",
-                            color: .indigo,
-                            text: "**Screenshots** — tap \u{201C}Screenshots\u{201D} to pick from just your screenshots."
-                        )
-                        instructionRow(
-                            icon: "doc.viewfinder",
-                            color: .green,
-                            text: "**Scan Document** — tap \u{201C}Scan Document\u{201D} to capture paper with the camera. The original scan is never saved to your photo library; only the cleaned copy is."
+                            text: "**Photos & Videos** — pick one photo to edit it, one video to clean it, or several of either to clean them all at once. Your screenshots are in the picker's Collections."
                         )
                         instructionRow(
                             icon: "folder",
                             color: .brown,
-                            text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import images stored locally or in iCloud Drive, Dropbox, and other providers."
+                            text: "**Files App** — tap \u{201C}Browse Files\u{201D} to import an image or a video stored locally or in iCloud Drive, Dropbox, and other providers."
                         )
                         instructionRow(
                             icon: "arrow.down.to.line",
@@ -383,7 +363,7 @@ struct AboutView: View {
                         instructionRow(
                             icon: "video.circle",
                             color: .pink,
-                            text: "**Record in PicStrip.** In the camera, switch between Photo and Video. Tap 4K or the frame rate to change them, HDR to turn it off, and the running figure for steadier video. Tap a lens or pinch to zoom; tap to focus, then drag up or down to brighten or darken. The volume buttons and the Camera Control start and stop recording."
+                            text: "**Record in PicStrip.** In the camera, choose Video. Tap 4K or the frame rate to change them, HDR to turn it off, and the running figure for steadier video. In Photo and Video, tap a lens or pinch to zoom; tap to focus, then drag up or down to brighten or darken. The volume buttons and the Camera Control take the photo or start and stop recording."
                         )
                         instructionRow(
                             icon: "face.dashed",
@@ -409,6 +389,11 @@ struct AboutView: View {
                             icon: "waveform.badge.exclamationmark",
                             color: .pink,
                             text: "**Bleep or mute the sound.** Hold on the Audio lane and drag across what was said, then choose Bleep or Mute — or Play to hear it first. Drag the clip\u{2019}s ends to cover exactly the words."
+                        )
+                        instructionRow(
+                            icon: "square.stack.3d.up",
+                            color: .indigo,
+                            text: "**Many videos at once.** Pick several videos — with photos too, if you like — and clean them all with one policy: every face found is blurred and text and codes are covered, with nothing reviewed. It takes a while, so keep PicStrip open; open a video on its own to check each cover."
                         )
                         instructionRow(
                             icon: "play.rectangle",

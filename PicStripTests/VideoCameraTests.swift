@@ -73,9 +73,9 @@ final class VideoFormatCatalogTests: XCTestCase {
 
     @MainActor
     func testZoomLabelsReadAsInTheCameraApp() {
-        XCTAssertEqual(VideoCameraView.zoomLabel(0.5, suffix: false), ".5")
-        XCTAssertEqual(VideoCameraView.zoomLabel(1, suffix: true), "1×")
-        XCTAssertEqual(VideoCameraView.zoomLabel(1.6, suffix: true), "1.6×")
-        XCTAssertEqual(VideoCameraView.zoomLabel(4, suffix: false), "4")
+        XCTAssertEqual(CameraZoomButtons.label(0.5, suffix: false), ".5")
+        XCTAssertEqual(CameraZoomButtons.label(1, suffix: true), "1×")
+        XCTAssertEqual(CameraZoomButtons.label(1.6, suffix: true), "1.6×")
+        XCTAssertEqual(CameraZoomButtons.label(4, suffix: false), "4")
     }
 }

@@ -102,7 +102,7 @@ nonisolated final class FrameRegistration: @unchecked Sendable {
 /// queues of its own choosing: session and device work on `sessionQueue`, frame
 /// work on `videoQueue`, and the two never touch each other's state.
 nonisolated final class CameraSession: NSObject, @unchecked Sendable,
-    AVCaptureVideoDataOutputSampleBufferDelegate, AVCapturePhotoCaptureDelegate {
+    AVCaptureVideoDataOutputSampleBufferDelegate, AVCapturePhotoCaptureDelegate, AVCaptureSessionControlsDelegate {
 
     enum SetupError: Error { case noCamera, cannotConfigure }
 
@@ -113,13 +113,21 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         let scan: @Sendable (_ scan: LiveFrameScan, _ videoSize: CGSize, _ origin: CGVector) -> Void
         /// The motion offset now.
         let motion: @Sendable (_ offset: CGVector) -> Void
+        /// The Camera Control's zoom slider moved, to this Camera-app zoom level.
+        var zoomChanged: @MainActor @Sendable (CGFloat) -> Void = { _ in }
+        /// The Camera Control's overlay took over the screen, or gave it back.
+        var controlsFullscreen: @Sendable (Bool) -> Void = { _ in }
     }
 
     /// What the camera can do, known once it is configured.
     struct Capabilities: Sendable, Equatable {
+        var position: AVCaptureDevice.Position = .back
         var hasTorch = false
-        /// Zoom levels as the Camera app labels them (1×, 2×) that this camera reaches.
+        /// The Camera app's lens buttons for this camera (0.5×, 1×, 2×, 4×…).
         var zoomLevels: [CGFloat] = []
+        var maximumZoomLevel: CGFloat = 1
+        var canFlip = false
+        var exposureBiasRange: ClosedRange<Float> = 0...0
     }
 
     let session = AVCaptureSession()
@@ -138,6 +146,8 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
 
     // sessionQueue
     private var device: AVCaptureDevice?
+    private var input: AVCaptureDeviceInput?
+    private var controlHandlers: Handlers?
     private var captureRotationAngle: CGFloat = 0
     private var photoContinuation: CheckedContinuation<Data?, Never>?
 
@@ -165,7 +175,8 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         let (device, capabilities) = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Configured, Error>) in
             sessionQueue.async { [self] in
                 do {
-                    let device = try configure()
+                    controlHandlers = handlers
+                    let device = try configure(position: .back)
                     let capabilities = prepare(device)
                     videoQueue.sync { self.handlers = handlers }
                     session.startRunning()
@@ -176,6 +187,32 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
             }
         }
         self.previewLayer = previewLayer
+        attachRotation(to: device)
+        return capabilities
+    }
+
+    /// The other camera, front or back.  The analysis starts afresh on it.
+    @MainActor
+    func flip(to position: AVCaptureDevice.Position) async throws -> Capabilities {
+        typealias Configured = (device: AVCaptureDevice, capabilities: Capabilities)
+        let (device, capabilities) = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Configured, Error>) in
+            sessionQueue.async { [self] in
+                do {
+                    let device = try configure(position: position)
+                    continuation.resume(returning: (device, prepare(device)))
+                } catch {
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+        attachRotation(to: device)
+        restartAnalysis()
+        return capabilities
+    }
+
+    @MainActor
+    private func attachRotation(to device: AVCaptureDevice) {
+        guard let previewLayer else { return }
         let coordinator = AVCaptureDevice.RotationCoordinator(device: device, previewLayer: previewLayer)
         rotationCoordinator = coordinator
         updateRotation()
@@ -187,7 +224,6 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
                 Task { @MainActor in self?.updateRotation() }
             }
         ]
-        return capabilities
     }
 
     @MainActor
@@ -200,6 +236,7 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
             handlers = nil
         }
         sessionQueue.async { [self] in
+            controlHandlers = nil
             if session.isRunning { session.stopRunning() }
             photoContinuation?.resume(returning: nil)
             photoContinuation = nil
@@ -277,7 +314,8 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
     }
 
     /// `level` as the Camera app labels it: 1 is the main camera's field of view.
-    func setZoom(_ level: CGFloat) {
+    /// A lens button ramps there; a pinch follows the fingers.
+    func setZoom(_ level: CGFloat, animated: Bool = true) {
         sessionQueue.async { [self] in
             guard let device else { return }
             do {
@@ -285,7 +323,17 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
             } catch {
                 return
             }
-            device.ramp(toVideoZoomFactor: Self.videoZoomFactor(forDisplayLevel: level, of: device), withRate: 4)
+            let factor = Self.videoZoomFactor(forDisplayLevel: level, of: device)
+            if animated { device.ramp(toVideoZoomFactor: factor, withRate: 6) } else { device.videoZoomFactor = factor }
+            device.unlockForConfiguration()
+        }
+    }
+
+    /// Brighter or darker than the camera would choose, in stops.
+    func setExposureBias(_ bias: Float) {
+        sessionQueue.async { [self] in
+            guard let device, (try? device.lockForConfiguration()) != nil else { return }
+            device.setExposureTargetBias(min(max(bias, device.minExposureTargetBias), device.maxExposureTargetBias))
             device.unlockForConfiguration()
         }
     }
@@ -308,49 +356,88 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
 
     /// The back camera that best reads small print: a virtual device where there
     /// is one, because it switches to the ultra-wide lens for close-ups on its
-    /// own — the main lens cannot focus that near.
-    private static func preferredDevice() -> AVCaptureDevice? {
-        let types: [AVCaptureDevice.DeviceType] = [
-            .builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera
-        ]
-        return types.lazy.compactMap { AVCaptureDevice.default($0, for: .video, position: .back) }.first
-            ?? AVCaptureDevice.default(for: .video)
+    /// own — the main lens cannot focus that near.  Or the front camera.
+    private static func preferredDevice(at position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        let types: [AVCaptureDevice.DeviceType] = position == .back
+            ? [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera]
+            : [.builtInWideAngleCamera, .builtInTrueDepthCamera]
+        return types.lazy.compactMap { AVCaptureDevice.default($0, for: .video, position: position) }.first
+            ?? (position == .back ? AVCaptureDevice.default(for: .video) : nil)
     }
 
-    private func configure() throws -> AVCaptureDevice {
-        guard let device = Self.preferredDevice() else { throw SetupError.noCamera }
+    private func configure(position: AVCaptureDevice.Position) throws -> AVCaptureDevice {
+        guard let device = Self.preferredDevice(at: position) else { throw SetupError.noCamera }
 
         session.beginConfiguration()
         defer { session.commitConfiguration() }
         session.sessionPreset = .photo
 
-        let input = try AVCaptureDeviceInput(device: device)
-        guard session.canAddInput(input), session.canAddOutput(photoOutput), session.canAddOutput(videoOutput)
-        else { throw SetupError.cannotConfigure }
-        session.addInput(input)
-        session.addOutput(photoOutput)
+        let newInput = try AVCaptureDeviceInput(device: device)
+        if let input { session.removeInput(input) }
+        guard session.canAddInput(newInput) else { throw SetupError.cannotConfigure }
+        session.addInput(newInput)
+        input = newInput
 
-        // With the photo preset the video output delivers preview-sized frames
-        // (about the screen's size), not the sensor's: OCR reads what the
-        // viewfinder shows.
-        videoOutput.alwaysDiscardsLateVideoFrames = true
-        videoOutput.setSampleBufferDelegate(self, queue: videoQueue)
-        session.addOutput(videoOutput)
+        if !session.outputs.contains(photoOutput) {
+            guard session.canAddOutput(photoOutput), session.canAddOutput(videoOutput) else { throw SetupError.cannotConfigure }
+            session.addOutput(photoOutput)
+            // With the photo preset the video output delivers preview-sized frames
+            // (about the screen's size), not the sensor's: OCR reads what the
+            // viewfinder shows.
+            videoOutput.alwaysDiscardsLateVideoFrames = true
+            videoOutput.setSampleBufferDelegate(self, queue: videoQueue)
+            session.addOutput(videoOutput)
+        }
 
         self.device = device
+        configureControls(for: device)
         return device
     }
+
+    /// The Camera Control's own zoom and exposure sliders, where there is one.
+    private func configureControls(for device: AVCaptureDevice) {
+        guard session.supportsControls else { return }
+        session.setControlsDelegate(self, queue: sessionQueue)
+        for control in session.controls { session.removeControl(control) }
+        let multiplier = device.displayVideoZoomFactorMultiplier
+        let zoomChanged = controlHandlers?.zoomChanged
+        let zoom = AVCaptureSystemZoomSlider(device: device) { factor in
+            zoomChanged?(factor * multiplier)
+        }
+        let exposure = AVCaptureSystemExposureBiasSlider(device: device)
+        for control in [zoom, exposure] as [AVCaptureControl] where session.canAddControl(control) {
+            session.addControl(control)
+        }
+    }
+
+    func sessionControlsDidBecomeActive(_ session: AVCaptureSession) { }
+
+    func sessionControlsWillEnterFullscreenAppearance(_ session: AVCaptureSession) {
+        controlHandlers?.controlsFullscreen(true)
+    }
+
+    func sessionControlsWillExitFullscreenAppearance(_ session: AVCaptureSession) {
+        controlHandlers?.controlsFullscreen(false)
+    }
+
+    func sessionControlsDidBecomeInactive(_ session: AVCaptureSession) { }
 
     /// Settings that need the configured format: the Camera app's 1× (on a
     /// virtual device a zoom factor of 1 is the ultra-wide lens), and continuous
     /// autofocus.
     private func prepare(_ device: AVCaptureDevice) -> Capabilities {
         var capabilities = Capabilities()
+        let multiplier = device.displayVideoZoomFactorMultiplier
+        capabilities.position = device.position
         capabilities.hasTorch = device.hasTorch && device.isTorchModeSupported(.on)
-        capabilities.zoomLevels = [1, 2].filter { level in
-            let factor = level / device.displayVideoZoomFactorMultiplier
-            return factor >= device.minAvailableVideoZoomFactor && factor <= device.maxAvailableVideoZoomFactor
-        }
+        capabilities.zoomLevels = VideoFormatCatalog.lensLevels(
+            minimum: device.minAvailableVideoZoomFactor * multiplier,
+            switchOvers: device.virtualDeviceSwitchOverVideoZoomFactors.map { CGFloat(truncating: $0) * multiplier },
+            maximum: device.maxAvailableVideoZoomFactor * multiplier
+        )
+        capabilities.maximumZoomLevel = min(device.maxAvailableVideoZoomFactor * multiplier, 25)
+        capabilities.canFlip = Self.preferredDevice(at: device.position == .back ? .front : .back) != nil
+        capabilities.exposureBiasRange = max(device.minExposureTargetBias, -2)...min(device.maxExposureTargetBias, 2)
         do {
             try device.lockForConfiguration()
         } catch {
@@ -547,10 +634,14 @@ final class LiveCameraModel {
     private(set) var isAnalysisPaused = false
     private(set) var isCapturing = false
     private(set) var capabilities = CameraSession.Capabilities()
+    /// The Camera app's zoom level, 1 being the main lens.
     private(set) var zoomLevel: CGFloat = 1
     private(set) var isTorchOn = false
     /// Where the user tapped to focus, in view points, until the camera refocuses by itself.
     private(set) var focusPoint: CGPoint?
+    private(set) var exposureBias: Float = 0
+    /// The Camera Control's overlay is showing: PicStrip's controls make way.
+    private(set) var areControlsHidden = false
     /// Set when a still image stands in for the camera.
     let fixture: LiveCameraFixture?
 
@@ -558,6 +649,8 @@ final class LiveCameraModel {
     @ObservationIgnored private let camera = CameraSession()
     @ObservationIgnored private var tracker = LiveDetectionTracker()
     @ObservationIgnored private var tasks: [Task<Void, Never>] = []
+    @ObservationIgnored private var pinchStart: CGFloat?
+    @ObservationIgnored private var biasStart: Float?
 
     init(fixture: LiveCameraFixture? = LiveCameraFixture.fromEnvironment()) {
         self.fixture = fixture
@@ -585,6 +678,12 @@ final class LiveCameraModel {
                 },
                 motion: { [weak self] offset in
                     Task { @MainActor in self?.applyMotion(offset) }
+                },
+                zoomChanged: { [weak self] level in
+                    self?.zoomLevel = level
+                },
+                controlsFullscreen: { [weak self] isFullscreen in
+                    Task { @MainActor in self?.areControlsHidden = isFullscreen }
                 }
             ))
             state = .running
@@ -621,8 +720,22 @@ final class LiveCameraModel {
     func focus(at point: CGPoint) {
         guard fixture == nil, state == .running, !isCapturing else { return }
         camera.focus(at: previewLayer.captureDevicePointConverted(fromLayerPoint: point))
+        camera.setExposureBias(0)
+        exposureBias = 0
         focusPoint = point
     }
+
+    /// A drag up or down after focusing: brighter or darker, by `stops` from where it started.
+    func adjustExposure(by stops: Float) {
+        guard fixture == nil, state == .running, focusPoint != nil else { return }
+        let start = biasStart ?? exposureBias
+        biasStart = start
+        let range = capabilities.exposureBiasRange
+        exposureBias = min(max(start + stops, range.lowerBound), range.upperBound)
+        camera.setExposureBias(exposureBias)
+    }
+
+    func endExposureAdjustment() { biasStart = nil }
 
     func setZoom(_ level: CGFloat) {
         guard level != zoomLevel, state == .running else { return }
@@ -630,6 +743,42 @@ final class LiveCameraModel {
         camera.setZoom(level)
         // The boxes describe the old field of view.
         clearDetections()
+    }
+
+    /// A pinch on the viewfinder, `scale` from where it started.  The boxes go
+    /// when it ends: they describe the old field of view.
+    func pinch(_ scale: CGFloat) {
+        guard state == .running, fixture == nil else { return }
+        let start = pinchStart ?? zoomLevel
+        pinchStart = start
+        let minimum = capabilities.zoomLevels.first ?? 1
+        zoomLevel = min(max(start * scale, minimum), capabilities.maximumZoomLevel)
+        camera.setZoom(zoomLevel, animated: false)
+    }
+
+    func endPinch() {
+        guard pinchStart != nil else { return }
+        pinchStart = nil
+        clearDetections()
+    }
+
+    /// The front camera, or back to the back one.
+    func flip() {
+        guard state == .running, fixture == nil, capabilities.canFlip, !isCapturing else { return }
+        let position: AVCaptureDevice.Position = capabilities.position == .back ? .front : .back
+        state = .starting
+        isTorchOn = false
+        focusPoint = nil
+        clearDetections()
+        Task {
+            do {
+                capabilities = try await camera.flip(to: position)
+                zoomLevel = 1
+                state = .running
+            } catch {
+                state = .unavailable
+            }
+        }
     }
 
     func setTorch(_ isOn: Bool) {
@@ -716,7 +865,9 @@ final class LiveCameraModel {
         tasks.append(Task { [weak self] in
             for await _ in NotificationCenter.default.notifications(named: AVCaptureDevice.subjectAreaDidChangeNotification) {
                 self?.focusPoint = nil
+                self?.exposureBias = 0
                 self?.camera.resetFocus()
+                self?.camera.setExposureBias(0)
             }
         })
     }

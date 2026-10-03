@@ -3,8 +3,8 @@ PicStrip 1.7 is een grote update: de app schoont nu video’s op, en de camera l
 • Video’s: gezichten, tekst, codes en je woorden voor Altijd afdekken worden gevonden, gevolgd terwijl ze bewegen en afgedekt — met een vervaging, een effen vlak of een emoji per gezicht.
 • Dek elk object in een video af door er een kader omheen te trekken; PicStrip volgt het vooruit en achteruit.
 • Kort elke afdekking in op een tijdbalk zoals in een video-editor, en zet een piep over wat er gezegd is of demp het.
-• Neem in PicStrip video op tot 4K met HDR, met de bediening die je kent van de Camera-app.
-• Maak foto opent een livezoeker die omlijnt wat hij zou afdekken.
+• Eén camera voor foto’s, video en documenten. Neem op tot 4K met HDR, met de bediening die je kent van de Camera-app; in de fotomodus omlijnt een livezoeker wat hij zou afdekken.
+• Kies foto’s en video’s samen: één opent de editor, meerdere worden in één keer opgeschoond.
 • Dek af met een emoji, tik op iOS 27 op een object om het af te dekken, en laat de laatste cijfers van een kaart- of telefoonnummer zichtbaar.
 • Altijd afdekken: je naam, een kenteken of je straat, afgedekt overal waar PicStrip ze leest.
 • Scan documenten, kies alleen je schermafbeeldingen, behoud de beweging van een Live Photo en vergelijk voor en na.

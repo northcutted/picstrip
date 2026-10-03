@@ -175,12 +175,9 @@ final class PicStripUITests: XCTestCase {
         let app = englishApp()
         app.launch()
 
-        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        XCTAssertTrue(app.buttons["selectMultiplePhotosButton"].exists)
+        XCTAssertTrue(app.buttons["libraryButton"].waitForExistence(timeout: 15))
         XCTAssertTrue(app.buttons["browseFilesButton"].exists)
-        XCTAssertFalse(app.buttons["scanDocumentButton"].exists)
-        XCTAssertFalse(app.buttons["takePhotoButton"].exists)
-        XCTAssertFalse(app.buttons["recordVideoButton"].exists)
+        XCTAssertFalse(app.buttons["cameraButton"].exists, "No camera, no Camera button.")
     }
 
     /// Paste is offered only while the pasteboard holds an image, and then from the
@@ -189,7 +186,7 @@ final class PicStripUITests: XCTestCase {
     func testPasteIsOfferedOnlyWhenThereIsAnImageToPaste() throws {
         let app = englishApp()
         app.launch()
-        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
+        XCTAssertTrue(app.buttons["libraryButton"].waitForExistence(timeout: 15))
         XCTAssertFalse(app.descendants(matching: .any)["pasteImageButton"].firstMatch.exists)
         app.terminate()
 
@@ -198,7 +195,7 @@ final class PicStripUITests: XCTestCase {
         let paste = app.descendants(matching: .any)["pasteImageButton"].firstMatch
         XCTAssertTrue(paste.waitForExistence(timeout: 15))
         XCTAssertLessThan(
-            paste.frame.maxY, app.buttons["selectPhotoButton"].frame.minY,
+            paste.frame.maxY, app.buttons["libraryButton"].frame.minY,
             "Paste belongs in the bar at the top, above every import button."
         )
     }
@@ -211,25 +208,19 @@ final class PicStripUITests: XCTestCase {
         app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
         app.launch()
 
-        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 15))
-        let identifiers = [
-            "takePhotoButton", "recordVideoButton", "selectPhotoButton", "selectVideoButton", "selectScreenshotButton",
-            "selectMultiplePhotosButton", "scanDocumentButton", "browseFilesButton", "tryDemoButton"
-        ]
-        for identifier in identifiers {
+        XCTAssertTrue(app.buttons["libraryButton"].waitForExistence(timeout: 15))
+        for identifier in ["cameraButton", "libraryButton", "browseFilesButton", "tryDemoButton"] {
             XCTAssertTrue(app.buttons[identifier].isHittable, "\(identifier) must be on the first screen.")
         }
-        let photo = app.buttons["takePhotoButton"].frame
-        let video = app.buttons["recordVideoButton"].frame
         XCTAssertLessThan(
-            max(photo.maxY, video.maxY), app.buttons["selectPhotoButton"].frame.minY,
-            "With a camera, Take Photo and Record Video lead, above the grid."
+            app.buttons["cameraButton"].frame.maxY, app.buttons["libraryButton"].frame.minY,
+            "With a camera, the Camera leads, above the library and Files."
         )
-        XCTAssertEqual(photo.midY, video.midY, accuracy: 1, "…side by side.")
         XCTAssertEqual(
-            app.buttons["selectPhotoButton"].frame.midY, app.buttons["selectVideoButton"].frame.midY, accuracy: 1,
-            "The library's photos and videos share the first row."
+            app.buttons["libraryButton"].frame.midY, app.buttons["browseFilesButton"].frame.midY, accuracy: 1,
+            "The library and Files share a row."
         )
+        XCTAssertFalse(app.buttons["selectScreenshotButton"].exists, "Screenshots are a collection in the library picker.")
         attachScreen("home")
     }
 
@@ -610,12 +601,15 @@ final class PicStripUITests: XCTestCase {
         try await writeFaceMovie(to: URL(fileURLWithPath: path))
         let app = englishApp()
         app.launchEnvironment["PICSTRIP_VIDEO_CAMERA_FIXTURE"] = path
+        // As on a phone, where the document scanner is there too.
+        app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
         app.launch()
 
         let record = app.buttons["videoRecordButton"]
         XCTAssertTrue(record.waitForExistence(timeout: 15), "The camera opens in Video mode.")
         XCTAssertTrue(app.buttons["cameraMode-video"].isSelected, "Video is the mode picked.")
-        XCTAssertTrue(app.buttons["cameraMode-photo"].exists, "Photo is a tap away.")
+        XCTAssertTrue(app.buttons["cameraMode-photo"].exists, "Photo is a tap away…")
+        XCTAssertTrue(app.buttons["cameraMode-document"].exists, "…and so is Document.")
 
         let resolution = app.buttons["videoResolutionButton"]
         XCTAssertEqual(resolution.value as? String, "4K", "Recording starts at the most detail.")
@@ -646,7 +640,7 @@ final class PicStripUITests: XCTestCase {
         let discard = app.buttons["discardRecordingButton"].firstMatch
         XCTAssertTrue(discard.waitForExistence(timeout: 5), "Closing asks before an unsaved recording is lost.")
         discard.tap()
-        XCTAssertTrue(app.buttons["selectPhotoButton"].waitForExistence(timeout: 10), "Back on the home screen.")
+        XCTAssertTrue(app.buttons["libraryButton"].waitForExistence(timeout: 10), "Back on the home screen.")
     }
 
     /// Skipping face covering still saves a cleaned copy, with every face as it was.

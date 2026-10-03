@@ -24,10 +24,14 @@ nonisolated enum PhotoLibraryWriter {
         }
     }
 
-    /// Adds the video at `url` to the library as a new video.
-    static func saveVideo(at url: URL) async throws {
+    /// Adds the video at `url` to the library as a new video and, when
+    /// `original` is given, deletes that asset in the same change.
+    static func saveVideo(at url: URL, deleting original: PHAsset? = nil) async throws {
         try await PHPhotoLibrary.shared().performChanges {
             PHAssetCreationRequest.forAsset().addResource(with: .video, fileURL: url, options: nil)
+            if let original {
+                PHAssetChangeRequest.deleteAssets([original] as NSArray)
+            }
         }
     }
 

@@ -3,8 +3,8 @@ PicStrip 1.7 is a big update: it now cleans videos, and its camera shows what it
 • Videos: faces, text, codes and your Always Cover words are found, followed as they move, and covered — with a blur, a solid box or an emoji for each face.
 • Cover any object in a video by drawing around it; PicStrip tracks it forwards and back.
 • Trim every cover on a video-editor timeline, and bleep or mute what was said.
-• Record video in PicStrip in up to 4K with HDR, using the controls you know from the Camera app.
-• Take Photo opens a live viewfinder that outlines what it would redact.
+• One camera for photos, video and documents. Record in up to 4K with HDR using the controls you know from the Camera app; in Photo mode, a live viewfinder outlines what it would redact.
+• Pick photos and videos together: one opens the editor, several are cleaned at once.
 • Cover with an emoji, tap an object to cover it on iOS 27, and leave the last digits of a card or phone number showing.
 • Always Cover: your name, a plate or your street, covered wherever PicStrip reads them.
 • Scan documents, pick just your screenshots, keep a Live Photo's motion, and compare before and after.
