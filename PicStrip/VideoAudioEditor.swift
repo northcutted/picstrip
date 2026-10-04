@@ -40,14 +40,27 @@ nonisolated enum VideoAudioEditor {
     struct Edited: @unchecked Sendable {
         let asset: AVAsset
         let audioMix: AVAudioMix?
-        /// The tone file laid over bleeps, to delete when done.
-        let toneFile: URL?
+        /// The tone laid over bleeps, to delete when done.
+        let tone: Tone?
+
+        var toneFile: URL? { tone?.url }
+    }
+
+    /// A tone file written for bleeps whose longest is `seconds` long: it fades
+    /// out at its end, so it is the same file for as long as that bleep is.
+    struct Tone: Hashable, Sendable {
+        let url: URL
+        let seconds: Double
     }
 
     /// `url` with `edits` applied to its sound — `url` itself when there are none.
-    static func edited(_ url: URL, edits: [AudioEdit]) async throws -> Edited {
+    /// `tone`, from an earlier edit, is laid over the bleeps again while the
+    /// longest is as long as it was, rather than a new one written.  Built off
+    /// the main actor: writing a tone takes a moment.
+    @concurrent
+    static func edited(_ url: URL, edits: [AudioEdit], reusing tone: Tone? = nil) async throws -> Edited {
         let source = AVURLAsset(url: url)
-        guard !edits.isEmpty else { return Edited(asset: source, audioMix: nil, toneFile: nil) }
+        guard !edits.isEmpty else { return Edited(asset: source, audioMix: nil, tone: nil) }
 
         let composition = AVMutableComposition()
         let duration = try await source.load(.duration)
@@ -90,13 +103,19 @@ nonisolated enum VideoAudioEditor {
 
         // A tone over each bleep, laid end to end on a track of its own so no
         // insert pushes another along.
-        var toneFile: URL?
+        var usedTone: Tone?
         let bleeps = merged(edits.filter { $0.kind == .bleep }.map(\.range))
         if let longest = bleeps.map({ $0.upperBound - $0.lowerBound }).max(), longest > 0 {
-            let file = try writeTone(seconds: longest)
-            toneFile = file
-            let tone = AVURLAsset(url: file)
-            if let toneTrack = try await tone.loadTracks(withMediaType: .audio).first,
+            let fitting: Tone
+            if let tone, tone.seconds == longest {
+                fitting = tone
+            } else {
+                fitting = Tone(url: try writeTone(seconds: longest), seconds: longest)
+            }
+            usedTone = fitting
+            // Held while its track is inserted: a track does not keep its asset.
+            let toneAsset = AVURLAsset(url: fitting.url)
+            if let toneTrack = try await toneAsset.loadTracks(withMediaType: .audio).first,
                let lane = composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid) {
                 var cursor = CMTime.zero
                 for bleep in bleeps {
@@ -114,7 +133,7 @@ nonisolated enum VideoAudioEditor {
 
         let mix = AVMutableAudioMix()
         mix.inputParameters = parameters
-        return Edited(asset: composition, audioMix: mix, toneFile: toneFile)
+        return Edited(asset: composition, audioMix: mix, tone: usedTone)
     }
 
     /// Overlapping or touching stretches as one, in order.

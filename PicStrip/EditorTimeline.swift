@@ -80,8 +80,15 @@ struct EditorTimeline: View {
     /// lane cannot be selected along.
     let selectionActions: [SelectionAction]
     let onSeek: (Double) -> Void
+    /// The playhead follows a finger: called as it moves, then `onScrubEnd`
+    /// once it lifts.
+    let onScrub: (Double) -> Void
+    let onScrubEnd: () -> Void
     let onSelect: (Clip) -> Void
+    /// An end of the selected clip follows a finger: called as it moves, then
+    /// `onTrimEnd` once it lifts.
     let onTrim: (Clip, ClosedRange<Double>) -> Void
+    let onTrimEnd: () -> Void
     /// A clip's options, shown when it is held.
     let clipMenu: (Clip) -> AnyView
 
@@ -446,18 +453,19 @@ struct EditorTimeline: View {
                     if hasDraggedSelection {
                         audioSelection = Self.selection(from: selectionAnchor, to: now, duration: duration)
                     }
-                    onSeek(now)
+                    onScrub(now)
                     return
                 }
                 if audioSelection != nil {
                     audioSelection = nil
                     showsMenu = false
                 }
-                onSeek(now)
+                onScrub(now)
             }
             .onEnded { _ in
                 stopEdgeScroll()
                 timeBeforeTouch = nil
+                onScrubEnd()
                 if isSelectingAudio {
                     isSelectingAudio = false
                     presentMenu()
@@ -504,7 +512,7 @@ struct EditorTimeline: View {
                     hasDraggedSelection = true
                     audioSelection = Self.selection(from: selectionAnchor, to: now, duration: duration)
                 }
-                onSeek(now)
+                onScrub(now)
             }
         }
     }
@@ -548,7 +556,11 @@ struct EditorTimeline: View {
                         let x = min(max(drag.location.x, 0), mapping.width)
                         let range = trimmed(clip, moving: edge, to: mapping.time(x))
                         onTrim(clip, range)
-                        onSeek(edge == .start ? range.lowerBound : range.upperBound)
+                        onScrub(edge == .start ? range.lowerBound : range.upperBound)
+                    }
+                    .onEnded { _ in
+                        onTrimEnd()
+                        onScrubEnd()
                     }
             )
             .accessibilityElement()
@@ -557,6 +569,7 @@ struct EditorTimeline: View {
             .accessibilityAdjustableAction { direction in
                 let step = direction == .increment ? 0.5 : -0.5
                 onTrim(clip, trimmed(clip, moving: edge, to: value + step))
+                onTrimEnd()
             }
             .accessibilityIdentifier(edge == .start ? "coverStartHandle" : "coverEndHandle")
     }

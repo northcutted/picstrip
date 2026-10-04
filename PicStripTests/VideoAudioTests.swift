@@ -55,6 +55,28 @@ final class VideoAudioTests: XCTestCase {
         XCTAssertEqual(frequency(stretch(2.2...2.9)), 440, accuracy: 40)
     }
 
+    func testATonesFileIsUsedAgainWhileTheLongestBleepIsAsLong() async throws {
+        let movie = try await makeMovie(seconds: 3)
+        let first = try await VideoAudioEditor.edited(movie, edits: [AudioEdit(id: 0, kind: .bleep, range: 0.5...1.0)])
+        let tone = try XCTUnwrap(first.tone)
+        cleanup.append(tone.url)
+        XCTAssertEqual(tone.seconds, 0.5, accuracy: 1e-9)
+
+        // A shorter bleep added and the first turned around: the longest is as long.
+        let again = try await VideoAudioEditor.edited(movie, edits: [
+            AudioEdit(id: 0, kind: .bleep, range: 1.5...2.0), AudioEdit(id: 1, kind: .bleep, range: 0.1...0.3)
+        ], reusing: tone)
+        XCTAssertEqual(again.tone, tone, "The same file.")
+
+        let longer = try await VideoAudioEditor.edited(movie, edits: [AudioEdit(id: 0, kind: .bleep, range: 0.5...1.5)], reusing: tone)
+        let longerTone = try XCTUnwrap(longer.tone)
+        cleanup.append(longerTone.url)
+        XCTAssertNotEqual(longerTone.url, tone.url, "A longer bleep needs a longer tone.")
+
+        let muted = try await VideoAudioEditor.edited(movie, edits: [AudioEdit(id: 0, kind: .mute, range: 0.5...1.5)], reusing: tone)
+        XCTAssertNil(muted.tone, "A mute has no tone.")
+    }
+
     func testWithoutEditsTheSourceIsUsedAsItIs() async throws {
         let movie = try await makeMovie(seconds: 1)
         let edited = try await VideoAudioEditor.edited(movie, edits: [])

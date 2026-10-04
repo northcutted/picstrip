@@ -141,10 +141,15 @@ final class VideoCleanerModel {
     /// Small frames spread along the video, for the timeline's top row.
     private(set) var filmstrip: [UIImage] = []
     private var nextAudioID = 0
-    /// Tone files laid over bleeps; deleted with the screen.
-    private var toneFiles: [URL] = []
-    /// The audio edits the current preview item was built with.
+    /// Tone files laid over bleeps and not yet deleted: all but the preview's
+    /// go when a new preview item replaces the last, and the rest with the screen.
+    private var toneFiles: Set<URL> = []
+    /// The audio edits the current preview item was built with, and its tone.
     private var previewAudioEdits: [AudioEdit] = []
+    private var previewTone: VideoAudioEditor.Tone?
+    /// A timing changed while an end was dragged: the preview follows once it
+    /// is let go (`finishTrimming`).
+    private var trimNeedsPreview = false
     private(set) var output: URL?
 
     private var source: URL?
@@ -155,6 +160,12 @@ final class VideoCleanerModel {
     private(set) var skipsCovering = false
     private var previewGeneration = 0
     private var timeObserver: Any?
+    /// Where the player is to seek to next, once the seek under way lands.
+    private var queuedSeek: (time: Double, tolerance: CMTime)?
+    private var isSeeking = false
+    /// The playhead is under a finger: it shows where the finger is, not where
+    /// a near-enough seek landed.
+    private var isDraggingPlayhead = false
     /// Pauses the preview at the end of a stretch being played.
     private var boundaryObserver: Any?
     private var filmstripTask: Task<Void, Never>?
@@ -319,10 +330,12 @@ final class VideoCleanerModel {
         refreshPreview()
     }
 
-    /// Sets when a face or drawn cover is on, from the timeline.
-    func setRange(_ range: ClosedRange<Double>, for track: FaceTrack) {
+    /// Sets when a face or drawn cover is on, from the timeline.  `live` while
+    /// an end is being dragged: the clip follows the finger, and the preview is
+    /// made again once it is let go (`finishTrimming`).
+    func setRange(_ range: ClosedRange<Double>, for track: FaceTrack, live: Bool = false) {
         ranges[track.id] = clamped(range)
-        refreshPreview()
+        previewTiming(live: live)
     }
 
     func resetRange(for track: FaceTrack) {
@@ -335,16 +348,48 @@ final class VideoCleanerModel {
         faces.first { $0.id == id } ?? drawnCovers.first { $0.id == id }
     }
 
-    /// Moves the preview to `time` — the timeline's playhead.
-    func scrub(to time: Double) {
+    /// Moves the preview to `time` — the timeline's playhead.  `dragging` while
+    /// a finger moves it: the player seeks near enough, one seek at a time, and
+    /// lands exactly once the finger lifts (`finishScrubbing`).
+    func scrub(to time: Double, dragging: Bool = false) {
         let time = min(max(0, time), duration)
+        isDraggingPlayhead = dragging
         playhead.time = time
-        player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        seekPreview(to: time, exactly: !dragging)
         if previewStill != nil {
             stillTime = time
-            refreshPreview()
+            // A still is a whole composed frame: one when the finger lifts.
+            if !dragging { refreshPreview() }
         }
     }
+
+    /// The playhead was let go: the preview lands exactly where it was left.
+    func finishScrubbing() {
+        guard isDraggingPlayhead else { return }
+        scrub(to: currentTime)
+    }
+
+    /// While a near-enough seek is under way the next waits, and only the
+    /// latest is kept: a drag never queues up seeks the player is still working
+    /// through.  Seeks landing near enough take the nearest keyframe.
+    private func seekPreview(to time: Double, exactly: Bool) {
+        queuedSeek = (time, exactly ? .zero : Self.scrubTolerance)
+        guard !isSeeking else { return }
+        isSeeking = true
+        Task {
+            while let seek = queuedSeek {
+                queuedSeek = nil
+                _ = await player.seek(
+                    to: CMTime(seconds: seek.time, preferredTimescale: 600),
+                    toleranceBefore: seek.tolerance, toleranceAfter: seek.tolerance
+                )
+            }
+            isSeeking = false
+        }
+    }
+
+    /// How far from the playhead a seek may land while it is dragged.
+    private static let scrubTolerance = CMTime(seconds: 0.5, preferredTimescale: 600)
 
     /// The frame at the playhead with the current covers drawn on it — what the
     /// user draws a new cover on.
@@ -388,6 +433,8 @@ final class VideoCleanerModel {
             }
         }
         playhead.time = range.lowerBound
+        // This seek replaces any the playhead was making.
+        queuedSeek = nil
         Task {
             _ = await player.seek(
                 to: CMTime(seconds: range.lowerBound, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero
@@ -419,10 +466,29 @@ final class VideoCleanerModel {
         refreshPreview()
     }
 
-    func setRange(_ range: ClosedRange<Double>, of edit: AudioEdit) {
+    /// Sets when a bleep or mute applies; `live` as for a cover's timing.
+    func setRange(_ range: ClosedRange<Double>, of edit: AudioEdit, live: Bool = false) {
         guard let index = audioEdits.firstIndex(where: { $0.id == edit.id }) else { return }
         audioEdits[index].range = clamped(range)
+        previewTiming(live: live)
+    }
+
+    /// A dragged end was let go: the preview catches up with the new timing.
+    func finishTrimming() {
+        guard trimNeedsPreview else { return }
+        trimNeedsPreview = false
         refreshPreview()
+    }
+
+    /// Making the preview again means a new composition — and for sound, a new
+    /// edited asset and player item — so it is not done for every move of a finger.
+    private func previewTiming(live: Bool) {
+        if live {
+            trimNeedsPreview = true
+        } else {
+            trimNeedsPreview = false
+            refreshPreview()
+        }
     }
 
     func deleteAudioEdit(_ edit: AudioEdit) {
@@ -441,7 +507,8 @@ final class VideoCleanerModel {
             forInterval: CMTime(seconds: 0.05, preferredTimescale: 600), queue: .main
         ) { [weak self] time in
             MainActor.assumeIsolated {
-                self?.playhead.time = time.seconds
+                guard let self, !self.isDraggingPlayhead else { return }
+                self.playhead.time = time.seconds
             }
         }
     }
@@ -466,8 +533,8 @@ final class VideoCleanerModel {
         var reserved: URL?
         do {
             let plan = currentPlan
-            let edited = try await VideoAudioEditor.edited(source, edits: audioEdits)
-            if let tone = edited.toneFile { toneFiles.append(tone) }
+            let edited = try await VideoAudioEditor.edited(source, edits: audioEdits, reusing: previewTone)
+            if let tone = edited.toneFile { toneFiles.insert(tone) }
             let composition = plan.isEmpty
                 ? nil
                 : try await VideoRedactor.composition(for: edited.asset, plan: plan)
@@ -521,8 +588,9 @@ final class VideoCleanerModel {
 
     private func seek(start: Double, showing time: Double?) {
         let start = max(0, start)
+        isDraggingPlayhead = false
         playhead.time = start
-        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        seekPreview(to: start, exactly: true)
         if previewStill != nil, let time {
             stillTime = time
             playhead.time = time
@@ -620,9 +688,11 @@ final class VideoCleanerModel {
                 if edits.isEmpty { return (current.asset as? AVURLAsset)?.url == source ? current : nil }
                 return current.asset is AVComposition ? current : nil
             }
+            var tone = previewTone
             if item == nil {
-                guard let edited = try? await VideoAudioEditor.edited(source, edits: edits) else { return }
-                if let tone = edited.toneFile { toneFiles.append(tone) }
+                guard let edited = try? await VideoAudioEditor.edited(source, edits: edits, reusing: previewTone) else { return }
+                if let file = edited.toneFile { toneFiles.insert(file) }
+                tone = edited.tone
                 let fresh = AVPlayerItem(asset: edited.asset)
                 fresh.audioMix = edited.audioMix
                 item = fresh
@@ -637,9 +707,11 @@ final class VideoCleanerModel {
             item.videoComposition = composition
             if player.currentItem !== item {
                 player.replaceCurrentItem(with: item)
+                previewTone = tone
+                removeTones(except: tone)
             } else if player.rate == 0 {
                 // Redraw the paused frame with the new covers.
-                _ = await player.seek(to: player.currentTime(), toleranceBefore: .zero, toleranceAfter: .zero)
+                seekPreview(to: currentTime, exactly: true)
             }
 
             // A player that cannot compose the frames shows nothing at all, never
@@ -658,6 +730,12 @@ final class VideoCleanerModel {
             // A failed item cannot be reused: start the next refresh afresh.
             player.replaceCurrentItem(with: nil)
         }
+    }
+
+    /// Deletes the tone files no item plays any more.
+    private func removeTones(except kept: VideoAudioEditor.Tone?) {
+        for file in toneFiles where file != kept?.url { PrivateFileStore.exports.remove(file) }
+        toneFiles = kept.map { [$0.url] } ?? []
     }
 
     /// The frame at `time` with `plan` drawn on it, from the image generator,

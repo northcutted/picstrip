@@ -99,5 +99,52 @@ final class VideoEditorModelTests: XCTestCase {
         XCTAssertEqual(model.currentTime, 1.2)
         model.scrub(to: 9)
         XCTAssertEqual(model.currentTime, model.duration, accuracy: 0.001, "Within the video.")
+
+        // Dragged: the playhead stays under the finger, and the preview lands
+        // exactly where it is let go.
+        try await waitUntil { model.player.currentItem?.status == .readyToPlay }
+        for step in 1...10 { model.scrub(to: Double(step) * 0.15, dragging: true) }
+        XCTAssertEqual(model.currentTime, 1.5, accuracy: 1e-9)
+        model.finishScrubbing()
+        try await waitUntil { abs(model.player.currentTime().seconds - 1.5) < 0.001 }
+        XCTAssertEqual(model.currentTime, 1.5, accuracy: 1e-9)
+    }
+
+    /// The tone files in the protected store.
+    private func toneFiles() -> Set<URL> {
+        let directory = PrivateFileStore.exports.directory
+        let names = (try? FileManager.default.contentsOfDirectory(atPath: directory.path)) ?? []
+        return Set(names.filter { $0.hasSuffix(".caf") }.map { directory.appendingPathComponent($0) })
+    }
+
+    func testDraggingABleepsEndWritesNoToneUntilItIsLetGo() async throws {
+        let movie = try await SoundMovie.make(seconds: 3)
+        cleanup.append(movie)
+        let model = try await openEditor(on: movie)
+        let before = toneFiles()
+
+        model.addAudioEdit(.bleep, over: 0.5...1.0)
+        try await waitUntil { self.toneFiles().subtracting(before).count == 1 }
+        let first = toneFiles().subtracting(before)
+        let edit = try XCTUnwrap(model.audioEdits.first)
+
+        // An end dragged across twenty places: the clip follows, the preview waits.
+        for step in 1...20 {
+            model.setRange(0.5...(1.0 + Double(step) * 0.05), of: edit, live: true)
+        }
+        XCTAssertEqual(model.timelineClips.first { $0.id == "audio-\(edit.id)" }?.range, 0.5...2.0)
+        try await Task.sleep(for: .milliseconds(500))
+        XCTAssertEqual(toneFiles().subtracting(before), first, "No tone written while the end moves.")
+
+        // Let go: one tone for the new length, and the old one gone.
+        model.finishTrimming()
+        try await waitUntil {
+            let now = self.toneFiles().subtracting(before)
+            return now.count == 1 && now != first
+        }
+
+        // A mute needs no tone at all.
+        model.setKind(.mute, of: edit)
+        try await waitUntil { self.toneFiles().subtracting(before).isEmpty }
     }
 }

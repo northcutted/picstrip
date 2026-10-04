@@ -177,8 +177,11 @@ struct VideoCleanerView: View {
                     trimmable: trimmableClipID,
                     selectionActions: soundActions,
                     onSeek: { model.scrub(to: $0) },
+                    onScrub: { model.scrub(to: $0, dragging: true) },
+                    onScrubEnd: { model.finishScrubbing() },
                     onSelect: { select($0) },
                     onTrim: { trim($0, to: $1) },
+                    onTrimEnd: { model.finishTrimming() },
                     clipMenu: { clipMenu($0) }
                 )
                 .padding(.vertical, 8)
@@ -553,11 +556,12 @@ struct VideoCleanerView: View {
         }
     }
 
+    /// Moves an end of the selected clip; the preview follows once it is let go.
     private func trim(_ clip: EditorTimeline.Clip, to range: ClosedRange<Double>) {
         if let track = selectedTrack, clip.id == "face-\(track.id)" {
-            model.setRange(range, for: track)
+            model.setRange(range, for: track, live: true)
         } else if case .audio(let id) = model.selection, let edit = model.audioEdit(id) {
-            model.setRange(range, of: edit)
+            model.setRange(range, of: edit, live: true)
         }
     }
 
