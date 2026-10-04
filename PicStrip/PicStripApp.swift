@@ -7,6 +7,7 @@
 
 import AppIntents
 import SwiftUI
+import UserNotifications
 
 // MARK: - PicStripApp
 
@@ -21,16 +22,24 @@ struct PicStripApp: App {
     /// Receives requests from App Intents; see `IntentRouter`.
     @State private var intentRouter: IntentRouter
 
+    /// Taps on the notification an extension posts after "Edit in PicStrip".
+    @State private var handoffInbox: EditHandoffInbox
+
     init() {
         // Intents resolve `@AppDependency` values from this manager, and an intent
         // can run as soon as the process is up — so register before any scene.
         let router = IntentRouter()
         AppDependencyManager.shared.add(dependency: router)
         _intentRouter = State(initialValue: router)
+        // A tap that launches the app is delivered only to a delegate set
+        // before launch finishes.
+        let inbox = EditHandoffInbox()
+        UNUserNotificationCenter.current().delegate = inbox
+        _handoffInbox = State(initialValue: inbox)
         Task.detached {
             PrivateFileStore.exports.removeExpired()
             PrivateFileStore.removeLegacyReports()
-            PrivateFileStore.handoffs?.removeExpired()
+            EditHandoff.removeExpired(from: PrivateFileStore.handoffs)
         }
     }
 
@@ -65,14 +74,22 @@ struct PicStripApp: App {
                 .onChange(of: viewModel.sourceUIImage == nil) { _, empty in
                     if empty { drainPendingEdit() }
                 }
+                .onChange(of: handoffInbox.tap, initial: true) { _, tap in
+                    openTappedHandoff(tap)
+                }
+                .onChange(of: handoffInbox.foregroundArrivals) {
+                    drainPendingEdit()
+                }
                 .onOpenURL { url in
                     handleIncomingURL(url)
                 }
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // The Share Extension cannot open the app (extensions may not call
-            // `open`), so it leaves the image or video in the App Group and the
-            // app picks it up here, on every foreground transition.
+            // An extension cannot open the app (extensions may not call `open`),
+            // so "Edit in PicStrip" leaves the image or video in the App Group and
+            // posts a notification; tapping it, or opening PicStrip any other
+            // way, brings the app here, where every foreground transition
+            // picks the item up.
             guard newPhase == .active else { return }
             drainPendingEdit()
         }
@@ -83,8 +100,8 @@ struct PicStripApp: App {
     /// Handles `picstrip://edit-from-extension`.
     ///
     /// Nothing in PicStrip opens this URL today — the Share Extension relies on
-    /// the `scenePhase` drain above — but the scheme stays registered so a
-    /// shortcut or a future extension can bring the pending image up directly.
+    /// its notification and the `scenePhase` drain above — but the scheme stays
+    /// registered so a shortcut can bring the pending image up directly.
     private func handleIncomingURL(_ url: URL) {
         guard url.scheme?.lowercased() == "picstrip",
               url.host?.lowercased() == "edit-from-extension"
@@ -95,9 +112,29 @@ struct PicStripApp: App {
 
     // MARK: - App group drain
 
-    /// Takes the oldest image or video left by the Share Extension in the app
-    /// group container: an image is loaded into the editor, a video opened in
-    /// the video cleaner (`ContentView` waits if another video is open there).
+    /// A tap on the "Ready to Edit" notification.  The activation it caused
+    /// has usually opened the item already; drain again in case it has not.
+    /// The handoff is deleted when it expires, so say so rather than open to
+    /// an empty screen.
+    private func openTappedHandoff(_ tap: EditHandoffInbox.Tap?) {
+        guard let tap else { return }
+        handoffInbox.tapHandled()
+        guard EditHandoffNotification.hasExpired(tap.expires) else {
+            drainPendingEdit()
+            return
+        }
+        // Like a failed load: the alert shows when no photo is open.
+        if viewModel.sourceUIImage == nil, !viewModel.isProcessing {
+            viewModel.errorMessage = String(
+                localized: "That item expired. Share it to PicStrip again.",
+                comment: "Shown when the notification is tapped after the 15-minute handoff expired"
+            )
+        }
+    }
+
+    /// Takes the oldest image or video an extension left in the app group
+    /// container: an image is loaded into the editor, a video opened in the
+    /// video cleaner (`ContentView` waits if another video is open there).
     ///
     /// Safe to call multiple times — `isDrainingHandoff` lets one run at a time.
     private func drainPendingEdit() {
@@ -116,17 +153,18 @@ struct PicStripApp: App {
         }
     }
 
-    /// The oldest pending handoff.  This lists the App Group folder and reads
-    /// the file on every activation, so it runs off the main actor.
+    /// The oldest pending handoff; its notification is withdrawn with it.
+    /// This lists the App Group folder and reads the file on every activation,
+    /// so it runs off the main actor.
     @concurrent
     nonisolated private static func takePendingEdit() async -> PrivateFileStore.PendingEdit? {
-        PrivateFileStore.handoffs?.consume()
+        EditHandoff.take(from: PrivateFileStore.handoffs)
     }
 
     /// The periodic sweep of expired exports and handoffs, off the main actor.
     @concurrent
     nonisolated private static func removeExpiredFiles() async {
         PrivateFileStore.exports.removeExpired()
-        PrivateFileStore.handoffs?.removeExpired()
+        EditHandoff.removeExpired(from: PrivateFileStore.handoffs)
     }
 }

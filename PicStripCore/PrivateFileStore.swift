@@ -84,6 +84,9 @@ nonisolated struct PrivateFileStore: Sendable {
         return url
     }
 
+    /// `true` when nothing is waiting in the directory, expired or not.
+    var isEmpty: Bool { files().isEmpty }
+
     func remove(_ url: URL?) {
         guard let url, url.deletingLastPathComponent().standardizedFileURL == directory.standardizedFileURL else { return }
         try? FileManager.default.removeItem(at: url)
