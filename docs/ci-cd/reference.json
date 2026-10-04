@@ -9,6 +9,7 @@
     "scripts/ci/changes.py",
     ".github/workflows/app-store-deploy.yml",
     ".github/workflows/main.yml",
+    ".github/workflows/native-canary.yml",
     ".github/workflows/observe.yml",
     ".github/workflows/pr.yml",
     ".github/workflows/promote.yml",
@@ -344,6 +345,63 @@
             "MATCH_PASSWORD",
             "MATCH_SSH_PRIVATE_KEY"
           ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/native-canary.yml",
+      "name": "Native CLI signed canary",
+      "triggers": {
+        "workflow_dispatch": {}
+      },
+      "inputs": {},
+      "secret_names": [],
+      "outputs": {},
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "native-cli-canary",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "archive",
+          "name": "Archive PicStrip with Rust and existing signing assets",
+          "needs": [],
+          "condition": "github.ref == 'refs/heads/main'",
+          "runner": "xcode-27",
+          "uses": null,
+          "environment": "signing",
+          "timeout_minutes": 60,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "verify",
+          "name": "Verify the IPA independently without signing credentials",
+          "needs": [
+            "archive"
+          ],
+          "condition": null,
+          "runner": "xcode-27",
+          "uses": null,
+          "environment": null,
+          "timeout_minutes": 30,
+          "permissions": null,
+          "secret_names": []
+        },
+        {
+          "id": "observe",
+          "name": "Read PicStrip App Store status with the native API client",
+          "needs": [],
+          "condition": "github.ref == 'refs/heads/main'",
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": "app-store-observe",
+          "timeout_minutes": 15,
+          "permissions": null,
+          "secret_names": []
         }
       ]
     },

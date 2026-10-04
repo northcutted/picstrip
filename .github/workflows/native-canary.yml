@@ -1,0 +1,132 @@
+name: Native CLI signed canary
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: native-cli-canary
+  cancel-in-progress: false
+env:
+  SOURCE_SHA: 493dfb487dbd1c668fac306dc39b5604c741abb3
+  NATIVE_REVISION: 2d36e4bc93f09352be23ce65df7cf5168ff2f115
+jobs:
+  archive:
+    name: Archive PicStrip with Rust and existing signing assets
+    if: github.ref == 'refs/heads/main'
+    runs-on: xcode-27
+    timeout-minutes: 60
+    environment: signing
+    steps:
+      - &source
+        name: Checkout the frozen app source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: 493dfb487dbd1c668fac306dc39b5604c741abb3
+          persist-credentials: false
+      - &native
+        name: Checkout the immutable native CLI source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: northcutted/ios-release-workflows
+          ref: 2d36e4bc93f09352be23ce65df7cf5168ff2f115
+          path: build/native-platform
+          persist-credentials: false
+      - &compile
+        name: Compile the pinned standalone CLI
+        run: |
+          test "$(git -C build/native-platform rev-parse HEAD)" = "$NATIVE_REVISION"
+          rustup toolchain install 1.98.1 --profile minimal
+          IOS_RELEASE_BUILD_REVISION="$NATIVE_REVISION" cargo build --manifest-path build/native-platform/rust/Cargo.toml --locked --release
+          build/native-platform/rust/target/release/ios-release doctor
+      - name: Load the existing signing adapter
+        uses: northcutted/ios-release-workflows/actions/bootstrap@25ac025ed3faa9934a217bec520cfc07809480d6
+        with:
+          config: .github/ios-release.json
+          revision: 25ac025ed3faa9934a217bec520cfc07809480d6
+      - name: Validate the exact archive toolchain
+        run: python3 "$IOS_RELEASE_ROOT/scripts/ci/toolchain.py"
+      - name: Install locked signing tools
+        uses: northcutted/ios-release-workflows/actions/ruby@25ac025ed3faa9934a217bec520cfc07809480d6
+      - name: Load the read-only signing repository key
+        uses: webfactory/ssh-agent@e83874834305fe9a4a2997156cb26c5de65a8555
+        with:
+          ssh-private-key: ${{ secrets.MATCH_SSH_PRIVATE_KEY }}
+      - name: Snapshot the signing repository
+        run: bash "$IOS_RELEASE_ROOT/scripts/ci/signing_snapshot.sh"
+      - name: Import the existing certificates and profiles
+        run: bundle exec ruby "$IOS_RELEASE_ROOT/scripts/fastlane.rb" certificates
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+      - name: Remove repository credentials before compilation
+        run: ssh-add -D
+      - name: Archive, export and validate using the Rust CLI
+        run: build/native-platform/rust/target/release/ios-release archive --version 1.7.0 --build-number 9998.1
+      - name: Package matching symbols
+        run: tar -czf build/native-canary-symbols.tar.gz -C build/application.xcarchive dSYMs
+      - name: Retain the signed canary and verification report
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-signed-canary
+          path: |
+            build/application.ipa
+            build/rust-archive.json
+            build/native-canary-symbols.tar.gz
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+      - name: Retain archive failure logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-canary-failure
+          path: build/logs/
+          retention-days: 3
+          if-no-files-found: ignore
+      - name: Clean up owned signing material
+        if: always()
+        run: |
+          if test -n "${IOS_RELEASE_ROOT:-}"; then
+            bash "$IOS_RELEASE_ROOT/scripts/ci/cleanup_signing.sh"
+          fi
+  verify:
+    name: Verify the IPA independently without signing credentials
+    needs: archive
+    runs-on: xcode-27
+    timeout-minutes: 30
+    steps:
+      - *source
+      - *native
+      - *compile
+      - name: Download the exact signed archive from this run
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: native-signed-canary
+          path: build/
+      - name: Verify the archived identity, signatures, profiles and symbols
+        run: |
+          mkdir -p build/application.xcarchive
+          tar -xzf build/native-canary-symbols.tar.gz -C build/application.xcarchive
+          build/native-platform/rust/target/release/ios-release release verify-archive --version 1.7.0 --build-number 9998.1
+      - name: Retain independent verification
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: native-canary-independent-verification
+          path: build/rust-archive.json
+          retention-days: 14
+          if-no-files-found: error
+  observe:
+    name: Read PicStrip App Store status with the native API client
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: app-store-observe
+    steps:
+      - *source
+      - *native
+      - *compile
+      - name: Read app, version and build status
+        run: build/native-platform/rust/target/release/ios-release store status
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
