@@ -113,7 +113,7 @@ struct ContentView: View {
             ZStack {
                 // Gradient is only visible on the home screen.
                 if !hasPhoto {
-                    breathingGradient
+                    driftingGradient
                 }
 
                 // Opening a large file takes a moment before there is a photo to
@@ -639,10 +639,10 @@ struct ContentView: View {
         importedVideo = url
     }
 
-    // MARK: - Breathing gradient
+    // MARK: - Drifting gradient
 
-    private var breathingGradient: some View {
-        BreathingGradient()
+    private var driftingGradient: some View {
+        DriftingGradient()
     }
 
     // MARK: - Haptics
@@ -1257,72 +1257,64 @@ struct ContentView: View {
 
 }
 
-// MARK: - Breathing gradient
+// MARK: - Drifting gradient
 
-/// Decorative home-screen background: two radial blobs whose opacity breathes
-/// on different periods, so the background never looks like it resets.
+/// Decorative home-screen background: a faint mesh of the brand's green and
+/// indigo over the system background.  Its points drift on slow, unrelated
+/// periods, so the light seems to move and never visibly repeats; the middle
+/// stays clear, so the text over it stays crisp.
 ///
-/// The opacity is worked out from the clock, fifteen times a second: the
-/// breathing is far too slow to need the display's full rate, which a repeating
-/// animation would redraw the whole home screen at for as long as it is open.
-/// It also keeps the animation out of every other transaction — a global
-/// `withAnimation(….repeatForever())` here once made the home-screen buttons'
-/// glass backgrounds grow and shrink forever.
-private struct BreathingGradient: View {
+/// The points are worked out from the clock, fifteen times a second: they move
+/// a point or two a frame at most, far too slowly to need the display's full
+/// rate, at which a repeating animation would redraw the whole home screen for
+/// as long as it is open.  It also keeps the animation out of every other
+/// transaction — a global `withAnimation(….repeatForever())` here once made the
+/// home-screen buttons' glass backgrounds grow and shrink forever.  The clock
+/// stops while the scene is not active, and under Reduce Motion, which shows
+/// the mesh at rest.
+private struct DriftingGradient: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
 
-    /// One breathing blob.  The gradient is drawn at `peak` and dimmed by an
-    /// opacity factor, so the animated value is a single number: `floor`…`peak`,
-    /// or `still` under Reduce Motion.
-    private struct Blob {
-        let color: Color
-        let peak: Double
-        let floor: Double
-        let still: Double
-        let center: UnitPoint
-        let radius: CGFloat
-        /// Seconds from dimmest to brightest, and as long back.
-        let period: Double
-
-        /// The opacity factor at `time`, easing in and out at both ends.
-        func opacity(at time: TimeInterval) -> Double {
-            let brightness = (1 - cos(.pi * time / period)) / 2
-            return (floor + (peak - floor) * brightness) / peak
-        }
-    }
-
-    /// Top-left accent blob — cycles every 4 s.
-    private static let top = Blob(
-        color: .accentColor, peak: 0.20, floor: 0.05, still: 0.12,
-        center: .topLeading, radius: 420, period: 4.0
-    )
-    /// Bottom-right indigo blob — cycles every 5.5 s, out of sync with the first.
-    private static let bottom = Blob(
-        color: .indigo, peak: 0.14, floor: 0.03, still: 0.08,
-        center: .bottomTrailing, radius: 380, period: 5.5
-    )
+    /// Row by row from the top-left: green at the top-left, indigo toward the
+    /// bottom-right, nothing in the middle.
+    private static let colors: [Color] = [
+        Color.accentColor.opacity(0.24), Color.accentColor.opacity(0.10), Color.indigo.opacity(0.10),
+        Color.teal.opacity(0.08), Color.accentColor.opacity(0), Color.indigo.opacity(0.06),
+        Color.accentColor.opacity(0.06), Color.indigo.opacity(0.08), Color.indigo.opacity(0.18)
+    ]
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 15, paused: reduceMotion)) { context in
-            let time = context.date.timeIntervalSinceReferenceDate
-            ZStack {
-                Color(.systemBackground)
-                view(for: Self.top, at: time)
-                view(for: Self.bottom, at: time)
-            }
+        TimelineView(.animation(minimumInterval: 1.0 / 15, paused: reduceMotion || scenePhase != .active)) { context in
+            MeshGradient(
+                width: 3,
+                height: 3,
+                points: Self.points(at: reduceMotion ? 0 : context.date.timeIntervalSinceReferenceDate),
+                colors: Self.colors,
+                colorSpace: .perceptual
+            )
         }
+        .background(Color(.systemBackground))
         .ignoresSafeArea()
         .accessibilityHidden(true) // decorative background
     }
 
-    private func view(for blob: Blob, at time: TimeInterval) -> some View {
-        RadialGradient(
-            colors: [blob.color.opacity(blob.peak), .clear],
-            center: blob.center,
-            startRadius: 0,
-            endRadius: blob.radius
-        )
-        .opacity(reduceMotion ? blob.still / blob.peak : blob.opacity(at: time))
+    /// The mesh's points at `time`: the corners stay put, the edge midpoints
+    /// slide along their edges and the centre wanders.  Periods of 23–43 s.
+    private static func points(at time: TimeInterval) -> [SIMD2<Float>] {
+        func drift(_ amplitude: Float, _ period: Double, _ phase: Double) -> Float {
+            amplitude * Float(sin(time * 2 * .pi / period + phase))
+        }
+        let top = SIMD2<Float>(0.5 + drift(0.15, 29, 0), 0)
+        let left = SIMD2<Float>(0, 0.45 + drift(0.12, 37, 1))
+        let center = SIMD2<Float>(0.5 + drift(0.2, 23, 2), 0.5 + drift(0.15, 31, 3))
+        let right = SIMD2<Float>(1, 0.55 + drift(0.12, 41, 4))
+        let bottom = SIMD2<Float>(0.5 + drift(0.15, 43, 5), 1)
+        return [
+            SIMD2(0, 0), top, SIMD2(1, 0),
+            left, center, right,
+            SIMD2(0, 1), bottom, SIMD2(1, 1)
+        ]
     }
 }
 
