@@ -239,10 +239,11 @@ nonisolated struct PIIScanner {
         // document-rectangle requests against ONE ImageRequestHandler so the
         // source bytes are decoded and pre-processed exactly once.  The retries
         // below reuse the same handler, so they do not decode the image again.
-        // Raw Data (not a pre-decoded CGImage) is passed so that the handler can
-        // read the EXIF orientation tag and return bounding boxes in the visual
-        // coordinate space — the same space that UIKit's display pipeline uses.
-        let handler = ImageRequestHandler(data)
+        // The orientation is given explicitly — the tag as ImageIO reads it,
+        // which the editor's preview and the export follow too — so bounding
+        // boxes come back in the space the photo is shown and covered in
+        // (see `ImageProcessor.displayOrientation`).
+        let handler = ImageRequestHandler(data, orientation: ImageProcessor.displayOrientation(of: data))
         let requests: [any VisionRequest] = [
             Self.makeTextRequest(level: .accurate),
             Self.makeFaceRequest(),

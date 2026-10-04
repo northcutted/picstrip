@@ -51,11 +51,14 @@ final class UprightExportTests: XCTestCase {
 
         let output = NSMutableData()
         let destination = try XCTUnwrap(CGImageDestinationCreateWithData(output, type.identifier as CFString, 1, nil))
-        var properties: [CFString: Any] = [kCGImagePropertyOrientation: orientation.rawValue]
-        // UIKit ignores the orientation of a PNG that also carries GPS (ImageIO
-        // does not), so only the camera format gets a location here.
+        // A location too: UIKit ignores the orientation of a PNG that carries
+        // one, and the export must still turn it as ImageIO, the scan and the
+        // preview do.
+        var properties: [CFString: Any] = [
+            kCGImagePropertyOrientation: orientation.rawValue,
+            kCGImagePropertyGPSDictionary: [kCGImagePropertyGPSLatitude: 37.33, kCGImagePropertyGPSLatitudeRef: "N"]
+        ]
         if type == .jpeg {
-            properties[kCGImagePropertyGPSDictionary] = [kCGImagePropertyGPSLatitude: 37.33, kCGImagePropertyGPSLatitudeRef: "N"]
             properties[kCGImageDestinationLossyCompressionQuality] = 1.0
         }
         CGImageDestinationAddImage(destination, pixels, properties as CFDictionary)
@@ -100,14 +103,9 @@ final class UprightExportTests: XCTestCase {
                 let source = try Self.stored(for: orientation, as: type)
                 let name = "orientation \(raw), \(type.identifier)"
 
-                // The fixture itself: UIKit shows it the intended way up.
-                let shown = try XCTUnwrap(UIImage(data: source))
-                let format = UIGraphicsImageRendererFormat()
-                format.scale = 1
-                let shownPixels = try XCTUnwrap(UIGraphicsImageRenderer(size: shown.size, format: format).image { _ in
-                    shown.draw(at: .zero)
-                }.cgImage)
-                try Self.assertDisplaysUpright(shownPixels, "Fixture, \(name)")
+                // The fixture itself, as the editor's preview shows it: the intended way up.
+                let shown = try XCTUnwrap(ImageProcessor.downsampledUIImage(from: source)?.cgImage)
+                try Self.assertDisplaysUpright(shown, "Preview, \(name)")
 
                 for preset in [ExportPreset.losslessPNG, .highQualityJPEG] {
                     // `encode` also reads the output back and rejects any metadata left in it.
@@ -117,6 +115,30 @@ final class UprightExportTests: XCTestCase {
                     XCTAssertEqual(output.properties[kCGImagePropertyOrientation] as? UInt32 ?? 1, 1,
                                    "Upright pixels must not be tagged to turn again (\(name)).")
                     XCTAssertNil(output.properties[kCGImagePropertyGPSDictionary], name)
+                }
+            }
+        }
+    }
+
+    /// A cover placed on the preview of a turned PNG with a location — which
+    /// UIKit alone would show unturned — lands on the same part of the export.
+    func testCoversLandWhereTheyWerePlacedOnATurnedPNGWithALocation() async throws {
+        for orientation in [CGImagePropertyOrientation.right, .left, .down] {
+            let source = try Self.stored(for: orientation, as: .png)
+            let image = try XCTUnwrap(ImageProcessor.orientedImage(from: source))
+            // The top left quadrant, as displayed: red.
+            let cover = RedactionSpec(rect: CGRect(x: 0, y: 0, width: 0.5, height: 0.5), style: .solid, color: .black, isEnabled: true)
+            let rendered = await ImageRedactor().redact(image: image, specs: [cover])
+            let redacted = try XCTUnwrap(rendered)
+            let export = try ImageProcessor.process(image: redacted, sourceData: source, preset: .losslessPNG, config: .allEnabled)
+            let output = try Self.decoded(export.data).image
+            let name = "orientation \(orientation.rawValue)"
+            XCTAssertEqual(output.width, Self.width, name)
+            XCTAssertEqual(output.height, Self.height, name)
+            let expected = [(16, 8, [UInt8](repeating: 0, count: 3))] + Self.quadrants.dropFirst().map { ($0.x, $0.y, $0.rgb) }
+            for (x, y, rgb) in expected {
+                for (actual, wanted) in zip(try Self.rgb(of: output, x: x, y: y), rgb) {
+                    XCTAssertEqual(Double(actual), Double(wanted), accuracy: 4, "\(name): pixel (\(x), \(y))")
                 }
             }
         }

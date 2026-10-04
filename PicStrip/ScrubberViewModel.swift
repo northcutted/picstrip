@@ -1475,7 +1475,7 @@ final class ScrubberViewModel {
                 // Never hold two full-size renders at once.
                 reviewRedaction = nil
                 let uiImage = await Task.detached(priority: .userInitiated) {
-                    UIImage(data: raw)
+                    ImageProcessor.orientedImage(from: raw)
                 }.value
                 guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
                 burned = if let uiImage {

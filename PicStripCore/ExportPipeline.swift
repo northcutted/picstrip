@@ -100,7 +100,7 @@ nonisolated enum ExportPipeline {
             let selected = output.results.filter(\.type.isRedactedByDefault)
             let instances = selected.flatMap(\.instances)
             if !instances.isEmpty {
-                guard let original = UIImage(data: data),
+                guard let original = ImageProcessor.orientedImage(from: data),
                       let rendered = await ImageRedactor().redact(image: original, instances: instances)
                 else { throw ExportError.redactionFailed }
                 image = rendered

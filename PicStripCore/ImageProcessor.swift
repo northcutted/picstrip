@@ -246,9 +246,11 @@ nonisolated enum ImageProcessor {
             return nil
         }
 
+        // Turned by `displayOrientation`, not by ImageIO's thumbnail transform,
+        // which on some PNGs ignores the tag the scan and the export follow.
         let thumbnailOptions: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceCreateThumbnailWithTransform: false,
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceThumbnailMaxPixelSize: maxPixelDimension
         ]
@@ -260,7 +262,30 @@ nonisolated enum ImageProcessor {
             return nil
         }
 
-        return UIImage(cgImage: cgImage)
+        let orientation = displayOrientation(of: source)
+        guard orientation != .up else { return UIImage(cgImage: cgImage) }
+        return UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation(orientation)).normalized()
+    }
+
+    /// How the image in `data` is turned for display: its orientation tag, as
+    /// ImageIO reads it.  The scan, the editor's preview and the export all take
+    /// it from here, because Apple's decoders disagree on some files —
+    /// `UIImage(data:)`, and at times ImageIO's own thumbnails, ignore the tag
+    /// of a PNG that also carries a location.
+    nonisolated static func displayOrientation(of data: Data) -> CGImagePropertyOrientation {
+        guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary)
+        else { return .up }
+        return displayOrientation(of: source)
+    }
+
+    nonisolated private static func displayOrientation(of source: CGImageSource) -> CGImagePropertyOrientation {
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(
+                source, CGImageSourceGetPrimaryImageIndex(source), nil
+              ) as? [CFString: Any],
+              let raw = properties[kCGImagePropertyOrientation] as? UInt32,
+              let orientation = CGImagePropertyOrientation(rawValue: raw)
+        else { return .up }
+        return orientation
     }
 
     /// Strips private metadata from `data`, re-encodes the image using `preset`, and
@@ -312,12 +337,24 @@ nonisolated enum ImageProcessor {
     /// copies its bitmap when it hands the image over, so that redraw held two
     /// full-size bitmaps besides the decode.  An 8-bit RGB photo — every camera
     /// JPEG and HEIC — is drawn into a plain bitmap of the format the renderer
-    /// would pick, straight from an uncached decode, which needs one.  `UIImage`
-    /// still decides the orientation, so both export paths turn a photo alike.
+    /// would pick, straight from an uncached decode, which needs one.  Both
+    /// export paths take the orientation from `orientedImage`, so they turn a
+    /// photo alike.
     nonisolated static func uprightImage(from data: Data) -> CGImage? {
-        guard let image = UIImage(data: data) else { return nil }
+        guard let image = orientedImage(from: data) else { return nil }
         guard image.imageOrientation != .up else { return image.cgImage }
         return uprightBitmap(from: data, as: image) ?? image.normalized().cgImage
+    }
+
+    /// `data` decoded and turned by `displayOrientation`, as the scan and the
+    /// editor's preview see it, so covers land where they were placed.
+    /// `UIImage(data:)` alone ignores the orientation of a PNG that also
+    /// carries a location, and on such a photo the covers would land elsewhere.
+    nonisolated static func orientedImage(from data: Data) -> UIImage? {
+        guard let image = UIImage(data: data) else { return nil }
+        let shown = UIImage.Orientation(displayOrientation(of: data))
+        guard shown != image.imageOrientation, let cgImage = image.cgImage else { return image }
+        return UIImage(cgImage: cgImage, scale: image.scale, orientation: shown)
     }
 
     /// `image` redrawn upright into an 8-bit bitmap in its own colour space, or
@@ -840,6 +877,23 @@ private extension UIImage {
         switch alphaInfo {
         case .none, .noneSkipFirst, .noneSkipLast: return false
         default: return true
+        }
+    }
+}
+
+private extension UIImage.Orientation {
+    /// UIKit's name for an EXIF orientation.
+    nonisolated init(_ orientation: CGImagePropertyOrientation) {
+        switch orientation {
+        case .up:            self = .up
+        case .upMirrored:    self = .upMirrored
+        case .down:          self = .down
+        case .downMirrored:  self = .downMirrored
+        case .left:          self = .left
+        case .leftMirrored:  self = .leftMirrored
+        case .right:         self = .right
+        case .rightMirrored: self = .rightMirrored
+        @unknown default:    self = .up
         }
     }
 }
