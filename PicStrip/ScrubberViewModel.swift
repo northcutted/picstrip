@@ -1788,13 +1788,14 @@ final class ScrubberViewModel {
 
     // MARK: - Batch processing
 
-    /// Sequentially processes every item in `batchItems` using the supplied config.
+    /// Processes every item in `batchItems` using the supplied config, in order.
     ///
-    /// **Memory safety:** Images are processed one-at-a-time.  Each photo's decoded
+    /// **Memory safety:** Images are cleaned one-at-a-time.  Each photo's decoded
     /// bitmap and intermediate buffers live only inside `processBatchItem`, so ARC
     /// reclaims them before the next image is decoded.  Concurrent `TaskGroup`
     /// execution is intentionally avoided — parallel Vision / CoreGraphics workers
-    /// spike RAM and cause OOM crashes on device.
+    /// spike RAM and cause OOM crashes on device.  Only loading the next photo's
+    /// bytes and saving the previous one's overlap the cleaning (`runBatch`).
     func processBatch(config: BatchConfig) async {
         let config = effectiveBatchConfig(config)
 
@@ -1899,21 +1900,46 @@ final class ScrubberViewModel {
             return ScanOutput(results: PIIScanner.sorted(output.results + covered), lines: output.lines, coverage: output.coverage)
         }
 
+        let plan = ExportPlan(preset: preset, metadata: config.stripMetadata ? .allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:]))
+        let redactVisualPII = config.redactVisualPII
+
+        // Loading a photo (perhaps from iCloud) and saving one are mostly
+        // waiting, so they overlap the cleaning: photo N+1's bytes load while N
+        // is cleaned, and N+1 is cleaned while N saves.  Still only one photo is
+        // cleaned — decoded — at a time, and the saves happen one after another,
+        // in order.
+        func fetch(_ index: Int) -> Task<Data?, Never>? {
+            guard sources.indices.contains(index) else { return nil }
+            return Task { [loadBytes = sources[index].load] in await loadBytes() }
+        }
+        func clean(_ index: Int, bytes: Task<Data?, Never>?) -> Task<BatchItemOutput?, Never> {
+            Task { [hints = sources[index].hints] in
+                // Scan + redact + strip run off the main actor; only the
+                // resulting bytes and report rows come back.
+                guard let sourceData = await bytes?.value else { return nil }
+                return await Self.processBatchItem(
+                    sourceData: sourceData, hints: hints, plan: plan,
+                    redactVisualPII: redactVisualPII, scan: scanWithAlwaysCover
+                )
+            }
+        }
+        var cleaning = sources.isEmpty ? nil : clean(0, bytes: fetch(0))
+        var nextBytes = fetch(1)
+
         for (index, source) in sources.enumerated() {
             if batchCancellationRequested || Task.isCancelled { break }
             batchProgress = (index + 1, total)
 
-            // Load + scan + redact + strip all run off the main actor; only the
-            // resulting bytes and report rows come back.
-            guard let sourceData = await source.load(),
-                  let output = await Self.processBatchItem(
-                      sourceData: sourceData,
-                      hints: source.hints,
-                      plan: ExportPlan(preset: preset, metadata: config.stripMetadata ? .allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])),
-                      redactVisualPII: config.redactVisualPII,
-                      scan: scanWithAlwaysCover
-                  )
-            else {
+            guard let current = cleaning else { break }
+            let output = await current.value
+            cleaning = nil
+            // The next photo is cleaned while this one saves, and the one after
+            // it loads.
+            if !(batchCancellationRequested || Task.isCancelled), sources.indices.contains(index + 1) {
+                cleaning = clean(index + 1, bytes: nextBytes)
+                nextBytes = fetch(index + 2)
+            }
+            guard let output else {
                 batchFailedCount += 1
                 continue
             }
@@ -1937,6 +1963,14 @@ final class ScrubberViewModel {
                 metadataStripped: output.metadataStripped,
                 scanCoverage: output.coverage
             ))
+        }
+
+        // Stopped: drop what was fetched ahead, and let the photo being cleaned
+        // notice before the batch is over, so its bitmap is gone too.
+        nextBytes?.cancel()
+        if let cleaning {
+            cleaning.cancel()
+            _ = await cleaning.value
         }
 
         if finishes || batchCancellationRequested || Task.isCancelled { finishBatch() }

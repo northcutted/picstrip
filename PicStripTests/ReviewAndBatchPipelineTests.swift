@@ -4,8 +4,9 @@ import UniformTypeIdentifiers
 import XCTest
 @testable import PicStrip
 
-/// Review & Share keeps its full-size render while it is open, without
-/// changing what comes out.
+/// Review & Share keeps its full-size render while it is open, and a batch
+/// overlaps loading and saving with the cleaning — without changing what
+/// comes out.
 @MainActor
 final class ReviewAndBatchPipelineTests: XCTestCase {
 
@@ -96,6 +97,50 @@ final class ReviewAndBatchPipelineTests: XCTestCase {
         XCTAssertGreaterThan(try centreLevel(of: model.processedData), 200, "The uncovered face shows.")
     }
 
+    // MARK: - Batch
+
+    func testBatchOverlapsLoadingAndSavingButCleansOneAtATimeInOrder() async throws {
+        let log = EventLog()
+        let photos = try (0..<4).map { try whitePhoto(width: 20 + $0, height: 20) }
+        let model = ScrubberViewModel(scan: { _, _, _ in
+            await log.cleaningStarted()
+            try? await Task.sleep(for: .milliseconds(60))
+            await log.cleaningEnded()
+            return ScanOutput(results: [], lines: [])
+        }, semantic: .unavailable, objectSelection: .unsupported, alwaysCoverList: AlwaysCoverList(fileURL: nil))
+        let sources = photos.enumerated().map { index, data in
+            BatchSource(assetIdentifier: nil) {
+                await log.record("load \(index)")
+                try? await Task.sleep(for: .milliseconds(80))
+                return data
+            }
+        }
+
+        var saved: [Int] = []
+        await model.runBatch(sources: sources, config: BatchConfig()) { data, _, _ in
+            await log.record("save start")
+            try? await Task.sleep(for: .milliseconds(80))
+            let width = CGImageSourceCreateWithData(data as CFData, nil)
+                .flatMap { CGImageSourceCopyPropertiesAtIndex($0, 0, nil) as? [CFString: Any] }?[kCGImagePropertyPixelWidth] as? Int
+            saved.append((width ?? 0) - 20)
+            await log.record("save end")
+            return .saved
+        }
+
+        XCTAssertEqual(saved, [0, 1, 2, 3], "Every photo is saved, in order.")
+        XCTAssertEqual(model.batchSucceededCount, 4)
+        XCTAssertTrue(model.batchComplete)
+        let maximum = await log.mostCleaningAtOnce
+        XCTAssertEqual(maximum, 1, "Never more than one photo decoded at a time.")
+
+        let events = await log.events
+        let firstSaveEnd = try XCTUnwrap(events.firstIndex(of: "save end"))
+        XCTAssertLessThan(try XCTUnwrap(events.firstIndex(of: "load 1")), firstSaveEnd, "The next photo loads while one is cleaned or saved.")
+        XCTAssertLessThan(try XCTUnwrap(events.firstIndex(of: "load 2")), firstSaveEnd, "The photo after it loads during the first save.")
+        let saves = events.filter { $0.hasPrefix("save") }
+        XCTAssertEqual(saves, Array(repeating: ["save start", "save end"], count: 4).flatMap { $0 }, "Saves never overlap.")
+    }
+
     private func waitUntil(timeout: TimeInterval = 20, _ condition: @MainActor () -> Bool) async throws {
         let deadline = Date().addingTimeInterval(timeout)
         while !condition() {
@@ -106,4 +151,19 @@ final class ReviewAndBatchPipelineTests: XCTestCase {
             try await Task.sleep(for: .milliseconds(10))
         }
     }
+}
+
+private actor EventLog {
+    private(set) var events: [String] = []
+    private(set) var mostCleaningAtOnce = 0
+    private var cleaning = 0
+
+    func record(_ event: String) { events.append(event) }
+
+    func cleaningStarted() {
+        cleaning += 1
+        mostCleaningAtOnce = max(mostCleaningAtOnce, cleaning)
+    }
+
+    func cleaningEnded() { cleaning -= 1 }
 }
