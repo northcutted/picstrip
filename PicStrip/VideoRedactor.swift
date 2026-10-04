@@ -162,6 +162,32 @@ nonisolated enum VideoScanner {
         // What has been read changes only when text is read: counted then.
         var textCount = 0
         var textKinds: [(type: PIIType, count: Int)] = []
+
+        // Reading a frame's text takes as long as finding faces in several
+        // frames, so each read runs alongside the frames after it, one read at
+        // a time, and is added in order before the next starts.  The text and
+        // its tracks come out the same as reading it there and then: a read is
+        // placed with the camera's path up to its own frame, which the frames
+        // after it do not change.
+        var reading: (time: Double, task: Task<FrameRead, Never>)?
+        defer { reading?.task.cancel() }
+        func finishReading() async {
+            guard let pending = reading else { return }
+            reading = nil
+            let read = await withTaskCancellationHandler {
+                await pending.task.value
+            } onCancel: {
+                pending.task.cancel()
+            }
+            findings.add(read.findings, at: pending.time, path: scan.path)
+            latestRead = read
+            let groups = FindingGroup.groups(of: findings.tracks)
+            textCount = groups.count
+            textKinds = Dictionary(grouping: groups, by: \.type)
+                .map { (type: $0.key, count: $0.value.count) }
+                .sorted { ($0.type.riskLevel, $0.count) > ($1.type.riskLevel, $1.count) }
+        }
+
         while let buffer = output.copyNextSampleBuffer() {
             try Task.checkCancellation()
             guard let pixels = CMSampleBufferGetImageBuffer(buffer) else { continue }
@@ -178,6 +204,14 @@ nonisolated enum VideoScanner {
 
             var glimpse: Glimpse?
             do {
+                // Text needs every pixel.
+                if frameIndex.isMultiple(of: readEvery) {
+                    await finishReading()
+                    nonisolated(unsafe) let frame = pixels
+                    let terms = alwaysCover
+                    reading = (time, Task { await PIIScanner.frameFindings(in: frame, alwaysCover: terms) })
+                }
+
                 let detection = detectionSize.shrink(pixels) ?? pixels
                 let boxes: [CGRect]
                 if let faceDetector {
@@ -196,18 +230,6 @@ nonisolated enum VideoScanner {
                 let small = registrationSize.shrink(detection) ?? detection
                 let shift = await registration.shift(to: small, restart: frameIndex == 0)
                 scan.path.add(shift.flatMap { hypot($0.dx, $0.dy) <= 0.25 ? $0 : nil }, at: time)
-
-                // Text needs every pixel.
-                if frameIndex.isMultiple(of: readEvery) {
-                    let read = await PIIScanner.frameFindings(in: pixels, alwaysCover: alwaysCover)
-                    findings.add(read.findings, at: time, path: scan.path)
-                    latestRead = read
-                    let groups = FindingGroup.groups(of: findings.tracks)
-                    textCount = groups.count
-                    textKinds = Dictionary(grouping: groups, by: \.type)
-                        .map { (type: $0.key, count: $0.value.count) }
-                        .sorted { ($0.type.riskLevel, $0.count) > ($1.type.riskLevel, $1.count) }
-                }
 
                 if ContinuousClock.now - lastGlimpse >= .milliseconds(250), let image = registrationSize.image(of: small) {
                     lastGlimpse = .now
@@ -229,6 +251,7 @@ nonisolated enum VideoScanner {
             ))
         }
         if reader.status == .failed { throw reader.error ?? VideoCleaner.Failure.cannotExport }
+        await finishReading()
         scan.faces = faces.tracks
         scan.findings = findings.tracks
         return scan
