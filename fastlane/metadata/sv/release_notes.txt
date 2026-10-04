@@ -5,9 +5,11 @@ PicStrip 1.7 är en stor uppdatering: nu rensar appen videor, och kameran visar 
 • Korta varje maskering på en tidslinje som i en videoredigerare, och lägg pip över eller tysta det som sägs.
 • En enda kamera för bilder, video och dokument. Spela in i upp till 4K med HDR, med reglagen du känner igen från appen Kamera; i läget Bild ringar en livesökare in det som skulle maskeras.
 • Välj bilder och videor tillsammans: en öppnas i redigeraren, flera rensas på en gång.
+• Dela videor med PicStrip från valfri app för att ta bort deras metadata, eller öppna dem för att maskera ansikten och text. En ny åtgärd i Genvägar tar bort metadata från videor.
 • Maskera med en emoji, tryck på ett objekt för att maskera det i iOS 27 och låt de sista siffrorna i ett kort- eller telefonnummer synas.
 • Maskera alltid: ditt namn, en registreringsskylt eller din gata maskeras var PicStrip än läser dem.
 • Skanna dokument, välj bara bland dina skärmbilder, behåll rörelsen i Live Photo-bilder och jämför före och efter.
 • Delningsförinställningar, synlig filstorlek och en sammanfattning av vad som togs bort.
+• Snabbare export och batchbearbetning, en smidigare videoredigerare och en kamera som sparar batteri medan du håller den stilla.
 
 Automatisk upptäckt kan missa detaljer. Granska hela bilden eller videon innan du delar.
