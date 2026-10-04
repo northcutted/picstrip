@@ -3168,7 +3168,105 @@
       }
     },
     "**Share Sheet** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, with options. In the list of actions, Strip Metadata saves copies without metadata, and Edit in PicStrip opens one photo or video here: tap the notification that follows. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit in PicStrip." : {
-      "comment" : "About, How to use: the share sheet entries. Strip Metadata and Edit in PicStrip are the actions' names in the share sheet"
+      "comment" : "About, How to use: the share sheet entries. Strip Metadata and Edit in PicStrip are the actions' names in the share sheet",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ورقة المشاركة** — في أي تطبيق، اضغط على مشاركة ← تنظيف باستخدام PicStrip لحفظ نسخ منظَّفة من الصور ومقاطع الفيديو بالخيارات التي تختارها. في قائمة الإجراءات، يحفظ إجراء ”إزالة البيانات الوصفية“ نسخًا خالية من البيانات الوصفية، ويفتح إجراء ”تحرير في PicStrip“ صورة أو فيديو واحدًا هنا: اضغط على الإشعار الذي يظهر بعده. في ورقة المشاركة لا تُزال من مقاطع الفيديو سوى بياناتها الوصفية؛ لحجب الوجوه والنصوص، استخدم ”تحرير في PicStrip“."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Teilen-Menü** – tippe in jeder App auf Teilen → Mit PicStrip bereinigen, um bereinigte Kopien von Fotos und Videos zu sichern; dabei kannst du Optionen wählen. In der Liste der Aktionen sichert „Metadaten entfernen“ Kopien ohne Metadaten, und „In PicStrip bearbeiten“ öffnet ein Foto oder Video hier in der App – tippe dazu auf die Mitteilung, die danach erscheint. Im Teilen-Menü werden bei Videos nur die Metadaten entfernt; um Gesichter und Text zu verdecken, nutze „In PicStrip bearbeiten“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Hoja de compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y vídeos con las opciones que elijas. En la lista de acciones, «Eliminar metadatos» guarda copias sin metadatos y «Editar en PicStrip» abre aquí una foto o un vídeo: toca la notificación que aparece a continuación. En la hoja de compartir, los vídeos solo pierden sus metadatos; para censurar caras y texto, usa «Editar en PicStrip»."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Hoja de compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y videos con las opciones que elijas. En la lista de acciones, “Eliminar metadatos” guarda copias sin metadatos y “Editar en PicStrip” abre aquí una foto o un video: toca la notificación que aparece después. En la hoja de compartir, los videos solo pierden sus metadatos; para censurar caras y texto, usa “Editar en PicStrip”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Feuille de partage** — dans n’importe quelle app, touchez Partager → Nettoyer avec PicStrip pour enregistrer des copies nettoyées de photos et de vidéos en choisissant vos options. Dans la liste des actions, « Supprimer les métadonnées » enregistre des copies sans métadonnées, et « Modifier dans PicStrip » ouvre ici une photo ou une vidéo : touchez ensuite la notification qui s’affiche. Dans la feuille de partage, seules les métadonnées des vidéos sont supprimées ; pour masquer les visages et le texte, utilisez « Modifier dans PicStrip »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Foglio di condivisione** — in qualsiasi app, tocca Condividi → Pulisci con PicStrip per salvare copie pulite di foto e video con le opzioni che preferisci. Nell’elenco delle azioni, “Rimuovi i metadati” salva copie senza metadati e “Modifica in PicStrip” apre qui una foto o un video: tocca la notifica che compare subito dopo. Nel foglio di condivisione, dai video vengono rimossi solo i metadati; per coprire volti e testo, usa “Modifica in PicStrip”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**共有シート**：どのアプリでも、「共有」→「PicStripでクリーンアップ」をタップすると、オプションを選んで写真やビデオのクリーンアップしたコピーを保存できます。アクションの一覧にある「メタデータを削除」はメタデータを除いたコピーを保存し、「PicStripで編集」は写真またはビデオを1つこのアプリで開きます。開くには、そのあとに届く通知をタップします。共有シートでは、ビデオはメタデータが削除されるだけです。顔や文字をマスクするには「PicStripで編集」を使ってください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**공유 시트** — 어떤 앱에서든 “공유” → “PicStrip으로 정리”를 탭하면 옵션을 선택해 사진과 비디오의 정리된 사본을 저장할 수 있습니다. 동작 목록에서 “메타데이터 제거”는 메타데이터를 제거한 사본을 저장하고, “PicStrip에서 편집”은 사진이나 비디오 하나를 이 앱에서 엽니다. 이어서 표시되는 알림을 탭하세요. 공유 시트에서는 비디오의 메타데이터만 제거되므로, 얼굴과 텍스트를 가리려면 “PicStrip에서 편집”을 사용하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Deelmenu** — tik in elke app op Deel → Opschonen met PicStrip om opgeschoonde kopieën van foto’s en video’s te bewaren, met opties. In de lijst met acties bewaar je met Verwijder metadata kopieën zonder metadata, en open je met Bewerk in PicStrip één foto of video hier: tik daarna op de melding die verschijnt. In het deelmenu worden van video’s alleen de metadata verwijderd; gebruik Bewerk in PicStrip om gezichten en tekst af te dekken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Arkusz udostępniania** – w dowolnej aplikacji stuknij Udostępnij → Wyczyść w PicStrip, aby zachować wyczyszczone kopie zdjęć i nagrań wideo, z opcjami do wyboru. Na liście czynności opcja Usuń metadane zachowuje kopie bez metadanych, a Edytuj w PicStrip otwiera tutaj jedno zdjęcie lub nagranie wideo: stuknij powiadomienie, które się wtedy pojawi. W arkuszu udostępniania z nagrań wideo usuwane są tylko metadane; aby zamazać twarze i tekst, użyj opcji Edytuj w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Menu Compartilhar** — em qualquer app, toque em Compartilhar → Limpar com PicStrip para salvar cópias limpas de fotos e vídeos, com opções à sua escolha. Na lista de ações, Remover Metadados salva cópias sem metadados, e Editar no PicStrip abre aqui uma foto ou um vídeo: toque na notificação que aparecer em seguida. No menu Compartilhar, os vídeos só têm os metadados removidos; para ocultar rostos e textos, use Editar no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Menu Partilhar** — em qualquer app, toque em Partilhar → Limpar com PicStrip para guardar cópias limpas de fotografias e vídeos, com opções à sua escolha. Na lista de ações, Remover metadados guarda cópias sem metadados, e Editar no PicStrip abre aqui uma fotografia ou um vídeo: toque na notificação que aparecer a seguir. No menu Partilhar, aos vídeos só são removidos os metadados; para ocultar rostos e texto, use Editar no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Delningsbladet** – tryck på Dela → Rensa med PicStrip i valfri app för att spara rensade kopior av bilder och videor, med valbara alternativ. I listan med åtgärder sparar du kopior utan metadata med Ta bort metadata, och med Redigera i PicStrip öppnar du en bild eller video här: tryck på notisen som visas. I delningsbladet tas bara metadata bort från videor; använd Redigera i PicStrip för att maskera ansikten och text."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Paylaşma Sayfası** — herhangi bir uygulamada Paylaş → PicStrip ile Temizle’ye dokunarak fotoğrafların ve videoların temizlenmiş kopyalarını istediğiniz seçeneklerle kaydedin. Eylemler listesindeki “Meta verileri kaldır” kopyaları meta veriler olmadan kaydeder, “PicStrip’te düzenle” ise tek bir fotoğrafı veya videoyu burada açar: Ardından gelen bildirime dokunun. Paylaşma sayfasında videoların yalnızca meta verileri kaldırılır; yüzleri ve metinleri karartmak için “PicStrip’te düzenle” seçeneğini kullanın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**共享表单**——在任何应用中轻点“共享”→“使用 PicStrip 清理”，即可存储照片和视频清理后的副本，还可调整选项。在操作列表中，“移除元数据”会存储不含元数据的副本，“在 PicStrip 中编辑”则会在这里打开一张照片或一个视频：轻点随后出现的通知即可。在共享表单中，视频只会移除元数据；如需遮盖面孔和文字，请使用“在 PicStrip 中编辑”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**分享表單**：在任何 App 中點一下「分享」→「使用 PicStrip 清理」，即可儲存照片和影片清理後的拷貝，還能調整選項。在動作列表中，「移除後設資料」會儲存不含後設資料的拷貝，「在 PicStrip 中編輯」則會在這裡打開一張照片或一部影片：點一下隨後出現的通知即可。在分享表單中，影片只會移除後設資料；若要遮蓋臉孔和文字，請使用「在 PicStrip 中編輯」。"
+          }
+        }
+      }
     },
     "**Tap a region row** in the editor to select it and reveal its style and color options." : {
       "localizations" : {
@@ -31621,7 +31719,105 @@
       }
     },
     "Large photos were saved at 12 megapixels. To keep full size, use Edit in PicStrip." : {
-      "comment" : "Strip Metadata share-sheet action: shown under “Saved to Photos” when photos too large for the extension were saved as 12-megapixel copies. “Edit in PicStrip” is the other share-sheet action (existing key)."
+      "comment" : "Strip Metadata share-sheet action: shown under “Saved to Photos” when photos too large for the extension were saved as 12-megapixel copies. “Edit in PicStrip” is the other share-sheet action (existing key).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "حُفظت الصور الكبيرة بدقة 12 ميغابكسل. للاحتفاظ بالحجم الكامل، استخدم ”تحرير في PicStrip“."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Große Fotos wurden mit 12 Megapixeln gesichert. Um die volle Größe zu behalten, nutze „In PicStrip bearbeiten“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las fotos grandes se han guardado con 12 megapíxeles. Para conservar el tamaño original, usa «Editar en PicStrip»."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Las fotos grandes se guardaron con 12 megapíxeles. Para conservar el tamaño original, usa “Editar en PicStrip”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les grandes photos ont été enregistrées en 12 mégapixels. Pour conserver la taille d’origine, utilisez « Modifier dans PicStrip »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le foto grandi sono state salvate a 12 megapixel. Per mantenere le dimensioni originali, usa “Modifica in PicStrip”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大きな写真は1200万画素で保存されました。元のサイズのまま保存するには、「PicStripで編集」を使ってください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "큰 사진은 1200만 화소로 저장되었습니다. 원래 크기를 유지하려면 “PicStrip에서 편집”을 사용하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Grote foto’s zijn op 12 megapixel bewaard. Gebruik Bewerk in PicStrip om het volledige formaat te behouden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Duże zdjęcia zachowano w rozdzielczości 12 megapikseli. Aby mieć je w pełnym rozmiarze, użyj opcji Edytuj w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As fotos grandes foram salvas com 12 megapixels. Para manter o tamanho original, use Editar no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "As fotografias grandes foram guardadas com 12 megapixels. Para manter o tamanho original, use Editar no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stora bilder sparades i 12 megapixlar. Använd Redigera i PicStrip för att behålla full storlek."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Büyük fotoğraflar 12 megapiksel olarak kaydedildi. Tam boyutu korumak için “PicStrip’te düzenle” seçeneğini kullanın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大照片已存储为 1200 万像素的副本。如需保留完整尺寸，请使用“在 PicStrip 中编辑”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "大型照片已儲存為 1200 萬像素的拷貝。若要保留完整尺寸，請使用「在 PicStrip 中編輯」。"
+          }
+        }
+      }
     },
     "Leave Visible" : {
       "comment" : "Menu item: do not cover this face in the video.",
@@ -46998,7 +47194,105 @@
       }
     },
     "Ready to Edit" : {
-      "comment" : "Notification title after a photo or video was handed to PicStrip from the share sheet"
+      "comment" : "Notification title after a photo or video was handed to PicStrip from the share sheet",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "جاهز للتحرير"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereit zum Bearbeiten"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo para editar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Listo para editar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Prêt à modifier"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronto per la modifica"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集の準備完了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "편집 준비 완료"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Klaar om te bewerken"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gotowe do edycji"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronto para editar"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pronto para editar"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redo att redigera"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Düzenlemeye hazır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已准备好编辑"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已準備好編輯"
+          }
+        }
+      }
     },
     "Recommended" : {
       "localizations" : {
@@ -58379,10 +58673,206 @@
       }
     },
     "Tap to open your photo in PicStrip." : {
-      "comment" : "Notification body; the photo is not named or shown"
+      "comment" : "Notification body; the photo is not named or shown",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اضغط لفتح صورتك في PicStrip."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe, um dein Foto in PicStrip zu öffnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para abrir tu foto en PicStrip."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para abrir tu foto en PicStrip."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez pour ouvrir votre photo dans PicStrip."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca per aprire la tua foto in PicStrip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップしてPicStripで写真を開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "탭하여 PicStrip에서 사진을 여세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tik om je foto in PicStrip te openen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij, aby otworzyć zdjęcie w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque para abrir sua foto no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque para abrir a sua fotografia no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryck för att öppna din bild i PicStrip."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotoğrafınızı PicStrip’te açmak için dokunun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点以在 PicStrip 中打开你的照片。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下即可在 PicStrip 中打開你的照片。"
+          }
+        }
+      }
     },
     "Tap to open your video in PicStrip." : {
-      "comment" : "Notification body; the video is not named or shown"
+      "comment" : "Notification body; the video is not named or shown",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اضغط لفتح الفيديو الخاص بك في PicStrip."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tippe, um dein Video in PicStrip zu öffnen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para abrir tu vídeo en PicStrip."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toca para abrir tu video en PicStrip."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Touchez pour ouvrir votre vidéo dans PicStrip."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tocca per aprire il tuo video in PicStrip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "タップしてPicStripでビデオを開きます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "탭하여 PicStrip에서 비디오를 여세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tik om je video in PicStrip te openen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stuknij, aby otworzyć wideo w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque para abrir seu vídeo no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Toque para abrir o seu vídeo no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tryck för att öppna din video i PicStrip."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videonuzu PicStrip’te açmak için dokunun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "轻点以在 PicStrip 中打开你的视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "點一下即可在 PicStrip 中打開你的影片。"
+          }
+        }
+      }
     },
     "Tap to review" : {
       "localizations" : {
@@ -59295,7 +59785,105 @@
       }
     },
     "That item expired. Share it to PicStrip again." : {
-      "comment" : "Shown when the notification is tapped after the 15-minute handoff expired"
+      "comment" : "Shown when the notification is tapped after the 15-minute handoff expired",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "انتهت صلاحية هذا العنصر. شاركه مع PicStrip مرة أخرى."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dieses Objekt ist abgelaufen. Teile es erneut mit PicStrip."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese elemento ha caducado. Vuelve a compartirlo con PicStrip."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ese elemento expiró. Vuelve a compartirlo con PicStrip."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cet élément a expiré. Partagez-le à nouveau avec PicStrip."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’elemento è scaduto. Condividilo di nuovo con PicStrip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目は有効期限が切れました。もう一度PicStripに共有してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "해당 항목이 만료되었습니다. PicStrip으로 다시 공유하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dit onderdeel is verlopen. Deel het opnieuw met PicStrip."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ten element wygasł. Udostępnij go ponownie do PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Esse item expirou. Compartilhe-o com o PicStrip novamente."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Este item expirou. Partilhe-o novamente com o PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Objektet har gått ut. Dela det med PicStrip igen."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bu öğenin süresi doldu. PicStrip ile tekrar paylaşın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "该项目已过期。请再次将其共享到 PicStrip。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此項目已過期。請再次將它分享到 PicStrip。"
+          }
+        }
+      }
     },
     "The camera is in use by another app." : {
       "comment" : "Status note when another app or a call took the camera.",
@@ -66552,7 +67140,105 @@
       }
     },
     "With notifications on, one tap opens PicStrip next time. You can turn them on in Settings." : {
-      "comment" : "Share sheet, after an item was prepared for editing while PicStrip notifications are off"
+      "comment" : "Share sheet, after an item was prepared for editing while PicStrip notifications are off",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "عند تشغيل الإشعارات، تكفي ضغطة واحدة لفتح PicStrip في المرة القادمة. يمكنك تشغيلها في الإعدادات."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mit aktivierten Mitteilungen genügt beim nächsten Mal ein Tippen, um PicStrip zu öffnen. Du kannst sie in den Einstellungen aktivieren."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con las notificaciones activadas, la próxima vez bastará un toque para abrir PicStrip. Puedes activarlas en Ajustes."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con las notificaciones activadas, la próxima vez bastará un toque para abrir PicStrip. Puedes activarlas en Configuración."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Avec les notifications activées, un seul toucher suffira à ouvrir PicStrip la prochaine fois. Vous pouvez les activer dans Réglages."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Con le notifiche attive, la prossima volta basterà un tocco per aprire PicStrip. Puoi attivarle in Impostazioni."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "通知をオンにすると、次回からはタップするだけでPicStripが開きます。通知は「設定」でオンにできます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "알림을 켜 두면 다음부터는 한 번만 탭해도 PicStrip이 열립니다. 알림은 설정에서 켤 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Als meldingen aanstaan, open je PicStrip de volgende keer met één tik. Je kunt ze inschakelen in Instellingen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gdy powiadomienia są włączone, następnym razem otworzysz PicStrip jednym stuknięciem. Możesz je włączyć w Ustawieniach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com as notificações ativadas, da próxima vez basta um toque para abrir o PicStrip. Você pode ativá-las em Ajustes."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Com as notificações ativadas, da próxima vez basta um toque para abrir o PicStrip. Pode ativá-las nas Definições."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Med notiser påslagna öppnar du PicStrip med ett tryck nästa gång. Du kan slå på dem i Inställningar."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bildirimler açık olduğunda bir dahaki sefere PicStrip tek dokunuşla açılır. Bildirimleri Ayarlar’dan açabilirsiniz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "开启通知后，下次轻点一下即可打开 PicStrip。你可以在“设置”中开启通知。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟通知後，下次點一下就能打開 PicStrip。你可以在「設定」中開啟通知。"
+          }
+        }
+      }
     },
     "Yellow" : {
       "localizations" : {
