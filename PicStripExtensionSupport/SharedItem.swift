@@ -3,10 +3,9 @@ import Photos
 
 // MARK: - SharedItem
 //
-// The work the share extension and the two actions have in common: finding the
-// photos and videos in what was shared and saving cleaned copies to Photos.
-// Handing one to the app for editing is in SharedItem+Handoff.swift, compiled
-// only into the extensions that do it.
+// The share extension's work on what was shared: finding the photos and videos
+// in it and saving cleaned copies to Photos.  Handing one to the app for
+// editing is in SharedItem+Handoff.swift.
 //
 // Item providers are not Sendable, so they stay on the main actor; only each
 // image's `Data` and each video's file URL cross to background work.
@@ -33,22 +32,17 @@ struct SharedItem {
     /// video needs more memory and time than an extension gets.  Throws when
     /// nothing was saved; a step that cannot run fails the item rather than
     /// saving the untouched original as "cleaned".
-    /// `true` when the photo was too large for the extension and a smaller
-    /// copy was saved, which `reduceLargeImages` allows.
-    @discardableResult
-    func saveCleanedCopy(stripMetadata: Bool = true, redactPII: Bool = false, reduceLargeImages: Bool = false) async throws -> Bool {
+    func saveCleanedCopy(stripMetadata: Bool = true, redactPII: Bool = false, reduceLargeImages: Bool = false) async throws {
         switch kind {
         case .video(let typeIdentifier):
             try await saveCleanedVideo(typeIdentifier: typeIdentifier)
-            return false
         case .photo(let typeIdentifier):
             let rawData = try await loadPhotoData(typeIdentifier: typeIdentifier)
             try Task.checkCancellation()
             let cleaned = try await Self.clean(rawData, stripMetadata: stripMetadata,
                                                redactPII: redactPII, reduceLargeImages: reduceLargeImages)
             try Task.checkCancellation()
-            try await PhotoLibraryWriter.save(cleaned.data)
-            return cleaned.reduced
+            try await PhotoLibraryWriter.save(cleaned)
         }
     }
 
@@ -67,15 +61,13 @@ struct SharedItem {
         stripMetadata: Bool,
         redactPII: Bool,
         reduceLargeImages: Bool
-    ) async throws -> (data: Data, reduced: Bool) {
+    ) async throws -> Data {
         let metadata = stripMetadata ? StripConfig.allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])
         let budget: ImageResourceBudget = redactPII ? .shareExtension : .background
         var input = rawData
-        var reduced = false
         do { try budget.validate(input) } catch ImageResourceBudget.AdmissionError.resolutionTooLarge {
             guard reduceLargeImages else { throw ImageResourceBudget.AdmissionError.resolutionTooLarge }
             input = try ImageResourceBudget.smallerCopy(input, maximumPixels: redactPII ? 6_000_000 : 12_000_000)
-            reduced = true
         }
         // HEIC, as for a batch in the app: PNG made a camera photo several
         // times larger and slower to encode and save.
@@ -85,7 +77,7 @@ struct SharedItem {
             redact: redactPII,
             budget: budget
         )
-        return (result.export.processed.data, reduced)
+        return result.export.processed.data
     }
 
     /// A copy of the video without its hidden details — the frames copied as

@@ -18,9 +18,7 @@ final class ExtensionViewModel {
 
 // MARK: - ShareViewController
 //
-// Entry point for the Share extension, "Clean with PicStrip".  The two Action
-// extensions, Strip Metadata and Edit in PicStrip, each do one of its jobs in a
-// tap; this one keeps the options.
+// Entry point for the Share extension, "Clean with PicStrip".
 //
 // Lifecycle:
 //   1. iOS presents this view controller as a share sheet card.

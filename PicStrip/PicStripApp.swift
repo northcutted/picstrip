@@ -99,8 +99,8 @@ struct PicStripApp: App {
 
     /// Handles `picstrip://edit-from-extension`.
     ///
-    /// Nothing in PicStrip opens this URL today — the extensions rely on their
-    /// notification and the `scenePhase` drain above — but the scheme stays
+    /// Nothing in PicStrip opens this URL today — the Share Extension relies on
+    /// its notification and the `scenePhase` drain above — but the scheme stays
     /// registered so a shortcut can bring the pending image up directly.
     private func handleIncomingURL(_ url: URL) {
         guard url.scheme?.lowercased() == "picstrip",

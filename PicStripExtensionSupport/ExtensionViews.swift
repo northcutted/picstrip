@@ -23,22 +23,15 @@ extension UIViewController {
 
 // MARK: - ExtensionProgressView
 
-/// A spinner, or a bar once there is more than one item, over what is being done.
+/// A spinner over what is being done.
 struct ExtensionProgressView: View {
     let message: String
-    /// Items done out of the total; `nil` for a single item.
-    var fraction: Double?
 
     var body: some View {
         VStack(spacing: 20) {
             Spacer()
-            if let fraction {
-                ProgressView(value: fraction)
-                    .frame(maxWidth: 240)
-            } else {
-                ProgressView()
-                    .scaleEffect(1.4)
-            }
+            ProgressView()
+                .scaleEffect(1.4)
             Text(message)
                 .font(.body.weight(.medium))
                 .foregroundStyle(.secondary)
@@ -106,46 +99,6 @@ struct HandoffPreparedView: View {
                 isVideo ? Text("Discard prepared video") : Text("Discard prepared image")
             }
             .padding(.bottom, 16)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.horizontal, 20)
-    }
-}
-
-// MARK: - ExtensionFailureView
-
-/// A failure that stays on screen until the user closes the sheet.
-struct ExtensionFailureView: View {
-    let title: String
-    let message: String?
-    let onDone: () -> Void
-
-    var body: some View {
-        VStack(spacing: 16) {
-            Spacer()
-            Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 44))
-                .foregroundStyle(.orange)
-                .accessibilityHidden(true)
-            Text(title)
-                .font(.headline)
-                .multilineTextAlignment(.center)
-            if let message {
-                Text(message)
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
-            }
-            Spacer()
-            Button(action: onDone) {
-                Text("Done")
-                    .font(.body.weight(.semibold))
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 4)
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            .padding(.bottom, 28)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)
