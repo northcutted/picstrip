@@ -3168,7 +3168,105 @@
       }
     },
     "**Share Sheet** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, or choose Edit in PicStrip and tap the notification that follows to open the first one here. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit in PicStrip." : {
-      "comment" : "Help page row, Ways to Import. “Clean with PicStrip” is the share sheet entry's name and “Edit in PicStrip” its button (existing keys); the notification is “Ready to Edit” (existing key)."
+      "comment" : "Help page row, Ways to Import. “Clean with PicStrip” is the share sheet entry's name and “Edit in PicStrip” its button (existing keys); the notification is “Ready to Edit” (existing key).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**ورقة المشاركة** — في أي تطبيق، اضغط على مشاركة ← تنظيف باستخدام PicStrip لحفظ نسخ منظَّفة من الصور ومقاطع الفيديو، أو اختر ”تحرير في PicStrip“ واضغط على الإشعار الذي يظهر بعد ذلك لفتح أولها هنا. في ورقة المشاركة لا تُزال من مقاطع الفيديو سوى بياناتها الوصفية؛ لحجب الوجوه والنصوص، استخدم ”تحرير في PicStrip“."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Teilen-Menü** – tippe in jeder App auf Teilen → Mit PicStrip bereinigen, um bereinigte Kopien von Fotos und Videos zu sichern, oder wähle „In PicStrip bearbeiten“ und tippe auf die Mitteilung, die danach erscheint, um das erste Foto oder Video hier in der App zu öffnen. Im Teilen-Menü werden bei Videos nur die Metadaten entfernt; um Gesichter und Text zu verdecken, nutze „In PicStrip bearbeiten“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Hoja de compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y vídeos, o elige «Editar en PicStrip» y toca la notificación que aparece a continuación para abrir aquí el primero. En la hoja de compartir, los vídeos solo pierden sus metadatos; para censurar caras y texto, usa «Editar en PicStrip»."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Hoja de compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y videos, o elige “Editar en PicStrip” y toca la notificación que aparece después para abrir aquí el primero. En la hoja de compartir, los videos solo pierden sus metadatos; para censurar caras y texto, usa “Editar en PicStrip”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Feuille de partage** — dans n’importe quelle app, touchez Partager → Nettoyer avec PicStrip pour enregistrer des copies nettoyées de photos et de vidéos, ou choisissez « Modifier dans PicStrip » et touchez la notification qui s’affiche ensuite pour ouvrir ici la première. Dans la feuille de partage, seules les métadonnées des vidéos sont supprimées ; pour masquer les visages et le texte, utilisez « Modifier dans PicStrip »."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Foglio di condivisione** — in qualsiasi app, tocca Condividi → Pulisci con PicStrip per salvare copie pulite di foto e video, oppure scegli “Modifica in PicStrip” e tocca la notifica che compare subito dopo per aprire qui il primo elemento. Nel foglio di condivisione, dai video vengono rimossi solo i metadati; per coprire volti e testo, usa “Modifica in PicStrip”."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**共有シート**：どのアプリでも、「共有」→「PicStripでクリーンアップ」をタップすると、写真やビデオのクリーンアップしたコピーを保存できます。または「PicStripで編集」を選び、そのあとに届く通知をタップすると、最初の項目をこのアプリで開けます。共有シートでは、ビデオはメタデータが削除されるだけです。顔や文字をマスクするには「PicStripで編集」を使ってください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**공유 시트** — 어떤 앱에서든 “공유” → “PicStrip으로 정리”를 탭하여 사진과 비디오의 정리된 사본을 저장하거나, “PicStrip에서 편집”을 선택한 다음 이어서 표시되는 알림을 탭하여 첫 번째 항목을 이 앱에서 여세요. 공유 시트에서는 비디오의 메타데이터만 제거되므로, 얼굴과 텍스트를 가리려면 “PicStrip에서 편집”을 사용하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Deelmenu** — tik in elke app op Deel → Opschonen met PicStrip om opgeschoonde kopieën van foto’s en video’s te bewaren, of kies Bewerk in PicStrip en tik op de melding die daarna verschijnt om de eerste hier te openen. In het deelmenu worden van video’s alleen de metadata verwijderd; gebruik Bewerk in PicStrip om gezichten en tekst af te dekken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Arkusz udostępniania** – w dowolnej aplikacji stuknij Udostępnij → Wyczyść w PicStrip, aby zachować wyczyszczone kopie zdjęć i nagrań wideo, lub wybierz Edytuj w PicStrip i stuknij powiadomienie, które się wtedy pojawi, by otworzyć tutaj pierwsze z nich. W arkuszu udostępniania z nagrań wideo usuwane są tylko metadane; aby zamazać twarze i tekst, użyj opcji Edytuj w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Menu Compartilhar** — em qualquer app, toque em Compartilhar → Limpar com PicStrip para salvar cópias limpas de fotos e vídeos, ou escolha Editar no PicStrip e toque na notificação que aparecer em seguida para abrir aqui o primeiro item. No menu Compartilhar, os vídeos só têm os metadados removidos; para ocultar rostos e textos, use Editar no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Menu Partilhar** — em qualquer app, toque em Partilhar → Limpar com PicStrip para guardar cópias limpas de fotografias e vídeos, ou escolha Editar no PicStrip e toque na notificação que aparecer a seguir para abrir aqui o primeiro item. No menu Partilhar, aos vídeos só são removidos os metadados; para ocultar rostos e texto, use Editar no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Delningsbladet** – tryck på Dela → Rensa med PicStrip i valfri app för att spara rensade kopior av bilder och videor, eller välj Redigera i PicStrip och tryck på notisen som sedan visas för att öppna den första här. I delningsbladet tas bara metadata bort från videor; använd Redigera i PicStrip för att maskera ansikten och text."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**Paylaşma Sayfası** — herhangi bir uygulamada Paylaş → PicStrip ile Temizle’ye dokunarak fotoğrafların ve videoların temizlenmiş kopyalarını kaydedin ya da “PicStrip’te düzenle” seçeneğini belirleyin ve ilkini burada açmak için ardından gelen bildirime dokunun. Paylaşma sayfasında videoların yalnızca meta verileri kaldırılır; yüzleri ve metinleri karartmak için “PicStrip’te düzenle” seçeneğini kullanın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**共享表单**——在任何应用中轻点“共享”→“使用 PicStrip 清理”，即可存储照片和视频清理后的副本；也可以选择“在 PicStrip 中编辑”，然后轻点随后出现的通知，在这里打开第一项。在共享表单中，视频只会移除元数据；如需遮盖面孔和文字，请使用“在 PicStrip 中编辑”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "**分享表單**：在任何 App 中點一下「分享」→「使用 PicStrip 清理」，即可儲存照片和影片清理後的拷貝；也可以選擇「在 PicStrip 中編輯」，然後點一下隨後出現的通知，在這裡打開第一個項目。在分享表單中，影片只會移除後設資料；若要遮蓋臉孔和文字，請使用「在 PicStrip 中編輯」。"
+          }
+        }
+      }
     },
     "**Tap a region row** in the editor to select it and reveal its style and color options." : {
       "localizations" : {
