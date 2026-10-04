@@ -59,6 +59,7 @@ Single-path examples evaluated by the consumer classifier. Mixed changes and fal
 | --- | --- | --- |
 | [App Store Deploy (internal)](#app-store-deploy-internal) | [app-store-deploy.yml](../../.github/workflows/app-store-deploy.yml) | <code>create</code>, <code>release</code>, <code>workflow_dispatch</code> |
 | [Release Prep](#release-prep) | [main.yml](../../.github/workflows/main.yml) | <code>push</code>, <code>workflow_dispatch</code> |
+| [Native CLI signed canary](#native-cli-signed-canary) | [native-canary.yml](../../.github/workflows/native-canary.yml) | <code>workflow_dispatch</code> |
 | [Release Maintenance](#release-maintenance) | [observe.yml](../../.github/workflows/observe.yml) | <code>schedule</code>, <code>workflow_dispatch</code> |
 | [PR Checks](#pr-checks) | [pr.yml](../../.github/workflows/pr.yml) | <code>pull_request</code>, <code>workflow_dispatch</code> |
 | [Release](#release) | [promote.yml](../../.github/workflows/promote.yml) | <code>workflow_dispatch</code> |
@@ -120,6 +121,26 @@ Concurrency: <code>{"group":"release-prep-main","cancel-in-progress":false}</cod
 | --- | --- | --- | --- |
 | <code>changes</code><br>Select release inputs | — | <code>ubuntu-24.04</code>; 5 min | — |
 | <code>prepare</code> | <code>changes</code> | [prepare.yml](https://github.com/northcutted/ios-release-workflows/blob/25ac025ed3faa9934a217bec520cfc07809480d6/.github/workflows/prepare.yml) | <code>needs.changes.outputs.prepare == 'true'</code> |
+
+### Native CLI signed canary
+
+[Source](../../.github/workflows/native-canary.yml) · [Actions](https://github.com/northcutted/picstrip/actions/workflows/native-canary.yml)
+
+Triggers (cron expressions use UTC):
+
+```json
+{
+  "workflow_dispatch": {}
+}
+```
+
+Concurrency: <code>{"group":"native-cli-canary","cancel-in-progress":false}</code>. Default token permissions: <code>{"contents":"read"}</code>.
+
+| Job | Needs | Execution | Condition |
+| --- | --- | --- | --- |
+| <code>archive</code><br>Archive PicStrip with Rust and existing signing assets | — | <code>xcode-27</code>; 60 min<br>Environment: <code>signing</code> | <code>github.ref == 'refs/heads/main'</code> |
+| <code>verify</code><br>Verify the IPA independently without signing credentials | <code>archive</code> | <code>xcode-27</code>; 30 min | — |
+| <code>observe</code><br>Read PicStrip App Store status with the native API client | — | <code>ubuntu-24.04</code>; 15 min<br>Environment: <code>app-store-observe</code> | <code>github.ref == 'refs/heads/main'</code> |
 
 ### Release Maintenance
 
