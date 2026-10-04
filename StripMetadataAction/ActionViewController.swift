@@ -7,7 +7,9 @@ import UIKit
 final class StripMetadataModel {
     enum Phase: Equatable {
         case working(done: Int, total: Int)
-        case saved
+        /// `reduced`: some photos were too large for the extension and were
+        /// saved as smaller copies.
+        case saved(reduced: Bool)
         /// Something was not saved; stays on screen until the user closes it.
         case finished(saved: Int, failed: Int, reason: String?)
     }
@@ -23,6 +25,9 @@ final class StripMetadataModel {
 // closes itself.  The originals are left as they were.
 //
 // Items are cleaned one at a time, so one decoded image is in memory at once.
+// A photo over the extension's memory budget — most recent iPhone main-camera
+// shots are 24 or 48 MP — is saved as a 12 MP copy rather than refused, and
+// the sheet says so; the app cleans it at full size.
 
 final class ActionViewController: UIViewController {
 
@@ -55,11 +60,12 @@ final class ActionViewController: UIViewController {
 
         var saved = 0
         var failed = 0
+        var reduced = false
         var firstFailure: String?
         for item in items {
             guard !Task.isCancelled else { return }
             do {
-                try await item.saveCleanedCopy()
+                if try await item.saveCleanedCopy(reduceLargeImages: true) { reduced = true }
                 saved += 1
             } catch {
                 if Task.isCancelled { return }
@@ -73,9 +79,9 @@ final class ActionViewController: UIViewController {
             model.phase = .finished(saved: saved, failed: failed, reason: firstFailure)
             return
         }
-        model.phase = .saved
+        model.phase = .saved(reduced: reduced)
         // Long enough to read; the copies are already in Photos.
-        try? await Task.sleep(for: .seconds(1.2))
+        try? await Task.sleep(for: .seconds(reduced ? 3 : 1.2))
         guard !Task.isCancelled else { return }
         extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
     }
@@ -104,8 +110,8 @@ private struct StripMetadataView: View {
             switch model.phase {
             case let .working(done, total):
                 working(fraction: total > 1 ? Double(done) / Double(total) : nil)
-            case .saved:
-                saved
+            case .saved(let reduced):
+                saved(reduced: reduced)
             case let .finished(saved, failed, reason):
                 if saved == 0 {
                     ExtensionFailureView(
@@ -125,8 +131,9 @@ private struct StripMetadataView: View {
         .background(Color(.systemBackground))
         .animation(.easeInOut(duration: 0.2), value: model.phase)
         .onChange(of: model.phase) { _, phase in
-            if phase == .saved {
-                AccessibilityNotification.Announcement(String(localized: "Saved to Photos")).post()
+            if case .saved(let reduced) = phase {
+                let note = reduced ? " " + String(localized: "Large photos were saved at 12 megapixels. To keep full size, use Edit in PicStrip.") : ""
+                AccessibilityNotification.Announcement(String(localized: "Saved to Photos") + note).post()
             }
         }
     }
@@ -146,7 +153,7 @@ private struct StripMetadataView: View {
         }
     }
 
-    private var saved: some View {
+    private func saved(reduced: Bool) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 52))
@@ -154,6 +161,13 @@ private struct StripMetadataView: View {
                 .accessibilityHidden(true)
             Text("Saved to Photos")
                 .font(.title2.weight(.semibold))
+            if reduced {
+                Text("Large photos were saved at 12 megapixels. To keep full size, use Edit in PicStrip.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 32)
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }

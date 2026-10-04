@@ -31620,6 +31620,9 @@
         }
       }
     },
+    "Large photos were saved at 12 megapixels. To keep full size, use Edit in PicStrip." : {
+      "comment" : "Strip Metadata share-sheet action: shown under “Saved to Photos” when photos too large for the extension were saved as 12-megapixel copies. “Edit in PicStrip” is the other share-sheet action (existing key)."
+    },
     "Leave Visible" : {
       "comment" : "Menu item: do not cover this face in the video.",
       "localizations" : {

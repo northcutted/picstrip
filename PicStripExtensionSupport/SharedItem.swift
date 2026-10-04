@@ -33,17 +33,22 @@ struct SharedItem {
     /// video needs more memory and time than an extension gets.  Throws when
     /// nothing was saved; a step that cannot run fails the item rather than
     /// saving the untouched original as "cleaned".
-    func saveCleanedCopy(stripMetadata: Bool = true, redactPII: Bool = false, reduceLargeImages: Bool = false) async throws {
+    /// `true` when the photo was too large for the extension and a smaller
+    /// copy was saved, which `reduceLargeImages` allows.
+    @discardableResult
+    func saveCleanedCopy(stripMetadata: Bool = true, redactPII: Bool = false, reduceLargeImages: Bool = false) async throws -> Bool {
         switch kind {
         case .video(let typeIdentifier):
             try await saveCleanedVideo(typeIdentifier: typeIdentifier)
+            return false
         case .photo(let typeIdentifier):
             let rawData = try await loadPhotoData(typeIdentifier: typeIdentifier)
             try Task.checkCancellation()
             let cleaned = try await Self.clean(rawData, stripMetadata: stripMetadata,
                                                redactPII: redactPII, reduceLargeImages: reduceLargeImages)
             try Task.checkCancellation()
-            try await PhotoLibraryWriter.save(cleaned)
+            try await PhotoLibraryWriter.save(cleaned.data)
+            return cleaned.reduced
         }
     }
 
@@ -62,21 +67,25 @@ struct SharedItem {
         stripMetadata: Bool,
         redactPII: Bool,
         reduceLargeImages: Bool
-    ) async throws -> Data {
+    ) async throws -> (data: Data, reduced: Bool) {
         let metadata = stripMetadata ? StripConfig.allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])
         let budget: ImageResourceBudget = redactPII ? .shareExtension : .background
         var input = rawData
+        var reduced = false
         do { try budget.validate(input) } catch ImageResourceBudget.AdmissionError.resolutionTooLarge {
             guard reduceLargeImages else { throw ImageResourceBudget.AdmissionError.resolutionTooLarge }
             input = try ImageResourceBudget.smallerCopy(input, maximumPixels: redactPII ? 6_000_000 : 12_000_000)
+            reduced = true
         }
+        // HEIC, as for a batch in the app: PNG made a camera photo several
+        // times larger and slower to encode and save.
         let result = try await ExportPipeline.clean(
             input,
-            plan: ExportPlan(preset: stripMetadata ? .losslessPNG : .matchSource, metadata: metadata),
+            plan: ExportPlan(preset: stripMetadata ? .heicOriginal : .matchSource, metadata: metadata),
             redact: redactPII,
             budget: budget
         )
-        return result.export.processed.data
+        return (result.export.processed.data, reduced)
     }
 
     /// A copy of the video without its hidden details — the frames copied as
