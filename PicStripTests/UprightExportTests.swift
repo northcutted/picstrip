@@ -122,6 +122,50 @@ final class UprightExportTests: XCTestCase {
         }
     }
 
+    /// The upright bitmap must be the one UIKit's own redraw makes, pixel for pixel.
+    func testUprightBitmapMatchesUIKitsRedraw() throws {
+        for spaceName in [CGColorSpace.sRGB, CGColorSpace.displayP3] {
+            let space = try XCTUnwrap(CGColorSpace(name: spaceName))
+            let context = try XCTUnwrap(CGContext(
+                data: nil, width: 96, height: 64, bitsPerComponent: 8, bytesPerRow: 0,
+                space: space, bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+            ))
+            for x in 0..<96 {
+                context.setFillColor(CGColor(colorSpace: space, components: [CGFloat(x) / 96, 0.3, 1 - CGFloat(x) / 96, 1]) ?? CGColor(gray: 0, alpha: 1))
+                context.fill(CGRect(x: x, y: (x * 7) % 64, width: 1, height: 64 - (x * 7) % 64))
+            }
+            let pixels = try XCTUnwrap(context.makeImage())
+            for raw in UInt32(2)...8 {
+                let output = NSMutableData()
+                let destination = try XCTUnwrap(CGImageDestinationCreateWithData(output, UTType.jpeg.identifier as CFString, 1, nil))
+                CGImageDestinationAddImage(destination, pixels, [kCGImagePropertyOrientation: raw] as CFDictionary)
+                XCTAssertTrue(CGImageDestinationFinalize(destination))
+
+                let shown = try XCTUnwrap(UIImage(data: output as Data))
+                let format = shown.imageRendererFormat
+                format.opaque = true
+                let redraw = try XCTUnwrap(UIGraphicsImageRenderer(size: shown.size, format: format).image { _ in
+                    shown.draw(in: CGRect(origin: .zero, size: shown.size))
+                }.cgImage)
+                let upright = try XCTUnwrap(ImageProcessor.uprightImage(from: output as Data))
+                let name = "\(spaceName), orientation \(raw)"
+                XCTAssertEqual(upright.colorSpace?.name, redraw.colorSpace?.name, name)
+                XCTAssertEqual(upright.bitsPerComponent, redraw.bitsPerComponent, name)
+                XCTAssertEqual(try Self.bytes(of: upright), try Self.bytes(of: redraw), name)
+            }
+        }
+    }
+
+    private static func bytes(of image: CGImage) throws -> [UInt8] {
+        var pixels = [UInt8](repeating: 0, count: 4 * image.width * image.height)
+        let context = try XCTUnwrap(CGContext(
+            data: &pixels, width: image.width, height: image.height, bitsPerComponent: 8, bytesPerRow: 4 * image.width,
+            space: try XCTUnwrap(image.colorSpace), bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+        ))
+        context.draw(image, in: CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        return pixels
+    }
+
     /// Encodes one solid image of `space` and `bitsPerComponent`, stored sideways.
     private static func sideways(
         space: CGColorSpace, bitsPerComponent: Int, type: UTType

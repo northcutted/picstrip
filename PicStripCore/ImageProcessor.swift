@@ -307,54 +307,55 @@ nonisolated enum ImageProcessor {
 
     /// The image in `data` with its pixels turned the way it is displayed.
     ///
-    /// Cameras store a portrait photo sideways and tag it with an orientation.
-    /// Asking ImageIO for a "thumbnail" as large as the photo itself, with the
-    /// tag applied, decodes and turns it in one step; redrawing the decoded
-    /// `UIImage` allocates a second full-size bitmap for every portrait photo.
-    /// The thumbnail keeps the source's colour space and bit depth (Display P3,
-    /// 16-bit).
-    ///
-    /// `UIImage` still decides whether the image needs turning, as it does for
-    /// the redaction path: it ignores the tag in some files ImageIO honours (a
-    /// PNG that also carries GPS), and the two exports must agree.
+    /// Cameras store a portrait photo sideways and tag it with an orientation,
+    /// so it is redrawn upright before encoding.  `UIGraphicsImageRenderer`
+    /// copies its bitmap when it hands the image over, so that redraw held two
+    /// full-size bitmaps besides the decode.  An 8-bit RGB photo — every camera
+    /// JPEG and HEIC — is drawn into a plain bitmap of the format the renderer
+    /// would pick, straight from an uncached decode, which needs one.  `UIImage`
+    /// still decides the orientation, so both export paths turn a photo alike.
     nonisolated static func uprightImage(from data: Data) -> CGImage? {
         guard let image = UIImage(data: data) else { return nil }
-        // Upright: decoded lazily, by the encoder.
         guard image.imageOrientation != .up else { return image.cgImage }
-
-        let width = Int((image.size.width * image.scale).rounded())
-        let height = Int((image.size.height * image.scale).rounded())
-        if let turned = turnedImage(from: data, orientation: image.imageOrientation, width: width, height: height) {
-            return turned
-        }
-        return image.normalized().cgImage
+        return uprightBitmap(from: data, as: image) ?? image.normalized().cgImage
     }
 
-    /// ImageIO's decode of `data`, turned by its orientation tag — or `nil`
-    /// unless that is the same turn as `orientation`, comes out at the full
-    /// `width` × `height`, and has 8 or 16 bits per component.  10-bit HDR comes
-    /// back packed, which the HEIC encoder rejects; the redraw widens it to 16.
-    nonisolated private static func turnedImage(
-        from data: Data, orientation: UIImage.Orientation, width: Int, height: Int
-    ) -> CGImage? {
-        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
-        let index = CGImageSourceGetPrimaryImageIndex(source)
-        guard let props = CGImageSourceCopyPropertiesAtIndex(source, index, nil) as? [CFString: Any],
-              let tag = (props[kCGImagePropertyOrientation] as? NSNumber)?.uint32Value,
-              let tagged = CGImagePropertyOrientation(rawValue: tag),
-              UIImage.Orientation(tagged) == orientation
+    /// `image` redrawn upright into an 8-bit bitmap in its own colour space, or
+    /// `nil` unless it is 8-bit RGB, decoded from `data` exactly as `image` is.
+    nonisolated private static func uprightBitmap(from data: Data, as image: UIImage) -> CGImage? {
+        guard !image.isHighDynamicRange,
+              let decoded = image.cgImage,
+              decoded.bitsPerComponent == 8,
+              let space = decoded.colorSpace, space.model == .rgb,
+              let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let uncached = CGImageSourceCreateImageAtIndex(
+                source, CGImageSourceGetPrimaryImageIndex(source),
+                [kCGImageSourceShouldCache: false] as CFDictionary
+              ),
+              uncached.width == decoded.width, uncached.height == decoded.height,
+              uncached.bitsPerPixel == decoded.bitsPerPixel,
+              uncached.bitmapInfo == decoded.bitmapInfo,
+              uncached.colorSpace == space
         else { return nil }
 
-        let options: [CFString: Any] = [
-            kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
-            kCGImageSourceThumbnailMaxPixelSize: max(width, height)
-        ]
-        guard let turned = CGImageSourceCreateThumbnailAtIndex(source, index, options as CFDictionary),
-              turned.width == width, turned.height == height,
-              [8, 16].contains(turned.bitsPerComponent)
-        else { return nil }
-        return turned
+        // The renderer's own choice: BGRA, premultiplied only when there is alpha.
+        let opaque = [.none, .noneSkipFirst, .noneSkipLast].contains(decoded.alphaInfo)
+        let alpha: CGImageAlphaInfo = opaque ? .noneSkipFirst : .premultipliedFirst
+        let width = Int((image.size.width * image.scale).rounded())
+        let height = Int((image.size.height * image.scale).rounded())
+        guard let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space,
+            bitmapInfo: alpha.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        ) else { return nil }
+
+        // UIKit's top-left, point-sized space, so `UIImage.draw` applies the turn.
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: image.scale, y: -image.scale)
+        UIGraphicsPushContext(context)
+        UIImage(cgImage: uncached, scale: image.scale, orientation: image.imageOrientation)
+            .draw(in: CGRect(origin: .zero, size: image.size))
+        UIGraphicsPopContext()
+        return context.makeImage()
     }
 
     /// Re-encodes an already-rendered image while using metadata from the
@@ -839,23 +840,6 @@ private extension UIImage {
         switch alphaInfo {
         case .none, .noneSkipFirst, .noneSkipLast: return false
         default: return true
-        }
-    }
-}
-
-private extension UIImage.Orientation {
-    /// The UIKit name for an EXIF orientation tag.
-    nonisolated init(_ orientation: CGImagePropertyOrientation) {
-        switch orientation {
-        case .up:            self = .up
-        case .upMirrored:    self = .upMirrored
-        case .down:          self = .down
-        case .downMirrored:  self = .downMirrored
-        case .leftMirrored:  self = .leftMirrored
-        case .right:         self = .right
-        case .rightMirrored: self = .rightMirrored
-        case .left:          self = .left
-        @unknown default:    self = .up
         }
     }
 }
