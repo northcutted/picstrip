@@ -47192,6 +47192,9 @@
         }
       }
     },
+    "Ready to Edit" : {
+      "comment" : "Notification title after a photo or video was handed to PicStrip from the share sheet"
+    },
     "Recommended" : {
       "localizations" : {
         "ar" : {
@@ -58570,6 +58573,12 @@
         }
       }
     },
+    "Tap to open your photo in PicStrip." : {
+      "comment" : "Notification body; the photo is not named or shown"
+    },
+    "Tap to open your video in PicStrip." : {
+      "comment" : "Notification body; the video is not named or shown"
+    },
     "Tap to review" : {
       "localizations" : {
         "ar" : {
@@ -59479,6 +59488,9 @@
           }
         }
       }
+    },
+    "That item expired. Share it to PicStrip again." : {
+      "comment" : "Shown when the notification is tapped after the 15-minute handoff expired"
     },
     "The camera is in use by another app." : {
       "comment" : "Status note when another app or a call took the camera.",
@@ -66733,6 +66745,9 @@
           }
         }
       }
+    },
+    "With notifications on, one tap opens PicStrip next time. You can turn them on in Settings." : {
+      "comment" : "Share sheet, after an item was prepared for editing while PicStrip notifications are off"
     },
     "Yellow" : {
       "localizations" : {
