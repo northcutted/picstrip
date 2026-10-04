@@ -1273,8 +1273,10 @@ struct ContentView: View {
 /// stops while the scene is not active, and under Reduce Motion, which shows
 /// the mesh at rest.
 private struct DriftingGradient: View {
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var reduceMotionSetting
     @Environment(\.scenePhase) private var scenePhase
+
+    private var reduceMotion: Bool { reduceMotionSetting || DecorativeMotion.isHostingTests }
 
     /// Row by row from the top-left: green at the top-left, indigo toward the
     /// bottom-right, nothing in the middle.

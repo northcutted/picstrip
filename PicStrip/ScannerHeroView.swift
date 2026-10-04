@@ -1,5 +1,15 @@
 import SwiftUI
 
+// MARK: - DecorativeMotion
+
+/// The home screen's decorative motion keeps still while the app only hosts
+/// unit tests, as under Reduce Motion: on CI's iOS 26 simulator its
+/// rendering starved the tests' own Core Image work (a 12 MP blur went from
+/// 11 seconds to over 60).
+enum DecorativeMotion {
+    static let isHostingTests = ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+}
+
 // MARK: - ScannerHeroView
 
 /// The home screen's hero: a little photo that PicStrip cleans, on a loop.
@@ -29,8 +39,10 @@ import SwiftUI
 /// shows the finished, cleaned photo.
 struct ScannerHeroView: View {
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityReduceMotion) private var reduceMotionSetting
     @Environment(\.scenePhase) private var scenePhase
+
+    private var reduceMotion: Bool { reduceMotionSetting || DecorativeMotion.isHostingTests }
 
     @State private var beats = HeroBeats.start(isVideo: false)
     /// False once the hero scrolls out of sight (at the largest text sizes)
