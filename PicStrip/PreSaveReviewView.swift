@@ -115,6 +115,10 @@ struct PreSaveReviewView: View {
             .onChange(of: viewModel.activeSheet) { _, newValue in
                 if newValue != .preSave { dismiss() }
             }
+            // The full-size render kept for format changes can be made again.
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+                viewModel.releaseReviewRedaction()
+            }
             .fullScreenCover(isPresented: $showFullPreview) {
                 if let data = viewModel.processedData {
                     ReviewPreviewView(data: data, original: viewModel.sourceUIImage)

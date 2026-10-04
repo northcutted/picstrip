@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 ///
 /// Field override keys use the compound format `"<Category>.<KeyName>"`,
 /// e.g. `"GPS.GPSLatitude"`. A value of `false` means "keep this field".
-nonisolated struct StripConfig {
+nonisolated struct StripConfig: Equatable {
     /// Per-category enable flags. `true` = strip the whole category.
     var categoryEnabled: [String: Bool]
 

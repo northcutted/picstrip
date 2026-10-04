@@ -210,7 +210,7 @@ nonisolated enum RedactionLattice {
 /// before calling `ImageRedactor.redact(image:specs:)`.  Batch processing and
 /// the Share Extension use `redact(image:instances:)`, which synthesises
 /// solid-black specs.
-nonisolated struct RedactionSpec {
+nonisolated struct RedactionSpec: Equatable {
     let rect: CGRect
     let style: RedactionStyle
     let color: RedactionColor

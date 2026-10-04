@@ -308,7 +308,44 @@ final class ScrubberViewModel {
     /// Controls which bottom sheet (if any) is currently presented.
     /// Only one sheet can be open at a time — assigning a new value safely
     /// replaces whatever is currently showing.
-    var activeSheet: ActiveSheet?
+    var activeSheet: ActiveSheet? {
+        didSet {
+            // A full-size render is only worth its memory while Review & Share is open.
+            if activeSheet != .preSave { reviewRedaction = nil }
+        }
+    }
+
+    /// What a render of the enabled regions depends on.
+    struct RedactionKey: Equatable {
+        /// The load the bytes came from (`loadToken`).
+        let image: UUID
+        let specs: [RedactionSpec]
+    }
+
+    /// The enabled regions rendered at full size, kept while Review & Share is
+    /// open so that changing the format there pays only for the encode.
+    struct ReviewRedaction {
+        let key: RedactionKey
+        let image: UIImage
+    }
+
+    @ObservationIgnored private(set) var reviewRedaction: ReviewRedaction?
+
+    /// What `processedData` was encoded from, so opening the review again with
+    /// nothing changed shows those bytes instead of encoding them again.
+    private struct ExportKey: Equatable {
+        let redaction: RedactionKey
+        let preset: ExportPreset
+        let config: StripConfig
+    }
+
+    @ObservationIgnored private var processedKey: ExportKey?
+
+    /// Lets go of the full-size render, e.g. on a memory warning.  The next
+    /// format change in the review renders the regions again.
+    func releaseReviewRedaction() {
+        reviewRedaction = nil
+    }
 
     /// Shown when the user chose "Replace Original" but no asset identifier is available.
     var showReplaceUnavailableAlert: Bool = false
@@ -688,6 +725,7 @@ final class ScrubberViewModel {
         errorMessage = nil
         rawImageData = nil
         processedData = nil
+        processedKey = nil
         processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
@@ -804,15 +842,17 @@ final class ScrubberViewModel {
 
     // MARK: - Processing
 
-    private func processCurrentImageNow() async {
+    /// `true` when the encode's result was stored.
+    private func processCurrentImageNow(plan: ExportPlan) async -> Bool {
         guard let raw = rawImageData else {
             isProcessing = false
-            return
+            return false
         }
-        await processImage(
+        return await processImage(
             raw: raw,
             sourceData: raw,
             imageOverride: nil,
+            plan: plan,
             updateSourceMetadata: true
         )
     }
@@ -1415,18 +1455,37 @@ final class ScrubberViewModel {
 
         // Redaction path: burn only the instances whose type is in typesToRedact.
         let regionsToRedact = enabledRedactionRegions
+        let redactionKey = RedactionKey(image: imageToken, specs: regionsToRedact.map(\.spec))
+        let exportKey = ExportKey(redaction: redactionKey, preset: selectedPreset, config: stripConfig)
 
+        // Nothing has changed since the last encode: show those bytes again.
+        if processedData != nil, processedKey == exportKey {
+            isProcessing = false
+            if presentSheet { activeSheet = .preSave }
+            return
+        }
+        processedKey = nil
+
+        let stored: Bool
         if !regionsToRedact.isEmpty, let raw = rawImageData {
-            let uiImage = await Task.detached(priority: .userInitiated) {
-                UIImage(data: raw)
-            }.value
+            let burned: UIImage?
+            if let cached = reviewRedaction, cached.key == redactionKey {
+                burned = cached.image
+            } else {
+                // Never hold two full-size renders at once.
+                reviewRedaction = nil
+                let uiImage = await Task.detached(priority: .userInitiated) {
+                    UIImage(data: raw)
+                }.value
+                guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
+                burned = if let uiImage {
+                    await ImageRedactor().redact(image: uiImage, specs: redactionKey.specs)
+                } else {
+                    nil
+                }
+            }
 
-            guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
-            guard let uiImage,
-                  let burned = await ImageRedactor().redact(
-                    image: uiImage,
-                    specs: regionsToRedact.map(\.spec)
-                  ) else {
+            guard let burned else {
                 guard imageToken == loadToken, reviewToken == token else { return }
                 errorMessage = String(localized: "Could not render redactions for this image.")
                 processedData = nil
@@ -1436,24 +1495,31 @@ final class ScrubberViewModel {
             }
 
             guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
-            await processImage(
+            // Kept while the review is open (see `activeSheet`), so that a
+            // format change there only encodes again.
+            reviewRedaction = ReviewRedaction(key: redactionKey, image: burned)
+            stored = await processImage(
                 raw: raw,
                 sourceData: raw,
                 imageOverride: burned,
+                plan: ExportPlan(preset: exportKey.preset, metadata: exportKey.config),
                 updateSourceMetadata: false
             )
-            // The processed bytes now include redactions; keep only the
-            // downsampled processed preview to avoid retaining a full-size bitmap.
+            // The processed bytes now include redactions; the review shows only
+            // the downsampled processed preview, never the full-size render.
             redactedUIImage = nil
         } else {
+            reviewRedaction = nil
             redactedUIImage = nil
-            await processCurrentImageNow()
+            stored = await processCurrentImageNow(plan: ExportPlan(preset: exportKey.preset, metadata: exportKey.config))
         }
 
         guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
+        if stored { processedKey = exportKey }
         if presentSheet, processedData != nil {
             activeSheet = .preSave
         }
+        if activeSheet != .preSave { reviewRedaction = nil }
     }
 
     /// Processes `override` data (or `rawImageData` when nil) through the EXIF
@@ -1462,30 +1528,31 @@ final class ScrubberViewModel {
     /// `rawSourceProps` and `allSourceMetadata` are derived from the *original*
     /// image only — they must never be overwritten by intermediate redacted data,
     /// which carries ghost iOS-injected TIFF/EXIF fields.
+    ///
+    /// Returns `true` when the encode's result was stored — `false` when it
+    /// failed or a newer one superseded it.
     private func processImage(
         raw: Data,
         sourceData: Data,
         imageOverride: UIImage?,
+        plan: ExportPlan,
         updateSourceMetadata: Bool
-    ) async {
+    ) async -> Bool {
         let token = UUID()
         processingToken = token
         errorMessage = scanFailureMessage
         isProcessing = true
-
-        let preset = selectedPreset
-        let config = stripConfig
 
         do {
             let snapshot = try await Self.makeProcessingSnapshot(ProcessingRequest(
                 raw: raw,
                 sourceData: sourceData,
                 imageOverride: imageOverride,
-                preset: preset,
-                config: config,
+                preset: plan.preset,
+                config: plan.metadata,
                 updateSourceMetadata: updateSourceMetadata
             ))
-            guard processingToken == token else { return }
+            guard processingToken == token else { return false }
 
             processedData           = snapshot.processed.data
             processedPreviewUIImage = snapshot.processedPreviewUIImage
@@ -1498,13 +1565,15 @@ final class ScrubberViewModel {
                 allSourceMetadata = snapshot.allSourceMetadata
             }
             isProcessing = false
+            return true
         } catch {
-            guard processingToken == token else { return }
+            guard processingToken == token else { return false }
             processedData           = nil
             processedPreviewUIImage = nil
             pendingStrippedMetadata = nil
             errorMessage            = error.localizedDescription
             isProcessing            = false
+            return false
         }
     }
 
@@ -2068,6 +2137,7 @@ final class ScrubberViewModel {
         inputImage              = nil
         sourceUIImage           = nil
         processedData           = nil
+        processedKey            = nil
         processedPreviewUIImage = nil
         allSourceMetadata       = nil
         pendingStrippedMetadata = nil
