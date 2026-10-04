@@ -44,6 +44,18 @@ final class LiveAnalysisPacingTests: XCTestCase {
         XCTAssertTrue(LiveAnalysisPacing.isTooHot(.serious))
         XCTAssertTrue(LiveAnalysisPacing.isTooHot(.critical))
     }
+
+    /// Held still, the viewfinder re-reads the same picture less often…
+    func testAStillPictureIsLookedAtLessOften() {
+        XCTAssertEqual(LiveAnalysisPacing.interval(0.35, movedSinceLastPass: 0.005), LiveAnalysisPacing.settledInterval)
+        XCTAssertEqual(LiveAnalysisPacing.interval(2.0, movedSinceLastPass: 0), 2.0)
+    }
+
+    /// …and looks again at the full rate once it moves, or before its first pass.
+    func testAMovedPictureIsLookedAtAtTheFullRate() {
+        XCTAssertEqual(LiveAnalysisPacing.interval(0.35, movedSinceLastPass: 0.05), 0.35)
+        XCTAssertEqual(LiveAnalysisPacing.interval(0.35, movedSinceLastPass: nil), 0.35)
+    }
 }
 
 // MARK: - LiveOverlayGeometry

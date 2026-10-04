@@ -153,6 +153,11 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
 
     // videoQueue
     private var analysisThrottle = AnalysisThrottle(minimumInterval: LiveAnalysisPacing.baseInterval)
+    /// The interval the thermal state and the last pass's length call for.
+    private var analysisInterval = LiveAnalysisPacing.baseInterval
+    /// Where the picture was when the last pass started; `nil` until one has,
+    /// and after anything that makes the next pass urgent.
+    private var lastPassOrigin: CGVector?
     private var motionThrottle = AnalysisThrottle(minimumInterval: 1.0 / 15)
     private var isAnalysisEnabled = true
     private var thermalState: ProcessInfo.ThermalState = .nominal
@@ -497,6 +502,7 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
         generation += 1
         motionNeedsRestart = true
         motion.restart()
+        lastPassOrigin = nil
     }
 
     func captureOutput(
@@ -533,9 +539,12 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
             }
         }
 
+        let moved = lastPassOrigin.map { hypot(motion.offset.dx - $0.dx, motion.offset.dy - $0.dy) }
+        analysisThrottle.minimumInterval = LiveAnalysisPacing.interval(analysisInterval, movedSinceLastPass: moved)
         // A blurred frame reads as nothing, and a pass over it only makes the boxes flicker.
         guard motion.speed <= LiveAnalysisPacing.maximumAnalysisSpeed, analysisThrottle.begin(at: now) else { return }
         let origin = motion.offset
+        lastPassOrigin = origin
         let passGeneration = generation
         let terms = alwaysCover
         Task { [self] in
@@ -545,7 +554,7 @@ nonisolated final class CameraSession: NSObject, @unchecked Sendable,
             let duration = ProcessInfo.processInfo.systemUptime - started
             Self.signposter.endInterval("Live scan", signpost)
             videoQueue.async { [self] in
-                analysisThrottle.minimumInterval = LiveAnalysisPacing.interval(
+                analysisInterval = LiveAnalysisPacing.interval(
                     thermalState: thermalState, lastPassDuration: duration
                 )
                 analysisThrottle.end()
@@ -646,8 +655,12 @@ final class LiveCameraModel {
     let fixture: LiveCameraFixture?
 
     let previewLayer = AVCaptureVideoPreviewLayer()
-    @ObservationIgnored private let camera = CameraSession()
+    // Lazy: SwiftUI builds `@State`'s initial value each time the parent re-creates
+    // the view and keeps only the first, so a session built here would be thrown away.
+    @ObservationIgnored private lazy var camera = CameraSession()
     @ObservationIgnored private var tracker = LiveDetectionTracker()
+    /// The motion measured last, published as `motionOffset` only when it moves something.
+    @ObservationIgnored private var latestMotionOffset: CGVector = .zero
     @ObservationIgnored private var tasks: [Task<Void, Never>] = []
     @ObservationIgnored private var pinchStart: CGFloat?
     @ObservationIgnored private var biasStart: Float?
@@ -801,6 +814,7 @@ final class LiveCameraModel {
         tracker.update(with: scan.detections.map {
             LiveDetection(type: $0.type, boundingBox: stabilised($0.boundingBox), score: $0.score)
         })
+        motionOffset = latestMotionOffset
         tracks = tracker.tracks
         textLines = scan.textLines.map(stabilised)
         hasScanned = true
@@ -809,6 +823,12 @@ final class LiveCameraModel {
     private func applyMotion(_ offset: CGVector) {
         // The viewfinder is frozen while the photo is taken; the boxes stay with it.
         guard !isCapturing else { return }
+        latestMotionOffset = offset
+        // Each change lays the overlay out again, fifteen times a second: not
+        // worth it with nothing drawn, or for a shift too small to see.
+        guard !tracks.isEmpty || !textLines.isEmpty,
+              hypot(offset.dx - motionOffset.dx, offset.dy - motionOffset.dy) >= 0.001
+        else { return }
         motionOffset = offset
     }
 

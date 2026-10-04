@@ -85,12 +85,17 @@ struct CameraView: View {
 /// Video, Photo or Document, as in the Camera app, just above the shutter.
 struct CameraModePicker: View {
     @Binding var mode: CameraView.Mode
+    /// Lets the mode being left give up the camera at once, rather than when
+    /// its view has faded out — the next mode's session, or the document
+    /// scanner, is starting on the same camera.
+    var leaving: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 2) {
             ForEach(CameraView.Mode.available) { option in
                 let isSelected = option == mode
                 Button {
+                    if !isSelected { leaving() }
                     mode = option
                 } label: {
                     Text(option.title)
@@ -260,7 +265,7 @@ struct VideoCameraView: View {
     /// recording, so the picture does not jump.
     private var bottomBar: some View {
         VStack(spacing: 12) {
-            CameraModePicker(mode: $mode)
+            CameraModePicker(mode: $mode) { model.stop() }
                 .opacity(model.isRecording ? 0 : 1)
                 .disabled(model.isRecording)
                 .accessibilityHidden(model.isRecording)

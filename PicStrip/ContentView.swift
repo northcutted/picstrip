@@ -1262,13 +1262,13 @@ struct ContentView: View {
 /// Decorative home-screen background: two radial blobs whose opacity breathes
 /// on different periods, so the background never looks like it resets.
 ///
-/// The phases are local state and the repeating animation is scoped to each
-/// blob's opacity alone.  A global `withAnimation(….repeatForever())` here leaks
-/// into whatever else lays out in the same transaction — on device it made the
-/// home-screen buttons' glass backgrounds grow and shrink forever.
+/// The opacity is worked out from the clock, fifteen times a second: the
+/// breathing is far too slow to need the display's full rate, which a repeating
+/// animation would redraw the whole home screen at for as long as it is open.
+/// It also keeps the animation out of every other transaction — a global
+/// `withAnimation(….repeatForever())` here once made the home-screen buttons'
+/// glass backgrounds grow and shrink forever.
 private struct BreathingGradient: View {
-    @State private var topBright = false
-    @State private var bottomBright = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// One breathing blob.  The gradient is drawn at `peak` and dimmed by an
@@ -1281,7 +1281,14 @@ private struct BreathingGradient: View {
         let still: Double
         let center: UnitPoint
         let radius: CGFloat
+        /// Seconds from dimmest to brightest, and as long back.
         let period: Double
+
+        /// The opacity factor at `time`, easing in and out at both ends.
+        func opacity(at time: TimeInterval) -> Double {
+            let brightness = (1 - cos(.pi * time / period)) / 2
+            return (floor + (peak - floor) * brightness) / peak
+        }
     }
 
     /// Top-left accent blob — cycles every 4 s.
@@ -1296,30 +1303,26 @@ private struct BreathingGradient: View {
     )
 
     var body: some View {
-        ZStack {
-            Color(.systemBackground)
-            view(for: Self.top, bright: topBright)
-            view(for: Self.bottom, bright: bottomBright)
+        TimelineView(.animation(minimumInterval: 1.0 / 15, paused: reduceMotion)) { context in
+            let time = context.date.timeIntervalSinceReferenceDate
+            ZStack {
+                Color(.systemBackground)
+                view(for: Self.top, at: time)
+                view(for: Self.bottom, at: time)
+            }
         }
         .ignoresSafeArea()
         .accessibilityHidden(true) // decorative background
-        .onAppear {
-            guard !reduceMotion else { return }
-            topBright = true
-            bottomBright = true
-        }
     }
 
-    private func view(for blob: Blob, bright: Bool) -> some View {
+    private func view(for blob: Blob, at time: TimeInterval) -> some View {
         RadialGradient(
             colors: [blob.color.opacity(blob.peak), .clear],
             center: blob.center,
             startRadius: 0,
             endRadius: blob.radius
         )
-        .animation(reduceMotion ? nil : .easeInOut(duration: blob.period).repeatForever(autoreverses: true)) {
-            $0.opacity(reduceMotion ? blob.still / blob.peak : (bright ? 1 : blob.floor / blob.peak))
-        }
+        .opacity(reduceMotion ? blob.still / blob.peak : blob.opacity(at: time))
     }
 }
 
