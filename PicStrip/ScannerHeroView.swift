@@ -459,10 +459,11 @@ private struct HeroCard: View {
         .offset(x: beats.isVideo ? CGFloat(8 * sin(playback * 2 * .pi / 3.2)) : 0)
     }
 
-    /// PicStrip's default emoji cover.
+    /// PicStrip's default emoji cover, a size up from the face so it hides
+    /// the hair around it too.
     private var emojiCover: some View {
         Text(verbatim: "🙂")
-            .font(.system(size: 40))
+            .font(.system(size: 47))
             .shadow(color: .black.opacity(0.2), radius: 2, y: 1)
             .scaleEffect(beats.isFaceCovered ? 1 : 0.2)
             .opacity(beats.isFaceCovered ? 1 : 0)
