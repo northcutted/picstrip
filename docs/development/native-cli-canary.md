@@ -6,4 +6,4 @@ The separate App Store observation job uses the native API client to read PicStr
 
 The existing consumer platform pin, release preparation, release approval and production workflows remain the default. The canary's native source revision is declared explicitly in its environment and checkout steps. Update those together only after the shared-platform checks pass for the reviewed revision.
 
-For onboarding a new app, use the shared platform's [native quickstart](https://github.com/northcutted/ios-release-workflows/blob/2d36e4bc93f09352be23ce65df7cf5168ff2f115/docs/native-quickstart.md). `examples/OrbitNotes` supplies a disposable native app and extension for onboarding and screenshot rehearsals without another developer account app record.
+For onboarding a new app, use the shared platform's [native quickstart](https://github.com/northcutted/ios-release-workflows/blob/881bbc5d7cb6f5bf715bdf884924a0b67e8b50a8/docs/native-quickstart.md). `examples/OrbitNotes` supplies a disposable native app and extension for onboarding and screenshot rehearsals without another developer account app record.

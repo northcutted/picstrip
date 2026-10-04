@@ -8,7 +8,7 @@ concurrency:
   cancel-in-progress: false
 env:
   SOURCE_SHA: 493dfb487dbd1c668fac306dc39b5604c741abb3
-  NATIVE_REVISION: 2d36e4bc93f09352be23ce65df7cf5168ff2f115
+  NATIVE_REVISION: 881bbc5d7cb6f5bf715bdf884924a0b67e8b50a8
 jobs:
   archive:
     name: Archive PicStrip with Rust and existing signing assets
@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: northcutted/ios-release-workflows
-          ref: 2d36e4bc93f09352be23ce65df7cf5168ff2f115
+          ref: 881bbc5d7cb6f5bf715bdf884924a0b67e8b50a8
           path: build/native-platform
           persist-credentials: false
       - &compile
