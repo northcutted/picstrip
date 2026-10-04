@@ -11,7 +11,7 @@ patterns=(
 
 status=0
 for pattern in "${patterns[@]}"; do
-  if rg -n "$pattern" PicStripCore PicStripShareExtension PicStripExtensionSupport StripMetadataAction EditInPicStripAction --glob '*.swift'; then
+  if rg -n "$pattern" PicStripCore PicStripShareExtension PicStripExtensionSupport --glob '*.swift'; then
     status=1
   fi
 done
@@ -22,7 +22,7 @@ return_patterns=(
 )
 
 for pattern in "${return_patterns[@]}"; do
-  files=$(rg -l "$pattern" PicStripCore PicStripShareExtension PicStripExtensionSupport StripMetadataAction EditInPicStripAction --glob '*.swift' || true)
+  files=$(rg -l "$pattern" PicStripCore PicStripShareExtension PicStripExtensionSupport --glob '*.swift' || true)
   if [ -n "$files" ] && rg -n 'return "[^"\\][^"]+"' $files; then
     status=1
   fi
