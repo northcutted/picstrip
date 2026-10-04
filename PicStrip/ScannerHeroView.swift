@@ -164,8 +164,8 @@ struct ScannerHeroView: View {
         var instant = Transaction()
         instant.disablesAnimations = true
         withTransaction(instant) { beats = next }
-        // Let the swap render before the spring starts, or SwiftUI merges the
-        // two and animates the old card round instead.
+        // Let the swap render first, so the spring starts from the new card's
+        // -90° instead of being coalesced with the swap into one update.
         try await pause(0.04)
         withAnimation(.spring(response: 0.5, dampingFraction: 0.72)) { beats.flip = 0 }
         try await pause(0.5)
