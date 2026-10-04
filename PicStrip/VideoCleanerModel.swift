@@ -43,39 +43,63 @@ final class VideoCleanerModel {
     /// How far opening the video has got, 0 … 1, or `nil` while unknown.
     private(set) var loadProgress: Double?
     /// Seconds.
-    private(set) var duration: Double = 0
+    private(set) var duration: Double = 0 {
+        didSet { updateTimelineClips() }
+    }
     private(set) var scanProgress = VideoScanner.Progress(fraction: 0, isCooling: false)
     /// The latest look at the frame being scanned, kept between glimpses.
     private(set) var glimpse: VideoScanner.Glimpse?
     private(set) var saveProgress: Double = 0
 
-    private(set) var faces: [FaceTrack] = []
+    private(set) var faces: [FaceTrack] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// A face's cover; faces not in here are blurred.
     private(set) var covers: [Int: FaceCover] = [:]
     /// Faces the user chose to leave showing.
-    private(set) var visibleFaces: Set<Int> = []
+    private(set) var visibleFaces: Set<Int> = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Off to keep every face visible.
     var coversFaces = true {
-        didSet { if coversFaces != oldValue { refreshPreview() } }
+        didSet {
+            guard coversFaces != oldValue else { return }
+            updateTimelineClips()
+            refreshPreview()
+        }
     }
 
     /// Sensitive text and codes, one row per distinct reading.
-    private(set) var findingGroups: [FindingGroup] = []
+    private(set) var findingGroups: [FindingGroup] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Groups the user chose to leave showing.
-    private(set) var uncoveredGroups: Set<String> = []
+    private(set) var uncoveredGroups: Set<String> = [] {
+        didSet { updateTimelineClips() }
+    }
     /// How text and codes are covered: `.solid`, `.pixelate` or `.blur`.
     var textStyle = RedactionStyle.solid {
         didSet { if textStyle != oldValue { refreshPreview() } }
     }
 
     /// Covers the user drew, each followed through the video (`isDrawn`).
-    private(set) var drawnCovers: [FaceTrack] = []
+    private(set) var drawnCovers: [FaceTrack] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// When a face or drawn cover is on, where set on the timeline (by track id).
-    private(set) var ranges: [Int: ClosedRange<Double>] = [:]
+    private(set) var ranges: [Int: ClosedRange<Double>] = [:] {
+        didSet { updateTimelineClips() }
+    }
+    /// Every cover and sound edit as a clip on the timeline, made again only
+    /// when one of them changes.
+    private(set) var timelineClips: [EditorTimeline.Clip] = []
     /// The row picked in the list, shown on the timeline.
     var selection: Selection?
+    /// Where the preview is.  Only views that show the time should read it,
+    /// so that playing redraws the playhead, not the whole editor.
+    let playhead = Playhead()
     /// Where the preview is, in seconds.
-    private(set) var currentTime: Double = 0
+    var currentTime: Double { playhead.time }
     /// How far following a drawn box has got, 0 … 1; `nil` when not following.
     private(set) var followProgress: Double?
 
@@ -107,7 +131,9 @@ final class VideoCleanerModel {
     private(set) var editedAudioCount = 0
 
     /// Stretches of sound to bleep or mute.
-    private(set) var audioEdits: [AudioEdit] = []
+    private(set) var audioEdits: [AudioEdit] = [] {
+        didSet { updateTimelineClips() }
+    }
     /// Whether the video has sound at all.
     private(set) var hasAudio = false
     /// How loud the sound is along the video, 0 … 1, for the timeline.
@@ -115,10 +141,15 @@ final class VideoCleanerModel {
     /// Small frames spread along the video, for the timeline's top row.
     private(set) var filmstrip: [UIImage] = []
     private var nextAudioID = 0
-    /// Tone files laid over bleeps; deleted with the screen.
-    private var toneFiles: [URL] = []
-    /// The audio edits the current preview item was built with.
+    /// Tone files laid over bleeps and not yet deleted: all but the preview's
+    /// go when a new preview item replaces the last, and the rest with the screen.
+    private var toneFiles: Set<URL> = []
+    /// The audio edits the current preview item was built with, and its tone.
     private var previewAudioEdits: [AudioEdit] = []
+    private var previewTone: VideoAudioEditor.Tone?
+    /// A timing changed while an end was dragged: the preview follows once it
+    /// is let go (`finishTrimming`).
+    private var trimNeedsPreview = false
     private(set) var output: URL?
 
     private var source: URL?
@@ -129,6 +160,12 @@ final class VideoCleanerModel {
     private(set) var skipsCovering = false
     private var previewGeneration = 0
     private var timeObserver: Any?
+    /// Where the player is to seek to next, once the seek under way lands.
+    private var queuedSeek: (time: Double, tolerance: CMTime)?
+    private var isSeeking = false
+    /// The playhead is under a finger: it shows where the finger is, not where
+    /// a near-enough seek landed.
+    private var isDraggingPlayhead = false
     /// Pauses the preview at the end of a stretch being played.
     private var boundaryObserver: Any?
     private var filmstripTask: Task<Void, Never>?
@@ -194,23 +231,36 @@ final class VideoCleanerModel {
                 return
             }
             // Even with nothing found the editor opens: objects can be covered
-            // and sound bleeped by hand.
-            await makeThumbnails(from: url)
-            hasAudio = !((try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []).isEmpty
-            // Enough detail for the timeline zoomed all the way in.
-            if hasAudio { audioLevels = await VideoAudioEditor.levels(of: url, count: Self.levelCount(for: duration)) }
-            filmstrip = await Self.filmstrip(of: url, duration: duration, count: 10)
+            // and sound bleeped by hand.  The thumbnails, the sound's levels and
+            // the first look at the filmstrip are made side by side.
+            let strip = Self.filmstripTimes(duration: duration, count: Self.filmstripCount(for: duration))
+            let firstLook = Self.evenlySpread(strip.count, picking: 10)
+            let crops = thumbnailCrops
+            async let thumbnails = Self.crops(crops, from: url)
+            async let sound = Self.sound(of: url, duration: duration)
+            async let opening = Self.frames(of: url, at: firstLook.map { strip[$0] })
+            let (images, (audible, levels), firstFrames) = await (thumbnails, sound, opening)
+            showThumbnails(images)
+            hasAudio = audible
+            audioLevels = levels
+            filmstrip = firstFrames.sorted { $0.key < $1.key }.map(\.value)
             stillTime = faces.first?.representativeSample?.time
                 ?? findingGroups.first?.tracks.first?.representativeSample?.time ?? 0
             usePlaybackAudio(true)
             observePlayhead()
-            // A frame about every second, for the zoomed-in timeline, once the
-            // editor is open.
-            let duration = duration
-            filmstripTask = Task { [weak self] in
-                let frames = await Self.filmstrip(of: url, duration: duration, count: Self.filmstripCount(for: duration))
-                guard !Task.isCancelled, !frames.isEmpty else { return }
-                self?.filmstrip = frames
+            // The rest of the strip, a frame about every second for the
+            // zoomed-in timeline, once the editor is open.
+            let rest = strip.indices.filter { !firstLook.contains($0) }
+            if !rest.isEmpty {
+                filmstripTask = Task { [weak self] in
+                    let restFrames = await Self.frames(of: url, at: rest.map { strip[$0] })
+                    guard !Task.isCancelled else { return }
+                    var frames: [Int: UIImage] = [:]
+                    for (place, index) in firstLook.enumerated() { frames[index] = firstFrames[place] }
+                    for (place, index) in rest.enumerated() { frames[index] = restFrames[place] }
+                    guard !frames.isEmpty else { return }
+                    self?.filmstrip = frames.sorted { $0.key < $1.key }.map(\.value)
+                }
             }
             refreshPreview()
             stage = .review
@@ -280,10 +330,12 @@ final class VideoCleanerModel {
         refreshPreview()
     }
 
-    /// Sets when a face or drawn cover is on, from the timeline.
-    func setRange(_ range: ClosedRange<Double>, for track: FaceTrack) {
+    /// Sets when a face or drawn cover is on, from the timeline.  `live` while
+    /// an end is being dragged: the clip follows the finger, and the preview is
+    /// made again once it is let go (`finishTrimming`).
+    func setRange(_ range: ClosedRange<Double>, for track: FaceTrack, live: Bool = false) {
         ranges[track.id] = clamped(range)
-        refreshPreview()
+        previewTiming(live: live)
     }
 
     func resetRange(for track: FaceTrack) {
@@ -296,16 +348,48 @@ final class VideoCleanerModel {
         faces.first { $0.id == id } ?? drawnCovers.first { $0.id == id }
     }
 
-    /// Moves the preview to `time` — the timeline's playhead.
-    func scrub(to time: Double) {
+    /// Moves the preview to `time` — the timeline's playhead.  `dragging` while
+    /// a finger moves it: the player seeks near enough, one seek at a time, and
+    /// lands exactly once the finger lifts (`finishScrubbing`).
+    func scrub(to time: Double, dragging: Bool = false) {
         let time = min(max(0, time), duration)
-        currentTime = time
-        player.seek(to: CMTime(seconds: time, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        isDraggingPlayhead = dragging
+        playhead.time = time
+        seekPreview(to: time, exactly: !dragging)
         if previewStill != nil {
             stillTime = time
-            refreshPreview()
+            // A still is a whole composed frame: one when the finger lifts.
+            if !dragging { refreshPreview() }
         }
     }
+
+    /// The playhead was let go: the preview lands exactly where it was left.
+    func finishScrubbing() {
+        guard isDraggingPlayhead else { return }
+        scrub(to: currentTime)
+    }
+
+    /// While a near-enough seek is under way the next waits, and only the
+    /// latest is kept: a drag never queues up seeks the player is still working
+    /// through.  Seeks landing near enough take the nearest keyframe.
+    private func seekPreview(to time: Double, exactly: Bool) {
+        queuedSeek = (time, exactly ? .zero : Self.scrubTolerance)
+        guard !isSeeking else { return }
+        isSeeking = true
+        Task {
+            while let seek = queuedSeek {
+                queuedSeek = nil
+                _ = await player.seek(
+                    to: CMTime(seconds: seek.time, preferredTimescale: 600),
+                    toleranceBefore: seek.tolerance, toleranceAfter: seek.tolerance
+                )
+            }
+            isSeeking = false
+        }
+    }
+
+    /// How far from the playhead a seek may land while it is dragged.
+    private static let scrubTolerance = CMTime(seconds: 0.5, preferredTimescale: 600)
 
     /// The frame at the playhead with the current covers drawn on it — what the
     /// user draws a new cover on.
@@ -348,7 +432,9 @@ final class VideoCleanerModel {
                 self?.stopAtBoundary()
             }
         }
-        currentTime = range.lowerBound
+        playhead.time = range.lowerBound
+        // This seek replaces any the playhead was making.
+        queuedSeek = nil
         Task {
             _ = await player.seek(
                 to: CMTime(seconds: range.lowerBound, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero
@@ -380,10 +466,29 @@ final class VideoCleanerModel {
         refreshPreview()
     }
 
-    func setRange(_ range: ClosedRange<Double>, of edit: AudioEdit) {
+    /// Sets when a bleep or mute applies; `live` as for a cover's timing.
+    func setRange(_ range: ClosedRange<Double>, of edit: AudioEdit, live: Bool = false) {
         guard let index = audioEdits.firstIndex(where: { $0.id == edit.id }) else { return }
         audioEdits[index].range = clamped(range)
+        previewTiming(live: live)
+    }
+
+    /// A dragged end was let go: the preview catches up with the new timing.
+    func finishTrimming() {
+        guard trimNeedsPreview else { return }
+        trimNeedsPreview = false
         refreshPreview()
+    }
+
+    /// Making the preview again means a new composition — and for sound, a new
+    /// edited asset and player item — so it is not done for every move of a finger.
+    private func previewTiming(live: Bool) {
+        if live {
+            trimNeedsPreview = true
+        } else {
+            trimNeedsPreview = false
+            refreshPreview()
+        }
     }
 
     func deleteAudioEdit(_ edit: AudioEdit) {
@@ -402,7 +507,8 @@ final class VideoCleanerModel {
             forInterval: CMTime(seconds: 0.05, preferredTimescale: 600), queue: .main
         ) { [weak self] time in
             MainActor.assumeIsolated {
-                self?.currentTime = time.seconds
+                guard let self, !self.isDraggingPlayhead else { return }
+                self.playhead.time = time.seconds
             }
         }
     }
@@ -427,8 +533,8 @@ final class VideoCleanerModel {
         var reserved: URL?
         do {
             let plan = currentPlan
-            let edited = try await VideoAudioEditor.edited(source, edits: audioEdits)
-            if let tone = edited.toneFile { toneFiles.append(tone) }
+            let edited = try await VideoAudioEditor.edited(source, edits: audioEdits, reusing: previewTone)
+            if let tone = edited.toneFile { toneFiles.insert(tone) }
             let composition = plan.isEmpty
                 ? nil
                 : try await VideoRedactor.composition(for: edited.asset, plan: plan)
@@ -482,11 +588,12 @@ final class VideoCleanerModel {
 
     private func seek(start: Double, showing time: Double?) {
         let start = max(0, start)
-        currentTime = start
-        player.seek(to: CMTime(seconds: start, preferredTimescale: 600), toleranceBefore: .zero, toleranceAfter: .zero)
+        isDraggingPlayhead = false
+        playhead.time = start
+        seekPreview(to: start, exactly: true)
         if previewStill != nil, let time {
             stillTime = time
-            currentTime = time
+            playhead.time = time
             refreshPreview()
         }
     }
@@ -505,6 +612,45 @@ final class VideoCleanerModel {
         PrivateFileStore.exports.remove(source)
         PrivateFileStore.exports.remove(output)
         toneFiles.forEach { PrivateFileStore.exports.remove($0) }
+    }
+
+    // MARK: Timeline
+
+    /// Every cover and sound edit as a clip, in its lane and colour.
+    private func updateTimelineClips() {
+        var clips: [EditorTimeline.Clip] = []
+        if coversFaces {
+            for (index, face) in faces.enumerated() where !isVisible(face) {
+                clips.append(.init(
+                    id: "face-\(face.id)", lane: .faces, range: range(of: face),
+                    color: PIIType.face.riskLevel.color, label: String(localized: "Face \(index + 1)")
+                ))
+            }
+        }
+        for group in findingGroups where isCovered(group) {
+            for track in group.tracks {
+                clips.append(.init(
+                    id: "text-\(track.id)", lane: .text,
+                    range: clamped((track.start - FindingTracking.hold)...(track.end + FindingTracking.hold)),
+                    color: group.type.riskLevel.color, label: group.type.description, symbol: group.type.symbolName
+                ))
+            }
+        }
+        for (index, cover) in drawnCovers.enumerated() {
+            clips.append(.init(
+                id: "face-\(cover.id)", lane: .objects, range: range(of: cover),
+                color: .accentColor, label: String(localized: "Object \(index + 1)"), symbol: "viewfinder"
+            ))
+        }
+        for edit in audioEdits {
+            clips.append(.init(
+                id: "audio-\(edit.id)", lane: .audio, range: edit.range,
+                color: edit.kind == .bleep ? .red : .gray,
+                label: edit.kind == .bleep ? String(localized: "Bleep") : String(localized: "Mute"),
+                symbol: edit.kind == .bleep ? "waveform.badge.exclamationmark" : "speaker.slash.fill"
+            ))
+        }
+        if clips != timelineClips { timelineClips = clips }
     }
 
     // MARK: Helpers
@@ -542,9 +688,11 @@ final class VideoCleanerModel {
                 if edits.isEmpty { return (current.asset as? AVURLAsset)?.url == source ? current : nil }
                 return current.asset is AVComposition ? current : nil
             }
+            var tone = previewTone
             if item == nil {
-                guard let edited = try? await VideoAudioEditor.edited(source, edits: edits) else { return }
-                if let tone = edited.toneFile { toneFiles.append(tone) }
+                guard let edited = try? await VideoAudioEditor.edited(source, edits: edits, reusing: previewTone) else { return }
+                if let file = edited.toneFile { toneFiles.insert(file) }
+                tone = edited.tone
                 let fresh = AVPlayerItem(asset: edited.asset)
                 fresh.audioMix = edited.audioMix
                 item = fresh
@@ -559,9 +707,11 @@ final class VideoCleanerModel {
             item.videoComposition = composition
             if player.currentItem !== item {
                 player.replaceCurrentItem(with: item)
+                previewTone = tone
+                removeTones(except: tone)
             } else if player.rate == 0 {
                 // Redraw the paused frame with the new covers.
-                _ = await player.seek(to: player.currentTime(), toleranceBefore: .zero, toleranceAfter: .zero)
+                seekPreview(to: currentTime, exactly: true)
             }
 
             // A player that cannot compose the frames shows nothing at all, never
@@ -576,10 +726,16 @@ final class VideoCleanerModel {
             let still = await Self.still(of: source, at: stillTime, plan: plan)
             guard generation == previewGeneration, stage == .review else { return }
             previewStill = still
-            currentTime = stillTime
+            playhead.time = stillTime
             // A failed item cannot be reused: start the next refresh afresh.
             player.replaceCurrentItem(with: nil)
         }
+    }
+
+    /// Deletes the tone files no item plays any more.
+    private func removeTones(except kept: VideoAudioEditor.Tone?) {
+        for file in toneFiles where file != kept?.url { PrivateFileStore.exports.remove(file) }
+        toneFiles = kept.map { [$0.url] } ?? []
     }
 
     /// The frame at `time` with `plan` drawn on it, from the image generator,
@@ -644,30 +800,60 @@ final class VideoCleanerModel {
         min(4_000, max(160, Int((duration * 20).rounded(.up))))
     }
 
-    /// `count` small frames spread evenly along the video.
-    nonisolated private static func filmstrip(of url: URL, duration: Double, count: Int) async -> [UIImage] {
+    /// The times of `count` small frames spread evenly along the video.
+    nonisolated static func filmstripTimes(duration: Double, count: Int) -> [Double] {
         guard duration > 0, count > 0 else { return [] }
+        return (0..<count).map { duration * (Double($0) + 0.5) / Double(count) }
+    }
+
+    /// `wanted` of `count` frames, as evenly spread as they can be: the
+    /// filmstrip's first look, made before the rest.
+    nonisolated static func evenlySpread(_ count: Int, picking wanted: Int) -> [Int] {
+        guard count > wanted, wanted > 0 else { return Array(0..<count) }
+        return (0..<wanted).map { min(count - 1, Int((Double($0) + 0.5) * Double(count) / Double(wanted))) }
+    }
+
+    /// Small upright frames at `times`, by their place in `times`; one that
+    /// cannot be made is left out.
+    @concurrent
+    nonisolated private static func frames(of url: URL, at times: [Double]) async -> [Int: UIImage] {
+        guard !times.isEmpty else { return [:] }
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 160, height: 160)
-        var frames: [UIImage] = []
-        for index in 0..<count {
-            let time = duration * (Double(index) + 0.5) / Double(count)
-            guard let image = try? await generator.image(at: CMTime(seconds: time, preferredTimescale: 600)).image else { continue }
-            frames.append(UIImage(cgImage: image))
+        let requested = times.map { CMTime(seconds: $0, preferredTimescale: 600) }
+        let places = Dictionary(requested.indices.map { (requested[$0].seconds, $0) }) { first, _ in first }
+        var frames: [Int: UIImage] = [:]
+        for await result in generator.images(for: requested) {
+            guard let place = places[result.requestedTime.seconds], let image = try? result.image else { continue }
+            frames[place] = UIImage(cgImage: image)
         }
         return frames
     }
 
-    /// Each face and each group as it looks in the middle of its first track.
-    private func makeThumbnails(from url: URL) async {
+    /// Whether the video has sound, and how loud it is along the video.
+    @concurrent
+    nonisolated private static func sound(of url: URL, duration: Double) async -> (hasAudio: Bool, levels: [Float]) {
+        let tracks = (try? await AVURLAsset(url: url).loadTracks(withMediaType: .audio)) ?? []
+        guard !tracks.isEmpty else { return (false, []) }
+        // Enough detail for the timeline zoomed all the way in.
+        return (true, await VideoAudioEditor.levels(of: url, count: levelCount(for: duration)))
+    }
+
+    /// Where each face and each group looks as it does in the middle of its
+    /// first track, for its thumbnail.
+    private var thumbnailCrops: [(time: Double, box: CGRect)] {
         let faceCrops = faces.compactMap { face in
             face.representativeSample.map { (time: $0.time, box: FaceTracking.padded($0.box)) }
         }
         let groupCrops = findingGroups.compactMap { group in
             group.tracks.first?.representativeSample.map { (time: $0.time, box: FindingTracking.padded($0.box)) }
         }
-        let images = await Self.crops(faceCrops + groupCrops, from: url)
+        return faceCrops + groupCrops
+    }
+
+    /// The crops of `thumbnailCrops` as each face's and each group's thumbnail.
+    private func showThumbnails(_ images: [Int: UIImage]) {
         var faceImages: [Int: UIImage] = [:]
         for (index, face) in faces.enumerated() { faceImages[face.id] = images[index] }
         var groupImages: [String: UIImage] = [:]
@@ -677,22 +863,45 @@ final class VideoCleanerModel {
     }
 
     /// The frame at each `time`, cropped to `box` (normalised, top-left origin).
+    @concurrent
     nonisolated private static func crops(_ items: [(time: Double, box: CGRect)], from url: URL) async -> [Int: UIImage] {
+        guard !items.isEmpty else { return [:] }
         let generator = AVAssetImageGenerator(asset: AVURLAsset(url: url))
         generator.appliesPreferredTrackTransform = true
         generator.maximumSize = CGSize(width: 1280, height: 1280)
+        // The box is where the face was in that very frame: a nearby keyframe
+        // would show it, or someone else, somewhere else.
+        generator.requestedTimeToleranceBefore = .zero
+        generator.requestedTimeToleranceAfter = .zero
+        // Each frame is made once, however many crops come from it.
+        let requested = items.map { CMTime(seconds: $0.time, preferredTimescale: 600) }
+        let wanted = Dictionary(grouping: requested.indices) { requested[$0].seconds }
+        let times = wanted.keys.sorted().map { CMTime(seconds: $0, preferredTimescale: 600) }
         var images: [Int: UIImage] = [:]
-        for (index, item) in items.enumerated() {
-            guard let frame = try? await generator.image(at: CMTime(seconds: item.time, preferredTimescale: 600)).image else { continue }
-            let box = item.box.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
-            let crop = CGRect(
-                x: box.minX * CGFloat(frame.width), y: box.minY * CGFloat(frame.height),
-                width: box.width * CGFloat(frame.width), height: box.height * CGFloat(frame.height)
-            ).integral
-            if let cropped = frame.cropping(to: crop) { images[index] = UIImage(cgImage: cropped) }
+        for await result in generator.images(for: times) {
+            guard let indices = wanted[result.requestedTime.seconds], let frame = try? result.image else { continue }
+            for index in indices {
+                let box = items[index].box.intersection(CGRect(x: 0, y: 0, width: 1, height: 1))
+                let crop = CGRect(
+                    x: box.minX * CGFloat(frame.width), y: box.minY * CGFloat(frame.height),
+                    width: box.width * CGFloat(frame.width), height: box.height * CGFloat(frame.height)
+                ).integral
+                if let cropped = frame.cropping(to: crop) { images[index] = UIImage(cgImage: cropped) }
+            }
         }
         return images
     }
+}
+
+// MARK: - Playhead
+
+/// Where the video editor's preview is.  Kept apart from the model, which the
+/// whole editor reads: as the video plays this changes twenty times a second,
+/// and only the views that show the time — the playhead, its label — redraw.
+@Observable
+final class Playhead {
+    /// Seconds.
+    fileprivate(set) var time: Double = 0
 }
 
 /// The system's progress handing over a picked video, read from the main actor
