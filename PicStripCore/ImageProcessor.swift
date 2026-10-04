@@ -293,8 +293,7 @@ nonisolated enum ImageProcessor {
         preset: ExportPreset,
         config: StripConfig = .default
     ) throws -> ProcessedImage {
-        guard let uiImage = UIImage(data: data),
-              let cgImage = uiImage.normalized().cgImage else {
+        guard let cgImage = uprightImage(from: data) else {
             throw ProcessingError.imageDecodingFailed
         }
 
@@ -304,6 +303,58 @@ nonisolated enum ImageProcessor {
             preset: preset,
             config: config
         )
+    }
+
+    /// The image in `data` with its pixels turned the way it is displayed.
+    ///
+    /// Cameras store a portrait photo sideways and tag it with an orientation.
+    /// Asking ImageIO for a "thumbnail" as large as the photo itself, with the
+    /// tag applied, decodes and turns it in one step; redrawing the decoded
+    /// `UIImage` allocates a second full-size bitmap for every portrait photo.
+    /// The thumbnail keeps the source's colour space and bit depth (Display P3,
+    /// 16-bit).
+    ///
+    /// `UIImage` still decides whether the image needs turning, as it does for
+    /// the redaction path: it ignores the tag in some files ImageIO honours (a
+    /// PNG that also carries GPS), and the two exports must agree.
+    nonisolated static func uprightImage(from data: Data) -> CGImage? {
+        guard let image = UIImage(data: data) else { return nil }
+        // Upright: decoded lazily, by the encoder.
+        guard image.imageOrientation != .up else { return image.cgImage }
+
+        let width = Int((image.size.width * image.scale).rounded())
+        let height = Int((image.size.height * image.scale).rounded())
+        if let turned = turnedImage(from: data, orientation: image.imageOrientation, width: width, height: height) {
+            return turned
+        }
+        return image.normalized().cgImage
+    }
+
+    /// ImageIO's decode of `data`, turned by its orientation tag — or `nil`
+    /// unless that is the same turn as `orientation`, comes out at the full
+    /// `width` × `height`, and has 8 or 16 bits per component.  10-bit HDR comes
+    /// back packed, which the HEIC encoder rejects; the redraw widens it to 16.
+    nonisolated private static func turnedImage(
+        from data: Data, orientation: UIImage.Orientation, width: Int, height: Int
+    ) -> CGImage? {
+        guard let source = CGImageSourceCreateWithData(data as CFData, nil) else { return nil }
+        let index = CGImageSourceGetPrimaryImageIndex(source)
+        guard let props = CGImageSourceCopyPropertiesAtIndex(source, index, nil) as? [CFString: Any],
+              let tag = (props[kCGImagePropertyOrientation] as? NSNumber)?.uint32Value,
+              let tagged = CGImagePropertyOrientation(rawValue: tag),
+              UIImage.Orientation(tagged) == orientation
+        else { return nil }
+
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceThumbnailMaxPixelSize: max(width, height)
+        ]
+        guard let turned = CGImageSourceCreateThumbnailAtIndex(source, index, options as CFDictionary),
+              turned.width == width, turned.height == height,
+              [8, 16].contains(turned.bitsPerComponent)
+        else { return nil }
+        return turned
     }
 
     /// Re-encodes an already-rendered image while using metadata from the
@@ -400,7 +451,7 @@ nonisolated enum ImageProcessor {
         }
 
         // 7. Build a CGMutableImageMetadata containing:
-        //    a) orientation = 1 (pixels are already display-oriented after UIImage decode)
+        //    a) orientation = 1 (the pixels were turned upright before encoding)
         //    b) any metadata sub-dictionaries that the config says to KEEP (category disabled)
         //
         //    kCGImageDestinationMergeMetadata: false in pass 2 wipes everything ImageIO
@@ -411,7 +462,7 @@ nonisolated enum ImageProcessor {
         let outputMetadata = CGImageMetadataCreateMutable()
 
         if outputUTType != .png {
-            // a) Always write orientation 1 — pixels are display-oriented from UIImage.normalized().
+            // a) Always write orientation 1 — the pixels are already display-oriented.
             if let tag = CGImageMetadataTagCreate(
                 kCGImageMetadataNamespaceTIFF as CFString,
                 kCGImageMetadataPrefixTIFF,
@@ -788,6 +839,23 @@ private extension UIImage {
         switch alphaInfo {
         case .none, .noneSkipFirst, .noneSkipLast: return false
         default: return true
+        }
+    }
+}
+
+private extension UIImage.Orientation {
+    /// The UIKit name for an EXIF orientation tag.
+    nonisolated init(_ orientation: CGImagePropertyOrientation) {
+        switch orientation {
+        case .up:            self = .up
+        case .upMirrored:    self = .upMirrored
+        case .down:          self = .down
+        case .downMirrored:  self = .downMirrored
+        case .leftMirrored:  self = .leftMirrored
+        case .right:         self = .right
+        case .rightMirrored: self = .rightMirrored
+        case .left:          self = .left
+        @unknown default:    self = .up
         }
     }
 }
