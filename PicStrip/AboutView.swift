@@ -191,7 +191,7 @@ struct AboutView: View {
                         instructionRow(
                             icon: "square.and.arrow.up",
                             color: .teal,
-                            text: "**Share Extension** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, or choose Edit in PicStrip, then open the app to edit the first one. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit."
+                            text: "**Share Sheet** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, with options. In the list of actions, Strip Metadata saves copies without metadata, and Edit in PicStrip opens one photo or video here: tap the notification that follows. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit in PicStrip."
                         )
                     }
                     .padding(.vertical, 6)

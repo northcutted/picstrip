@@ -9,6 +9,8 @@
 | `PicStrip/` | SwiftUI app, imports, editor, review and intents |
 | `PicStripCore/` | Shared scanning, metadata, redaction and export contracts |
 | `PicStripShareExtension/` | Share-extension entry point and privacy declarations |
+| `StripMetadataAction/`, `EditInPicStripAction/` | The share sheet's two Action extensions: entry points and privacy declarations |
+| `PicStripExtensionSupport/` | Item loading, cleaning, handoff and views shared by the three extensions |
 | `PicStripTests/`, `PicStripUITests/` | Unit regressions and native UI scenarios |
 | `Tests/Fixtures/` | OCR fixture included in both test bundles |
 | `PicStrip.xcodeproj/` | Targets, schemes and resource membership |
@@ -80,7 +82,7 @@ Run `make help` for local commands. `build/`, `.build/`, `qa-results/` and `node
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
 | Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
 | No history database | Session state stays in memory; protected temporary exports and extension handoffs use explicit expiry and cleanup |
-| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file, and a handed-off video reaches `ContentView` through `IntentRouter.requestVideo` |
+| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the "Edit in PicStrip" file (from the share extension or the Edit in PicStrip action), and a handed-off video reaches `ContentView` through `IntentRouter.requestVideo` |
 
 ### Shared processing contract
 
@@ -192,7 +194,17 @@ ScrubberViewModel.loadCaptured(CapturedPages)
 ---
 
 
-## Share Extension
+## Share Sheet Extensions
+
+Three extensions put PicStrip in the share sheet:
+
+| Target | Bundle ID | Extension point | Does |
+|--------|-----------|-----------------|------|
+| `PicStripShareExtension` — "Clean with PicStrip" | `com.northcutt.PicStrip.ShareExtension` | `com.apple.share-services` | Options card: Process & Save (photo switches, smaller copies) or Edit in PicStrip for the first item |
+| `StripMetadataAction` — "Strip Metadata" | `com.northcutt.PicStrip.StripMetadata` | `com.apple.ui-services` (Action) | Saves metadata-free copies of every shared photo and video to Photos, then closes |
+| `EditInPicStripAction` — "Edit in PicStrip" | `com.northcutt.PicStrip.EditInPicStrip` | `com.apple.ui-services` (Action) | Hands the one shared photo or video to the app, then closes |
+
+Actions get their own rows in the share sheet's action list, so the two common jobs take one tap. Only the share extension and Edit in PicStrip have the App Group: Strip Metadata saves to Photos and keeps its temporary video copies in its own container (`PrivateFileStore.exports`), so it needs no capability beyond Photos add-only access.
 
 ### Architecture
 
@@ -204,11 +216,22 @@ ShareViewController (UIKit — UIViewController)
            └─ ExtensionConfigView (SwiftUI, private)
                   └─ observes ExtensionViewModel (@Observable)
                          phase: .configuring | .processing | .ready | .finished
+
+StripMetadataAction.ActionViewController   → StripMetadataModel  (.working | .saved | .finished)
+EditInPicStripAction.ActionViewController  → EditInPicStripModel (.preparing | .prepared | .failed)
 ```
 
-`ExtensionViewModel` tracks configuring, processing, ready and finished states. `ShareViewController.runProcessingPipeline()` owns sequential work, cancellation and partial-result reporting.
+`ExtensionViewModel` tracks configuring, processing, ready and finished states. `ShareViewController` owns sequential work, cancellation and partial-result reporting. The per-item work is in `PicStripExtensionSupport`, compiled into all three: `SharedItem` finds the photos and videos (`SharedItem.items(in:)`), saves a cleaned copy (`saveCleanedCopy`, the photo pipeline or `VideoMetadataCleaner`) and, in `SharedItem+Handoff.swift` (share extension and Edit in PicStrip only), writes the handoff and posts its notification (`handOff`). `ExtensionViews.swift` has the progress, "Prepared" and failure views and `embed`. All three targets build with the app's Swift settings — `MainActor` default isolation and approachable concurrency — so the shared files mean the same in each.
 
-The activation rule offers the extension for any number of images and up to ten movies. It counts movie attachments per extension item and extension items with movies, so the limit holds whether the host app puts every attachment in one item or each in its own; an attachment that also has an image type (a Live Photo) counts as a photo. `ShareExtensionInputTests` evaluates the rule from the embedded extension's `Info.plist`. `SharedItemKind` (`PicStripCore`) sorts each attachment into a photo or a video the same way and keeps the concrete type to load.
+Strip Metadata runs the share extension's metadata-only path: no redaction, the 13 MP background budget, no smaller copies (that needs the user's consent, which the card asks for). It shows progress, then "Saved to Photos" for a moment, and closes; a failure stays on screen with the first reason.
+
+The share extension's activation rule, which Strip Metadata shares, offers it for any number of images and up to ten movies. It counts movie attachments per extension item and extension items with movies, so the limit holds whether the host app puts every attachment in one item or each in its own; an attachment that also has an image type (a Live Photo) counts as a photo. Edit in PicStrip's rule asks for exactly one photo or video: one extension item with a photo or video, and no item with more than one; other attachments (a URL alongside) do not count. `ShareExtensionInputTests` and `ShareActionExtensionTests` evaluate the rules from the embedded extensions' `Info.plist`s. `SharedItemKind` (`PicStripCore`) sorts each attachment into a photo or a video the same way and keeps the concrete type to load.
+
+### Opening the app: the handoff notification
+
+An extension has no supported API to open its containing app, and PicStrip does not use the unofficial responder-chain route. After Edit writes the handoff, `EditHandoffNotification.post` (`PicStripCore/EditHandoff.swift`) asks for notification permission (alert and sound) the first time, then schedules one local notification 0.5 s out — after the sheet has closed, so it shows over the host app — and the extension completes its request. The notification has a fixed identifier, so a newer handoff replaces it, and fixed text ("Ready to Edit" / "Tap to open your photo|video in PicStrip."): no attachment, no file name. Its only `userInfo` is the handoff's expiry. When permission is denied or posting fails, the extension shows the "Prepared" screen instead, which asks the user to open PicStrip within 15 minutes and says notifications can be turned on in Settings.
+
+In the app, `EditHandoffInbox` is the notification center's delegate, set in `PicStripApp.init()` because a tap that launches the app reaches only a delegate set before launch finishes. A tap activates the app, and the `scenePhase` drain opens the item as it always has; the tap itself drains again in case it has not, or — when the expiry has passed — sets the "That item expired" message, shown like any other load failure. If the notification fires while PicStrip is frontmost (the share sheet was opened from PicStrip), it is not shown and the app drains straight away. `EditHandoff.take` withdraws the notification, pending or delivered, whenever it takes a handoff or finds none left, and `EditHandoff.removeExpired` does when the expiry sweep empties the folder.
 
 ### Processing Pipeline (Extension)
 
@@ -233,11 +256,11 @@ For each selected provider, sequentially:
 Show completion or partial-result summary; support cancellation/retry
 ```
 
-Covering faces and text in a video is not offered in the extension: tracking and re-encoding need far more memory than the extension's budget and can take minutes. The sheet says so and points to Edit, which hands the first item over: a photo's bytes as before, or a video copied as a file into the same protected, expiring App Group directory (`.mov`, `.mp4` or `.m4v`, from `SharedItemKind.videoFileExtension`). `PrivateFileStore.consume` returns a `PendingEdit`; a video is moved (`adopt`) into the app's `PicStripExports` rather than read, and `ContentView` opens it like a video from Files, or after the open video's sheet is dismissed. `PicStripApp` runs the drain and the 60-second expiry sweep in `@concurrent` helpers, since both list the App Group folder on every activation.
+Covering faces and text in a video is not offered in the extensions: tracking and re-encoding need far more memory than the extension's budget and can take minutes. The sheet says so and points to Edit, which hands the first item over: a photo's bytes as before, or a video copied as a file into the same protected, expiring App Group directory (`.mov`, `.mp4` or `.m4v`, from `SharedItemKind.videoFileExtension`). `PrivateFileStore.consume` returns a `PendingEdit`; a video is moved (`adopt`) into the app's `PicStripExports` rather than read, and `ContentView` opens it like a video from Files, or after the open video's sheet is dismissed. `PicStripApp` runs the drain and the 60-second expiry sweep in `@concurrent` helpers, since both list the App Group folder on every activation.
 
 ### Shared Core Without a Framework Target
 
-iOS extensions are separate processes. An extension binary cannot dynamically link to the `.app` binary's code, so PicStrip keeps shared processing code in `PicStripCore/` and compiles those same source files into both targets. This avoids duplicate source files while also avoiding a new binary framework build phase.
+iOS extensions are separate processes. An extension binary cannot dynamically link to the `.app` binary's code, so PicStrip keeps shared processing code in `PicStripCore/` and compiles those same source files into the app and each extension; each target lists them explicitly in `project.pbxproj`. `EditHandoff.swift` is in the app, the share extension and Edit in PicStrip; code only the extensions need is in `PicStripExtensionSupport/`. This avoids duplicate source files while also avoiding a new binary framework build phase.
 
 `ExportFormat+AppEnum.swift` remains app-only because it imports `AppIntents`. The extension uses the shared `ExportPreset` directly.
 
@@ -322,6 +345,7 @@ Not yet verified end to end in the Shortcuts app; the unit tests cover the clean
 | Data | Storage | Key | Scope |
 |------|---------|-----|-------|
 | "Edit in PicStrip" handoff | App Group `PendingEdits` directory | Neutral unique filename; a video keeps a `.mov`/`.mp4`/`.m4v` extension | 15-minute validity; oldest first, removed on consumption or cancellation; a video is moved into `PicStripExports` on import |
+| "Ready to Edit" notification | Notification Center (local) | Fixed identifier; fixed text; `userInfo` holds only the handoff's expiry | Withdrawn when a handoff is taken or none is left |
 | Audit JSON and Shortcut outputs | Temporary `PicStripExports` directory | Neutral unique filename | Cleanup after use/failure where applicable; one-hour expiry |
 
 `PrivateFileStore` writes files with complete protection and excludes its directories from backups. Expired files are rejected and cleaned when the store is accessed; expiry is not a guaranteed background deletion timer. A pending handoff contains the selected original. Reports contain field names and counts, never removed values, OCR snippets or region coordinates. The app has no processing-history database and does not use `UserDefaults`, Core Data or SwiftData. See `PRIVACY.md` for user-selected exports and Photos retention.
@@ -333,7 +357,7 @@ Not yet verified end to end in the Shortcuts app; the unit tests cover the clean
 
 ### PrivacyInfo.xcprivacy
 
-Both the main app and share extension declare:
+The main app and all three extensions declare:
 
 ```xml
 <key>NSPrivacyTracking</key><false/>
@@ -347,11 +371,11 @@ No developer data collection, analytics or third-party crash-reporting SDKs. Use
 
 | API category | Reason code | Why |
 |-------------|-------------|-----|
-| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1`, both targets | Container file metadata for bounded reads, expiry and oldest-first handoff consumption |
-| `NSPrivacyAccessedAPICategoryFileTimestamp` | `3B52.1`, both targets | File-size checks for files explicitly selected by the user |
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | `C617.1`, app and extensions | Container file metadata for bounded reads, expiry and oldest-first handoff consumption |
+| `NSPrivacyAccessedAPICategoryFileTimestamp` | `3B52.1`, app and extensions | File-size checks for files explicitly selected by the user |
 | `NSPrivacyAccessedAPICategorySystemBootTime` | `35F9.1`, app only | Elapsed time between live-camera frames, to throttle analysis and measure how fast the camera moves; not stored or transmitted |
 
-Re-audit declarations when adding file, timing or other required-reason API use. The extension does not call the camera uptime API.
+Re-audit declarations when adding file, timing or other required-reason API use. The extensions do not call the camera uptime API.
 
 ### Permissions
 
@@ -361,8 +385,9 @@ Re-audit declarations when adding file, timing or other required-reason API use.
 | `NSPhotoLibraryUsageDescription` | Read + write | "Replace Original" — needs read access to delete the source asset |
 | `NSCameraUsageDescription` | Camera | First tap on "Camera" |
 | `NSMicrophoneUsageDescription` | Microphone | First recording in Video mode |
+| Notifications (alert, sound) | Local only | First Edit in PicStrip from the share sheet; asked by the extension |
 
-The app defaults to `.addOnly` authorization. Users must explicitly grant read+write if they want "Replace Original."
+The app defaults to `.addOnly` authorization; the share extension and Strip Metadata ask only for that. Users must explicitly grant read+write if they want "Replace Original."
 
 ### On-Device Processing Guarantee
 

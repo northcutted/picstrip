@@ -48,7 +48,7 @@ PicStrip removes EXIF location data, camera metadata, and visually redacts perso
 | **Accessible Editing** | Add a centered box and adjust its position and size without drawing; changes remain undoable |
 | **Save, Replace, Share** | Save a cleaned copy, replace the original, or share; PNG for screenshots and documents, JPEG for everyday photos (both chosen by the sharing preset), HEIC, or the original format |
 | **Audit Reports** | Export field names, counts and scan status without original values or detected text |
-| **Share Extension** | Save cleaned copies of photos and videos from the share sheet (videos have their metadata removed there; covering faces and text in a video happens in the app), or prepare the first original photo or video for editing using a protected, expiring handoff |
+| **Share Sheet** | "Clean with PicStrip" saves cleaned copies of photos and videos, with options (videos have their metadata removed there; covering faces and text in a video happens in the app), or prepares the first original for editing. Two actions do one thing each: "Strip Metadata" saves copies without metadata to Photos, and "Edit in PicStrip" hands one photo or video to the app. Items for editing go through a protected, expiring handoff, and a notification opens PicStrip with one tap |
 | **Shortcuts** | "Clean Photos with PicStrip" opens the picker, "Take a Photo" opens the camera and "Clean a Screenshot" opens your screenshots — all usable from the Action Button or a Control Center shortcut; "Strip Metadata from Images" and "Strip Metadata from Videos" remove metadata only, in the background, and return the cleaned files |
 
 Available in English and 16 more localizations, including separate Spanish for Spain and Latin America.
@@ -61,7 +61,7 @@ Available in English and 16 more localizations, including separate Spanish for S
 - Name suggestions use Apple's on-device model and remain optional for redaction.
 - Live-camera overlays are a guide; review the full scan after capture. PicStrip does not automatically save an unreviewed capture to Photos.
 - A model for object selection can download from Apple after consent. Cloud imports, synced photo libraries and chosen share destinations follow their own settings.
-- Protected, backup-excluded edit handoffs expire after 15 minutes and are consumed once. Export files are cleaned up on completion where possible, with an expiry sweep as a fallback.
+- Protected, backup-excluded edit handoffs expire after 15 minutes and are consumed once. The "Ready to Edit" notification is local and says nothing about the item. Export files are cleaned up on completion where possible, with an expiry sweep as a fallback.
 - Automatic detection can miss details. Failed required checks remain visible and require a deliberate manual-review confirmation in the editor; unattended visual workflows reject incomplete scans.
 
 The full statement is in [PRIVACY.md](PRIVACY.md); the privacy manifest, permissions and required-reason APIs are covered in [DEVELOPMENT.md](docs/development/architecture.md#privacy--security).
@@ -110,7 +110,7 @@ cd picstrip
 open PicStrip.xcodeproj
 ```
 
-1. Select the **PicStrip** target → **Signing & Capabilities** → set **Team** to your Apple Developer account. Repeat for **PicStripShareExtension**.
+1. Select the **PicStrip** target → **Signing & Capabilities** → set **Team** to your Apple Developer account. Repeat for **PicStripShareExtension**, **StripMetadataAction** and **EditInPicStripAction**.
 2. Pick an iPhone 17 simulator, or a device running iOS 26 or later. The camera, document scanner and tap to redact need a real device.
 3. Press **Cmd + R**.
 
@@ -119,7 +119,7 @@ open PicStrip.xcodeproj
 | **iOS** | 26.0+ (tap to redact needs iOS 27; name detection needs Apple Intelligence) |
 | **Xcode** | 27.0 (26.6 is the pinned compatibility build; iOS 27-only code compiles out below Swift 6.4) |
 | **Swift** | Swift 6 language mode |
-| **Apple Developer Account** | Required for signing and the share extension's App Group |
+| **Apple Developer Account** | Required for signing and the App Group shared by the app, the share extension and Edit in PicStrip |
 
 ---
 
