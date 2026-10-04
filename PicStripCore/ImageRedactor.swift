@@ -481,9 +481,11 @@ nonisolated struct ImageRedactor {
                 // Rendered once, around this pass's regions only.  A mosaic comes
                 // out the same as over the whole photo only where Core Image is
                 // asked for whole blocks, so a pixelate pass reaches one block
-                // past its regions; a blur is the same wherever it is asked for.
+                // past its regions.  A blur near the edge of what is rendered
+                // can come out a few levels off the whole-photo one (iOS 26), so
+                // a blur pass reaches twice its radius past them.
                 let union = regions.reduce(CGRect.null) { $0.union($1.rect) }
-                let reach = style == .pixelate ? blockSize : 0
+                let reach = style == .pixelate ? blockSize : blockSize * 3
                 let area = union.insetBy(dx: -reach, dy: -reach).integral.intersection(extent)
                 guard let obscured = obscuredLayer(style, blockSize: blockSize, of: composite),
                       let rendered = ciContext.createCGImage(obscured, from: area)
