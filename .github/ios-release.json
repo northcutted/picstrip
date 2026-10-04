@@ -121,24 +121,6 @@
           "group.com.northcutt.PicStrip"
         ]
       }
-    },
-    {
-      "bundle_id": "com.northcutt.PicStrip.StripMetadata",
-      "profile": "match AppStore com.northcutt.PicStrip.StripMetadata",
-      "non_exempt_encryption": false,
-      "tracking": false,
-      "entitlements": {}
-    },
-    {
-      "bundle_id": "com.northcutt.PicStrip.EditInPicStrip",
-      "profile": "match AppStore com.northcutt.PicStrip.EditInPicStrip",
-      "non_exempt_encryption": false,
-      "tracking": false,
-      "entitlements": {
-        "com.apple.security.application-groups": [
-          "group.com.northcutt.PicStrip"
-        ]
-      }
     }
   ],
   "app_store": {
@@ -157,9 +139,7 @@
     "PicStrip/Localizable.xcstrings",
     "PicStrip/AppShortcuts.xcstrings",
     "PicStrip/InfoPlist.xcstrings",
-    "PicStripShareExtension/InfoPlist.xcstrings",
-    "StripMetadataAction/InfoPlist.xcstrings",
-    "EditInPicStripAction/InfoPlist.xcstrings"
+    "PicStripShareExtension/InfoPlist.xcstrings"
   ],
   "localization_locales": [
     "ar",
