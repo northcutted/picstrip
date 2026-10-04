@@ -280,9 +280,34 @@ extension VideoScanner {
 nonisolated final class FrameShrinker: @unchecked Sendable {
     private let context = CIContext(options: [.cacheIntermediates: false])
     private let longSide: CGFloat
+    private let lock = NSLock()
+    /// A pool for each size made: every frame of a video is shrunk and cut to
+    /// the same sizes, so a buffer let go is used again rather than made anew.
+    private var pools: [Int: CVPixelBufferPool] = [:]
 
     init(longSide: CGFloat = 480) {
         self.longSide = longSide
+    }
+
+    /// A buffer `width` by `height`, from the pool for that size.
+    private func buffer(width: Int, height: Int) -> CVPixelBuffer? {
+        let pool: CVPixelBufferPool? = lock.withLock {
+            let key = width << 32 | height
+            if let pool = pools[key] { return pool }
+            var made: CVPixelBufferPool?
+            CVPixelBufferPoolCreate(nil, nil, [
+                kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+                kCVPixelBufferWidthKey as String: width,
+                kCVPixelBufferHeightKey as String: height,
+                kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any]()
+            ] as CFDictionary, &made)
+            pools[key] = made
+            return made
+        }
+        guard let pool else { return nil }
+        var made: CVPixelBuffer?
+        CVPixelBufferPoolCreatePixelBuffer(nil, pool, &made)
+        return made
     }
 
     func shrink(_ pixels: CVPixelBuffer) -> CVPixelBuffer? {
@@ -291,10 +316,7 @@ nonisolated final class FrameShrinker: @unchecked Sendable {
         let scale = longSide / max(width, height)
         guard scale < 1 else { return pixels }
         let size = CGSize(width: (width * scale).rounded(), height: (height * scale).rounded())
-        var made: CVPixelBuffer?
-        CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA,
-                            [kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any]()] as CFDictionary, &made)
-        guard let small = made else { return nil }
+        guard let small = buffer(width: Int(size.width), height: Int(size.height)) else { return nil }
         let image = CIImage(cvPixelBuffer: pixels).transformed(by: CGAffineTransform(scaleX: scale, y: scale))
         context.render(image, to: small)
         return small
@@ -310,10 +332,7 @@ nonisolated final class FrameShrinker: @unchecked Sendable {
             x: rect.minX * width, y: (1 - rect.maxY) * height, width: rect.width * width, height: rect.height * height
         ).integral
         guard region.width >= 1, region.height >= 1 else { return nil }
-        var made: CVPixelBuffer?
-        CVPixelBufferCreate(nil, Int(region.width), Int(region.height), kCVPixelFormatType_32BGRA,
-                            [kCVPixelBufferIOSurfacePropertiesKey as String: [String: Any]()] as CFDictionary, &made)
-        guard let cut = made else { return nil }
+        guard let cut = buffer(width: Int(region.width), height: Int(region.height)) else { return nil }
         let image = CIImage(cvPixelBuffer: pixels)
             .cropped(to: region)
             .transformed(by: CGAffineTransform(translationX: -region.minX, y: -region.minY))
