@@ -308,7 +308,44 @@ final class ScrubberViewModel {
     /// Controls which bottom sheet (if any) is currently presented.
     /// Only one sheet can be open at a time — assigning a new value safely
     /// replaces whatever is currently showing.
-    var activeSheet: ActiveSheet?
+    var activeSheet: ActiveSheet? {
+        didSet {
+            // A full-size render is only worth its memory while Review & Share is open.
+            if activeSheet != .preSave { reviewRedaction = nil }
+        }
+    }
+
+    /// What a render of the enabled regions depends on.
+    struct RedactionKey: Equatable {
+        /// The load the bytes came from (`loadToken`).
+        let image: UUID
+        let specs: [RedactionSpec]
+    }
+
+    /// The enabled regions rendered at full size, kept while Review & Share is
+    /// open so that changing the format there pays only for the encode.
+    struct ReviewRedaction {
+        let key: RedactionKey
+        let image: UIImage
+    }
+
+    @ObservationIgnored private(set) var reviewRedaction: ReviewRedaction?
+
+    /// What `processedData` was encoded from, so opening the review again with
+    /// nothing changed shows those bytes instead of encoding them again.
+    private struct ExportKey: Equatable {
+        let redaction: RedactionKey
+        let preset: ExportPreset
+        let config: StripConfig
+    }
+
+    @ObservationIgnored private var processedKey: ExportKey?
+
+    /// Lets go of the full-size render, e.g. on a memory warning.  The next
+    /// format change in the review renders the regions again.
+    func releaseReviewRedaction() {
+        reviewRedaction = nil
+    }
 
     /// Shown when the user chose "Replace Original" but no asset identifier is available.
     var showReplaceUnavailableAlert: Bool = false
@@ -688,6 +725,7 @@ final class ScrubberViewModel {
         errorMessage = nil
         rawImageData = nil
         processedData = nil
+        processedKey = nil
         processedPreviewUIImage = nil
         inputImage = nil
         sourceUIImage = nil
@@ -804,15 +842,17 @@ final class ScrubberViewModel {
 
     // MARK: - Processing
 
-    private func processCurrentImageNow() async {
+    /// `true` when the encode's result was stored.
+    private func processCurrentImageNow(plan: ExportPlan) async -> Bool {
         guard let raw = rawImageData else {
             isProcessing = false
-            return
+            return false
         }
-        await processImage(
+        return await processImage(
             raw: raw,
             sourceData: raw,
             imageOverride: nil,
+            plan: plan,
             updateSourceMetadata: true
         )
     }
@@ -1415,18 +1455,37 @@ final class ScrubberViewModel {
 
         // Redaction path: burn only the instances whose type is in typesToRedact.
         let regionsToRedact = enabledRedactionRegions
+        let redactionKey = RedactionKey(image: imageToken, specs: regionsToRedact.map(\.spec))
+        let exportKey = ExportKey(redaction: redactionKey, preset: selectedPreset, config: stripConfig)
 
+        // Nothing has changed since the last encode: show those bytes again.
+        if processedData != nil, processedKey == exportKey {
+            isProcessing = false
+            if presentSheet { activeSheet = .preSave }
+            return
+        }
+        processedKey = nil
+
+        let stored: Bool
         if !regionsToRedact.isEmpty, let raw = rawImageData {
-            let uiImage = await Task.detached(priority: .userInitiated) {
-                UIImage(data: raw)
-            }.value
+            let burned: UIImage?
+            if let cached = reviewRedaction, cached.key == redactionKey {
+                burned = cached.image
+            } else {
+                // Never hold two full-size renders at once.
+                reviewRedaction = nil
+                let uiImage = await Task.detached(priority: .userInitiated) {
+                    UIImage(data: raw)
+                }.value
+                guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
+                burned = if let uiImage {
+                    await ImageRedactor().redact(image: uiImage, specs: redactionKey.specs)
+                } else {
+                    nil
+                }
+            }
 
-            guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
-            guard let uiImage,
-                  let burned = await ImageRedactor().redact(
-                    image: uiImage,
-                    specs: regionsToRedact.map(\.spec)
-                  ) else {
+            guard let burned else {
                 guard imageToken == loadToken, reviewToken == token else { return }
                 errorMessage = String(localized: "Could not render redactions for this image.")
                 processedData = nil
@@ -1436,24 +1495,31 @@ final class ScrubberViewModel {
             }
 
             guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
-            await processImage(
+            // Kept while the review is open (see `activeSheet`), so that a
+            // format change there only encodes again.
+            reviewRedaction = ReviewRedaction(key: redactionKey, image: burned)
+            stored = await processImage(
                 raw: raw,
                 sourceData: raw,
                 imageOverride: burned,
+                plan: ExportPlan(preset: exportKey.preset, metadata: exportKey.config),
                 updateSourceMetadata: false
             )
-            // The processed bytes now include redactions; keep only the
-            // downsampled processed preview to avoid retaining a full-size bitmap.
+            // The processed bytes now include redactions; the review shows only
+            // the downsampled processed preview, never the full-size render.
             redactedUIImage = nil
         } else {
+            reviewRedaction = nil
             redactedUIImage = nil
-            await processCurrentImageNow()
+            stored = await processCurrentImageNow(plan: ExportPlan(preset: exportKey.preset, metadata: exportKey.config))
         }
 
         guard imageToken == loadToken, reviewToken == token, !Task.isCancelled else { return }
+        if stored { processedKey = exportKey }
         if presentSheet, processedData != nil {
             activeSheet = .preSave
         }
+        if activeSheet != .preSave { reviewRedaction = nil }
     }
 
     /// Processes `override` data (or `rawImageData` when nil) through the EXIF
@@ -1462,30 +1528,31 @@ final class ScrubberViewModel {
     /// `rawSourceProps` and `allSourceMetadata` are derived from the *original*
     /// image only — they must never be overwritten by intermediate redacted data,
     /// which carries ghost iOS-injected TIFF/EXIF fields.
+    ///
+    /// Returns `true` when the encode's result was stored — `false` when it
+    /// failed or a newer one superseded it.
     private func processImage(
         raw: Data,
         sourceData: Data,
         imageOverride: UIImage?,
+        plan: ExportPlan,
         updateSourceMetadata: Bool
-    ) async {
+    ) async -> Bool {
         let token = UUID()
         processingToken = token
         errorMessage = scanFailureMessage
         isProcessing = true
-
-        let preset = selectedPreset
-        let config = stripConfig
 
         do {
             let snapshot = try await Self.makeProcessingSnapshot(ProcessingRequest(
                 raw: raw,
                 sourceData: sourceData,
                 imageOverride: imageOverride,
-                preset: preset,
-                config: config,
+                preset: plan.preset,
+                config: plan.metadata,
                 updateSourceMetadata: updateSourceMetadata
             ))
-            guard processingToken == token else { return }
+            guard processingToken == token else { return false }
 
             processedData           = snapshot.processed.data
             processedPreviewUIImage = snapshot.processedPreviewUIImage
@@ -1498,13 +1565,15 @@ final class ScrubberViewModel {
                 allSourceMetadata = snapshot.allSourceMetadata
             }
             isProcessing = false
+            return true
         } catch {
-            guard processingToken == token else { return }
+            guard processingToken == token else { return false }
             processedData           = nil
             processedPreviewUIImage = nil
             pendingStrippedMetadata = nil
             errorMessage            = error.localizedDescription
             isProcessing            = false
+            return false
         }
     }
 
@@ -1719,13 +1788,14 @@ final class ScrubberViewModel {
 
     // MARK: - Batch processing
 
-    /// Sequentially processes every item in `batchItems` using the supplied config.
+    /// Processes every item in `batchItems` using the supplied config, in order.
     ///
-    /// **Memory safety:** Images are processed one-at-a-time.  Each photo's decoded
+    /// **Memory safety:** Images are cleaned one-at-a-time.  Each photo's decoded
     /// bitmap and intermediate buffers live only inside `processBatchItem`, so ARC
     /// reclaims them before the next image is decoded.  Concurrent `TaskGroup`
     /// execution is intentionally avoided — parallel Vision / CoreGraphics workers
-    /// spike RAM and cause OOM crashes on device.
+    /// spike RAM and cause OOM crashes on device.  Only loading the next photo's
+    /// bytes and saving the previous one's overlap the cleaning (`runBatch`).
     func processBatch(config: BatchConfig) async {
         let config = effectiveBatchConfig(config)
 
@@ -1830,21 +1900,46 @@ final class ScrubberViewModel {
             return ScanOutput(results: PIIScanner.sorted(output.results + covered), lines: output.lines, coverage: output.coverage)
         }
 
+        let plan = ExportPlan(preset: preset, metadata: config.stripMetadata ? .allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:]))
+        let redactVisualPII = config.redactVisualPII
+
+        // Loading a photo (perhaps from iCloud) and saving one are mostly
+        // waiting, so they overlap the cleaning: photo N+1's bytes load while N
+        // is cleaned, and N+1 is cleaned while N saves.  Still only one photo is
+        // cleaned — decoded — at a time, and the saves happen one after another,
+        // in order.
+        func fetch(_ index: Int) -> Task<Data?, Never>? {
+            guard sources.indices.contains(index) else { return nil }
+            return Task { [loadBytes = sources[index].load] in await loadBytes() }
+        }
+        func clean(_ index: Int, bytes: Task<Data?, Never>?) -> Task<BatchItemOutput?, Never> {
+            Task { [hints = sources[index].hints] in
+                // Scan + redact + strip run off the main actor; only the
+                // resulting bytes and report rows come back.
+                guard let sourceData = await bytes?.value else { return nil }
+                return await Self.processBatchItem(
+                    sourceData: sourceData, hints: hints, plan: plan,
+                    redactVisualPII: redactVisualPII, scan: scanWithAlwaysCover
+                )
+            }
+        }
+        var cleaning = sources.isEmpty ? nil : clean(0, bytes: fetch(0))
+        var nextBytes = fetch(1)
+
         for (index, source) in sources.enumerated() {
             if batchCancellationRequested || Task.isCancelled { break }
             batchProgress = (index + 1, total)
 
-            // Load + scan + redact + strip all run off the main actor; only the
-            // resulting bytes and report rows come back.
-            guard let sourceData = await source.load(),
-                  let output = await Self.processBatchItem(
-                      sourceData: sourceData,
-                      hints: source.hints,
-                      plan: ExportPlan(preset: preset, metadata: config.stripMetadata ? .allEnabled : StripConfig(categoryEnabled: [:], fieldOverrides: [:])),
-                      redactVisualPII: config.redactVisualPII,
-                      scan: scanWithAlwaysCover
-                  )
-            else {
+            guard let current = cleaning else { break }
+            let output = await current.value
+            cleaning = nil
+            // The next photo is cleaned while this one saves, and the one after
+            // it loads.
+            if !(batchCancellationRequested || Task.isCancelled), sources.indices.contains(index + 1) {
+                cleaning = clean(index + 1, bytes: nextBytes)
+                nextBytes = fetch(index + 2)
+            }
+            guard let output else {
                 batchFailedCount += 1
                 continue
             }
@@ -1868,6 +1963,14 @@ final class ScrubberViewModel {
                 metadataStripped: output.metadataStripped,
                 scanCoverage: output.coverage
             ))
+        }
+
+        // Stopped: drop what was fetched ahead, and let the photo being cleaned
+        // notice before the batch is over, so its bitmap is gone too.
+        nextBytes?.cancel()
+        if let cleaning {
+            cleaning.cancel()
+            _ = await cleaning.value
         }
 
         if finishes || batchCancellationRequested || Task.isCancelled { finishBatch() }
@@ -2068,6 +2171,7 @@ final class ScrubberViewModel {
         inputImage              = nil
         sourceUIImage           = nil
         processedData           = nil
+        processedKey            = nil
         processedPreviewUIImage = nil
         allSourceMetadata       = nil
         pendingStrippedMetadata = nil

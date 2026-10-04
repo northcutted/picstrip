@@ -20,7 +20,8 @@ struct PreSaveReviewView: View {
 
     /// Privacy fields from the *original* image that will be stripped —
     /// structural fields (PixelWidth, Orientation, etc.) are excluded at this
-    /// level so they never appear in counts or expanded rows.
+    /// level so they never appear in counts or expanded rows.  Worked out once
+    /// per `body`, which hands it to the parts that need it.
     private var originalOrdered: [(category: String, fields: [MetadataField])] {
         guard let source = viewModel.allSourceMetadata, !source.isEmpty else { return [] }
         return ImageProcessor.categoryMap.compactMap { entry in
@@ -31,10 +32,6 @@ struct PreSaveReviewView: View {
         }
     }
 
-    private var originalMetadataCount: Int {
-        originalOrdered.flatMap(\.fields).count
-    }
-
     private var redactedRegions: [RedactionRegion] {
         viewModel.enabledRedactionRegions
     }
@@ -43,8 +40,6 @@ struct PreSaveReviewView: View {
         redactedRegions.count
     }
 
-    private var totalRemovalCount: Int { originalMetadataCount + visualRedactionCount }
-
     private var hasPII: Bool { !redactedRegions.isEmpty }
 
     private var previewImage: UIImage? {
@@ -52,32 +47,34 @@ struct PreSaveReviewView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        let removed = originalOrdered
+        let removedCount = removed.reduce(0) { $0 + $1.fields.count }
+        return NavigationStack {
             // Separate rows keep review controls reachable at every text size.
             List {
                 // Full summary + save card
                 Section {
-                    summaryCard
+                    summaryCard(metadataCount: removedCount)
                         .listRowInsets(EdgeInsets(top: 12, leading: 16, bottom: 8, trailing: 16))
                         .listRowBackground(Color.clear)
                         .listRowSeparator(.hidden)
                 }
 
                 Section { ScanCoverageView(viewModel: viewModel) }
-                Section { sharingActions }
+                Section { sharingActions(metadataCount: removedCount) }
 
                 // Collapsible breakdown
                 if !redactedRegions.isEmpty {
                     redactionSection
                 }
-                if !originalOrdered.isEmpty {
+                if !removed.isEmpty {
                     Section("Metadata Removed") {
-                        ForEach(originalOrdered, id: \.category) { group in
+                        ForEach(removed, id: \.category) { group in
                             categorySection(group.category, fields: group.fields)
                         }
                     }
                 }
-                if originalOrdered.isEmpty && redactedRegions.isEmpty {
+                if removed.isEmpty && redactedRegions.isEmpty {
                     Section {
                         emptyMetadataState
                             .frame(maxWidth: .infinity)
@@ -114,6 +111,10 @@ struct PreSaveReviewView: View {
             }
             .onChange(of: viewModel.activeSheet) { _, newValue in
                 if newValue != .preSave { dismiss() }
+            }
+            // The full-size render kept for format changes can be made again.
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)) { _ in
+                viewModel.releaseReviewRedaction()
             }
             .fullScreenCover(isPresented: $showFullPreview) {
                 if let data = viewModel.processedData {
@@ -153,7 +154,7 @@ struct PreSaveReviewView: View {
     // MARK: - Summary card (overview + preview + save actions)
 
     @ViewBuilder
-    private var summaryCard: some View {
+    private func summaryCard(metadataCount: Int) -> some View {
         VStack(spacing: 12) {
 
             HStack(alignment: .top, spacing: 10) {
@@ -165,7 +166,7 @@ struct PreSaveReviewView: View {
                         .accessibilityHidden(true)
                 }
 
-                if totalRemovalCount == 0 {
+                if metadataCount + visualRedactionCount == 0 {
                     Text("No changes selected")
                         .font(.subheadline.weight(.semibold))
                 } else {
@@ -181,9 +182,9 @@ struct PreSaveReviewView: View {
                                 .accessibilityIdentifier("locationRemovedLabel")
                         }
 
-                        if originalMetadataCount > 0 {
+                        if metadataCount > 0 {
                             Label(
-                                "^[\(originalMetadataCount) privacy field](inflect: true) stripped",
+                                "^[\(metadataCount) privacy field](inflect: true) stripped",
                                 systemImage: "tag.slash"
                             )
                             .font(.caption)
@@ -314,7 +315,7 @@ struct PreSaveReviewView: View {
     }
 
     @ViewBuilder
-    private var sharingActions: some View {
+    private func sharingActions(metadataCount: Int) -> some View {
         VStack(spacing: 12) {
             if viewModel.isProcessing {
                 HStack {
@@ -394,7 +395,7 @@ struct PreSaveReviewView: View {
                         livePhotoMotionToggle
                     }
 
-                    if originalMetadataCount > 0, !(viewModel.keepsLivePhotoMotion && viewModel.canKeepLivePhotoMotion) {
+                    if metadataCount > 0, !(viewModel.keepsLivePhotoMotion && viewModel.canKeepLivePhotoMotion) {
                         HStack(alignment: .top, spacing: 6) {
                             Image(systemName: "exclamationmark.triangle")
                                 .font(.caption)

@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 ///
 /// Field override keys use the compound format `"<Category>.<KeyName>"`,
 /// e.g. `"GPS.GPSLatitude"`. A value of `false` means "keep this field".
-nonisolated struct StripConfig {
+nonisolated struct StripConfig: Equatable {
     /// Per-category enable flags. `true` = strip the whole category.
     var categoryEnabled: [String: Bool]
 
@@ -293,8 +293,7 @@ nonisolated enum ImageProcessor {
         preset: ExportPreset,
         config: StripConfig = .default
     ) throws -> ProcessedImage {
-        guard let uiImage = UIImage(data: data),
-              let cgImage = uiImage.normalized().cgImage else {
+        guard let cgImage = uprightImage(from: data) else {
             throw ProcessingError.imageDecodingFailed
         }
 
@@ -304,6 +303,59 @@ nonisolated enum ImageProcessor {
             preset: preset,
             config: config
         )
+    }
+
+    /// The image in `data` with its pixels turned the way it is displayed.
+    ///
+    /// Cameras store a portrait photo sideways and tag it with an orientation,
+    /// so it is redrawn upright before encoding.  `UIGraphicsImageRenderer`
+    /// copies its bitmap when it hands the image over, so that redraw held two
+    /// full-size bitmaps besides the decode.  An 8-bit RGB photo — every camera
+    /// JPEG and HEIC — is drawn into a plain bitmap of the format the renderer
+    /// would pick, straight from an uncached decode, which needs one.  `UIImage`
+    /// still decides the orientation, so both export paths turn a photo alike.
+    nonisolated static func uprightImage(from data: Data) -> CGImage? {
+        guard let image = UIImage(data: data) else { return nil }
+        guard image.imageOrientation != .up else { return image.cgImage }
+        return uprightBitmap(from: data, as: image) ?? image.normalized().cgImage
+    }
+
+    /// `image` redrawn upright into an 8-bit bitmap in its own colour space, or
+    /// `nil` unless it is 8-bit RGB, decoded from `data` exactly as `image` is.
+    nonisolated private static func uprightBitmap(from data: Data, as image: UIImage) -> CGImage? {
+        guard !image.isHighDynamicRange,
+              let decoded = image.cgImage,
+              decoded.bitsPerComponent == 8,
+              let space = decoded.colorSpace, space.model == .rgb,
+              let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let uncached = CGImageSourceCreateImageAtIndex(
+                source, CGImageSourceGetPrimaryImageIndex(source),
+                [kCGImageSourceShouldCache: false] as CFDictionary
+              ),
+              uncached.width == decoded.width, uncached.height == decoded.height,
+              uncached.bitsPerPixel == decoded.bitsPerPixel,
+              uncached.bitmapInfo == decoded.bitmapInfo,
+              uncached.colorSpace == space
+        else { return nil }
+
+        // The renderer's own choice: BGRA, premultiplied only when there is alpha.
+        let opaque = [.none, .noneSkipFirst, .noneSkipLast].contains(decoded.alphaInfo)
+        let alpha: CGImageAlphaInfo = opaque ? .noneSkipFirst : .premultipliedFirst
+        let width = Int((image.size.width * image.scale).rounded())
+        let height = Int((image.size.height * image.scale).rounded())
+        guard let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space,
+            bitmapInfo: alpha.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        ) else { return nil }
+
+        // UIKit's top-left, point-sized space, so `UIImage.draw` applies the turn.
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: image.scale, y: -image.scale)
+        UIGraphicsPushContext(context)
+        UIImage(cgImage: uncached, scale: image.scale, orientation: image.imageOrientation)
+            .draw(in: CGRect(origin: .zero, size: image.size))
+        UIGraphicsPopContext()
+        return context.makeImage()
     }
 
     /// Re-encodes an already-rendered image while using metadata from the
@@ -400,7 +452,7 @@ nonisolated enum ImageProcessor {
         }
 
         // 7. Build a CGMutableImageMetadata containing:
-        //    a) orientation = 1 (pixels are already display-oriented after UIImage decode)
+        //    a) orientation = 1 (the pixels were turned upright before encoding)
         //    b) any metadata sub-dictionaries that the config says to KEEP (category disabled)
         //
         //    kCGImageDestinationMergeMetadata: false in pass 2 wipes everything ImageIO
@@ -411,7 +463,7 @@ nonisolated enum ImageProcessor {
         let outputMetadata = CGImageMetadataCreateMutable()
 
         if outputUTType != .png {
-            // a) Always write orientation 1 — pixels are display-oriented from UIImage.normalized().
+            // a) Always write orientation 1 — the pixels are already display-oriented.
             if let tag = CGImageMetadataTagCreate(
                 kCGImageMetadataNamespaceTIFF as CFString,
                 kCGImageMetadataPrefixTIFF,
