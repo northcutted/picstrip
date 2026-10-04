@@ -77,6 +77,91 @@ final class VideoAudioTests: XCTestCase {
         XCTAssertNil(muted.tone, "A mute has no tone.")
     }
 
+    func testASoundOnlyEditCopiesTheFramesAndLeavesNoHiddenDetails() async throws {
+        func item(_ identifier: AVMetadataIdentifier, _ value: String) -> AVMetadataItem {
+            let item = AVMutableMetadataItem()
+            item.identifier = identifier
+            item.value = value as NSString
+            item.dataType = kCMMetadataBaseDataType_UTF8 as String
+            return item
+        }
+        let quarterTurn = CGAffineTransform(a: 0, b: 1, c: -1, d: 0, tx: 64, ty: 0)
+        let movie = try await SoundMovie.make(
+            seconds: 2,
+            metadata: [
+                item(.quickTimeMetadataLocationISO6709, "+41.8781-087.6298+180.000/"),
+                item(.quickTimeMetadataModel, "iPhone 17 Pro"),
+                item(.quickTimeMetadataCreationDate, "2026-09-30T12:00:00-0500"),
+                item(.quickTimeMetadataTitle, "Our trip")
+            ],
+            videoMetadata: [item(.quickTimeMetadataLocationISO6709, "+41.8781-087.6298+180.000/")],
+            transform: quarterTurn
+        )
+        cleanup.append(movie)
+        let kinds = Set(try await VideoCleaner.findings(in: movie).map(\.kind))
+        XCTAssertEqual(kinds, [.location, .device, .date, .other], "The original carries them all.")
+
+        let edited = try await VideoAudioEditor.edited(movie, edits: [AudioEdit(id: 0, kind: .bleep, range: 0.5...1.0)])
+        if let tone = edited.toneFile { cleanup.append(tone) }
+        let output = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudioOut-\(UUID().uuidString).mov")
+        cleanup.append(output)
+        try await VideoCleaner.clean(edited.asset, audioMix: edited.audioMix, to: output)
+
+        // The frames are the original's, sample for sample, and turned the same way.
+        let original = try await videoSamples(of: movie)
+        let copy = try await videoSamples(of: output)
+        XCTAssertEqual(copy.count, original.count, "Every frame is there.")
+        XCTAssertEqual(copy.bytes, original.bytes, "Copied as it was, not encoded again.")
+        XCTAssertEqual(copy.codec, original.codec)
+        XCTAssertEqual(copy.size, original.size)
+        let copyTracks = try await AVURLAsset(url: output).loadTracks(withMediaType: .video)
+        let copyTrack = try XCTUnwrap(copyTracks.first)
+        let turned = try await copyTrack.load(.preferredTransform)
+        XCTAssertEqual(turned, quarterTurn)
+
+        // The edited sound, one track of it, as long as the video.
+        let audio = try await AVURLAsset(url: output).loadTracks(withMediaType: .audio)
+        XCTAssertEqual(audio.count, 1)
+        let (originalLength, copyLength) = (
+            try await AVURLAsset(url: movie).load(.duration).seconds, try await AVURLAsset(url: output).load(.duration).seconds
+        )
+        XCTAssertEqual(copyLength, originalLength, accuracy: 0.05)
+
+        // Nothing identifying, at the file or the track level: only a new random identifier.
+        let left = try await VideoCleaner.findings(in: output)
+        XCTAssertEqual(left.count, 1, "Left: \(left)")
+        XCTAssertNotNil(UUID(uuidString: try XCTUnwrap(left.first?.value)))
+
+        // A Live Photo's pairing identifier is what is kept, if asked.
+        let pairing = item(.quickTimeMetadataContentIdentifier, "8C1F3E0A-0000-4000-8000-000000000001")
+        let paired = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudioOut-\(UUID().uuidString).mov")
+        cleanup.append(paired)
+        try await VideoCleaner.clean(edited.asset, audioMix: edited.audioMix, to: paired, keeping: [pairing])
+        let kept = try await VideoCleaner.findings(in: paired)
+        XCTAssertEqual(kept.map(\.value), ["8C1F3E0A-0000-4000-8000-000000000001"])
+    }
+
+    func testAStoppedSoundOnlyCopyLeavesNothingBehind() async throws {
+        let movie = try await makeMovie(seconds: 20)
+        let edited = try await VideoAudioEditor.edited(movie, edits: [AudioEdit(id: 0, kind: .mute, range: 1...2)])
+        // Stopped before it starts, while it is set up, and while it copies.
+        for delay in [0, 5, 20, 60] {
+            let output = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudioOut-\(UUID().uuidString).mov")
+            cleanup.append(output)
+            let copying = Task { try await VideoCleaner.clean(edited.asset, audioMix: edited.audioMix, to: output) }
+            try await Task.sleep(for: .milliseconds(delay))
+            copying.cancel()
+            do {
+                try await copying.value
+                // Finished before it could be stopped: then it is whole.
+                XCTAssertTrue(FileManager.default.fileExists(atPath: output.path), "after \(delay) ms")
+            } catch {
+                XCTAssertTrue(error is CancellationError, "after \(delay) ms: \(error)")
+                XCTAssertFalse(FileManager.default.fileExists(atPath: output.path), "No partial copy after \(delay) ms.")
+            }
+        }
+    }
+
     func testWithoutEditsTheSourceIsUsedAsItIs() async throws {
         let movie = try await makeMovie(seconds: 1)
         let edited = try await VideoAudioEditor.edited(movie, edits: [])
@@ -117,6 +202,32 @@ final class VideoAudioTests: XCTestCase {
         return samples
     }
 
+    /// The video track's samples as stored: how many, their bytes, codec and size.
+    private func videoSamples(of url: URL) async throws -> (count: Int, bytes: Int, codec: FourCharCode, size: [Int32]) {
+        let asset = AVURLAsset(url: url)
+        let tracks = try await asset.loadTracks(withMediaType: .video)
+        let track = try XCTUnwrap(tracks.first)
+        let reader = try AVAssetReader(asset: asset)
+        let output = AVAssetReaderTrackOutput(track: track, outputSettings: nil)
+        reader.add(output)
+        XCTAssertTrue(reader.startReading())
+        var count = 0
+        var bytes = 0
+        var codec: FourCharCode = 0
+        var size: [Int32] = []
+        while let buffer = output.copyNextSampleBuffer() {
+            count += CMSampleBufferGetNumSamples(buffer)
+            bytes += CMSampleBufferGetTotalSampleSize(buffer)
+            if let format = CMSampleBufferGetFormatDescription(buffer) {
+                codec = CMFormatDescriptionGetMediaSubType(format)
+                let dimensions = CMVideoFormatDescriptionGetDimensions(format)
+                size = [dimensions.width, dimensions.height]
+            }
+        }
+        XCTAssertEqual(reader.status, .completed)
+        return (count, bytes, codec, size)
+    }
+
     private func rms(_ samples: ArraySlice<Float>) -> Float {
         guard !samples.isEmpty else { return 0 }
         return (samples.map { $0 * $0 }.reduce(0, +) / Float(samples.count)).squareRoot()
@@ -140,12 +251,19 @@ final class VideoAudioTests: XCTestCase {
 enum SoundMovie {
 
     /// A movie with plain frames and a 440 Hz tone, silent from `silentAfter` on.
-    static func make(seconds: Double, silentAfter: Double = .infinity) async throws -> URL {
+    /// `metadata` goes on the file, `videoMetadata` and `transform` on its video track.
+    static func make(
+        seconds: Double, silentAfter: Double = .infinity, metadata: [AVMetadataItem] = [],
+        videoMetadata: [AVMetadataItem] = [], transform: CGAffineTransform = .identity
+    ) async throws -> URL {
         let url = FileManager.default.temporaryDirectory.appendingPathComponent("PicStripAudio-\(UUID().uuidString).mov")
         let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
+        writer.metadata = metadata
         let video = AVAssetWriterInput(mediaType: .video, outputSettings: [
             AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: 64, AVVideoHeightKey: 64
         ])
+        video.metadata = videoMetadata
+        video.transform = transform
         let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: video, sourcePixelBufferAttributes: [
             kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
             kCVPixelBufferWidthKey as String: 64, kCVPixelBufferHeightKey as String: 64

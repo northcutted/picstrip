@@ -117,8 +117,9 @@ nonisolated enum VideoCleaner {
     }
 
     /// `clean` for an asset with its sound edited (`VideoAudioEditor`): `audioMix`
-    /// silences the edited stretches, and the whole is encoded again — a mix
-    /// cannot be applied to copied samples.
+    /// silences the edited stretches.  The sound is encoded again — a mix cannot
+    /// be applied to copied samples — and, without `videoComposition`, the
+    /// frames are copied as they are (`SoundOnlyRemux`).
     static func clean(
         _ asset: AVAsset,
         audioMix: AVAudioMix?,
@@ -127,6 +128,13 @@ nonisolated enum VideoCleaner {
         videoComposition: AVVideoComposition? = nil,
         progress: (@Sendable (Double) -> Void)? = nil
     ) async throws {
+        if videoComposition == nil, let audioMix {
+            // The same metadata as an export below: `keeping`, or a new random identifier.
+            let metadata = keeping.isEmpty ? [newContentIdentifier()] : keeping
+            try await SoundOnlyRemux.write(asset, audioMix: audioMix, to: output, metadata: metadata, progress: progress)
+            try await verify(output)
+            return
+        }
         let copiesFrames = videoComposition == nil && audioMix == nil
         let preset = copiesFrames ? AVAssetExportPresetPassthrough : await reencodingPreset(for: asset)
         guard let session = AVAssetExportSession(asset: asset, presetName: preset) else {
@@ -150,7 +158,12 @@ nonisolated enum VideoCleaner {
         }
         defer { reporter?.cancel() }
         try await session.export(to: output, as: type)
+        try await verify(output)
+    }
 
+    /// Fails closed: if a location, device or date survives in `output`, the
+    /// copy is deleted and this throws.
+    private static func verify(_ output: URL) async throws {
         let left = try await findings(in: output).filter { $0.kind != .other }
         guard left.isEmpty else {
             try? FileManager.default.removeItem(at: output)
