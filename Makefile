@@ -114,7 +114,8 @@ localization-pseudo:
 
 localization-validate:
 	jq empty PicStrip/Localizable.xcstrings PicStrip/AppShortcuts.xcstrings \
-		PicStrip/InfoPlist.xcstrings PicStripShareExtension/InfoPlist.xcstrings
+		PicStrip/InfoPlist.xcstrings PicStripShareExtension/InfoPlist.xcstrings \
+		StripMetadataAction/InfoPlist.xcstrings EditInPicStripAction/InfoPlist.xcstrings
 	scripts/audit_localization_strings.sh
 	scripts/audit_xcstrings.py
 	swiftlint lint

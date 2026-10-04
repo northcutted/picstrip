@@ -33,6 +33,8 @@ DEFAULT_CATALOGS = [
     'PicStrip/AppShortcuts.xcstrings',
     'PicStrip/InfoPlist.xcstrings',
     'PicStripShareExtension/InfoPlist.xcstrings',
+    'StripMetadataAction/InfoPlist.xcstrings',
+    'EditInPicStripAction/InfoPlist.xcstrings',
 ]
 
 LOCALES = ['ar', 'de', 'es', 'es-419', 'fr', 'it', 'ja', 'ko', 'nl', 'pl', 'pt-BR', 'pt-PT', 'sv', 'tr', 'zh-Hans', 'zh-Hant']
