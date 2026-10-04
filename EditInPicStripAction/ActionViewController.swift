@@ -30,6 +30,7 @@ final class ActionViewController: UIViewController {
     private let model = EditInPicStripModel()
     private var task: Task<Void, Never>?
     private var handoffURL: URL?
+    private var isDiscarding = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -53,6 +54,8 @@ final class ActionViewController: UIViewController {
         do {
             let handoff = try await item.handOff()
             handoffURL = handoff.url
+            // Cancelled meanwhile: `discard` removes the file and ends the request.
+            guard !Task.isCancelled else { return }
             if handoff.isAnnounced {
                 extensionContext?.completeRequest(returningItems: [], completionHandler: nil)
             } else {
@@ -65,15 +68,25 @@ final class ActionViewController: UIViewController {
     }
 
     /// Cancel while preparing, or Discard once prepared: nothing is left behind.
+    /// A copy in flight is waited for — it deletes itself once it sees the
+    /// cancellation — so the extension is not ended with a file the app would
+    /// still open.
     private func discard() {
+        guard !isDiscarding else { return }
+        isDiscarding = true
         task?.cancel()
-        PrivateFileStore.handoffs?.remove(handoffURL)
-        handoffURL = nil
-        extensionContext?.cancelRequest(withError: NSError(
-            domain: "northcutt.PicStrip.EditInPicStrip",
-            code: 0,
-            userInfo: [NSLocalizedDescriptionKey: String(localized: "Cancelled by user")]
-        ))
+        let running = task
+        Task { [weak self] in
+            await running?.value
+            guard let self else { return }
+            PrivateFileStore.handoffs?.remove(handoffURL)
+            handoffURL = nil
+            extensionContext?.cancelRequest(withError: NSError(
+                domain: "northcutt.PicStrip.EditInPicStrip",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: String(localized: "Cancelled by user")]
+            ))
+        }
     }
 }
 

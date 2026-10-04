@@ -28,6 +28,7 @@ final class ActionViewController: UIViewController {
 
     private let model = StripMetadataModel()
     private var task: Task<Void, Never>?
+    private var isCancelling = false
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -80,6 +81,8 @@ final class ActionViewController: UIViewController {
     }
 
     private func cancel() {
+        guard !isCancelling else { return }
+        isCancelling = true
         task?.cancel()
         extensionContext?.cancelRequest(withError: NSError(
             domain: "northcutt.PicStrip.StripMetadata",
