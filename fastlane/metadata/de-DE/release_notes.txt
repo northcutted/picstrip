@@ -5,7 +5,7 @@ PicStrip 1.7 ist ein großes Update: Die App bereinigt jetzt Videos, und ihre Ka
 • Kürze jede Abdeckung auf einer Zeitleiste wie im Videoeditor, und überpiepe Gesagtes oder schalte es stumm.
 • Eine Kamera für Fotos, Videos und Dokumente. Nimm in bis zu 4K mit HDR auf – mit den Bedienelementen, die du aus der Kamera-App kennst; im Fotomodus umrandet ein Live-Sucher, was geschwärzt würde.
 • Wähle Fotos und Videos zusammen aus: Ein einzelnes wird im Editor geöffnet, mehrere werden auf einmal bereinigt.
-• Neue Aktionen im Teilen-Menü jeder App: „Metadaten entfernen“ bereinigt Fotos und Videos mit einem Tippen, und „In PicStrip bearbeiten“ öffnet ein Foto oder Video, wenn du auf seine Mitteilung tippst. Videos lassen sich auch mit PicStrip teilen, und eine neue Kurzbefehle-Aktion entfernt Metadaten aus Videos.
+• Teile Videos aus jeder App mit PicStrip, um ihre Metadaten zu entfernen, oder öffne sie, um Gesichter und Text zu verdecken. Eine neue Kurzbefehle-Aktion entfernt Metadaten aus Videos.
 • Mit einem Emoji verdecken, unter iOS 27 zum Verdecken auf ein Objekt tippen und die letzten Ziffern einer Karten- oder Telefonnummer sichtbar lassen.
 • „Immer verdecken“: dein Name, ein Kennzeichen oder deine Straße – verdeckt, wo immer PicStrip sie liest.
 • Dokumente scannen, nur Screenshots auswählen, die Live-Photo-Bewegung behalten und vorher und nachher vergleichen.

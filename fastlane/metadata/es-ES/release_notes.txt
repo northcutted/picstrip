@@ -5,7 +5,7 @@ PicStrip 1.7 es una gran actualización: ahora limpia vídeos, y su cámara mues
 • Recorta cada censura en una línea de tiempo de editor de vídeo, y pon un pitido o silencia lo que se dijo.
 • Una sola cámara para fotos, vídeo y documentos. Graba hasta en 4K con HDR con los controles que ya conoces de la app Cámara; en el modo Foto, un visor en directo marca lo que censuraría.
 • Elige fotos y vídeos juntos: uno solo se abre en el editor y varios se limpian a la vez.
-• Nuevas acciones en la hoja de compartir de cualquier app: «Eliminar metadatos» limpia fotos y vídeos con un toque, y «Editar en PicStrip» abre una foto o un vídeo al tocar su notificación. También puedes compartir vídeos con PicStrip, y una nueva acción de Atajos elimina los metadatos de los vídeos.
+• Comparte vídeos con PicStrip desde cualquier app para eliminar sus metadatos, o ábrelos para censurar caras y texto. Una nueva acción de Atajos elimina los metadatos de los vídeos.
 • Censura con un emoji, toca un objeto para censurarlo en iOS 27 y deja visibles los últimos dígitos de una tarjeta o un número de teléfono.
 • Censurar siempre: tu nombre, una matrícula o tu calle, censurados dondequiera que PicStrip los lea.
 • Escanea documentos, elige solo tus capturas de pantalla, conserva el movimiento de una Live Photo y compara el antes y el después.
