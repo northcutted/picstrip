@@ -210,7 +210,7 @@ nonisolated enum RedactionLattice {
 /// before calling `ImageRedactor.redact(image:specs:)`.  Batch processing and
 /// the Share Extension use `redact(image:instances:)`, which synthesises
 /// solid-black specs.
-nonisolated struct RedactionSpec {
+nonisolated struct RedactionSpec: Equatable {
     let rect: CGRect
     let style: RedactionStyle
     let color: RedactionColor
@@ -286,10 +286,11 @@ nonisolated enum EmojiCover {
 /// directly into the `UIGraphicsImageRenderer` coordinate space.
 ///
 /// **Rendering pipeline:**
-/// 1. For any `.pixelate` / `.blur` specs, a CIFilter pre-pass obscures those
-///    areas of the source image first (reads pixels, colour-agnostic).
-/// 2. A single `UIGraphicsImageRenderer` pass draws the (possibly pre-obscured)
-///    base image, then stamps each remaining style on top.
+/// 1. For any `.pixelate` / `.blur` specs, a CIFilter pre-pass scrambles the
+///    source pixels under those regions (reads pixels, colour-agnostic) and
+///    renders just the regions.
+/// 2. A single `UIGraphicsImageRenderer` pass draws the source image and the
+///    scrambled regions over it, then stamps each remaining style on top.
 ///
 /// **Fail closed:** if a Core Image pass cannot run, its regions are painted
 /// solid instead — a region the user asked to hide is never left readable.
@@ -310,30 +311,21 @@ nonisolated struct ImageRedactor {
         guard !enabled.isEmpty else { return image }
 
         // ── Step 1: Core Image pre-pass (pixelate, then blur) ──────────────
-        var workingImage = image
-        var paintedSolidInstead: [RedactionSpec] = []
-        for style in [RedactionStyle.pixelate, .blur] {
-            let styled = enabled.filter { $0.style.scramblePass == style }
-            // One pass per strength in use: a pass has a single block size.
-            for strength in Set(styled.map(\.passStrength)).sorted() {
-                let group = styled.filter { $0.passStrength == strength }
-                if let obscured = Self.applyObscuring(style, strength: strength, to: workingImage, specs: group) {
-                    workingImage = obscured
-                } else {
-                    paintedSolidInstead += group
-                }
-            }
-        }
+        let scramble = Self.scramble(image, specs: enabled)
 
         // ── Step 2: Raster pass for remaining styles ───────────────────────
+        // `imageRendererFormat` keeps the source's colour space and depth.
         let size     = image.size
         let format   = image.imageRendererFormat
         let renderer = UIGraphicsImageRenderer(size: size, format: format)
 
         return renderer.image { ctx in
-            workingImage.draw(at: .zero)
+            image.draw(at: .zero)
+            for patch in scramble.patches {
+                patch.image.draw(in: patch.rect)
+            }
 
-            let painted = enabled.filter { !$0.style.obscuresSourcePixels } + paintedSolidInstead
+            let painted = enabled.filter { !$0.style.obscuresSourcePixels } + scramble.paintedSolidInstead
             for spec in painted {
                 let rect = CGRect(
                     x: spec.rect.minX * size.width,
@@ -428,76 +420,105 @@ nonisolated struct ImageRedactor {
 
     // MARK: - Pixellate / blur (CIFilter pre-pass)
 
-    /// Uses a single filter evaluation plus one mask-driven blend to obscure
-    /// every supplied region in one pass.  Colour is ignored — the effect shows
-    /// scrambled source pixels, not a solid fill.
+    /// What the Core Image pass made: the scrambled pixels over each region,
+    /// and the regions it could not scramble, which are painted solid instead.
+    private struct Scramble {
+        /// Each region's pixels, with the rect (in `image` points) they go in.
+        var patches: [(image: UIImage, rect: CGRect)] = []
+        var paintedSolidInstead: [RedactionSpec] = []
+    }
+
+    /// Pixellates and blurs every `.pixelate`, `.blur` and `.emoji` region in
+    /// one Core Image graph, and renders only the regions out of it.  Colour is
+    /// ignored — the effect shows scrambled source pixels, not a solid fill.
     ///
     /// **Blur is a mosaic first.**  A plain Gaussian blur of text can be
     /// sharpened back into something legible, so `.blur` pixellates exactly as
     /// `.pixelate` does and then blurs the mosaic: it looks smooth, but carries
     /// no more information than the blocks underneath.
     ///
-    /// The previous implementation ran one CIPixellate + CIBlendWithMask per spec,
-    /// each iteration feeding the accumulated result forward.  That scaled poorly
-    /// when an OCR-heavy image produced many pixelate regions: every region
-    /// triggered a fresh full-image Core Image evaluation.  The combined-mask
-    /// approach evaluates the pixellated layer exactly once and composites it
-    /// against a single union-of-rects mask.
-    nonisolated private static func applyObscuring(
-        _ style: RedactionStyle,
-        strength: Double,
-        to image: UIImage,
-        specs: [RedactionSpec]
-    ) -> UIImage? {
-        guard !specs.isEmpty, let ciImage = uprightCIImage(image) else { return nil }
-        let extent = ciImage.extent   // CI pixel space (Y-up, device pixels), upright
+    /// Each style and strength is one pass with one block size, chosen from its
+    /// smallest region; the passes are chained, so a later one scrambles what
+    /// the earlier ones left.  A pass is rendered only around its regions, so
+    /// Core Image computes the mosaic and the blur (up to 240 px) there and not
+    /// over the whole photo — blending a whole-photo layer in through a mask
+    /// computed both everywhere, and every pass came back as a full-size bitmap
+    /// that the raster pass then drew again.
+    nonisolated private static func scramble(_ image: UIImage, specs: [RedactionSpec]) -> Scramble {
+        var scramble = Scramble()
+        let scrambled = specs.filter { $0.style.scramblePass != nil }
+        guard !scrambled.isEmpty else { return scramble }
+        guard let source = uprightCIImage(image) else {
+            scramble.paintedSolidInstead = scrambled
+            return scramble
+        }
+        let extent = source.extent   // CI pixel space (Y-up, device pixels), upright
 
-        // ── 1. Resolve rects in CI pixel space ───────────────────────────────
-        let ciRects: [CGRect] = specs.compactMap { spec in
-            let rect = CGRect(
-                x: spec.rect.minX * extent.width,
-                y: (1.0 - spec.rect.maxY) * extent.height,
-                width: spec.rect.width * extent.width,
-                height: spec.rect.height * extent.height
+        var composite = source
+        var covered: [(spec: RedactionSpec, rect: CGRect)] = []
+        for style in [RedactionStyle.pixelate, .blur] {
+            let styled = scrambled.filter { $0.style.scramblePass == style }
+            // One pass per strength in use: a pass has a single block size.
+            for strength in Set(styled.map(\.passStrength)).sorted() {
+                let group = styled.filter { $0.passStrength == strength }
+                let regions = group.compactMap { spec -> (spec: RedactionSpec, rect: CGRect)? in
+                    let rect = CGRect(
+                        x: spec.rect.minX * extent.width,
+                        y: (1.0 - spec.rect.maxY) * extent.height,
+                        width: spec.rect.width * extent.width,
+                        height: spec.rect.height * extent.height
+                    )
+                    return (rect.width > 0 && rect.height > 0) ? (spec, rect) : nil
+                }
+                guard !regions.isEmpty else { continue }
+
+                // Keeps the visual character of pixelation for the privacy-critical
+                // small regions; large regions get slightly chunkier blocks, which is
+                // still adequately obscuring.
+                let blockSize = RedactionStrength.blockSize(
+                    forNormalizedRects: group.map(\.rect), pixelSize: extent.size, strength: strength
+                )
+                // Rendered once, around this pass's regions only.  A mosaic comes
+                // out the same as over the whole photo only where Core Image is
+                // asked for whole blocks, so a pixelate pass reaches one block
+                // past its regions.  A blur near the edge of what is rendered
+                // can come out a few levels off the whole-photo one (iOS 26), so
+                // a blur pass reaches twice its radius past them.
+                let union = regions.reduce(CGRect.null) { $0.union($1.rect) }
+                let reach = style == .pixelate ? blockSize : blockSize * 3
+                let area = union.insetBy(dx: -reach, dy: -reach).integral.intersection(extent)
+                guard let obscured = obscuredLayer(style, blockSize: blockSize, of: composite),
+                      let rendered = ciContext.createCGImage(obscured, from: area)
+                else {
+                    scramble.paintedSolidInstead += group
+                    continue
+                }
+                let layer = CIImage(cgImage: rendered)
+                    .transformed(by: CGAffineTransform(translationX: area.minX, y: area.minY))
+                for region in regions {
+                    composite = layer.cropped(to: region.rect).composited(over: composite)
+                }
+                covered += regions
+            }
+        }
+
+        // Whole pixels around each region, so a patch is drawn back 1:1.  The
+        // edge pixels a region only partly covers blend in, as they always have.
+        for region in covered {
+            let pixels = region.rect.integral.intersection(extent)
+            guard !pixels.isEmpty, let cgImage = ciContext.createCGImage(composite, from: pixels) else {
+                scramble.paintedSolidInstead.append(region.spec)
+                continue
+            }
+            let points = CGRect(
+                x: (pixels.minX - extent.minX) / image.scale,
+                y: (extent.maxY - pixels.maxY) / image.scale,
+                width: pixels.width / image.scale,
+                height: pixels.height / image.scale
             )
-            return (rect.width > 0 && rect.height > 0) ? rect : nil
+            scramble.patches.append((UIImage(cgImage: cgImage, scale: image.scale, orientation: .up), points))
         }
-        guard !ciRects.isEmpty else { return image }
-
-        // ── 2. Pick a single block size from the smallest region ─────────────
-        // Keeps the visual character of pixelation for the privacy-critical
-        // small regions; large regions get slightly chunkier blocks, which is
-        // still adequately obscuring.
-        let blockSize = RedactionStrength.blockSize(
-            forNormalizedRects: specs.map(\.rect), pixelSize: extent.size, strength: strength
-        )
-
-        // ── 3. Run CIPixellate ONCE over the whole image ─────────────────────
-        guard let obscured = obscuredLayer(style, blockSize: blockSize, of: ciImage) else { return nil }
-
-        // ── 4. Build a single mask CIImage = union of white rects ────────────
-        // CIImage(color: white) is infinite-extent; cropping to a rect produces
-        // a white region exactly of that shape.  Stacking them with
-        // CISourceOverCompositing yields the union.  Core Image consolidates
-        // this into one render pass when fed into CIBlendWithMask.
-        var mask = CIImage(color: CIColor.clear).cropped(to: extent)
-        for rect in ciRects {
-            let whiteRect = CIImage(color: CIColor.white).cropped(to: rect)
-            guard let composite = CIFilter(name: "CISourceOverCompositing") else { continue }
-            composite.setValue(whiteRect, forKey: kCIInputImageKey)
-            composite.setValue(mask, forKey: kCIInputBackgroundImageKey)
-            mask = composite.outputImage ?? mask
-        }
-
-        // ── 5. Single blend pass ─────────────────────────────────────────────
-        guard let blendFilter = CIFilter(name: "CIBlendWithMask") else { return nil }
-        blendFilter.setValue(ciImage, forKey: kCIInputBackgroundImageKey)
-        blendFilter.setValue(obscured, forKey: kCIInputImageKey)
-        blendFilter.setValue(mask, forKey: kCIInputMaskImageKey)
-        guard let result = blendFilter.outputImage else { return nil }
-
-        guard let cgOut = ciContext.createCGImage(result, from: extent) else { return nil }
-        return UIImage(cgImage: cgOut, scale: image.scale, orientation: .up)
+        return scramble
     }
 
     /// The whole of `ciImage` pixellated — and, for `.blur`, then blurred.

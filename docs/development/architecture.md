@@ -75,12 +75,12 @@ Run `make help` for local commands. `build/`, `.build/`, `qa-results/` and `node
 | `ImageRequestHandler(data)` instead of a decoded `CGImage` | Preserves EXIF orientation so bounding boxes land on the correct pixels (covered by `testBoundingBoxesFollowEXIFOrientation`) |
 | Downsampled UI previews | The app keeps full-resolution bytes for export, but decodes display/review previews to bounded images to reduce RAM |
 | Off-main image processing | Metadata encode/decode, review preview generation, OCR, redaction rendering and every batch item run in `@concurrent` functions; the view model only publishes final state |
-| Fail closed | Batch, the share extension and `StripMetadataIntent` never save or return an image when a requested strip or redaction step failed — an untouched original must not be presented as clean |
+| Fail closed | Batch, the share extension, `StripMetadataIntent` and `StripVideoMetadataIntent` never save or return an image or video when a requested strip or redaction step failed — an untouched original must not be presented as clean |
 | Sequential batch processing | Prevents OOM by keeping peak memory at ~one image at a time |
 | `SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor` | Eliminates `@MainActor` annotation noise on view-layer types |
 | Static detector caches | Compiles regexes once and reuses the native `NSDataDetector` across scans |
 | No history database | Session state stays in memory; protected temporary exports and extension handoffs use explicit expiry and cleanup |
-| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file |
+| In-process `IntentRouter` | `StripImageIntent` runs in the foreground app process and asks the UI for the batch picker directly; the App Group is only used for the share extension's "Edit in PicStrip" file, and a handed-off video reaches `ContentView` through `IntentRouter.requestVideo` |
 
 ### Shared processing contract
 
@@ -208,6 +208,8 @@ ShareViewController (UIKit — UIViewController)
 
 `ExtensionViewModel` tracks configuring, processing, ready and finished states. `ShareViewController.runProcessingPipeline()` owns sequential work, cancellation and partial-result reporting.
 
+The activation rule offers the extension for any number of images and up to ten movies. It counts movie attachments per extension item and extension items with movies, so the limit holds whether the host app puts every attachment in one item or each in its own; an attachment that also has an image type (a Live Photo) counts as a photo. `ShareExtensionInputTests` evaluates the rule from the embedded extension's `Info.plist`. `SharedItemKind` (`PicStripCore`) sorts each attachment into a photo or a video the same way and keeps the concrete type to load.
+
 ### Processing Pipeline (Extension)
 
 ```
@@ -216,15 +218,22 @@ User taps "Process & Save to Photos"
 Request Photos add-only permission
     ↓
 For each selected provider, sequentially:
-    Resolve a concrete image type; prefer a file representation
-    Apply encoded-byte and pixel limits
-    If explicitly allowed, create a smaller copy when required
-    ExportPipeline.clean → typed coverage → verified output
-    Reject incomplete required visual checks
-    PhotoLibraryWriter.save → per-item result
+    Photo:
+        Resolve a concrete image type; prefer a file representation
+        Apply encoded-byte and pixel limits
+        If explicitly allowed, create a smaller copy when required
+        ExportPipeline.clean → typed coverage → verified output
+        Reject incomplete required visual checks
+        PhotoLibraryWriter.save → per-item result
+    Video (metadata only, whatever the photo switches say):
+        loadFileRepresentation → copy into PrivateFileStore.exports (never into memory)
+        VideoMetadataCleaner.clean → passthrough export, read back, fail closed
+        PhotoLibraryWriter.saveVideo → delete both temporary files
     ↓
 Show completion or partial-result summary; support cancellation/retry
 ```
+
+Covering faces and text in a video is not offered in the extension: tracking and re-encoding need far more memory than the extension's budget and can take minutes. The sheet says so and points to Edit, which hands the first item over: a photo's bytes as before, or a video copied as a file into the same protected, expiring App Group directory (`.mov`, `.mp4` or `.m4v`, from `SharedItemKind.videoFileExtension`). `PrivateFileStore.consume` returns a `PendingEdit`; a video is moved (`adopt`) into the app's `PicStripExports` rather than read, and `ContentView` opens it like a video from Files, or after the open video's sheet is dismissed. `PicStripApp` runs the drain and the 60-second expiry sweep in `@concurrent` helpers, since both list the App Group folder on every activation.
 
 ### Shared Core Without a Framework Target
 
@@ -269,6 +278,8 @@ This replaced an App Group `UserDefaults` flag that was only read on a `scenePha
 
 Siri phrase registered: `"Clean photos with PicStrip"`. Also appears in the Shortcuts app and Spotlight.
 
+The two background actions below are not App Shortcuts: each needs the previous action's files and returns files for the next, so a phrase or a Spotlight tile on its own would have nothing to clean. They appear under PicStrip in the Shortcuts action library.
+
 ### `StripMetadataIntent` — background, files in → files out
 
 **File:** `PicStrip/StripMetadataIntent.swift`
@@ -295,6 +306,14 @@ Known quirks, none of them in PicStrip's code:
 - In the simulator `performBackgroundTask` logs `BGTaskScheduler is not available on this platform` and then runs the work anyway.
 - Still worth one pass on a physical device before release: `LongRunningIntent` scheduling and a large (50+) selection can only be exercised there.
 
+### `StripVideoMetadataIntent` — background, videos in → videos out
+
+**File:** `PicStrip/StripVideoMetadataIntent.swift`
+
+"Strip Metadata from Videos" takes `[IntentFile]` (`supportedContentTypes: [.movie]`, the `videos` parameter marked `connectToPreviousIntentResult`) and returns cleaned `PicStrip.mov` files. Each input is copied into `PrivateFileStore.exports` while its security scope lasts (a clone on the same volume; inline data is written out), cleaned with `VideoMetadataCleaner.clean` — the passthrough export and read-back check shared with the app and the share extension, so the frames are copied, never decoded — and the working copy deleted. It fails closed like the images action: any unreadable or uncleanable video fails the run and deletes the outputs made so far. Results are file-backed with `removedOnCompletion = true`; on iOS 27 it is a `LongRunningIntent` too.
+
+Not yet verified end to end in the Shortcuts app; the unit tests cover the clean, the failure paths and the extracted `isInput` flag.
+
 ---
 
 
@@ -302,7 +321,7 @@ Known quirks, none of them in PicStrip's code:
 
 | Data | Storage | Key | Scope |
 |------|---------|-----|-------|
-| "Edit in PicStrip" handoff | App Group `PendingEdits` directory | Neutral unique filename | 15-minute validity; oldest first, removed on consumption or cancellation |
+| "Edit in PicStrip" handoff | App Group `PendingEdits` directory | Neutral unique filename; a video keeps a `.mov`/`.mp4`/`.m4v` extension | 15-minute validity; oldest first, removed on consumption or cancellation; a video is moved into `PicStripExports` on import |
 | Audit JSON and Shortcut outputs | Temporary `PicStripExports` directory | Neutral unique filename | Cleanup after use/failure where applicable; one-hour expiry |
 
 `PrivateFileStore` writes files with complete protection and excludes its directories from backups. Expired files are rejected and cleaned when the store is accessed; expiry is not a guaranteed background deletion timer. A pending handoff contains the selected original. Reports contain field names and counts, never removed values, OCR snippets or region coordinates. The app has no processing-history database and does not use `UserDefaults`, Core Data or SwiftData. See `PRIVACY.md` for user-selected exports and Photos retention.
@@ -448,7 +467,7 @@ Home has three ways in: the Camera, Photos & Videos, and Files. Photos & Videos 
 
 ### Video Cleaning Replaces Metadata, It Does Not Filter It
 
-`VideoCleaner.clean` exports with `AVAssetExportPresetPassthrough`, so frames are copied, not re-encoded. Two AVFoundation behaviours shape it, both pinned by `VideoCleanerTests`: an **empty** `metadata` array is treated as "keep the source's metadata", and `AVMetadataItemFilter.forSharing()` removes the location but keeps make, model, software and dates. So the session always gets a non-empty list — a new random content identifier for a plain video, the pairing identifier for a Live Photo's video — plus the filter for track-level items, and the output is re-read: any location, device or date left fails the export and deletes the file. Picked videos are copied into `PrivateFileStore.exports` (`copy`, `reserve`) and deleted when the screen closes.
+`VideoCleaner.clean` exports with `AVAssetExportPresetPassthrough`, so frames are copied, not re-encoded. The policy and the check below live in `PicStripCore/VideoMetadataCleaner.swift` (`applyPolicy`, `verify`, and `clean` for the passthrough case), shared with the share extension and `StripVideoMetadataIntent`; `VideoMetadataCleanerTests` also checks that the passthrough copy has the same samples in the same codec. Two AVFoundation behaviours shape it, both pinned by `VideoCleanerTests`: an **empty** `metadata` array is treated as "keep the source's metadata", and `AVMetadataItemFilter.forSharing()` removes the location but keeps make, model, software and dates. So the session always gets a non-empty list — a new random content identifier for a plain video, the pairing identifier for a Live Photo's video — plus the filter for track-level items, and the output is re-read: any location, device or date left fails the export and deletes the file. Picked videos are copied into `PrivateFileStore.exports` (`copy`, `reserve`) and deleted when the screen closes.
 
 A Live Photo's motion is kept only when nothing is covered and the format is not PNG, because the motion is not redacted. `LivePhotoCleaner` loads the `PHLivePhoto` from the picker, cleans its `.pairedVideo` resource keeping `com.apple.quicktime.content.identifier`, writes that identifier back into the still's Apple maker note (key 17), and saves both resources in one creation request; if Photos refuses the pair, a still is saved and the user is told. This path needs a device to verify.
 

@@ -64,6 +64,32 @@ final class FindingTrackingTests: XCTestCase {
         XCTAssertEqual(jump.move(box, from: 0, to: 0.1), box, "An implausible jump is not followed.")
     }
 
+    /// The scanner adds a read once it is done, by when later frames have
+    /// added to the path: the tracks must come out the same as adding it at once.
+    func testAReadAddedLaterMakesTheSameTracks() {
+        let shifts: [CGVector?] = (0...20).map { $0 == 0 ? nil : CGVector(dx: -0.013 * Double($0 % 3), dy: 0.004) }
+        let reads: [(time: Double, found: [FrameFinding])] = [
+            (0, [finding(x: 0.5)]), (0.5, [finding(x: 0.45), finding(.phoneNumber, x: 0.2, y: 0.7, snippet: "+1 202 555 0147")]),
+            (1.0, [finding(x: 0.41)]), (1.5, []), (2.0, [finding(x: 0.33)])
+        ]
+        var atOnce = FindingTracking()
+        var later = FindingTracking()
+        var path = CameraPath()
+        var pending: (time: Double, found: [FrameFinding])?
+        for (step, shift) in shifts.enumerated() {
+            let time = Double(step) * 0.1
+            path.add(shift, at: time)
+            guard let read = reads.first(where: { abs($0.time - time) < 1e-9 }) else { continue }
+            atOnce.add(read.found, at: read.time, path: path)
+            // Later: the previous read, with the path as it is now.
+            if let pending { later.add(pending.found, at: pending.time, path: path) }
+            pending = read
+        }
+        if let pending { later.add(pending.found, at: pending.time, path: path) }
+        XCTAssertEqual(later.tracks, atOnce.tracks)
+        XCTAssertEqual(later.tracks.count, 2)
+    }
+
     func testDifferentKindsAndFarTextStaySeparate() {
         let path = CameraPath()
         var tracking = FindingTracking()

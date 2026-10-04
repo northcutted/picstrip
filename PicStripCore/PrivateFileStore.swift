@@ -7,6 +7,18 @@ nonisolated struct PrivateFileStore: Sendable {
     var lifetime: TimeInterval = 3_600
     var maximumBytes = ImageResourceBudget.editor.maximumBytes
 
+    /// What the Share Extension left for the app to open.
+    enum PendingEdit: Equatable, Sendable {
+        /// An image's original bytes.
+        case image(Data)
+        /// A video, moved into the app's own protected store.
+        case video(URL)
+    }
+
+    /// The file extensions a handed-off video is written with; any other
+    /// handoff is an image's bytes.
+    static let videoExtensions: Set<String> = ["mov", "mp4", "m4v"]
+
     static var exports: PrivateFileStore {
         PrivateFileStore(directory: FileManager.default.temporaryDirectory.appendingPathComponent("PicStripExports", isDirectory: true))
     }
@@ -90,7 +102,9 @@ nonisolated struct PrivateFileStore: Sendable {
 
     /// Consume oldest first, preserving additional pending handoffs for later.
     /// Remove before decoding, so a failed import cannot replay sensitive bytes.
-    func consume(now: Date = Date()) -> Data? {
+    /// A video is never read into memory: it is moved into `videos`, the app's
+    /// protected store, and opened from there.
+    func consume(movingVideosTo videos: PrivateFileStore = .exports, now: Date = Date()) -> PendingEdit? {
         migrateLegacyHandoff(now: now)
         removeExpired(now: now)
         let pending = files().sorted {
@@ -99,9 +113,15 @@ nonisolated struct PrivateFileStore: Sendable {
             return left < right
         }
         for url in pending {
+            if Self.videoExtensions.contains(url.pathExtension.lowercased()) {
+                let moved = try? videos.adopt(url, extension: url.pathExtension, now: now)
+                remove(url)
+                if let moved { return .video(moved) }
+                continue
+            }
             let data = try? ImageResourceBudget(maximumPixels: .infinity, maximumBytes: maximumBytes).read(url)
             remove(url)
-            if let data { return data }
+            if let data { return .image(data) }
         }
         return nil
     }

@@ -191,7 +191,7 @@ struct AboutView: View {
                         instructionRow(
                             icon: "square.and.arrow.up",
                             color: .teal,
-                            text: "**Share Extension** — in any app, tap Share → PicStrip to send an image to PicStrip, then open the app to edit it."
+                            text: "**Share Extension** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, or choose Edit in PicStrip, then open the app to edit the first one. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit."
                         )
                     }
                     .padding(.vertical, 6)

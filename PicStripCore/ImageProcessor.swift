@@ -13,7 +13,7 @@ import UniformTypeIdentifiers
 ///
 /// Field override keys use the compound format `"<Category>.<KeyName>"`,
 /// e.g. `"GPS.GPSLatitude"`. A value of `false` means "keep this field".
-nonisolated struct StripConfig {
+nonisolated struct StripConfig: Equatable {
     /// Per-category enable flags. `true` = strip the whole category.
     var categoryEnabled: [String: Bool]
 
@@ -246,9 +246,11 @@ nonisolated enum ImageProcessor {
             return nil
         }
 
+        // Turned by `displayOrientation`, not by ImageIO's thumbnail transform,
+        // which on some PNGs ignores the tag the scan and the export follow.
         let thumbnailOptions: [CFString: Any] = [
             kCGImageSourceCreateThumbnailFromImageAlways: true,
-            kCGImageSourceCreateThumbnailWithTransform: true,
+            kCGImageSourceCreateThumbnailWithTransform: false,
             kCGImageSourceShouldCacheImmediately: true,
             kCGImageSourceThumbnailMaxPixelSize: maxPixelDimension
         ]
@@ -260,7 +262,30 @@ nonisolated enum ImageProcessor {
             return nil
         }
 
-        return UIImage(cgImage: cgImage)
+        let orientation = displayOrientation(of: source)
+        guard orientation != .up else { return UIImage(cgImage: cgImage) }
+        return UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation(orientation)).normalized()
+    }
+
+    /// How the image in `data` is turned for display: its orientation tag, as
+    /// ImageIO reads it.  The scan, the editor's preview and the export all take
+    /// it from here, because Apple's decoders disagree on some files —
+    /// `UIImage(data:)`, and at times ImageIO's own thumbnails, ignore the tag
+    /// of a PNG that also carries a location.
+    nonisolated static func displayOrientation(of data: Data) -> CGImagePropertyOrientation {
+        guard let source = CGImageSourceCreateWithData(data as CFData, [kCGImageSourceShouldCache: false] as CFDictionary)
+        else { return .up }
+        return displayOrientation(of: source)
+    }
+
+    nonisolated private static func displayOrientation(of source: CGImageSource) -> CGImagePropertyOrientation {
+        guard let properties = CGImageSourceCopyPropertiesAtIndex(
+                source, CGImageSourceGetPrimaryImageIndex(source), nil
+              ) as? [CFString: Any],
+              let raw = properties[kCGImagePropertyOrientation] as? UInt32,
+              let orientation = CGImagePropertyOrientation(rawValue: raw)
+        else { return .up }
+        return orientation
     }
 
     /// Strips private metadata from `data`, re-encodes the image using `preset`, and
@@ -293,8 +318,7 @@ nonisolated enum ImageProcessor {
         preset: ExportPreset,
         config: StripConfig = .default
     ) throws -> ProcessedImage {
-        guard let uiImage = UIImage(data: data),
-              let cgImage = uiImage.normalized().cgImage else {
+        guard let cgImage = uprightImage(from: data) else {
             throw ProcessingError.imageDecodingFailed
         }
 
@@ -304,6 +328,71 @@ nonisolated enum ImageProcessor {
             preset: preset,
             config: config
         )
+    }
+
+    /// The image in `data` with its pixels turned the way it is displayed.
+    ///
+    /// Cameras store a portrait photo sideways and tag it with an orientation,
+    /// so it is redrawn upright before encoding.  `UIGraphicsImageRenderer`
+    /// copies its bitmap when it hands the image over, so that redraw held two
+    /// full-size bitmaps besides the decode.  An 8-bit RGB photo — every camera
+    /// JPEG and HEIC — is drawn into a plain bitmap of the format the renderer
+    /// would pick, straight from an uncached decode, which needs one.  Both
+    /// export paths take the orientation from `orientedImage`, so they turn a
+    /// photo alike.
+    nonisolated static func uprightImage(from data: Data) -> CGImage? {
+        guard let image = orientedImage(from: data) else { return nil }
+        guard image.imageOrientation != .up else { return image.cgImage }
+        return uprightBitmap(from: data, as: image) ?? image.normalized().cgImage
+    }
+
+    /// `data` decoded and turned by `displayOrientation`, as the scan and the
+    /// editor's preview see it, so covers land where they were placed.
+    /// `UIImage(data:)` alone ignores the orientation of a PNG that also
+    /// carries a location, and on such a photo the covers would land elsewhere.
+    nonisolated static func orientedImage(from data: Data) -> UIImage? {
+        guard let image = UIImage(data: data) else { return nil }
+        let shown = UIImage.Orientation(displayOrientation(of: data))
+        guard shown != image.imageOrientation, let cgImage = image.cgImage else { return image }
+        return UIImage(cgImage: cgImage, scale: image.scale, orientation: shown)
+    }
+
+    /// `image` redrawn upright into an 8-bit bitmap in its own colour space, or
+    /// `nil` unless it is 8-bit RGB, decoded from `data` exactly as `image` is.
+    nonisolated private static func uprightBitmap(from data: Data, as image: UIImage) -> CGImage? {
+        guard !image.isHighDynamicRange,
+              let decoded = image.cgImage,
+              decoded.bitsPerComponent == 8,
+              let space = decoded.colorSpace, space.model == .rgb,
+              let source = CGImageSourceCreateWithData(data as CFData, nil),
+              let uncached = CGImageSourceCreateImageAtIndex(
+                source, CGImageSourceGetPrimaryImageIndex(source),
+                [kCGImageSourceShouldCache: false] as CFDictionary
+              ),
+              uncached.width == decoded.width, uncached.height == decoded.height,
+              uncached.bitsPerPixel == decoded.bitsPerPixel,
+              uncached.bitmapInfo == decoded.bitmapInfo,
+              uncached.colorSpace == space
+        else { return nil }
+
+        // The renderer's own choice: BGRA, premultiplied only when there is alpha.
+        let opaque = [.none, .noneSkipFirst, .noneSkipLast].contains(decoded.alphaInfo)
+        let alpha: CGImageAlphaInfo = opaque ? .noneSkipFirst : .premultipliedFirst
+        let width = Int((image.size.width * image.scale).rounded())
+        let height = Int((image.size.height * image.scale).rounded())
+        guard let context = CGContext(
+            data: nil, width: width, height: height, bitsPerComponent: 8, bytesPerRow: 0, space: space,
+            bitmapInfo: alpha.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        ) else { return nil }
+
+        // UIKit's top-left, point-sized space, so `UIImage.draw` applies the turn.
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: image.scale, y: -image.scale)
+        UIGraphicsPushContext(context)
+        UIImage(cgImage: uncached, scale: image.scale, orientation: image.imageOrientation)
+            .draw(in: CGRect(origin: .zero, size: image.size))
+        UIGraphicsPopContext()
+        return context.makeImage()
     }
 
     /// Re-encodes an already-rendered image while using metadata from the
@@ -400,7 +489,7 @@ nonisolated enum ImageProcessor {
         }
 
         // 7. Build a CGMutableImageMetadata containing:
-        //    a) orientation = 1 (pixels are already display-oriented after UIImage decode)
+        //    a) orientation = 1 (the pixels were turned upright before encoding)
         //    b) any metadata sub-dictionaries that the config says to KEEP (category disabled)
         //
         //    kCGImageDestinationMergeMetadata: false in pass 2 wipes everything ImageIO
@@ -411,7 +500,7 @@ nonisolated enum ImageProcessor {
         let outputMetadata = CGImageMetadataCreateMutable()
 
         if outputUTType != .png {
-            // a) Always write orientation 1 — pixels are display-oriented from UIImage.normalized().
+            // a) Always write orientation 1 — the pixels are already display-oriented.
             if let tag = CGImageMetadataTagCreate(
                 kCGImageMetadataNamespaceTIFF as CFString,
                 kCGImageMetadataPrefixTIFF,
@@ -788,6 +877,23 @@ private extension UIImage {
         switch alphaInfo {
         case .none, .noneSkipFirst, .noneSkipLast: return false
         default: return true
+        }
+    }
+}
+
+private extension UIImage.Orientation {
+    /// UIKit's name for an EXIF orientation.
+    nonisolated init(_ orientation: CGImagePropertyOrientation) {
+        switch orientation {
+        case .up:            self = .up
+        case .upMirrored:    self = .upMirrored
+        case .down:          self = .down
+        case .downMirrored:  self = .downMirrored
+        case .left:          self = .left
+        case .leftMirrored:  self = .leftMirrored
+        case .right:         self = .right
+        case .rightMirrored: self = .rightMirrored
+        @unknown default:    self = .up
         }
     }
 }

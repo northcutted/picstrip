@@ -5,9 +5,11 @@ PicStrip 1.7 büyük bir güncelleme: Artık videoları temizliyor ve kamerası,
 • Video düzenleyici tarzı bir zaman çizelgesinde her karartmayı kırpın, söylenenlere bip ekleyin veya sessize alın.
 • Fotoğraf, video ve belgeler için tek bir kamera. Kamera uygulamasından tanıdığınız denetimlerle 4K’ya kadar HDR video çekin; Fotoğraf modunda canlı vizör, neleri karartacağını çerçeveler.
 • Fotoğrafları ve videoları birlikte seçin: Tek bir öğe düzenleyicide açılır, birden fazlası aynı anda temizlenir.
+• Herhangi bir uygulamadan videoları PicStrip ile paylaşarak meta verilerini kaldırın ya da yüzleri ve metinleri karartmak için PicStrip’te açın. Yeni bir Kestirmeler eylemi, videolardaki meta verileri kaldırır.
 • Emoji ile karartın, iOS 27’de bir nesneye dokunarak onu karartın ve kart ya da telefon numaralarının son hanelerini görünür bırakın.
 • Her zaman karart: Adınız, bir plaka veya sokağınız, PicStrip nerede okursa okusun karartılır.
 • Belgeleri tarayın, yalnızca ekran görüntülerinizi seçin, Live Photo hareketini koruyun ve öncesiyle sonrasını karşılaştırın.
 • Paylaşım ön ayarları, görünür dosya boyutu ve nelerin kaldırıldığına dair bir özet.
+• Daha hızlı dışa aktarma ve toplu işlemler, daha akıcı bir video düzenleyici ve sabit tuttuğunuzda pil tasarrufu yapan bir kamera.
 
 Otomatik algılama ayrıntıları kaçırabilir. Paylaşmadan önce fotoğrafın veya videonun tamamını inceleyin.

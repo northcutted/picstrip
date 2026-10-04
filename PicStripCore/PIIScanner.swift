@@ -237,10 +237,13 @@ nonisolated struct PIIScanner {
 
         // Stage 2: Single-pass Vision — submit OCR, face, barcode, and
         // document-rectangle requests against ONE ImageRequestHandler so the
-        // source bytes are decoded and pre-processed exactly once.
-        // Raw Data (not a pre-decoded CGImage) is passed so that the handler can
-        // read the EXIF orientation tag and return bounding boxes in the visual
-        // coordinate space — the same space that UIKit's display pipeline uses.
+        // source bytes are decoded and pre-processed exactly once.  The retries
+        // below reuse the same handler, so they do not decode the image again.
+        // The orientation is given explicitly — the tag as ImageIO reads it,
+        // which the editor's preview and the export follow too — so bounding
+        // boxes come back in the space the photo is shown and covered in
+        // (see `ImageProcessor.displayOrientation`).
+        let handler = ImageRequestHandler(data, orientation: ImageProcessor.displayOrientation(of: data))
         let requests: [any VisionRequest] = [
             Self.makeTextRequest(level: .accurate),
             Self.makeFaceRequest(),
@@ -267,7 +270,7 @@ nonisolated struct PIIScanner {
         // sub-request failing (e.g. rectangle detection on the simulator with no
         // Neural Engine) arrives as its own `.error` and never discards the
         // others' results.  The variadic `perform` would throw for all of them.
-        for await result in ImageRequestHandler(data).performAll(requests) {
+        for await result in handler.performAll(requests) {
             switch result {
             case .recognizeText(_, let found):
                 observations = found
@@ -303,9 +306,11 @@ nonisolated struct PIIScanner {
         // path, heavily compressed image) retry text-only with the fast
         // model.  Face / barcode / rectangle results from the primary pass
         // are preserved, so this only re-pays the text inference cost.
+        // It runs for every photo without text: a missed line is a privacy
+        // miss, and nothing shows that an empty accurate pass is never wrong.
         if observations.isEmpty {
             let fastRequest = Self.makeTextRequest(level: .fast)
-            if let found = try? await ImageRequestHandler(data).perform(fastRequest) {
+            if let found = try? await handler.perform(fastRequest) {
                 observations = found
                 textRecognitionRan = true
                 coverage[.text] = .complete
@@ -315,7 +320,7 @@ nonisolated struct PIIScanner {
         // The pinned iOS 27 face revision may be unavailable on some hardware.  A
         // missed face is a privacy miss, so retry with the OS default revision.
         if faceDetectionFailed {
-            if let found = try? await ImageRequestHandler(data).perform(DetectFaceRectanglesRequest()) {
+            if let found = try? await handler.perform(DetectFaceRectanglesRequest()) {
                 faces = found
                 coverage[.faces] = .complete
             }
@@ -597,6 +602,12 @@ nonisolated struct PIIScanner {
         let lineBounds: CGRect
     }
 
+    /// One observation's text, whichever candidate rank it came from.
+    nonisolated private struct Reading: Hashable {
+        let observation: UUID
+        let text: String
+    }
+
     nonisolated struct RecognizedLineContext: Hashable {
         let text: String
         let boundingBox: CGRect
@@ -752,7 +763,7 @@ nonisolated struct PIIScanner {
             )
         }.sorted(by: readingOrder)
 
-        let candidateLines = observations.flatMap { observation -> [OCRLine] in
+        let allCandidateLines = observations.flatMap { observation -> [OCRLine] in
             let visionBox = observation.boundingBox.cgRect
             return observation.topCandidates(5).enumerated().map { rank, candidate in
                 OCRLine(
@@ -766,6 +777,18 @@ nonisolated struct PIIScanner {
                 )
             }
         }.sorted(by: readingOrder)
+
+        // Vision can offer the same text more than once for one line.  A repeat
+        // matches exactly what its better-ranked reading matched, only with a
+        // lower score, so the rules below see each distinct reading once.
+        var bestRank: [Reading: Int] = [:]
+        for line in allCandidateLines {
+            let reading = Reading(observation: line.observation.uuid, text: line.text)
+            bestRank[reading] = min(bestRank[reading] ?? line.rank, line.rank)
+        }
+        let candidateLines = allCandidateLines.filter {
+            bestRank[Reading(observation: $0.observation.uuid, text: $0.text)] == $0.rank
+        }
 
         // Keyed by PIIType so repeated hits across observations accumulate
         // into a single DetectionResult with an ever-growing `instances` array.
@@ -1061,9 +1084,11 @@ nonisolated struct PIIScanner {
             }
         }
 
+        // Each rank is a whole alternative reading of the page, repeats included:
+        // a key block is only found in lines that follow one another.
         var keyInstances: [DetectedInstance] = []
         for rank in 0..<5 {
-            let lines = candidateLines.filter { $0.rank == rank }.map {
+            let lines = allCandidateLines.filter { $0.rank == rank }.map {
                 ScannedLine(text: $0.text, boundingBox: $0.lineBounds, confidence: $0.confidence)
             }
             for instance in PrivateKeyDetector.results(in: lines).flatMap(\.instances)

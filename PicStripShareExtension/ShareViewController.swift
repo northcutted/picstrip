@@ -1,7 +1,6 @@
 import Photos
 import SwiftUI
 import UIKit
-import UniformTypeIdentifiers
 
 // MARK: - ExtensionViewModel
 
@@ -24,10 +23,14 @@ final class ExtensionViewModel {
 //
 // Lifecycle:
 //   1. iOS presents this view controller as a share sheet card.
-//   2. We embed ExtensionConfigView — two toggles and two action buttons.
+//   2. We embed ExtensionConfigView — the photo toggles and two action buttons.
 //   3. On "Process & Save" the pipeline saves a cleaned copy directly to Photos.
-//   4. On "Edit in PicStrip" the pipeline writes the first original image to the shared
-//      app group container, shows a "Image Prepared" confirmation, then dismisses.
+//      A video only has its hidden details removed, its frames copied as they
+//      are: finding and covering faces in a video needs more memory and time
+//      than an extension gets, so that is what Edit is for.
+//   4. On "Edit in PicStrip" the pipeline writes the first original photo or
+//      video to the shared app group container, shows a "Prepared" confirmation,
+//      then dismisses.
 //      iOS Share Extensions cannot programmatically switch apps (NSExtensionContext
 //      .open() is not supported from Share Extensions), so the user opens PicStrip
 //      manually. The main app's scenePhase observer drains the pending file on the
@@ -35,6 +38,7 @@ final class ExtensionViewModel {
 //
 // Memory discipline: each image's UIImage and Data are released between
 // iterations. Admission limits keep large photos out of the decode pipeline.
+// Videos are only ever copied as files, never read into memory.
 
 class ShareViewController: UIViewController {
 
@@ -58,8 +62,11 @@ class ShareViewController: UIViewController {
     // MARK: - Embed SwiftUI config view
 
     private func embedConfigView() {
+        let items = sharedItems()
         let configView = ExtensionConfigView(
-            itemCount: inputItemCount(),
+            photoCount: items.count { !$0.kind.isVideo },
+            videoCount: items.count { $0.kind.isVideo },
+            firstIsVideo: items.first?.kind.isVideo == true,
             viewModel: viewModel,
             onProcess: { [weak self] stripMetadata, redactPII, reduceLargeImages in
                 self?.runProcessingPipeline(stripMetadata: stripMetadata, redactPII: redactPII, reduceLargeImages: reduceLargeImages, destination: .photos)
@@ -99,11 +106,12 @@ class ShareViewController: UIViewController {
 
     // MARK: - Input helpers
 
-    private func inputItemCount() -> Int {
-        guard let items = extensionContext?.inputItems as? [NSExtensionItem] else { return 0 }
-        return items.flatMap { $0.attachments ?? [] }
-            .filter { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }
-            .count
+    /// The photos and videos shared, in order; anything else is left out.
+    private func sharedItems() -> [(provider: NSItemProvider, kind: SharedItemKind)] {
+        guard let items = extensionContext?.inputItems as? [NSExtensionItem] else { return [] }
+        return items.flatMap { $0.attachments ?? [] }.compactMap { provider in
+            SharedItemKind(registeredTypeIdentifiers: provider.registeredTypeIdentifiers).map { (provider, $0) }
+        }
     }
 
     // MARK: - Destination
@@ -111,7 +119,7 @@ class ShareViewController: UIViewController {
     private enum ProcessingDestination {
         /// Save cleaned copies to the Photos library.
         case photos
-        /// Write the first image to the app group container and open the main app editor.
+        /// Write the first photo or video to the app group container for the main app.
         case mainApp
     }
 
@@ -123,25 +131,20 @@ class ShareViewController: UIViewController {
         reduceLargeImages: Bool = false,
         destination: ProcessingDestination
     ) {
-        guard let items = extensionContext?.inputItems as? [NSExtensionItem] else {
+        guard extensionContext?.inputItems is [NSExtensionItem] else {
             showError(String(localized: "No input items found."))
             return
         }
 
-        let providers = items
-            .flatMap { $0.attachments ?? [] }
-            .filter { $0.hasItemConformingToTypeIdentifier(UTType.image.identifier) }
-
-        guard !providers.isEmpty else {
-            showError(String(localized: "No image attachments found."))
+        let items = sharedItems()
+        guard !items.isEmpty else {
+            showError(String(localized: "No photos or videos found."))
             return
         }
 
-        // "Edit in PicStrip" only processes the first image — subsequent images
-        // in a multi-select are ignored since the editor is single-image.
-        let targetProviders: [NSItemProvider] = destination == .mainApp
-            ? Array(providers.prefix(1))
-            : providers
+        // "Edit in PicStrip" only hands over the first item — the editor and the
+        // video cleaner each open one at a time.
+        let targetItems = destination == .mainApp ? Array(items.prefix(1)) : items
 
         viewModel.processingMessage = destination == .mainApp
             ? String(localized: "Preparing to open in PicStrip…")
@@ -151,7 +154,7 @@ class ShareViewController: UIViewController {
         processingTask?.cancel()
         processingTask = Task { [weak self] in
             await self?.process(
-                targetProviders,
+                targetItems,
                 stripMetadata: stripMetadata,
                 redactPII: redactPII,
                 reduceLargeImages: reduceLargeImages,
@@ -161,9 +164,10 @@ class ShareViewController: UIViewController {
     }
 
     /// Runs on the main actor so the (non-Sendable) item providers never leave
-    /// it; only each image's `Data` crosses to the background in `clean`.
+    /// it; only each image's `Data` crosses to the background in `clean`, and
+    /// each video's file URL.
     private func process(
-        _ providers: [NSItemProvider],
+        _ items: [(provider: NSItemProvider, kind: SharedItemKind)],
         stripMetadata: Bool,
         redactPII: Bool,
         reduceLargeImages: Bool,
@@ -184,13 +188,38 @@ class ShareViewController: UIViewController {
 
         // Sequential on purpose: one decoded image at a time keeps the extension
         // within the conservative extension budget. Large images must open in the app.
-        for provider in providers {
+        for (provider, kind) in items {
 
-            // ── Resolve best concrete type + load raw Data ────────────────
+            // ── Videos: hidden details only, or handed over as a file ─────
+            if case .video(let typeID) = kind {
+                guard !Task.isCancelled else { return }
+                do {
+                    switch destination {
+                    case .photos:
+                        try await saveCleanedVideo(from: provider, typeIdentifier: typeID)
+                    case .mainApp:
+                        let handoff = try await handOffVideo(from: provider, typeIdentifier: typeID)
+                        // Cancelled while the copy was made: leave nothing behind.
+                        guard !Task.isCancelled else {
+                            PrivateFileStore.handoffs?.remove(handoff)
+                            return
+                        }
+                        pendingHandoffURL = handoff
+                    }
+                    savedCount += 1
+                } catch {
+                    if Task.isCancelled { return }
+                    firstFailure = firstFailure ?? error.localizedDescription
+                    failedCount += 1
+                }
+                continue
+            }
+
+            // ── Load the photo's raw Data in its best concrete type ───────
             // ── Scan, redact, strip — off the main actor ──────────────────
             // Fail closed: if a step the user asked for cannot run, skip the
             // image instead of saving the untouched original as "cleaned".
-            guard let typeID = Self.bestTypeIdentifier(for: provider),
+            guard case .photo(let typeID) = kind,
                   let rawData = await loadData(from: provider, typeIdentifier: typeID)
             else {
                 failedCount += 1
@@ -230,14 +259,14 @@ class ShareViewController: UIViewController {
         }
 
         if savedCount == 0 {
-            showError(firstFailure ?? String(localized: "No images could be processed."))
+            showError(firstFailure ?? String(localized: "No photos or videos could be processed."))
         } else if failedCount > 0, destination == .photos {
             viewModel.resultMessage = String(localized: "Saved: \(savedCount). Not saved: \(failedCount).")
             viewModel.errorMessage = firstFailure
             viewModel.phase = .finished
         } else if destination == .mainApp {
             // Transition to the "ready" state so the user sees confirmation
-            // that their image has been prepared before they dismiss and open
+            // that their item has been prepared before they dismiss and open
             // PicStrip manually.  iOS Share Extensions cannot programmatically
             // switch to another app — NSExtensionContext.open() is not supported
             // from Share Extensions — so we can only guide the user.
@@ -277,23 +306,42 @@ class ShareViewController: UIViewController {
         return result.export.processed.data
     }
 
-    // MARK: - UTI resolution
+    // MARK: - Videos
 
-    /// Returns the most specific concrete image type the provider supports.
-    ///
-    /// `loadDataRepresentation(forTypeIdentifier:)` silently drops its callback
-    /// when handed an abstract UTI like `"public.image"` if the provider only
-    /// registers concrete types (which Photos always does).  Resolving to the
-    /// concrete type first guarantees the callback fires.
-    ///
-    /// `registeredTypeIdentifiers` is ordered by fidelity, so the first image
-    /// type is the provider's best representation.  Asking the provider what it
-    /// actually registered (rather than probing a fixed JPEG/PNG/HEIC list) also
-    /// covers WebP, HEIF, TIFF, GIF, AVIF, and RAW.  Returns `nil` when the
-    /// provider has no image representation at all.
-    nonisolated private static func bestTypeIdentifier(for provider: NSItemProvider) -> String? {
-        provider.registeredTypeIdentifiers.first { identifier in
-            UTType(identifier)?.conforms(to: .image) == true
+    /// "Process & Save" for a video: a copy without its hidden details — the
+    /// frames copied as they are, checked before it is kept — saved to Photos.
+    /// Both temporary files are deleted whatever happens.
+    private func saveCleanedVideo(from provider: NSItemProvider, typeIdentifier: String) async throws {
+        let store = PrivateFileStore.exports
+        let original = try await copyVideo(from: provider, typeIdentifier: typeIdentifier, into: store)
+        defer { store.remove(original) }
+        let cleaned = try store.reserve(extension: "mov")
+        defer { store.remove(cleaned) }
+        try await VideoMetadataCleaner.clean(original, to: cleaned)
+        try Task.checkCancellation()
+        try await PhotoLibraryWriter.saveVideo(at: cleaned)
+    }
+
+    /// "Edit in PicStrip" for a video: the original, metadata and all, in the
+    /// protected, expiring App Group handoff the app opens in its video cleaner.
+    private func handOffVideo(from provider: NSItemProvider, typeIdentifier: String) async throws -> URL {
+        guard let store = PrivateFileStore.handoffs else { throw CocoaError(.fileWriteUnknown) }
+        return try await copyVideo(from: provider, typeIdentifier: typeIdentifier, into: store)
+    }
+
+    /// Copies the shared video into `store` as a file — never into memory —
+    /// while the provider's temporary file exists: it is deleted when the
+    /// callback returns.
+    private func copyVideo(from provider: NSItemProvider, typeIdentifier: String, into store: PrivateFileStore) async throws -> URL {
+        let fileExtension = SharedItemKind.videoFileExtension(for: typeIdentifier)
+        return try await withCheckedThrowingContinuation { continuation in
+            provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { url, error in
+                guard let url else {
+                    continuation.resume(throwing: error ?? VideoMetadataCleaner.Failure.cannotExport)
+                    return
+                }
+                continuation.resume(with: Result { try store.copy(url, extension: fileExtension) })
+            }
         }
     }
 
@@ -326,7 +374,10 @@ class ShareViewController: UIViewController {
 
 private struct ExtensionConfigView: View {
 
-    let itemCount: Int
+    let photoCount: Int
+    let videoCount: Int
+    /// Edit hands over the first item, so its wording follows that one.
+    let firstIsVideo: Bool
     let viewModel: ExtensionViewModel
     let onProcess: (Bool, Bool, Bool) -> Void
     let onEdit: (Bool, Bool) -> Void
@@ -376,7 +427,7 @@ private struct ExtensionConfigView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Clean with PicStrip")
                         .font(.headline)
-                    Text("^[\(itemCount) photo](inflect: true) selected")
+                    selectionSummary
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
@@ -387,28 +438,12 @@ private struct ExtensionConfigView: View {
 
             Divider()
 
-            VStack(spacing: 0) {
-                Toggle("Strip Privacy Metadata", isOn: $stripMetadata)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 14)
-                    .accessibilityHint("Removes location, camera, editing, and other private image metadata.")
-
-                Divider()
-                    .padding(.leading, 20)
-
-                Toggle("Auto-Redact Sensitive Data", isOn: $redactPII)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 14)
-                    .accessibilityHint("Scans visible text and faces on device and burns redaction boxes over likely sensitive data.")
-                Divider().padding(.leading, 20)
-                Toggle("Allow smaller copies", isOn: $reduceLargeImages)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 14)
-                Text("Large photos need smaller copies in the extension: up to 6 megapixels for redaction, or 12 for metadata only. Edit in PicStrip for full review.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 14)
+            if photoCount > 0 {
+                photoOptions
+            }
+            if videoCount > 0 {
+                if photoCount > 0 { Divider().padding(.leading, 20) }
+                videoNote
             }
 
             Divider()
@@ -427,53 +462,115 @@ private struct ExtensionConfigView: View {
                     .transition(.opacity)
             }
 
-            VStack(spacing: 10) {
-                Button {
-                    onProcess(stripMetadata, redactPII, reduceLargeImages)
-                } label: {
-                    Label("Process & Save to Photos", systemImage: "checkmark.shield.fill")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .accessibilityHint("Cleans selected images on this device and saves new copies to Photos.")
-                .disabled(!stripMetadata && !redactPII)
-
-                // "Edit in PicStrip" — only available for a single image since
-                // the full editor is single-image.  When multiple images were
-                // shared, only the first will be sent to the editor.
-                Button {
-                    onEdit(stripMetadata, redactPII)
-                } label: {
-                    Label("Edit in PicStrip", systemImage: "pencil.and.scribble")
-                        .font(.body.weight(.semibold))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .accessibilityHint("Opens the first selected image in the PicStrip editor for manual redaction.")
-
-                Text("Edit opens the first original image for review. A protected local copy expires after 15 minutes.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                Button(role: .cancel) {
-                    onCancel()
-                } label: {
-                    Text("Cancel")
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 4)
-                }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .accessibilityHint("Closes the PicStrip share extension without saving.")
-            }
-            .padding(.horizontal, 20)
-            .padding(.bottom, 28)
+            actionButtons
         }
+    }
+
+    /// "3 photos selected", or the photos and videos counted apart.
+    private var selectionSummary: Text {
+        if videoCount == 0 { return Text("^[\(photoCount) photo](inflect: true) selected") }
+        if photoCount == 0 { return Text("Videos: \(videoCount)") }
+        return Text("Photos: \(photoCount) · Videos: \(videoCount)")
+    }
+
+    /// The photo pipeline's switches; videos only ever have their metadata removed here.
+    private var photoOptions: some View {
+        VStack(spacing: 0) {
+            Toggle("Strip Privacy Metadata", isOn: $stripMetadata)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .accessibilityHint("Removes location, camera, editing, and other private image metadata.")
+
+            Divider()
+                .padding(.leading, 20)
+
+            Toggle("Auto-Redact Sensitive Data", isOn: $redactPII)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+                .accessibilityHint("Scans visible text and faces on device and burns redaction boxes over likely sensitive data.")
+            Divider().padding(.leading, 20)
+            Toggle("Allow smaller copies", isOn: $reduceLargeImages)
+                .padding(.horizontal, 20)
+                .padding(.vertical, 14)
+            Text("Large photos need smaller copies in the extension: up to 6 megapixels for redaction, or 12 for metadata only. Edit in PicStrip for full review.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 20)
+                .padding(.bottom, 14)
+        }
+    }
+
+    /// Covering faces in a video takes more memory and time than an extension
+    /// gets, so say what happens here and where the rest is done.
+    private var videoNote: some View {
+        Label {
+            Text("Videos have their metadata removed here. To cover faces and text, choose Edit in PicStrip.")
+        } icon: {
+            Image(systemName: "video")
+        }
+        .font(.footnote)
+        .foregroundStyle(.secondary)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 14)
+    }
+
+    private var actionButtons: some View {
+        VStack(spacing: 10) {
+            Button {
+                onProcess(stripMetadata, redactPII, reduceLargeImages)
+            } label: {
+                Label("Process & Save to Photos", systemImage: "checkmark.shield.fill")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .accessibilityHint("Cleans selected images on this device and saves new copies to Photos.")
+            // The switches are for photos; a video always has its metadata removed.
+            .disabled(photoCount > 0 && !stripMetadata && !redactPII)
+
+            // "Edit in PicStrip" — the editor and the video cleaner each
+            // open one item, so when several were shared only the first
+            // is handed over.
+            Button {
+                onEdit(stripMetadata, redactPII)
+            } label: {
+                Label("Edit in PicStrip", systemImage: "pencil.and.scribble")
+                    .font(.body.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .accessibilityHint(firstIsVideo
+                ? Text("Opens the first selected video in PicStrip to cover faces and text.")
+                : Text("Opens the first selected image in the PicStrip editor for manual redaction."))
+
+            Group {
+                if firstIsVideo {
+                    Text("Edit opens the first video in PicStrip, where you can cover faces and text. A protected local copy expires after 15 minutes.")
+                } else {
+                    Text("Edit opens the first original image for review. A protected local copy expires after 15 minutes.")
+                }
+            }
+            .font(.caption)
+            .foregroundStyle(.secondary)
+
+            Button(role: .cancel) {
+                onCancel()
+            } label: {
+                Text("Cancel")
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 4)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .accessibilityHint("Closes the PicStrip share extension without saving.")
+        }
+        .padding(.horizontal, 20)
+        .padding(.bottom, 28)
     }
 
     // MARK: - Ready state (mainApp destination)
@@ -488,7 +585,7 @@ private struct ExtensionConfigView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: 6) {
-                Text("Image Prepared")
+                (firstIsVideo ? Text("Video Prepared") : Text("Image Prepared"))
                     .font(.title2.weight(.semibold))
                 Text("Open PicStrip within 15 minutes to review the original and choose what to cover.")
                     .font(.body)
@@ -510,10 +607,14 @@ private struct ExtensionConfigView: View {
             .controlSize(.large)
             .padding(.horizontal, 20)
             .padding(.bottom, 28)
-            .accessibilityHint("Closes the extension. Open PicStrip to edit your prepared image.")
+            .accessibilityHint(firstIsVideo
+                ? Text("Closes the extension. Open PicStrip to edit your prepared video.")
+                : Text("Closes the extension. Open PicStrip to edit your prepared image."))
 
-            Button("Discard prepared image", role: .destructive, action: onCancel)
-                .padding(.bottom, 16)
+            Button(role: .destructive, action: onCancel) {
+                firstIsVideo ? Text("Discard prepared video") : Text("Discard prepared image")
+            }
+            .padding(.bottom, 16)
         }
         .frame(maxWidth: .infinity)
         .padding(.horizontal, 20)

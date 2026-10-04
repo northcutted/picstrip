@@ -155,6 +155,9 @@ nonisolated struct FaceTracking {
         (finished + active).sorted { ($0.start, $0.id) < ($1.start, $1.id) }
     }
 
+    /// How many tracks there are so far — `tracks.count` without the sorting.
+    var trackCount: Int { finished.count + active.count }
+
     /// How likely two boxes, a sample apart, are the same face: overlapping boxes
     /// score above 1 by their overlap; boxes apart score below 1 by how near they
     /// are, within one and a half times the larger — a face crossing the frame

@@ -105,6 +105,25 @@ final class TimelineZoomTests: XCTestCase {
         XCTAssertEqual(EditorTimeline.zoomLabel(2), "2×")
         XCTAssertEqual(EditorTimeline.zoomLabel(2.5), "2.5×")
     }
+
+    func testTheFilmstripsFirstLookIsPartOfTheWholeStrip() {
+        XCTAssertEqual(VideoCleanerModel.filmstripTimes(duration: 4, count: 4), [0.5, 1.5, 2.5, 3.5])
+        XCTAssertEqual(VideoCleanerModel.evenlySpread(10, picking: 10), Array(0..<10), "A short video's strip is all first look.")
+        XCTAssertEqual(VideoCleanerModel.evenlySpread(4, picking: 10), Array(0..<4))
+        for count in [11, 37, 120] {
+            let picked = VideoCleanerModel.evenlySpread(count, picking: 10)
+            XCTAssertEqual(picked.count, 10)
+            XCTAssertEqual(picked, picked.sorted(), "In order.")
+            XCTAssertEqual(Set(picked).count, 10, "Each frame once.")
+            // Each within a frame of where an even ten would put it.
+            let frames = Double(count)
+            for (place, index) in picked.enumerated() {
+                let even: Double = (Double(place) + 0.5) / 10
+                let actual: Double = (Double(index) + 0.5) / frames
+                XCTAssertEqual(actual, even, accuracy: 1 / frames, "\(count): \(picked)")
+            }
+        }
+    }
 }
 
 // MARK: - Following a drawn box

@@ -45,6 +45,7 @@ final class FaceTrackingTests: XCTestCase {
         tracking.add([box(0.24)], at: 4.0)     // missed for 2.4 s: a new track
         let tracks = tracking.tracks
         XCTAssertEqual(tracks.map(\.samples.count), [2, 1])
+        XCTAssertEqual(tracking.trackCount, 2, "Finished and active tracks are both counted.")
 
         let filled = try? XCTUnwrap(tracks.first?.coverBox(at: 0.8))
         XCTAssertEqual(filled?.midX ?? 0, FaceTracking.padded(box(0.21)).midX, accuracy: 0.001,

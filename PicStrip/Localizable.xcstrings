@@ -3167,102 +3167,103 @@
         }
       }
     },
-    "**Share Extension** — in any app, tap Share → PicStrip to send an image to PicStrip, then open the app to edit it." : {
+    "**Share Extension** — in any app, tap Share → Clean with PicStrip to save cleaned copies of photos and videos, or choose Edit in PicStrip, then open the app to edit the first one. Videos only have their metadata removed in the share sheet; to cover faces and text, use Edit." : {
+      "comment" : "Help page row, Ways to Import. “Clean with PicStrip” is the share sheet action's name and “Edit in PicStrip” its button (existing keys).",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**امتداد المشاركة** — في أي تطبيق، اضغط على مشاركة ← PicStrip لإرسال صورة إلى PicStrip، ثم افتح التطبيق لتحريرها."
+            "value" : "**امتداد المشاركة** — في أي تطبيق، اضغط على مشاركة ← تنظيف باستخدام PicStrip لحفظ نسخ منظَّفة من الصور ومقاطع الفيديو، أو اختر ”تحرير في PicStrip“ ثم افتح التطبيق لتحرير أولها. في الامتداد لا تُزال من مقاطع الفيديو سوى بياناتها الوصفية؛ لحجب الوجوه والنصوص، استخدم ”تحرير في PicStrip“."
           }
         },
         "de" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Teilen-Erweiterung** – tippe in jeder App auf Teilen → PicStrip, um ein Bild an PicStrip zu senden, und öffne dann die App, um es zu bearbeiten."
+            "value" : "**Teilen-Erweiterung** – tippe in jeder App auf Teilen → Mit PicStrip bereinigen, um bereinigte Kopien von Fotos und Videos zu sichern, oder wähle „In PicStrip bearbeiten“ und öffne dann die App, um das erste Foto oder Video zu bearbeiten. In der Erweiterung werden bei Videos nur die Metadaten entfernt; Gesichter und Text verdeckst du über „In PicStrip bearbeiten“."
           }
         },
         "es" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → PicStrip para enviar una imagen a PicStrip y luego abre la app para editarla."
+            "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y vídeos, o elige «Editar en PicStrip» y luego abre la app para editar el primero. En la extensión, los vídeos solo pierden sus metadatos; para censurar caras y texto, usa «Editar en PicStrip»."
           }
         },
         "es-419" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → PicStrip para enviar una imagen a PicStrip y luego abre la app para editarla."
+            "value" : "**Extensión para compartir**: en cualquier app, toca Compartir → Limpiar con PicStrip para guardar copias limpias de fotos y videos, o elige “Editar en PicStrip” y luego abre la app para editar el primero. En la extensión, los videos solo pierden sus metadatos; para censurar caras y texto, usa “Editar en PicStrip”."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Extension de partage** — dans n’importe quelle app, touchez Partager → PicStrip pour envoyer une image à PicStrip, puis ouvrez l’app pour la modifier."
+            "value" : "**Extension de partage** — dans n’importe quelle app, touchez Partager → Nettoyer avec PicStrip pour enregistrer des copies nettoyées de photos et de vidéos, ou choisissez Modifier dans PicStrip, puis ouvrez l’app pour modifier la première. Dans la feuille de partage, seules les métadonnées des vidéos sont supprimées ; pour masquer les visages et le texte, utilisez Modifier."
           }
         },
         "it" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Estensione di condivisione** — in qualsiasi app, tocca Condividi → PicStrip per inviare un’immagine a PicStrip, poi apri l’app per modificarla."
+            "value" : "**Estensione di condivisione** — in qualsiasi app, tocca Condividi → Pulisci con PicStrip per salvare copie pulite di foto e video, oppure scegli Modifica in PicStrip, poi apri l’app per modificare il primo elemento. Nel foglio di condivisione, dai video vengono rimossi solo i metadati; per coprire volti e testo, usa Modifica."
           }
         },
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**共有機能拡張**：どのアプリでも、共有 → PicStripをタップすると画像がPicStripに送られます。あとはアプリを開いて編集します。"
+            "value" : "**共有機能拡張**：どのアプリでも、「共有」→「PicStripでクリーンアップ」をタップすると、写真やビデオのクリーンアップしたコピーを保存できます。「PicStripで編集」を選んだ場合は、アプリを開いて最初の項目を編集します。共有シートでは、ビデオはメタデータが削除されるだけです。顔や文字をマスクするには「編集」を使ってください。"
           }
         },
         "ko" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**공유 확장 프로그램** — 어떤 앱에서든 공유 → PicStrip을 탭하여 이미지를 PicStrip으로 보낸 다음, 앱을 열어 편집하세요."
+            "value" : "**공유 확장 프로그램** — 어떤 앱에서든 “공유” → “PicStrip으로 정리”를 탭하여 사진과 비디오의 정리된 사본을 저장하거나, “PicStrip에서 편집”을 선택한 다음 앱을 열어 첫 번째 항목을 편집하세요. 공유 시트에서는 비디오의 메타데이터만 제거되므로, 얼굴과 텍스트를 가리려면 “편집”을 사용하세요."
           }
         },
         "nl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Deelextensie** — tik in elke app op Deel → PicStrip om een afbeelding naar PicStrip te sturen en open daarna de app om die te bewerken."
+            "value" : "**Deelextensie** — tik in elke app op Deel → Opschonen met PicStrip om opgeschoonde kopieën van foto’s en video’s te bewaren, of kies Bewerk in PicStrip en open daarna de app om de eerste te bewerken. In de extensie worden van video’s alleen de metadata verwijderd; gebruik Bewerk om gezichten en tekst af te dekken."
           }
         },
         "pl" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Rozszerzenie udostępniania** – w dowolnej aplikacji stuknij Udostępnij → PicStrip, aby wysłać obraz do PicStrip, a potem otwórz aplikację, by go edytować."
+            "value" : "**Rozszerzenie udostępniania** – w dowolnej aplikacji stuknij Udostępnij → Wyczyść w PicStrip, aby zachować wyczyszczone kopie zdjęć i nagrań wideo, lub wybierz Edytuj w PicStrip, a potem otwórz aplikację, by edytować pierwsze z nich. W rozszerzeniu z nagrań wideo usuwane są tylko metadane; aby zamazać twarze i tekst, użyj opcji Edytuj."
           }
         },
         "pt-BR" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Extensão de compartilhamento** — em qualquer app, toque em Compartilhar → PicStrip para enviar uma imagem ao PicStrip e abra o app para editá-la."
+            "value" : "**Extensão de compartilhamento** — em qualquer app, toque em Compartilhar → Limpar com PicStrip para salvar cópias limpas de fotos e vídeos, ou escolha Editar no PicStrip e depois abra o app para editar o primeiro item. Na extensão, os vídeos só têm os metadados removidos; para ocultar rostos e textos, use Editar."
           }
         },
         "pt-PT" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Extensão de partilha** — em qualquer app, toque em Partilhar → PicStrip para enviar uma imagem para o PicStrip e abra depois a app para a editar."
+            "value" : "**Extensão de partilha** — em qualquer app, toque em Partilhar → Limpar com PicStrip para guardar cópias limpas de fotografias e vídeos, ou escolha Editar no PicStrip e abra depois a app para editar o primeiro item. Na extensão, aos vídeos só são removidos os metadados; para ocultar rostos e texto, use Editar."
           }
         },
         "sv" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Delningstillägg** – tryck på Dela → PicStrip i valfri app för att skicka en bild till PicStrip och öppna sedan appen för att redigera den."
+            "value" : "**Delningstillägg** – tryck på Dela → Rensa med PicStrip i valfri app för att spara rensade kopior av bilder och videor, eller välj Redigera i PicStrip och öppna sedan appen för att redigera den första. I delningsbladet tas bara metadata bort från videor; använd Redigera för att maskera ansikten och text."
           }
         },
         "tr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**Paylaşım Uzantısı** — herhangi bir uygulamada Paylaş → PicStrip’e dokunarak bir görüntüyü PicStrip’e gönderin, sonra düzenlemek için uygulamayı açın."
+            "value" : "**Paylaşım Uzantısı** — herhangi bir uygulamada Paylaş → PicStrip ile Temizle’ye dokunarak fotoğrafların ve videoların temizlenmiş kopyalarını kaydedin ya da “PicStrip’te düzenle” düğmesine dokunun, ardından ilkini düzenlemek için uygulamayı açın. Paylaşma sayfasında videoların yalnızca meta verileri kaldırılır; yüzleri ve metinleri karartmak için Düzenle seçeneğini kullanın."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**“共享”扩展**——在任何应用中轻点“共享”→ PicStrip，即可将图像发送到 PicStrip，然后打开应用进行编辑。"
+            "value" : "**“共享”扩展**——在任何应用中轻点“共享”→“使用 PicStrip 清理”，即可存储照片和视频清理后的副本；也可以选择“在 PicStrip 中编辑”，然后打开应用编辑第一项。在共享表单中，视频只会移除元数据；如需遮盖面孔和文字，请使用“编辑”。"
           }
         },
         "zh-Hant" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "**分享擴充功能**：在任何 App 中點一下「分享」→ PicStrip，即可將影像傳送到 PicStrip，然後打開 App 進行編輯。"
+            "value" : "**分享擴充功能**：在任何 App 中點一下「分享」→「使用 PicStrip 清理」，即可儲存照片和影片清理後的拷貝；也可以選擇「在 PicStrip 中編輯」，然後打開 App 編輯第一個項目。在分享表單中，影片只會移除後設資料；若要遮蓋臉孔和文字，請使用「編輯」。"
           }
         }
       }
@@ -13625,6 +13626,107 @@
         }
       }
     },
+    "Closes the extension. Open PicStrip to edit your prepared video." : {
+      "comment" : "Share sheet: VoiceOver hint for Done after a video was handed to PicStrip.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يغلق الامتداد. افتح PicStrip لتحرير الفيديو المجهّز."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Schließt die Erweiterung. Öffne PicStrip, um dein vorbereitetes Video zu bearbeiten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la extensión. Abre PicStrip para editar el vídeo preparado."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cierra la extensión. Abre PicStrip para editar el video preparado."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ferme l’extension. Ouvrez PicStrip pour modifier votre vidéo préparée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chiude l’estensione. Apri PicStrip per modificare il video preparato."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "機能拡張を閉じます。準備したビデオを編集するにはPicStripを開いてください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확장 프로그램을 닫습니다. 준비된 비디오를 편집하려면 PicStrip을 여세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sluit de extensie. Open PicStrip om je voorbereide video te bewerken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamyka rozszerzenie. Otwórz PicStrip, aby edytować przygotowane wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha a extensão. Abra o PicStrip para editar o vídeo preparado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fecha a extensão. Abra o PicStrip para editar o vídeo preparado."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stänger tillägget. Öppna PicStrip för att redigera din förberedda video."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uzantıyı kapatır. Hazırlanan videoyu düzenlemek için PicStrip’i açın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "关闭扩展。打开 PicStrip 以编辑已准备好的视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "關閉擴充功能。打開 PicStrip 即可編輯已準備好的影片。"
+          }
+        }
+      }
+    },
     "Colon or hyphen-separated hardware addresses" : {
       "localizations" : {
         "ar" : {
@@ -19658,6 +19760,107 @@
         }
       }
     },
+    "Discard prepared video" : {
+      "comment" : "Share sheet button that deletes the video handed to PicStrip (pairs with “Discard prepared image”).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تجاهل الفيديو المُعدّ"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vorbereitetes Video verwerfen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo preparado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar video preparado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la vidéo préparée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scarta video preparato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "準備したビデオを破棄"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "준비된 비디오 버리기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voorbereide video weggooien"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odrzuć przygotowane wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo preparado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Descartar vídeo preparado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kasta förberedd video"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hazırlanan videoyu sil"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "丢弃已准备的视频"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "捨棄已準備的影片"
+          }
+        }
+      }
+    },
     "Dismiss" : {
       "comment" : "VoiceOver action that closes the save confirmation.",
       "localizations" : {
@@ -23170,6 +23373,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "「編輯」會開啟第一張原始影像以供檢查。受保護的本機拷貝將在15分鐘後到期。"
+          }
+        }
+      }
+    },
+    "Edit opens the first video in PicStrip, where you can cover faces and text. A protected local copy expires after 15 minutes." : {
+      "comment" : "Share sheet caption under the “Edit in PicStrip” button when the first shared item is a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يفتح التحرير أول فيديو في PicStrip، حيث يمكنك حجب الوجوه والنصوص. تنتهي صلاحية النسخة المحلية المحمية بعد 15 دقيقة."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bearbeiten öffnet das erste Video in PicStrip, wo du Gesichter und Text verdecken kannst. Eine geschützte lokale Kopie läuft nach 15 Minuten ab."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar abre el primer vídeo en PicStrip, donde puedes censurar caras y texto. Una copia local protegida caduca a los 15 minutos."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar abre el primer video en PicStrip, donde puedes censurar caras y texto. Una copia local protegida caduca a los 15 minutos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier ouvre la première vidéo dans PicStrip, où vous pouvez masquer les visages et le texte. Une copie locale protégée expire après 15 minutes."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifica apre il primo video in PicStrip, dove puoi coprire volti e testo. Una copia locale protetta scade dopo 15 minuti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集では最初のビデオをPicStripで開き、顔や文字をマスクできます。保護されたローカルコピーの有効期限は15分です。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "편집을 탭하면 첫 번째 비디오가 PicStrip에서 열리며, 여기서 얼굴과 텍스트를 가릴 수 있습니다. 보호된 로컬 사본은 15분 후 만료됩니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewerken opent de eerste video in PicStrip, waar je gezichten en tekst kunt afdekken. Een beveiligde lokale kopie verloopt na 15 minuten."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edycja otwiera pierwsze wideo w PicStrip, gdzie możesz zamazać twarze i tekst. Chroniona kopia lokalna wygasa po 15 minutach."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar abre o primeiro vídeo no PicStrip, onde você pode ocultar rostos e textos. Uma cópia local protegida expira após 15 minutos."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editar abre o primeiro vídeo no PicStrip, onde pode ocultar rostos e texto. Uma cópia local protegida expira após 15 minutos."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Redigera öppnar den första videon i PicStrip, där du kan maskera ansikten och text. En skyddad lokal kopia upphör att gälla efter 15 minuter."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Düzenle, ilk videoyu PicStrip’te açar; burada yüzleri ve metinleri karartabilirsiniz. Korumalı yerel kopyanın süresi 15 dakika sonra dolar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“编辑”会在 PicStrip 中打开第一个视频，你可以在其中遮盖面孔和文字。受保护的本地副本将在15分钟后过期。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "「編輯」會在 PicStrip 中打開第一部影片，你可以在其中遮蓋臉孔和文字。受保護的本機拷貝將在15分鐘後到期。"
           }
         }
       }
@@ -36577,206 +36881,6 @@
         }
       }
     },
-    "No image attachments found." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "لم يتم العثور على مرفقات صور."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Keine Bildanhänge gefunden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se han encontrado imágenes adjuntas."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se encontraron imágenes adjuntas."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune image jointe trouvée."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nessuna immagine allegata trovata."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "画像の添付ファイルが見つかりません。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이미지 첨부 파일을 찾을 수 없습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Geen afbeeldingsbijlagen gevonden."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie znaleziono załączonych obrazów."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhuma imagem anexada encontrada."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foram encontradas imagens anexadas."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inga bildbilagor hittades."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Görüntü eki bulunamadı."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "未找到图像附件。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "找不到影像附件。"
-          }
-        }
-      }
-    },
-    "No images could be processed." : {
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تعذّرت معالجة أي صورة."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Es konnten keine Bilder verarbeitet werden."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se ha podido procesar ninguna imagen."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No se pudo procesar ninguna imagen."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Aucune image n’a pu être traitée."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Non è stato possibile elaborare alcuna immagine."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "処理できる画像がありませんでした。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "처리할 수 있는 이미지가 없습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Er konden geen afbeeldingen worden verwerkt."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nie udało się przetworzyć żadnego obrazu."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nenhuma imagem pôde ser processada."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Não foi possível processar nenhuma imagem."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inga bilder kunde bearbetas."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hiçbir görüntü işlenemedi."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "无法处理任何图像。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "無法處理任何影像。"
-          }
-        }
-      }
-    },
     "No input items found." : {
       "localizations" : {
         "ar" : {
@@ -36973,6 +37077,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "該處找不到物體。請改用拖移來繪製遮蓋框。"
+          }
+        }
+      }
+    },
+    "No photos or videos could be processed." : {
+      "comment" : "Share sheet error: none of the shared photos or videos could be cleaned, saved or prepared.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّرت معالجة أي صورة أو فيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Es konnten keine Fotos oder Videos verarbeitet werden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se ha podido procesar ninguna foto ni vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se pudo procesar ninguna foto ni video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune photo ni vidéo n’a pu être traitée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non è stato possibile elaborare né foto né video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "処理できる写真やビデオがありませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "처리할 수 있는 사진이나 비디오가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Er konden geen foto’s of video’s worden verwerkt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie udało się przetworzyć żadnego zdjęcia ani wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível processar nenhuma foto ou vídeo."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foi possível processar nenhuma fotografia ou vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga bilder eller videor kunde bearbetas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiçbir fotoğraf veya video işlenemedi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无法处理任何照片或视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "無法處理任何照片或影片。"
+          }
+        }
+      }
+    },
+    "No photos or videos found." : {
+      "comment" : "Share sheet error: nothing shared was a photo or a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "لم يتم العثور على صور أو مقاطع فيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Keine Fotos oder Videos gefunden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se han encontrado fotos ni vídeos."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No se encontraron fotos ni videos."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune photo ni vidéo trouvée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non sono stati trovati né foto né video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真やビデオが見つかりません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진이나 비디오를 찾을 수 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Geen foto’s of video’s gevonden."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nie znaleziono zdjęć ani wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nenhuma foto ou vídeo encontrado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Não foram encontradas fotografias nem vídeos."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Inga bilder eller videor hittades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotoğraf veya video bulunamadı."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未找到照片或视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "找不到照片或影片。"
           }
         }
       }
@@ -39496,6 +39802,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "在 PicStrip 編輯器中打開所選的第一張影像，以便手動遮蓋。"
+          }
+        }
+      }
+    },
+    "Opens the first selected video in PicStrip to cover faces and text." : {
+      "comment" : "Share sheet: VoiceOver hint for the “Edit in PicStrip” button when the first shared item is a video.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يفتح أول فيديو محدد في PicStrip لحجب الوجوه والنصوص."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öffnet das erste ausgewählte Video in PicStrip, um Gesichter und Text zu verdecken."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre el primer vídeo seleccionado en PicStrip para censurar caras y texto."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre el primer video seleccionado en PicStrip para censurar caras y texto."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre la première vidéo sélectionnée dans PicStrip pour masquer les visages et le texte."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Apre il primo video selezionato in PicStrip per coprire volti e testo."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "選択した最初のビデオをPicStripで開き、顔や文字をマスクできるようにします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "선택한 첫 번째 비디오를 PicStrip에서 열어 얼굴과 텍스트를 가릴 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opent de eerste geselecteerde video in PicStrip om gezichten en tekst af te dekken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Otwiera pierwsze wybrane wideo w PicStrip, aby zamazać twarze i tekst."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre o primeiro vídeo selecionado no PicStrip para ocultar rostos e textos."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abre o primeiro vídeo selecionado no PicStrip para ocultar rostos e texto."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Öppnar den första valda videon i PicStrip för att maskera ansikten och text."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçilen ilk videoyu yüzleri ve metinleri karartmak için PicStrip’te açar."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 PicStrip 中打开所选的第一个视频，以便遮盖面孔和文字。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 PicStrip 中打開所選的第一部影片，以便遮蓋臉孔和文字。"
           }
         }
       }
@@ -42227,7 +42634,7 @@
       }
     },
     "Photos: %lld · Videos: %lld" : {
-      "comment" : "Batch settings: how many of each were picked.",
+      "comment" : "Batch settings and the share sheet: how many of each were picked or shared.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -42633,6 +43040,107 @@
         }
       }
     },
+    "PicStrip could not read “%@”. No videos were returned." : {
+      "comment" : "Shortcuts error from “Strip Metadata from Videos”; %@ is the file name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر على PicStrip قراءة ”%@“. لم يتم إرجاع أي مقاطع فيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip konnte „%@“ nicht lesen. Es wurden keine Videos zurückgegeben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no ha podido leer «%@». No se ha devuelto ningún vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo leer “%@”. No se devolvió ningún video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip n’a pas pu lire « %@ ». Aucune vidéo n’a été renvoyée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non è riuscito a leggere “%@”. Non è stato restituito alcun video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは「%@」を読み込めませんでした。ビデオは返されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip이 ‘%@’을(를) 읽을 수 없습니다. 반환된 비디오가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kon ‘%@’ niet lezen. Er zijn geen video’s teruggegeven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie mógł odczytać „%@”. Nie zwrócono żadnych nagrań wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu ler “%@”. Nenhum vídeo foi retornado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu ler “%@”. Não foi devolvido nenhum vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kunde inte läsa ”%@”. Inga videor returnerades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip “%@” dosyasını okuyamadı. Hiçbir video döndürülmedi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 无法读取“%@”。未返回任何视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 無法讀取「%@」。未傳回任何影片。"
+          }
+        }
+      }
+    },
     "PicStrip could not remove the metadata from “%@”. No images were returned." : {
       "localizations" : {
         "ar" : {
@@ -42729,6 +43237,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "PicStrip 無法移除「%@」中的後設資料。未傳回任何影像。"
+          }
+        }
+      }
+    },
+    "PicStrip could not remove the metadata from “%@”. No videos were returned." : {
+      "comment" : "Shortcuts error from “Strip Metadata from Videos”; %@ is the file name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تعذّر على PicStrip إزالة البيانات الوصفية من ”%@“. لم يتم إرجاع أي مقاطع فيديو."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip konnte die Metadaten aus „%@“ nicht entfernen. Es wurden keine Videos zurückgegeben."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no ha podido eliminar los metadatos de «%@». No se ha devuelto ningún vídeo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip no pudo eliminar los metadatos de “%@”. No se devolvió ningún video."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip n’a pas pu supprimer les métadonnées de « %@ ». Aucune vidéo n’a été renvoyée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip non è riuscito a rimuovere i metadati da “%@”. Non è stato restituito alcun video."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStripは「%@」からメタデータを削除できませんでした。ビデオは返されませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip이 ‘%@’에서 메타데이터를 제거할 수 없습니다. 반환된 비디오가 없습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kon de metadata niet uit ‘%@’ verwijderen. Er zijn geen video’s teruggegeven."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip nie mógł usunąć metadanych z „%@”. Nie zwrócono żadnych nagrań wideo."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu remover os metadados de “%@”. Nenhum vídeo foi retornado."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "O PicStrip não conseguiu remover os metadados de “%@”. Não foi devolvido nenhum vídeo."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip kunde inte ta bort metadata från ”%@”. Inga videor returnerades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip “%@” dosyasındaki meta verileri kaldıramadı. Hiçbir video döndürülmedi."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 无法移除“%@”中的元数据。未返回任何视频。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "PicStrip 無法移除「%@」中的後設資料。未傳回任何影片。"
           }
         }
       }
@@ -48192,6 +48801,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除位置、相機、編輯記錄及其他私密的影像後設資料。"
+          }
+        }
+      }
+    },
+    "Removes location, device, date and other private metadata from videos and returns clean copies. Runs on this device without opening PicStrip. The frames are copied as they are, so faces and text are not covered." : {
+      "comment" : "Shortcuts action description for “Strip Metadata from Videos”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "يزيل بيانات الموقع والجهاز والتاريخ وغيرها من البيانات الوصفية الخاصة من مقاطع الفيديو ويُرجع نسخًا نظيفة. يعمل على هذا الجهاز من دون فتح PicStrip. تُنسخ الإطارات كما هي، لذا لا تُحجب الوجوه والنصوص."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Entfernt Standort-, Geräte-, Datums- und andere private Metadaten aus Videos und gibt bereinigte Kopien zurück. Läuft auf diesem Gerät, ohne PicStrip zu öffnen. Die Einzelbilder werden unverändert kopiert, daher werden Gesichter und Text nicht verdeckt."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la ubicación, el dispositivo, la fecha y otros metadatos privados de los vídeos y devuelve copias limpias. Se ejecuta en este dispositivo sin abrir PicStrip. Los fotogramas se copian tal cual, así que las caras y el texto no se censuran."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Elimina la ubicación, el dispositivo, la fecha y otros metadatos privados de los videos y devuelve copias limpias. Se ejecuta en este dispositivo sin abrir PicStrip. Los cuadros se copian tal cual, así que las caras y el texto no se censuran."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprime la localisation, l’appareil, la date et les autres métadonnées privées des vidéos, puis renvoie des copies nettoyées. S’exécute sur cet appareil sans ouvrir PicStrip. Les images sont copiées telles quelles : les visages et le texte ne sont donc pas masqués."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuove posizione, dispositivo, data e altri metadati privati dai video e restituisce copie pulite. Viene eseguito su questo dispositivo senza aprire PicStrip. I fotogrammi vengono copiati così come sono, quindi volti e testo non vengono coperti."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオから位置情報、デバイス情報、日時、その他の個人的なメタデータを削除し、クリーンなコピーを返します。PicStripを開かずにこのデバイス上で実行されます。映像はそのままコピーされるため、顔や文字はマスクされません。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오에서 위치, 기기, 날짜 및 기타 개인 메타데이터를 제거하고 정리된 사본을 반환합니다. PicStrip을 열지 않고 이 기기에서 실행됩니다. 프레임은 그대로 복사되므로 얼굴과 텍스트는 가려지지 않습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijdert locatie-, apparaat-, datum- en andere persoonlijke metadata uit video’s en geeft opgeschoonde kopieën terug. Wordt op dit apparaat uitgevoerd zonder PicStrip te openen. De beelden worden ongewijzigd gekopieerd, dus gezichten en tekst worden niet afgedekt."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuwa z nagrań wideo lokalizację, dane urządzenia, datę i inne prywatne metadane, a następnie zwraca wyczyszczone kopie. Działa na tym urządzeniu bez otwierania PicStrip. Klatki są kopiowane bez zmian, więc twarze i tekst nie są zamazywane."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove localização, dispositivo, data e outros metadados privados dos vídeos e retorna cópias limpas. É executado neste dispositivo sem abrir o PicStrip. Os quadros são copiados sem alterações, então rostos e textos não são ocultados."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove localização, dispositivo, data e outros metadados privados dos vídeos e devolve cópias limpas. É executado neste dispositivo sem abrir o PicStrip. Os fotogramas são copiados tal como estão, por isso os rostos e o texto não são ocultados."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tar bort plats, enhet, datum och andra privata metadata från videor och returnerar rensade kopior. Körs på den här enheten utan att PicStrip öppnas. Bildrutorna kopieras som de är, så ansikten och text maskeras inte."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videolardan konum, cihaz, tarih ve diğer özel meta verileri kaldırır ve temiz kopyalar döndürür. PicStrip açılmadan bu cihazda çalışır. Kareler olduğu gibi kopyalandığından yüzler ve metinler karartılmaz."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除视频中的位置、设备、日期及其他私密元数据，并返回干净的副本。无需打开 PicStrip，直接在此设备上运行。视频帧会按原样复制，因此不会遮盖面孔和文字。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除影片中的位置、裝置、日期及其他私密後設資料，並傳回乾淨的副本。無需打開 PicStrip，直接在此裝置上執行。影格會依原樣複製，因此不會遮蓋臉孔和文字。"
           }
         }
       }
@@ -56380,6 +57090,107 @@
         }
       }
     },
+    "Strip Metadata from Videos" : {
+      "comment" : "Shortcuts action title (background, metadata only); pairs with “Strip Metadata from Images”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة البيانات الوصفية من مقاطع الفيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten aus Videos entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de los vídeos"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de los videos"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les métadonnées des vidéos"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i metadati dai video"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオからメタデータを削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오에서 메타데이터 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder metadata uit video’s"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane z nagrań wideo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover Metadados dos Vídeos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados dos vídeos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort metadata från videor"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videolardan meta verileri kaldır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除视频中的元数据"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除影片中的後設資料"
+          }
+        }
+      }
+    },
     "Strip Privacy Metadata" : {
       "localizations" : {
         "ar" : {
@@ -56676,6 +57487,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "移除 ${images} 中的後設資料並輸出為 ${format}"
+          }
+        }
+      }
+    },
+    "Strip metadata from ${videos}" : {
+      "comment" : "Shortcuts action summary; ${videos} is the action's input (the videos). Pairs with “Strip metadata from ${images} as ${format}”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "إزالة البيانات الوصفية من ${videos}"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Metadaten aus ${videos} entfernen"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de ${videos}"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eliminar metadatos de ${videos}"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer les métadonnées de ${videos}"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi i metadati da ${videos}"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${videos}からメタデータを削除"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${videos}에서 메타데이터 제거"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verwijder metadata uit ${videos}"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń metadane z ${videos}"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados de ${videos}"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remover metadados de ${videos}"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort metadata från ${videos}"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "${videos} içinden meta verileri kaldır"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "从 ${videos} 中移除元数据"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "移除 ${videos} 中的後設資料"
           }
         }
       }
@@ -64109,8 +65021,109 @@
         }
       }
     },
+    "Video Prepared" : {
+      "comment" : "Share sheet title after a video was handed to PicStrip for editing (pairs with “Image Prepared”).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تم تجهيز الفيديو"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video vorbereitet"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo preparado"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video preparado"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vidéo préparée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video preparato"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビデオの準備完了"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "비디오 준비 완료"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video voorbereid"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wideo przygotowane"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo preparado"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vídeo preparado"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videon är förberedd"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Video hazırlandı"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "视频已准备好"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影片已準備好"
+          }
+        }
+      }
+    },
     "Videos" : {
-      "comment" : "Home screen tile that opens the photo picker filtered to videos.",
+      "comment" : "Help page section header, batch title when only videos are in it, and the input of the “Strip Metadata from Videos” Shortcuts action.",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -64412,8 +65425,109 @@
         }
       }
     },
+    "Videos have their metadata removed here. To cover faces and text, choose Edit in PicStrip." : {
+      "comment" : "Share sheet note shown when videos are shared. “Edit in PicStrip” is the button below it (existing key).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تُزال هنا البيانات الوصفية من مقاطع الفيديو. لحجب الوجوه والنصوص، اختر ”تحرير في PicStrip“."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bei Videos werden hier die Metadaten entfernt. Um Gesichter und Text zu verdecken, wähle „In PicStrip bearbeiten“."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí se eliminan los metadatos de los vídeos. Para censurar caras y texto, elige «Editar en PicStrip»."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aquí se eliminan los metadatos de los videos. Para censurar caras y texto, elige “Editar en PicStrip”."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ici, seules les métadonnées des vidéos sont supprimées. Pour masquer les visages et le texte, choisissez Modifier dans PicStrip."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Qui dai video vengono rimossi solo i metadati. Per coprire volti e testo, scegli Modifica in PicStrip."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ここではビデオのメタデータだけを削除します。顔や文字をマスクするには「PicStripで編集」を選択してください。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "여기서는 비디오의 메타데이터만 제거됩니다. 얼굴과 텍스트를 가리려면 “PicStrip에서 편집”을 선택하세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier worden van video’s alleen de metadata verwijderd. Kies Bewerk in PicStrip om gezichten en tekst af te dekken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tutaj z nagrań wideo usuwane są tylko metadane. Aby zamazać twarze i tekst, wybierz Edytuj w PicStrip."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aqui, os vídeos só têm os metadados removidos. Para ocultar rostos e textos, escolha Editar no PicStrip."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aqui, aos vídeos só são removidos os metadados. Para ocultar rostos e texto, escolha Editar no PicStrip."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Här tas metadata bort från videor. Välj Redigera i PicStrip för att maskera ansikten och text."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoların meta verileri burada kaldırılır. Yüzleri ve metinleri karartmak için “PicStrip’te düzenle” düğmesine dokunun."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此处会移除视频的元数据。如需遮盖面孔和文字，请选择“在 PicStrip 中编辑”。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "此處會移除影片的後設資料。若要遮蓋臉孔和文字，請選擇「在 PicStrip 中編輯」。"
+          }
+        }
+      }
+    },
     "Videos: %lld" : {
-      "comment" : "Batch settings: how many videos were picked (videos only).",
+      "comment" : "Batch settings and the share sheet: how many videos were picked or shared (videos only).",
       "localizations" : {
         "ar" : {
           "stringUnit" : {

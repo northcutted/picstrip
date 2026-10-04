@@ -191,6 +191,20 @@ nonisolated enum LiveAnalysisPacing {
         return max(base, lastPassDuration * 1.5)
     }
 
+    /// Held still over the same picture, a pass only re-reads what is already
+    /// boxed, so the viewfinder looks this often until the picture moves.
+    static let settledInterval: TimeInterval = 1.2
+    /// How far the picture must move after a pass started, as a fraction of the
+    /// frame, for the next one to come at the full rate.
+    static let settledDistance: CGFloat = 0.02
+
+    /// `interval`, stretched to `settledInterval` while the picture has hardly
+    /// moved since the last pass started; `moved` is `nil` before the first pass.
+    static func interval(_ interval: TimeInterval, movedSinceLastPass moved: CGFloat?) -> TimeInterval {
+        guard let moved, moved < settledDistance else { return interval }
+        return max(interval, settledInterval)
+    }
+
     /// Whether the thermal state calls for no analysis at all.
     static func isTooHot(_ thermalState: ProcessInfo.ThermalState) -> Bool {
         thermalState == .serious || thermalState == .critical
