@@ -5,7 +5,7 @@ PicStrip 1.7 to duża aktualizacja: aplikacja czyści teraz wideo, a jej aparat 
 • Przycinaj każde zamazanie na osi czasu jak w edytorze wideo oraz zagłuszaj wypowiedzi piskiem lub je wyciszaj.
 • Jeden aparat do zdjęć, wideo i dokumentów. Nagrywaj w jakości do 4K z HDR, korzystając z elementów sterujących znanych z aplikacji Aparat; w trybie Zdjęcie wizjer na żywo obrysowuje to, co zamaże.
 • Wybierz zdjęcia i wideo razem: jeden element otwiera edytor, kilka jest czyszczonych naraz.
-• Udostępniaj wideo z dowolnej aplikacji do PicStrip, aby usunąć metadane, lub otwieraj je, aby zamazać twarze i tekst. W Skrótach możesz teraz usuwać metadane także z wideo.
+• Nowe czynności w arkuszu udostępniania w każdej aplikacji: Usuń metadane czyści zdjęcia i wideo jednym stuknięciem, a Edytuj w PicStrip otwiera jedno z nich po stuknięciu powiadomienia. Wideo możesz też udostępniać do PicStrip, a nowa czynność w Skrótach usuwa metadane z nagrań wideo.
 • Zamazuj emoji, stuknij obiekt, aby go zamazać w iOS 27, i pozostaw widoczne ostatnie cyfry numeru karty lub telefonu.
 • Zawsze zamazuj: Twoje imię i nazwisko, numer rejestracyjny lub nazwa ulicy – zamazywane wszędzie, gdzie PicStrip je odczyta.
 • Skanuj dokumenty, wybieraj tylko zrzuty ekranu, zachowuj ruch zdjęć Live Photo i porównuj stan przed i po.

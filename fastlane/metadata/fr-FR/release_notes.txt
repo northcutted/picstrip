@@ -5,7 +5,7 @@ PicStrip 1.7 est une mise à jour majeure : l’app nettoie désormais les vid
 • Raccourcissez chaque masquage sur une chronologie de montage vidéo, et couvrez les paroles d’un bip ou coupez le son.
 • Un seul appareil photo pour les photos, les vidéos et les documents. Filmez jusqu’en 4K avec HDR, avec les commandes que vous connaissez dans l’app Appareil photo ; en mode Photo, un viseur en direct encadre ce qu’il masquerait.
 • Choisissez des photos et des vidéos ensemble : un seul élément ouvre l’éditeur, plusieurs sont nettoyés d’un coup.
-• Partagez des vidéos avec PicStrip depuis n’importe quelle app pour supprimer leurs métadonnées, ou ouvrez-les pour masquer les visages et le texte. Une nouvelle action dans Raccourcis supprime les métadonnées des vidéos.
+• Nouvelles actions dans la feuille de partage de toutes les apps : « Supprimer les métadonnées » nettoie photos et vidéos d’un simple toucher, et « Modifier dans PicStrip » en ouvre une quand vous touchez sa notification. Vous pouvez aussi partager des vidéos avec PicStrip, et une nouvelle action dans Raccourcis supprime les métadonnées des vidéos.
 • Masquez avec un emoji, touchez un objet pour le masquer sous iOS 27, et laissez visibles les derniers chiffres d’une carte ou d’un numéro de téléphone.
 • Toujours masquer : votre nom, une plaque ou votre rue, masqués partout où PicStrip les lit.
 • Scannez des documents, choisissez uniquement vos captures d’écran, conservez l’animation d’une Live Photo et comparez avant/après.

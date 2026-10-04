@@ -5,7 +5,7 @@ PicStrip 1.7 is a big update: it now cleans videos, and its camera shows what it
 • Trim every cover on a video-editor timeline, and bleep or mute what was said.
 • One camera for photos, video and documents. Record in up to 4K with HDR using the controls you know from the Camera app; in Photo mode, a live viewfinder outlines what it would redact.
 • Pick photos and videos together: one opens the editor, several are cleaned at once.
-• Share videos to PicStrip from any app to remove their metadata, or open them to cover faces and text. A new Shortcuts action strips metadata from videos.
+• New share-sheet actions in any app: Strip Metadata cleans photos and videos in one tap, and Edit in PicStrip opens one with a tap on its notification. Videos can be shared to PicStrip too, and a new Shortcuts action strips metadata from videos.
 • Cover with an emoji, tap an object to cover it on iOS 27, and leave the last digits of a card or phone number showing.
 • Always Cover: your name, a plate or your street, covered wherever PicStrip reads them.
 • Scan documents, pick just your screenshots, keep a Live Photo's motion, and compare before and after.

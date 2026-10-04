@@ -5,7 +5,7 @@ O PicStrip 1.7 é uma grande atualização: agora ele limpa vídeos, e a câmera
 • Ajuste cada ocultação em uma linha do tempo de editor de vídeo e coloque bipe ou silencie o que foi dito.
 • Uma câmera para fotos, vídeos e documentos. Grave em até 4K com HDR usando os controles que você já conhece do app Câmera; no modo Foto, um visor ao vivo contorna o que seria ocultado.
 • Escolha fotos e vídeos juntos: um item abre o editor, vários são limpos de uma vez.
-• Compartilhe vídeos de qualquer app com o PicStrip para remover os metadados, ou abra-os para ocultar rostos e textos. Uma nova ação no app Atalhos remove os metadados dos vídeos.
+• Novas ações no menu Compartilhar de qualquer app: Remover Metadados limpa fotos e vídeos com um toque, e Editar no PicStrip abre um item com um toque na notificação. Também é possível compartilhar vídeos com o PicStrip, e uma nova ação no app Atalhos remove os metadados dos vídeos.
 • Oculte com um emoji, toque em um objeto para ocultá-lo no iOS 27 e deixe visíveis os últimos dígitos de um cartão ou telefone.
 • Sempre ocultar: seu nome, uma placa ou sua rua, ocultados onde quer que o PicStrip os leia.
 • Escaneie documentos, escolha apenas suas capturas de tela, mantenha o movimento de uma Live Photo e compare o antes e o depois.

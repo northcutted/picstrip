@@ -5,7 +5,7 @@ PicStrip 1.7 is een grote update: de app schoont nu video’s op, en de camera l
 • Kort elke afdekking in op een tijdbalk zoals in een video-editor, en zet een piep over wat er gezegd is of demp het.
 • Eén camera voor foto’s, video en documenten. Neem op tot 4K met HDR, met de bediening die je kent van de Camera-app; in de fotomodus omlijnt een livezoeker wat hij zou afdekken.
 • Kies foto’s en video’s samen: één opent de editor, meerdere worden in één keer opgeschoond.
-• Deel video’s vanuit elke app met PicStrip om hun metadata te verwijderen, of open ze om gezichten en tekst af te dekken. Met Opdrachten verwijder je nu ook metadata uit video’s.
+• Nieuwe acties in het deelmenu van elke app: met Verwijder metadata schoon je foto’s en video’s met één tik op, en met Bewerk in PicStrip open je er een door op de melding te tikken. Ook video’s kun je met PicStrip delen, en met Opdrachten verwijder je nu metadata uit video’s.
 • Dek af met een emoji, tik op iOS 27 op een object om het af te dekken, en laat de laatste cijfers van een kaart- of telefoonnummer zichtbaar.
 • Altijd afdekken: je naam, een kenteken of je straat, afgedekt overal waar PicStrip ze leest.
 • Scan documenten, kies alleen je schermafbeeldingen, behoud de beweging van een Live Photo en vergelijk voor en na.
