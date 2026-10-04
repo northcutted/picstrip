@@ -79,7 +79,6 @@ nonisolated enum SoundOnlyRemux {
         }
         guard !pumps.isEmpty else { throw VideoCleaner.Failure.cannotExport }
 
-        let job = RemuxJob(reader: reader, pumps: pumps)
         guard reader.startReading() else { throw reader.error ?? VideoCleaner.Failure.cannotExport }
         guard writer.startWriting() else {
             reader.cancelReading()
@@ -95,22 +94,26 @@ nonisolated enum SoundOnlyRemux {
 
         // Every track is fed as the writer asks for it, each on its own queue:
         // fed one after the other, the writer waits on one input for the other.
+        let allPumps = pumps
         let fed = await withTaskCancellationHandler {
             await withTaskGroup(of: Bool.self) { group in
-                for pump in pumps { group.addTask { await pump.run() } }
+                for pump in allPumps { group.addTask { await pump.run() } }
                 var fed = true
                 // One track the writer would not take stops them all: the
                 // others could wait on the writer for ever.
                 for await result in group where !result {
                     fed = false
-                    job.stop()
+                    allPumps.forEach { $0.stop() }
                 }
                 return fed
             }
         } onCancel: {
-            job.stop()
+            allPumps.forEach { $0.stop() }
         }
         if Task.isCancelled || !fed || reader.status != .completed {
+            // Only now, with every pump stopped: cancelling the reader while
+            // one waits for a sample crashes inside AVFoundation.
+            reader.cancelReading()
             writer.cancelWriting()
             try? FileManager.default.removeItem(at: output)
             try Task.checkCancellation()
@@ -160,6 +163,11 @@ nonisolated private final class SamplePump: @unchecked Sendable {
     /// Both touched only on `queue`.
     private var waiting: CheckedContinuation<Bool, Never>?
     private var isDone = false
+    /// Set from anywhere to stop at the next sample.
+    private let stopping = NSLock()
+    private var isStopping = false
+
+    private var shouldStop: Bool { stopping.withLock { isStopping } }
 
     init(output: AVAssetReaderOutput, input: AVAssetWriterInput) {
         self.output = output
@@ -176,6 +184,7 @@ nonisolated private final class SamplePump: @unchecked Sendable {
                 waiting = continuation
                 input.requestMediaDataWhenReady(on: queue) { [self] in
                     while !isDone, input.isReadyForMoreMediaData {
+                        guard !shouldStop else { return finish(fed: false) }
                         guard let buffer = output.copyNextSampleBuffer() else {
                             finish(fed: true)
                             return
@@ -193,8 +202,10 @@ nonisolated private final class SamplePump: @unchecked Sendable {
         }
     }
 
-    /// Gives up on the rest: the copy is being abandoned.
+    /// Gives up on the rest: the copy is being abandoned.  A pump copying
+    /// stops at its next sample, and one waiting for the writer at once.
     func stop() {
+        stopping.withLock { isStopping = true }
         queue.async { [self] in finish(fed: false) }
     }
 
@@ -206,24 +217,6 @@ nonisolated private final class SamplePump: @unchecked Sendable {
         input.markAsFinished()
         waiting?.resume(returning: fed)
         waiting = nil
-    }
-}
-
-// MARK: - RemuxJob
-
-/// What a cancellation or a failed track stops.
-nonisolated private final class RemuxJob: @unchecked Sendable {
-    private let reader: AVAssetReader
-    private let pumps: [SamplePump]
-
-    init(reader: AVAssetReader, pumps: [SamplePump]) {
-        self.reader = reader
-        self.pumps = pumps
-    }
-
-    func stop() {
-        reader.cancelReading()
-        pumps.forEach { $0.stop() }
     }
 }
 
