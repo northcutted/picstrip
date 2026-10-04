@@ -44,9 +44,10 @@ struct BatchConfigView: View {
         }
         .onDisappear { UIApplication.shared.isIdleTimerDisabled = false }
         .onAppear {
-            // Default export format for batch is PNG (maximum privacy).
-            viewModel.selectedExportFormat = .png
-            config.outputFormat = .png
+            // HEIC by default: a batch is mostly camera photos, and PNG made
+            // each one several times larger and slower to encode and save.
+            viewModel.selectedExportFormat = .heic
+            config.outputFormat = .heic
         }
     }
 

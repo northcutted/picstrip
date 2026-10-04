@@ -32,7 +32,7 @@ struct BatchConfig {
     /// Run the PII scanner and burn redaction boxes over all detected instances.
     var redactVisualPII: Bool = true
     /// The output format for every processed image.
-    var outputFormat: ExportFormat = .png
+    var outputFormat: ExportFormat = .heic
     /// Whether to save cleaned photos as new assets or overwrite the originals.
     var saveMode: BatchSaveMode = .saveAsNew
 
