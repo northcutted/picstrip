@@ -237,10 +237,12 @@ nonisolated struct PIIScanner {
 
         // Stage 2: Single-pass Vision — submit OCR, face, barcode, and
         // document-rectangle requests against ONE ImageRequestHandler so the
-        // source bytes are decoded and pre-processed exactly once.
+        // source bytes are decoded and pre-processed exactly once.  The retries
+        // below reuse the same handler, so they do not decode the image again.
         // Raw Data (not a pre-decoded CGImage) is passed so that the handler can
         // read the EXIF orientation tag and return bounding boxes in the visual
         // coordinate space — the same space that UIKit's display pipeline uses.
+        let handler = ImageRequestHandler(data)
         let requests: [any VisionRequest] = [
             Self.makeTextRequest(level: .accurate),
             Self.makeFaceRequest(),
@@ -267,7 +269,7 @@ nonisolated struct PIIScanner {
         // sub-request failing (e.g. rectangle detection on the simulator with no
         // Neural Engine) arrives as its own `.error` and never discards the
         // others' results.  The variadic `perform` would throw for all of them.
-        for await result in ImageRequestHandler(data).performAll(requests) {
+        for await result in handler.performAll(requests) {
             switch result {
             case .recognizeText(_, let found):
                 observations = found
@@ -303,9 +305,11 @@ nonisolated struct PIIScanner {
         // path, heavily compressed image) retry text-only with the fast
         // model.  Face / barcode / rectangle results from the primary pass
         // are preserved, so this only re-pays the text inference cost.
+        // It runs for every photo without text: a missed line is a privacy
+        // miss, and nothing shows that an empty accurate pass is never wrong.
         if observations.isEmpty {
             let fastRequest = Self.makeTextRequest(level: .fast)
-            if let found = try? await ImageRequestHandler(data).perform(fastRequest) {
+            if let found = try? await handler.perform(fastRequest) {
                 observations = found
                 textRecognitionRan = true
                 coverage[.text] = .complete
@@ -315,7 +319,7 @@ nonisolated struct PIIScanner {
         // The pinned iOS 27 face revision may be unavailable on some hardware.  A
         // missed face is a privacy miss, so retry with the OS default revision.
         if faceDetectionFailed {
-            if let found = try? await ImageRequestHandler(data).perform(DetectFaceRectanglesRequest()) {
+            if let found = try? await handler.perform(DetectFaceRectanglesRequest()) {
                 faces = found
                 coverage[.faces] = .complete
             }
