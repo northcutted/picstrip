@@ -415,6 +415,7 @@ struct VideoCleanerView: View {
         } label: {
             Label("Emoji…", systemImage: "face.smiling")
         }
+        .accessibilityIdentifier("emojiCoverButton")
     }
 
     @ViewBuilder
