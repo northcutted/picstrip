@@ -34,7 +34,9 @@ Keep engineering details in the GitHub release notes. Run `python3 scripts/valid
 
 ## Prepare screenshots
 
-Use the configured capture workflow and actual app UI. Lead with the cleaned full-image review, then the video editor (a face blurred, text covered, a bleep on the timeline), the redaction controls, metadata, the final review and the fictional sample. Six screens × two device classes × 17 locales produces 204 images. Verify count, dimensions, text fit, order and source identity in the candidate manifest.
+Use the configured capture workflow and actual app UI. Lead with the video editor (two faces in a street video, one blurred and one given an emoji, a bleep on the timeline), then a photo's location, the live viewfinder outlining a face, an email and a QR code, the photo editor (blur, pixelate, emoji and solid covers on faces, a phone number, a card and a code), the review with every check finished, and photos and videos in one batch. Headlines sell the benefit, not a UI label, and never mention license plates (plate detection is narrow). Six screens × two device classes × 17 locales produces 204 images. Verify count, dimensions, text fit, order and source identity in the candidate manifest.
+
+The scenes run on fictional fixtures drawn by `scripts/make_store_fixtures.py` (people, café, badge and street video; every name, number, card and place is invented) and bundled with the UI tests; `testAllScreenshots` opens each with a `PICSTRIP_*` fixture variable.
 
 The screenshot workflow prepares assets for review; publishing a release and deploying to Apple are separate actions. Follow [release operations](../release-pipeline.md) and [the 1.7.0 acceptance record](../releases/1.7.0-acceptance.md).
 

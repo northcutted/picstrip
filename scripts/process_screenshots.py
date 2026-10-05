@@ -269,17 +269,18 @@ def _shape_for_display(
 # ``fastlane/MarketingHeadlines.xcstrings`` is missing. Kept in sync with the
 # canonical English values in that file.
 HEADLINES: dict[str, str] = {
-    "05_ReviewAndShare": "Review & Share\nProcessed on your device",
-    "03_RedactionEditor": "Position & size\nAdd centered region",
-    "04_Metadata": "Location · Camera & date\nImage details",
-    "01_FullPreview": "Inspect full image",
-    "02_VideoEditor": "Clean your videos\nFaces, text and sound covered",
-    "06_Sample": "Try a sample\nA fictional photo",
+    "01_VideoEditor": "Blur faces in videos\nFollowed as they move",
+    "02_Location": "Remove hidden location\nGPS, device and date",
+    "03_Viewfinder": "See it before you shoot\nLive preview of what’s covered",
+    "04_Redaction": "Blur, pixelate or emoji\nFaces, text, cards and codes",
+    "05_ReviewAndShare": "Check, then share\nNo account. No tracking.",
+    "06_Batch": "Clean many at once\nPhotos and videos together",
 }
 
-DEFAULT_HEADLINE = "Review & Share"
+DEFAULT_HEADLINE = "Check, then share"
 
-# Show the result first, then video, editing, metadata, full inspection and the demo.
+# The scene names carry their App Store order: video, location, viewfinder,
+# editor, review and batch.
 SCREENSHOT_DISPLAY_ORDER: dict[str, str] = {key: key for key in HEADLINES}
 CAPTURE_HEADLINE_KEYS: dict[str, str] = {}
 

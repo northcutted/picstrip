@@ -49,12 +49,12 @@
     }
   },
   "screens": [
-    "01_FullPreview",
-    "02_VideoEditor",
-    "03_RedactionEditor",
-    "04_Metadata",
+    "01_VideoEditor",
+    "02_Location",
+    "03_Viewfinder",
+    "04_Redaction",
     "05_ReviewAndShare",
-    "06_Sample"
+    "06_Batch"
   ],
   "locales": [
     "en-US",
