@@ -17,4 +17,4 @@ For command-line tooling, install uv and run `make setup`, then `make check`. Th
 
 The app, share extension and intents share `PicStripCore`. Keep source, tests and these guides together when changing a contract. Release tooling belongs to the pinned workflow platform; app-specific policy stays in `.github/ios-release.json`.
 
-The OCR fixture has one source, `Tests/Fixtures/test_list.png`, copied into both test bundles by Xcode. Run `make test-fixture` only when changing that fixture.
+The OCR fixture has one source, `Tests/Fixtures/test_list.png`, copied into both test bundles by Xcode. Run `make test-fixture` only when changing that fixture. The App Store screenshot fixtures in `PicStripUITests/Fixtures/` are drawn by `scripts/make_store_fixtures.py` (see its header for the Pillow, NumPy, qrcode and ffmpeg it needs).
