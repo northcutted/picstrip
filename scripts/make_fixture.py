@@ -155,6 +155,27 @@ def _save_png_with_metadata(img: Image.Image, out_path: Path, reference_path: Pa
     print(f"  Wrote {len(out):,} bytes → {out_path}")
 
 
+def _draw_icon(draw: ImageDraw.ImageDraw, kind: str, x: int, y: int, size: int, color) -> None:
+    """A small line icon drawn with shapes.  Helvetica has no glyph for the
+    envelope, telephone or house symbols, which rendered as empty boxes."""
+    w = max(2, size // 12)
+    if kind == "email":
+        top, bottom = y + size * 0.18, y + size * 0.82
+        draw.rounded_rectangle([x, top, x + size, bottom], radius=size // 10, outline=color, width=w)
+        draw.line([(x + w, top + w), (x + size / 2, y + size * 0.55), (x + size - w, top + w)], fill=color, width=w)
+    elif kind == "phone":
+        left = x + size * 0.24
+        draw.rounded_rectangle([left, y, left + size * 0.52, y + size], radius=size // 8, outline=color, width=w)
+        draw.ellipse([left + size * 0.22, y + size * 0.80, left + size * 0.30, y + size * 0.88], fill=color)
+    else:  # office building
+        draw.rectangle([x + size * 0.12, y + size * 0.05, x + size * 0.88, y + size], outline=color, width=w)
+        for row in range(3):
+            for col in range(2):
+                wx = x + size * (0.28 + col * 0.28)
+                wy = y + size * (0.18 + row * 0.24)
+                draw.rectangle([wx, wy, wx + size * 0.14, wy + size * 0.12], fill=color)
+
+
 # ── Main drawing routine ───────────────────────────────────────────────────────
 def make_fixture(width: int = 1320, height: int = 2340) -> Image.Image:
     """
@@ -212,14 +233,13 @@ def make_fixture(width: int = 1320, height: int = 2340) -> Image.Image:
     y += 40
 
     # ── Contact details ───────────────────────────────────────────────────────
-    icon_font   = _label_font(38)
     detail_font = _bold_font(46)
     label_font2 = _label_font(34)
 
     def _contact_row(icon: str, label: str, value: str, highlight: bool = False) -> int:
         nonlocal y
         # Icon + label
-        draw.text((pad, y + 6), icon, font=icon_font, fill=LABEL_COLOR)
+        _draw_icon(draw, icon, pad, y + 4, 34, LABEL_COLOR)
         draw.text((pad + 54, y), label, font=label_font2, fill=LABEL_COLOR)
         y += 48
         # Value (optionally highlighted)
@@ -231,9 +251,9 @@ def make_fixture(width: int = 1320, height: int = 2340) -> Image.Image:
         y += 68
         return y
 
-    _contact_row("✉", "EMAIL", "alex.thornton@northwoodcg.com", highlight=True)
-    _contact_row("✆", "MOBILE", "(415) 555-0147", highlight=True)
-    _contact_row("⌂", "OFFICE", "1 Market St, Suite 2400", highlight=True)
+    _contact_row("email", "EMAIL", "alex.thornton@northwoodcg.com", highlight=True)
+    _contact_row("phone", "MOBILE", "(415) 555-0147", highlight=True)
+    _contact_row("office", "OFFICE", "1 Market St, Suite 2400", highlight=True)
     draw.text((pad + 8, y), "San Francisco, CA 94105", font=detail_font, fill=TEXT_COLOR)
     y += 68
 
@@ -267,7 +287,7 @@ def make_fixture(width: int = 1320, height: int = 2340) -> Image.Image:
 
     items = [
         "Follow up with legal re: NDA by Fri 4/18",
-        "Send Q1 report deck → jordan.kim@northwoodcg.com",
+        "Send Q1 report deck to jordan.kim@northwoodcg.com",
         "Book travel: Chicago, IL — week of May 5",
         "Call Marcus: (312) 555-8820 re: fund allocation",
         "Update CRM contact for Alex Thornton",
