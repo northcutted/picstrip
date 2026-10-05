@@ -52,6 +52,8 @@ struct PicStripApp: App {
         WindowGroup {
             ContentView(viewModel: viewModel)
                 .environment(intentRouter)
+                // At most once a session, after a clean success; see `ReviewPromptGate`.
+                .requestsReview(when: viewModel.reviewPrompt)
                 .transaction { transaction in
                     if reduceMotion {
                         transaction.animation = nil

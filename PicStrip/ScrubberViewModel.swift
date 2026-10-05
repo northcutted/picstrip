@@ -263,7 +263,10 @@ final class ScrubberViewModel {
     }
 
     /// Populated when any step throws; `nil` on success.
-    var errorMessage: String?
+    var errorMessage: String? {
+        // Whatever went wrong, the rating request must not follow it.
+        didSet { if errorMessage != nil { reviewPrompt.record(.setback) } }
+    }
 
     /// What cleaning takes out of the current image — for the review sheet and
     /// the confirmation after saving.  Counts only, never a value.
@@ -290,7 +293,18 @@ final class ScrubberViewModel {
         let replacedOriginal: Bool
     }
 
-    var savedConfirmation: SavedConfirmation?
+    var savedConfirmation: SavedConfirmation? {
+        didSet {
+            // A clean success for the rating request — except the fictional
+            // sample, and a photo whose scan did not finish, saved past a warning.
+            guard savedConfirmation != nil, !isDemo else { return }
+            reviewPrompt.record(scanCoverage.requiresManualReview ? .setback : .saved)
+        }
+    }
+
+    /// The session's App Store rating request; see `ReviewPromptGate`.  This
+    /// model lives as long as the app, and so does the request.
+    let reviewPrompt = ReviewPrompt()
 
     /// The picker item when the open photo is a Live Photo, whose motion can be
     /// kept on save; `nil` for everything else.
@@ -489,7 +503,9 @@ final class ScrubberViewModel {
     var batchSucceededCount: Int { batchReports.count }
 
     /// Non-nil when the batch encounters a fatal error (e.g. photo library access denied).
-    var batchErrorMessage: String?
+    var batchErrorMessage: String? {
+        didSet { if batchErrorMessage != nil { reviewPrompt.record(.setback) } }
+    }
 
     // MARK: - Undo / Redo
 
@@ -952,6 +968,10 @@ final class ScrubberViewModel {
                 self.isScanningPII = false
                 self.scanProgress = .finished
                 self.piiScanTask = nil
+                // The fictional sample is a tour, not a photo worked on.
+                if !self.isDemo {
+                    self.reviewPrompt.record(coverage.requiresManualReview ? .setback : .scanned)
+                }
                 self.startNameScan(lines: lines, token: token)
             }
         }
@@ -1703,6 +1723,7 @@ final class ScrubberViewModel {
                   options: nil
               ).firstObject else {
             showReplaceUnavailableAlert = true
+            reviewPrompt.record(.setback)
             return
         }
 
@@ -2046,6 +2067,10 @@ final class ScrubberViewModel {
                 : String(localized: "Some photos could not be cleaned and were not saved.")
         } else if batchOriginalsNotFound > 0 {
             batchErrorMessage = String(localized: "Some originals could not be identified, so cleaned copies were saved instead.")
+        }
+        // Every item saved and nothing to warn about: a clean success.
+        if batchErrorMessage == nil {
+            reviewPrompt.record(.batchSaved(items: batchSucceededCount))
         }
         batchVideoFraction = nil
         isBatchProcessing = false
