@@ -98,8 +98,12 @@ final class PicStripUITests: XCTestCase {
         let list = app.collectionViews.firstMatch
         let preview = app.descendants(matching: .any)["videoPreviewStill"]
         let top = app.navigationBars.firstMatch.frame.maxY
-        for _ in 0..<6 where !(preview.exists && preview.frame.minY >= top) {
-            list.swipeDown(velocity: .slow)
+        // Dragged from low in the list, never from its middle: in longer
+        // languages the timeline sits there, and its own gestures took the
+        // swipe (German, on iPhone).
+        for _ in 0..<12 where !(preview.exists && preview.frame.minY >= top) {
+            list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.72))
+                .press(forDuration: 0.05, thenDragTo: list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)))
         }
         XCTAssertTrue(preview.exists && preview.frame.minY >= top, "The preview is in view again.")
 
