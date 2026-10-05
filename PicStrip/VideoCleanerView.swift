@@ -10,6 +10,8 @@ import SwiftUI
 /// video is not covered — the screen says so.
 struct VideoCleanerView: View {
     let source: VideoSource
+    /// Told how cleaning went, for the session's rating request.
+    let reviewPrompt: ReviewPrompt
 
     @Environment(\.dismiss) private var dismiss
     @State private var model = VideoCleanerModel()
@@ -75,6 +77,16 @@ struct VideoCleanerView: View {
             .interactiveDismissDisabled(mayLoseRecording)
         }
         .task { await model.start(source) }
+        // A video scanned through to its editor was worked on, a saved copy is
+        // a success, and anything that failed is a setback.
+        .onChange(of: model.stage) { old, new in
+            if old == .scanning, new == .review { reviewPrompt.record(.scanned) }
+            if case .failed = new { reviewPrompt.record(.setback) }
+        }
+        .onChange(of: saveState) { _, state in
+            if state == .saved { reviewPrompt.record(.saved) }
+            if case .failed = state { reviewPrompt.record(.setback) }
+        }
         .onDisappear { model.discard() }
         .sheet(item: $drawingAt) { drawing in
             DrawCoverSheet(model: model, time: drawing.time)

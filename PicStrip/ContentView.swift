@@ -237,7 +237,7 @@ struct ContentView: View {
         )
         .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } }), onDismiss: openHandedOffVideo) {
             if let openVideo {
-                VideoCleanerView(source: openVideo)
+                VideoCleanerView(source: openVideo, reviewPrompt: viewModel.reviewPrompt)
                     // On iPad, room for the preview, the faces and the notes together.
                     .presentationSizing(.page)
             }

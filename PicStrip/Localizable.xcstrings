@@ -46891,6 +46891,9 @@
         }
       }
     },
+    "Rate PicStrip" : {
+      "comment" : "About screen link that opens PicStrip's App Store page to rate and review it"
+    },
     "Re-encodes in the source format when supported." : {
       "localizations" : {
         "ar" : {
