@@ -37,7 +37,7 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | App translations | 16 in addition to the source language |
 | Screenshot devices | iPhone 18 Pro Max, iPad Pro 13-inch (M5) |
 | Screenshot inventory | 204 images; 6 scenes per device class and store locale |
-| Screenshot scenes | <code>01_FullPreview</code>, <code>02_VideoEditor</code>, <code>03_RedactionEditor</code>, <code>04_Metadata</code>, <code>05_ReviewAndShare</code>, <code>06_Sample</code> |
+| Screenshot scenes | <code>01_VideoEditor</code>, <code>02_Location</code>, <code>03_Viewfinder</code>, <code>04_Redaction</code>, <code>05_ReviewAndShare</code>, <code>06_Batch</code> |
 
 ## Which checks run?
 
@@ -47,7 +47,7 @@ Single-path examples evaluated by the consumer classifier. Mixed changes and fal
 | --- | --- | --- | --- | --- |
 | <code>docs/release-pipeline.md</code> | — | — | — | — |
 | <code>fastlane/metadata/en-US/description.txt</code> | — | — | Yes | Yes |
-| <code>fastlane/screenshots/processed/en-US/01_FullPreview.png</code> | — | — | Yes | Yes |
+| <code>fastlane/screenshots/processed/en-US/01_VideoEditor.png</code> | — | — | Yes | Yes |
 | <code>PicStrip/ContentView.swift</code> | Yes | Yes | Yes | — |
 | <code>PicStripTests/ImageProcessorTests.swift</code> | Yes | — | Yes | — |
 | <code>.github/workflows/pr.yml</code> | Yes | Yes | Yes | Yes |

@@ -29,7 +29,7 @@
   "change_examples": [
     "docs/release-pipeline.md",
     "fastlane/metadata/en-US/description.txt",
-    "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+    "fastlane/screenshots/processed/en-US/01_VideoEditor.png",
     "PicStrip/ContentView.swift",
     "PicStripTests/ImageProcessorTests.swift",
     ".github/workflows/pr.yml",

@@ -145,9 +145,10 @@ nonisolated enum DetectionRegistry {
                  subtype: .spanishDNI),
 
             // Indian Aadhaar / Japanese My Number — 4-4-4 space-separated
-            // (both are 12-digit IDs displayed in this grouping).
+            // (both are 12-digit IDs displayed in this grouping).  Not three
+            // groups of a longer number: a card's 4-4-4-4 is a card, not an ID.
             rule(.governmentID,
-                 #"\b\d{4} \d{4} \d{4}\b"#,
+                 #"(?<!\d )\b\d{4} \d{4} \d{4}\b(?! \d)"#,
                  0.80,
                  subtype: .aadhaarOrMyNumber),
 

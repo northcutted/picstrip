@@ -1,638 +1,74 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "01_VideoEditor" : {
+      "comment" : "App Store screenshot 1 headline, over the video editor: two people in a street video, one face blurred and one covered with an emoji, and a bleep on the sound. Two short lines; the second says the covers track the faces as they move.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blur faces in videos\nFollowed as they move"
+          }
+        }
+      }
+    },
+    "02_Location" : {
+      "comment" : "App Store screenshot 2 headline, over a photo's location details (latitude and longitude) and its Camera & date chip. Two short lines; the second lists what a photo silently carries: GPS position, the device it was taken on, and the date.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remove hidden location\nGPS, device and date"
+          }
+        }
+      }
+    },
+    "03_Viewfinder" : {
+      "comment" : "App Store screenshot 3 headline, over the camera's live viewfinder, which outlines a face, an email address and a QR code before the photo is taken. Two short lines.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "See it before you shoot\nLive preview of what’s covered"
+          }
+        }
+      }
+    },
+    "04_Redaction" : {
+      "comment" : "App Store screenshot 4 headline, over the photo editor: faces blurred or covered with an emoji, a phone number and a QR code pixelated, a bank card number blacked out. Line 1: the cover styles; line 2: what can be covered. Use the app's own words for Blur, Pixelate and Emoji.",
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blur, pixelate or emoji\nFaces, text, cards and codes"
+          }
+        }
+      }
+    },
     "05_ReviewAndShare" : {
+      "comment" : "App Store screenshot 5 headline, over the Review & Share sheet with every check passed. Two short lines; the second is two short sentences: the app needs no account and does no tracking.",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Review & Share\nProcessed on your device"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Granska och dela\nBearbetas på din enhet"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprawdź i udostępnij\nPrzetwarzane na urządzeniu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "確認して共有\nデバイス上で処理"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisar y compartir\nProcesado en tu dispositivo"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vérifier et partager\nTraité sur votre appareil"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "İncele ve paylaş\nAygıtınızda işlenir"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "مراجعة ومشاركة\nتتم المعالجة على جهازك"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controleren en delen\nVerwerkt op je apparaat"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisar e compartilhar\nProcessado no seu dispositivo"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "검토 및 공유\n기기에서 처리됨"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisar y compartir\nProcesado en tu dispositivo"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检查并分享\n在你的设备上处理"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Revisar e partilhar\nProcessado no seu dispositivo"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "檢查並分享\n在你的裝置上處理"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Controlla e condividi\nElaborato sul dispositivo"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prüfen & teilen\nAuf deinem Gerät verarbeitet"
+            "value" : "Check, then share\nNo account. No tracking."
           }
         }
       }
     },
-    "03_RedactionEditor" : {
+    "06_Batch" : {
+      "comment" : "App Store screenshot 6 headline, over the batch sheet with photos and videos picked together. Two short lines.",
+      "extractionState" : "manual",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Position & size\nAdd centered region"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position och storlek\nLägg till centrerat område"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pozycja i rozmiar\nDodaj wyśrodkowany obszar"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置とサイズ\n中央に領域を追加"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posición y tamaño\nAgregar área centrada"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position et taille\nAjouter une zone centrée"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konum ve boyut\nOrtalanmış bölge ekle"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الموضع والحجم\nإضافة منطقة في الوسط"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Positie en grootte\nGecentreerd gebied toevoegen"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posição e tamanho\nAdicionar área centralizada"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "위치 및 크기\n중앙에 영역 추가"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posición y tamaño\nAñadir área centrada"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置与大小\n添加居中区域"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posição e tamanho\nAdicionar área centrada"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置與大小\n加入置中區域"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posizione e dimensioni\nAggiungi area centrata"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Position & Größe\nZentrierten Bereich hinzufügen"
-          }
-        }
-      }
-    },
-    "04_Metadata" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Location · Camera & date\nImage details"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Plats · Kamera och datum\nBilduppgifter"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lokalizacja · Aparat i data\nDane obrazu"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置情報 · カメラと日時\n画像情報"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ubicación · Cámara y fecha\nDetalles de la imagen"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lieu · Appareil photo et date\nDétails de l’image"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Konum · Kamera ve tarih\nGörüntü bilgileri"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "الموقع، الكاميرا والتاريخ\nتفاصيل الصورة"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Locatie · Camera en datum\nAfbeeldingsgegevens"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Localização · Câmera e data\nDetalhes da imagem"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "위치 · 카메라 및 날짜\n이미지 정보"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ubicación · Cámara y fecha\nDetalles de la imagen"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置 · 相机与日期\n图像信息"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Localização · Câmara e data\nDetalhes da imagem"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "位置 · 相機與日期\n影像資訊"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Posizione · Fotocamera e data\nDettagli dell’immagine"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Standort · Kamera & Datum\nBilddetails"
-          }
-        }
-      }
-    },
-    "01_FullPreview" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspect full image"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Granska hela bilden"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sprawdź cały obraz"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "画像全体を確認"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspeccionar imagen completa"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Examiner l’image entière"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tüm görüntüyü incele"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "فحص الصورة كاملة"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Hele afbeelding bekijken"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspecionar imagem completa"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "전체 이미지 확인"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspeccionar imagen completa"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "检查完整图像"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Inspecionar imagem completa"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "檢查完整影像"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Esamina l’intera immagine"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ganzes Bild prüfen"
-          }
-        }
-      }
-    },
-    "02_VideoEditor" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Clean your videos\nFaces, text and sound covered"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Rensa dina videor\nAnsikten, text och ljud maskeras"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wyczyść nagrania wideo\nTwarze, tekst i dźwięk ukryte"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "ビデオをクリーンアップ\n顔・文字・音声をマスク"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpiar tus videos\nCaras, texto y sonido censurados"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nettoyer vos vidéos\nVisages, texte et son masqués"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Videolarını temizle\nYüzler, metin ve ses gizlenir"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تنظيف مقاطع الفيديو\nحجب الوجوه والنصوص والصوت"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Je video’s opschonen\nGezichten, tekst, geluid afgedekt"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpar seus vídeos\nRostos, texto e som ocultados"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "비디오 정리\n얼굴, 텍스트, 소리 가림 처리"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpiar tus vídeos\nCaras, texto y sonido censurados"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清理你的视频\n遮盖人脸、文字和声音"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Limpar os seus vídeos\nRostos, texto e som ocultados"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "清理你的影片\n遮蓋人臉、文字和聲音"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Pulisci i tuoi video\nVolti, testo e audio coperti"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Videos bereinigen\nGesichter, Text & Ton verdeckt"
-          }
-        }
-      }
-    },
-    "06_Sample" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Try a sample\nA fictional photo"
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prova ett exempel\nPåhittat exempel"
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Wypróbuj przykład\nFikcyjny przykład"
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "サンプルを試す\n架空のサンプル"
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Probar un ejemplo\nEjemplo ficticio"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Essayer un exemple\nExemple fictif"
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bir örnek dene\nKurgusal örnek"
-          }
-        },
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "تجربة مثال\nمثال خيالي"
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Probeer een voorbeeld\nFictief voorbeeld"
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Experimentar um exemplo\nExemplo fictício"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "샘플 사용해 보기\n가상 샘플"
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Probar un ejemplo\nEjemplo ficticio"
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "试用示例\n虚构示例"
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Experimentar um exemplo\nExemplo fictício"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "試用範例\n虛構範例"
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Prova un esempio\nEsempio inventato"
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beispiel ausprobieren\nErfundenes Beispiel"
+            "value" : "Clean many at once\nPhotos and videos together"
           }
         }
       }
