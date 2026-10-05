@@ -5,10 +5,106 @@
       "comment" : "App Store screenshot 1 headline, over the video editor: two people in a street video, one face blurred and one covered with an emoji, and a bleep on the sound. Two short lines; the second says the covers track the faces as they move.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "موّه الوجوه في الفيديو\nتبقى محجوبة أثناء الحركة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gesichter verpixeln\nIm Video, auch in Bewegung"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Blur faces in videos\nFollowed as they move"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pixela caras en vídeos\nLas sigue al moverse"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Difumina caras en videos\nLas sigue al moverse"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visages floutés en vidéo\nSuivis quand ils bougent"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfoca i volti nei video\nSeguiti in movimento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "動画の顔をぼかす\n動きに合わせて自動で追従"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "동영상 속 얼굴 모자이크\n움직여도 따라가며 가립니다"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervaag gezichten in video’s\nVolgt elke beweging"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zamaż twarze na wideo\nPodąża za nimi w ruchu"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borre rostos em vídeos\nAcompanha cada movimento"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desfoque caras em vídeos\nSegue cada movimento"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Blurra ansikten i videor\nFöljer varje rörelse"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Videoda yüz bulanıklaştırma\nHer hareketi takip eder"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "视频人脸打码\n随人移动，持续跟踪"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "影片人臉打馬賽克\n隨人移動，持續追蹤"
           }
         }
       }
@@ -17,10 +113,106 @@
       "comment" : "App Store screenshot 2 headline, over a photo's location details (latitude and longitude) and its Camera & date chip. Two short lines; the second lists what a photo silently carries: GPS position, the device it was taken on, and the date.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "احذف الموقع المخفي\nبيانات GPS والجهاز والتاريخ"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Standortdaten entfernen\nGPS, Gerät und Datum"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Remove hidden location\nGPS, device and date"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borra la ubicación oculta\nGPS, dispositivo y fecha"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Borra la ubicación oculta\nGPS, dispositivo y fecha"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimez la localisation\nGPS, appareil et date"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rimuovi la posizione\nGPS, dispositivo e data"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "隠れた位置情報を削除\nGPS・機種・撮影日時"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "숨은 위치정보 삭제\nGPS·기기·날짜까지"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wis verborgen locatie\nGPS, apparaat en datum"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Usuń ukrytą lokalizację\nGPS, urządzenie i data"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remova a localização oculta\nGPS, dispositivo e data"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Remova a localização oculta\nGPS, dispositivo e data"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ta bort dold platsdata\nGPS, enhet och datum"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gizli konumu silin\nGPS, cihaz ve tarih"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "删除隐藏的定位信息\nGPS、设备和日期"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "刪除隱藏的定位資訊\nGPS、裝置和日期"
           }
         }
       }
@@ -29,10 +221,106 @@
       "comment" : "App Store screenshot 3 headline, over the camera's live viewfinder, which outlines a face, an email address and a QR code before the photo is taken. Two short lines.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "شاهد قبل أن تصوّر\nمعاينة مباشرة لما سيُحجب"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sieh es vor dem Auslösen\nAbdeckung live im Sucher"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "See it before you shoot\nLive preview of what’s covered"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Míralo antes de disparar\nVe en directo qué se tapa"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Míralo antes de disparar\nVe en vivo qué se tapa"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Voyez avant de déclencher\nAperçu en direct du masquage"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Guarda prima di scattare\nCoperture in tempo reale"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "撮る前に確認できる\n隠す部分をリアルタイム表示"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "찍기 전에 먼저 확인\n가릴 부분 실시간 미리보기"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zie het vóór je klikt\nAfdekking live in beeld"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zobacz, zanim pstrykniesz\nPodgląd zamazania na żywo"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veja antes de fotografar\nPrévia ao vivo da ocultação"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veja antes de fotografar\nPré-visualize o que oculta"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Se det innan du tar bilden\nMaskeringen syns live"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Çekmeden önce görün\nGizlenecekler canlı görünür"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍摄前先预览\n实时预览要遮盖的内容"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "拍攝前先預覽\n即時預覽要遮蓋的內容"
           }
         }
       }
@@ -41,10 +329,106 @@
       "comment" : "App Store screenshot 4 headline, over the photo editor: faces blurred or covered with an emoji, a phone number and a QR code pixelated, a bank card number blacked out. Line 1: the cover styles; line 2: what can be covered. Use the app's own words for Blur, Pixelate and Emoji.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "تمويه أو بكسلة أو إيموجي\nوجوه ونصوص وبطاقات ورموز"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Weichzeichnen, Pixelieren, Emoji\nGesichter, Text, Karten, Codes"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Blur, pixelate or emoji\nFaces, text, cards and codes"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desenfocar, pixelar, emoji\nCaras, texto, tarjetas y QR"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desenfocar, pixelar, emoji\nCaras, texto, tarjetas y QR"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flou, pixellisation, emoji\nVisages, texte, cartes, codes"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sfocatura, pixel o emoji\nVolti, testi, carte e codici"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ぼかし・ピクセル化・絵文字\n顔・文字・カード・QRコード"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "흐림·픽셀화·이모티콘\n얼굴·텍스트·카드·코드"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vervaging, mozaïek of emoji\nGezichten, tekst en codes"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rozmycie, pikselizacja, emoji\nTwarze, tekst, karty i kody"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desfocado, pixelado ou emoji\nRostos, textos, cartões e QR"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desfocado, pixelizado, emoji\nCaras, texto, cartões e QR"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Suddig, pixlad eller emoji\nAnsikten, text, kort, koder"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bulanık, piksel veya emoji\nYüz, metin, kart ve kod"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模糊、像素化或表情符号\n人脸、文字、卡号和二维码"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "模糊、像素化或表情符號\n人臉、文字、卡號和 QR 碼"
           }
         }
       }
@@ -53,10 +437,106 @@
       "comment" : "App Store screenshot 5 headline, over the Review & Share sheet with every check passed. Two short lines; the second is two short sentences: the app needs no account and does no tracking.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "راجع ثم شارك\nبلا حساب. بلا تتبع."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Erst prüfen, dann teilen\nKein Account. Kein Tracking."
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Check, then share\nNo account. No tracking."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa y luego comparte\nSin cuenta. Sin rastreo."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revisa y luego comparte\nSin cuenta. Sin rastreo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vérifiez, puis partagez\nSans compte. Sans pistage."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Controlla, poi condividi\nSenza account né tracciamento"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "確認してから共有\n登録不要。トラッキングなし。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "확인하고 공유하세요\n계정 없음. 추적 없음."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Eerst checken, dan delen\nGeen account. Geen tracking."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sprawdź, potem udostępnij\nBez konta. Bez śledzenia."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Revise e compartilhe\nSem conta. Sem rastreamento."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reveja e partilhe\nSem conta. Sem rastreio."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Granska först, dela sen\nInget konto. Ingen spårning."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "İnceleyin, sonra paylaşın\nHesap yok. İzleme yok."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先检查，再分享\n无需账户，无追踪"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "先檢查，再分享\n免帳號，不追蹤"
           }
         }
       }
@@ -65,10 +545,106 @@
       "comment" : "App Store screenshot 6 headline, over the batch sheet with photos and videos picked together. Two short lines.",
       "extractionState" : "manual",
       "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "نظّف الكثير دفعة واحدة\nصور ومقاطع فيديو معًا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stapelweise bereinigen\nFotos und Videos zusammen"
+          }
+        },
         "en" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Clean many at once\nPhotos and videos together"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia por lotes\nFotos y vídeos a la vez"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpia por lotes\nFotos y videos a la vez"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nettoyez par lots\nPhotos et vidéos ensemble"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pulisci in blocco\nFoto e video insieme"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "まとめてクリーンアップ\n写真も動画も一度に"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "한 번에 일괄 정리\n사진과 동영상을 함께"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Alles tegelijk opschonen\nFoto’s en video’s samen"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyść wiele naraz\nZdjęcia i wideo razem"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpe vários de uma vez\nFotos e vídeos juntos"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Limpe vários de uma vez\nFotos e vídeos juntos"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rensa många på en gång\nBåde bilder och videor"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hepsini birden temizleyin\nFotoğraf ve video bir arada"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "批量清理，一次完成\n照片和视频一起处理"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "批次清理，一次完成\n照片和影片一起處理"
           }
         }
       }
