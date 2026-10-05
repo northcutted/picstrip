@@ -1,1 +1,1 @@
-Gesichter verpixeln. EXIF weg.
+Standort & Metadaten entfernen

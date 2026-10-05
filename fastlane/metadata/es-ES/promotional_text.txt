@@ -1,1 +1,1 @@
-Nuevo: graba o elige un vídeo y PicStrip detecta caras, texto y códigos y los censura en movimiento. Pon un pitido a lo dicho y comparte. Todo en tu dispositivo.
+Nuevo: difumina caras, textos y códigos en tus vídeos. PicStrip los sigue al moverse y puedes tapar lo dicho con un pitido. Gratis, sin anuncios, cuenta ni rastreo.

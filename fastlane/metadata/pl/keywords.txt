@@ -1,1 +1,1 @@
-wideo,film,zamazać,cenzura,EXIF,GPS,lokalizacja,anonimizacja,pikselizacja,prywatność,zrzut ekranu
+film,zamazać,blur,rozmycie,cenzura,EXIF,GPS,zdjęcia,tablica,pikselizacja,emoji,tekst,ukryć,dziecka

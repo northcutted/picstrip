@@ -1,1 +1,1 @@
-vidéo,censurer,masquer,métadonnées,GPS,localisation,anonymiser,pixeliser,flou,bip,capture,écran
+photo,vidéo,visage,plaque,censurer,masquer,cacher,métadonnées,GPS,pixeliser,texte,emoji,enfant,QR

@@ -1,1 +1,1 @@
-video,blur,onherkenbaar,censuur,EXIF,GPS,locatie,anoniem,pixelen,privacy,piep,screenshot,verwijderen
+video,foto,blur,blurren,onherkenbaar,censuur,EXIF,GPS,kenteken,pixelen,emoji,tekst,kind,QR,wissen

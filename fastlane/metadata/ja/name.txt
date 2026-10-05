@@ -1,1 +1,1 @@
-PicStrip
+PicStrip: 動画の顔ぼかし・モザイク
