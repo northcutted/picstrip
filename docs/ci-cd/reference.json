@@ -8,6 +8,7 @@
     ".ruby-version",
     "scripts/ci/changes.py",
     ".github/workflows/app-store-deploy.yml",
+    ".github/workflows/app-store-settings.yml",
     ".github/workflows/main.yml",
     ".github/workflows/native-canary.yml",
     ".github/workflows/observe.yml",
@@ -286,6 +287,37 @@
             "APP_STORE_CONNECT_API_KEY_ID",
             "APP_STORE_CONNECT_API_KEY_ISSUER_ID"
           ]
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/app-store-settings.yml",
+      "name": "App Store Settings Export",
+      "triggers": {
+        "workflow_dispatch": {}
+      },
+      "inputs": {},
+      "secret_names": [],
+      "outputs": {},
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "app-store-settings-export",
+        "cancel-in-progress": false
+      },
+      "jobs": [
+        {
+          "id": "export",
+          "name": "Export read-only App Store Connect settings",
+          "needs": [],
+          "condition": "github.ref == 'refs/heads/main'",
+          "runner": "ubuntu-24.04",
+          "uses": null,
+          "environment": "app-store-observe",
+          "timeout_minutes": 20,
+          "permissions": null,
+          "secret_names": []
         }
       ]
     },
