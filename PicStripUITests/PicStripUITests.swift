@@ -151,7 +151,7 @@ final class PicStripUITests: XCTestCase {
         attachScreen("04_Redaction")
         app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
 
-        // What the photo says about where and when it was taken, and on what.
+        // Where the photo was taken, as it says to anyone it is sent to.
         let location = app.buttons["badge_GPS"]
         XCTAssertTrue(location.waitForExistence(timeout: 10), "The photo's location is found.")
         location.tap()
@@ -213,9 +213,7 @@ final class PicStripUITests: XCTestCase {
     }
 
     /// Selects a region in the editor and gives it `style` (and `emoji`).
-    private func cover(
-        _ region: String, with style: String, emoji: String? = nil, in app: XCUIApplication, leaveOpen: Bool = false
-    ) async throws {
+    private func cover(_ region: String, with style: String, emoji: String? = nil, in app: XCUIApplication) async throws {
         // The region list is short and scrolls: look up it, then down it.
         let row = app.descendants(matching: .any)["regionRow-\(region)"].firstMatch
         let list = app.scrollViews.containing(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch
@@ -235,12 +233,8 @@ final class PicStripUITests: XCTestCase {
             XCTAssertTrue(pick.waitForExistence(timeout: 5))
             pick.tap()
         }
-        if !leaveOpen {
-            app.buttons["doneStyleButton"].tap()
-            try await Task.sleep(for: .seconds(0.4))
-        } else {
-            try await Task.sleep(for: .seconds(1))
-        }
+        app.buttons["doneStyleButton"].tap()
+        try await Task.sleep(for: .seconds(0.4))
     }
 
     /// Copies a bundled fixture to the simulator's /tmp, where the app can read it.

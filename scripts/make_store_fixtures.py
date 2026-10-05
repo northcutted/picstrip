@@ -793,14 +793,15 @@ def street_background(size: tuple[int, int]) -> Image.Image:
     lx = W * 0.20
     d.rectangle([lx - 7, H * 0.08, lx + 7, H * 0.80], fill=(46, 52, 58))
     d.ellipse([lx - 28, H * 0.05, lx + 28, H * 0.12], fill=(46, 52, 58))
-    flyer = paper_poster((170, 220), [
-        ("LOST CAT", avenir(32, "heavy"), (200, 60, 50)),
-        ("Grey tabby, \"Miso\"", avenir(17, "demi"), (60, 50, 44)),
+    flyer = paper_poster((210, 240), [
+        ("LOST CAT", avenir(34, "heavy"), (200, 60, 50)),
+        ("Grey tabby, \"Miso\"", avenir(18, "demi"), (60, 50, 44)),
         ("", avenir(12), (0, 0, 0)),
         ("Please call", avenir(18, "medium"), (60, 50, 44)),
+        ("", avenir(10), (0, 0, 0)),
         ("415-555-0172", avenir(24, "bold"), (30, 26, 24)),
     ], accent=(200, 60, 50))
-    img.paste(flyer, (int(lx - 85), int(H * 0.30)), flyer)
+    img.paste(flyer, (int(lx - 105), int(H * 0.29)), flyer)
     img = img.filter(ImageFilter.GaussianBlur(1.2))
     return img
 
