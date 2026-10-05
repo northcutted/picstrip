@@ -462,8 +462,12 @@ final class ScrubberViewModel {
         scannedBatchSources.isEmpty ? batchItems.count : scannedBatchSources.count
     }
 
+    /// Videos read from files rather than picked: the UI tests' batch fixture
+    /// (`openFileBatch`).
+    var fileBatchVideos: [URL] = []
+
     /// How many videos the batch sheet is about to process.
-    var batchVideoCount: Int { batchVideoItems.count }
+    var batchVideoCount: Int { batchVideoItems.count + fileBatchVideos.count }
 
     /// Captured pages were never in the photo library, so "Replace Original"
     /// has nothing to replace.
@@ -1839,7 +1843,26 @@ final class ScrubberViewModel {
             VideoBatchSource(assetIdentifier: item.itemIdentifier) {
                 try? await item.loadTransferable(type: IncomingVideo.self)?.url
             }
+        } + fileBatchVideos.map { url in
+            VideoBatchSource(assetIdentifier: nil) {
+                try? PrivateFileStore.exports.copy(url, extension: url.pathExtension.isEmpty ? "mov" : url.pathExtension)
+            }
         }
+    }
+
+    /// Opens files — photos and videos alike — as one batch, for the UI tests,
+    /// which cannot drive the system picker (`PICSTRIP_BATCH_FIXTURE`).  Files
+    /// have no library original to replace, so, like captured pages, they are
+    /// saved as new.
+    func openFileBatch(_ urls: [URL]) {
+        let isVideo: (URL) -> Bool = { UTType(filenameExtension: $0.pathExtension)?.conforms(to: .movie) == true }
+        batchItems = []
+        batchVideoItems = []
+        scannedBatchSources = urls.filter { !isVideo($0) }.map { url in
+            BatchSource(assetIdentifier: nil) { try? Data(contentsOf: url) }
+        }
+        fileBatchVideos = urls.filter(isVideo)
+        activeSheet = .batch
     }
 
     /// The config a batch actually runs with.  Captured pages have no library
@@ -2140,6 +2163,7 @@ final class ScrubberViewModel {
     func clearBatchState() {
         batchItems        = []
         batchVideoItems   = []
+        fileBatchVideos   = []
         batchVideoFraction = nil
         scannedBatchSources = []
         isBatchProcessing = false
