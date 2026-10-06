@@ -148,8 +148,8 @@
     "replacement_release": {
       "version": "1.7.0",
       "source_tag": "v1.7.0",
-      "build_number": "77.1",
-      "app_store_build_id": "043d3495-15f2-4955-9a20-5dbf97f072d1"
+      "build_number": "105.1",
+      "app_store_build_id": "d13bc3d3-0646-44f0-b326-e3e33ba2b583"
     },
     "app_store": {
       "release_type": "AFTER_APPROVAL",
