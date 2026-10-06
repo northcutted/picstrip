@@ -1,1 +1,1 @@
-video,censor,redact,EXIF,GPS,location,remover,anonymize,privacy,pixelate,bleep,camera,screenshot
+metadata,remover,redact,censor,hide,pixelate,mosaic,license,plate,GPS,emoji,text,bleep,delete,kid,QR

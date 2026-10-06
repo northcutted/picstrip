@@ -1,1 +1,1 @@
-vídeo,censurar,desfocar,embaçar,EXIF,GPS,localização,anônimo,privacidade,pixelar,bipe,câmera,print
+vídeo,metadados,desfocar,embaçar,censurar,pixelar,placa,EXIF,GPS,apagar,ocultar,emoji,texto,criança

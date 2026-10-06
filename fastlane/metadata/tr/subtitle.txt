@@ -1,1 +1,1 @@
-Yüzü bulanıklaştır. EXIF sil.
+Konum, EXIF ve meta veri silme

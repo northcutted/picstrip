@@ -5,18 +5,22 @@ import XCTest
 
 /// Fastlane snapshot test suite for PicStrip.
 ///
-/// All screenshots are captured in a single test method after two app.launch()
-/// calls (first: no fixture; second: with fixture).  Splitting captures across
+/// All screenshots are captured in a single test method, which launches the app
+/// once per scene, each time on its own fixture.  Splitting captures across
 /// multiple test methods causes XCTest to terminate and relaunch the app between
 /// methods, which fails with "Failed to terminate com.northcutt.PicStrip" in
 /// headless CI.
 ///
-/// Screens captured:
-///   01_FullPreview — full-resolution output inspection
-///   02_RedactionEditor — custom redaction edit mode
-///   03_Metadata — metadata and detected regions
-///   04_ReviewAndShare — cleaned result and removal summary
-///   05_Sample — fictional sample without photo-library access
+/// The fixtures are drawn by `scripts/make_store_fixtures.py`; every person,
+/// name, number and place in them is invented.
+///
+/// Screens captured (the App Store shows them in this order):
+///   01_VideoEditor — faces in a video blurred or given an emoji, with a bleep
+///   02_Location — the location, camera and date found in a photo
+///   03_Viewfinder — the live viewfinder outlining a face, an email and a code
+///   04_Redaction — a photo's findings covered with blur, pixelate and an emoji
+///   05_ReviewAndShare — the cleaned photo, every check finished, ready to share
+///   06_Batch — photos and videos cleaned together
 @MainActor
 final class PicStripUITests: XCTestCase {
     private nonisolated let recordingIssue = Mutex(false)
@@ -50,147 +54,202 @@ final class PicStripUITests: XCTestCase {
         Bundle(for: type(of: self)).url(forResource: "test_list", withExtension: "png")
     }
 
-    // MARK: - All screenshots — two launches
+    // MARK: - All screenshots — one launch per scene
 
     /// Captures every App Store screenshot in one continuous session.
-    /// Launch 1: fictional sample. Launch 2: editable fixture and final output.
     @MainActor
     func testAllScreenshots() async throws {
-
         let app = XCUIApplication()
         setupSnapshot(app)
+        let snapshotEnvironment = app.launchEnvironment
 
-        // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 1: No fixture — home and fictional sample
-        // ─────────────────────────────────────────────────────────────────────
-        // The simulator has no camera, so it would hide "Take Photo" and "Scan
-        // Document".  Show the home screen the way a real iPhone shows it.
-        app.launchEnvironment["PICSTRIP_FORCE_SCAN_BUTTON"] = "1"
-        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
-        app.launch()
-
-        // Home: hero animation has started, wait for it to settle.
-        try await Task.sleep(for: .seconds(1.5))
-        attachScreen("Home")
-
-        // Demo shows value without requesting library permission.
-        app.buttons["tryDemoButton"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["editRedactionsButton"].waitForExistence(timeout: 30))
-        snapshot("06_Sample")
-        attachScreen("06_Sample")
-
-        // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 2: With fixture — photo loaded screens
-        // ─────────────────────────────────────────────────────────────────────
+        try await captureVideoEditor(app, environment: snapshotEnvironment)
         app.terminate()
+        try await capturePhotoScenes(app, environment: snapshotEnvironment)
+        app.terminate()
+        try await captureViewfinder(app, environment: snapshotEnvironment)
+        app.terminate()
+        try await captureBatch(app, environment: snapshotEnvironment)
+    }
 
-        // Write fixture bytes to the simulator's /tmp so the app can read them.
-        let fixtureURL = fixtureImageURL()
-        XCTAssertNotNil(fixtureURL, "test_list.png must be in the UITest bundle")
+    /// 01 — Two friends walking down a street: both faces found and followed,
+    /// one blurred and one given an emoji, and a bleep on the audio lane.
+    private func captureVideoEditor(_ app: XCUIApplication, environment: [String: String]) async throws {
+        app.launchEnvironment = environment
+        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = try stagedFixture("store_street", "mov")
+        app.launch()
+        XCTAssertTrue(app.buttons["addCoverButton"].waitForExistence(timeout: 180), "The video opens in its editor.")
 
-        let tmpPath = "/tmp/picstrip_fixture.png"
-        if let srcURL = fixtureURL,
-           let data = try? Data(contentsOf: srcURL) {
-            try? data.write(to: URL(fileURLWithPath: tmpPath))
+        // Both faces are found and blurred; the second gets an emoji instead.
+        let faceClips = app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'clip-face-'"))
+        XCTAssertEqual(faceClips.count, 2, "Both faces are found.")
+        let cover = app.buttons["faceCoverMenu-2"]
+        reveal(cover, in: app)
+        cover.tap()
+        let emoji = app.buttons["emojiCoverButton"].firstMatch
+        XCTAssertTrue(emoji.waitForExistence(timeout: 5), "The cover menu offers an emoji.")
+        emoji.tap()
+        let sunglasses = app.buttons["emojiChoice-😎"]
+        XCTAssertTrue(sunglasses.waitForExistence(timeout: 5))
+        sunglasses.tap()
+        app.buttons["emojiDoneButton"].tap()
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        // Back to the top, where the preview and the timeline are.
+        let list = app.collectionViews.firstMatch
+        let preview = app.descendants(matching: .any)["videoPreviewStill"]
+        let top = app.navigationBars.firstMatch.frame.maxY
+        // Dragged from low in the list, never from its middle: in longer
+        // languages the timeline sits there, and its own gestures took the
+        // swipe (German, on iPhone).
+        for _ in 0..<12 where !(preview.exists && preview.frame.minY >= top) {
+            list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.72))
+                .press(forDuration: 0.05, thenDragTo: list.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.98)))
         }
+        XCTAssertTrue(preview.exists && preview.frame.minY >= top, "The preview is in view again.")
 
+        // A stretch of what they say, bleeped from the audio lane's menu (its
+        // first item, whatever the language).
+        let audio = app.descendants(matching: .any)["audioLane"]
+        XCTAssertTrue(audio.waitForExistence(timeout: 5), "The video has sound.")
+        try await Task.sleep(for: .seconds(1))
+        let bleep = app.menuItems.firstMatch
+        let start = audio.coordinate(withNormalizedOffset: CGVector(dx: 0.42, dy: 0.5))
+        for _ in 0..<3 where !bleep.exists {
+            // A tap first puts the playhead where the hold begins: on iPad the
+            // hold can be recognised before the lane has seen where the touch is.
+            start.tap()
+            start.press(forDuration: 0.8, thenDragTo: audio.coordinate(withNormalizedOffset: CGVector(dx: 0.70, dy: 0.5)))
+            _ = bleep.waitForExistence(timeout: 3)
+        }
+        XCTAssertTrue(bleep.exists, "The selected stretch offers Bleep.")
+        bleep.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["clip-audio-0"].waitForExistence(timeout: 5))
+        // The preview is redrawn with the covers once the playhead settles.
+        try await Task.sleep(for: .seconds(2))
+        snapshot("01_VideoEditor")
+        attachScreen("01_VideoEditor")
+    }
+
+    /// 04, 02 and 05 — a photo at a pavement café: its findings covered in the
+    /// editor, the location it carries, and the review with every check done.
+    private func capturePhotoScenes(_ app: XCUIApplication, environment: [String: String]) async throws {
+        app.launchEnvironment = environment
         app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
-        app.launchEnvironment["PICSTRIP_FIXTURE"] = tmpPath
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
         app.launch()
 
-        // 03 — Photo loaded: wait for the dismiss button (photo fully loaded), then
-        // wait for editRedactionsButton which only appears once the PII scan is
-        // complete — guarantees the badge row is stable. Incomplete checks still
-        // require a separate acknowledgement before saving or sharing.
-        let dismissButton = app.buttons["dismissPhotoButton"]
-        XCTAssertTrue(dismissButton.waitForExistence(timeout: 15),
-                      "Dismiss button should appear after fixture image loads")
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30), "The scan finishes.")
+        edit.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["addRedactionButton"].waitForExistence(timeout: 5))
 
-        let editRedactionsButton = app.descendants(matching: .any)["editRedactionsButton"]
-        XCTAssertTrue(
-            editRedactionsButton.waitForExistence(timeout: 20),
-            "Edit Redactions button should appear once the PII scan finishes."
-        )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["metadataPhotoPreview"].exists,
-            "Loaded-photo screen should expose a zoomable/pannable image preview."
-        )
-        XCTAssertFalse(
-            app.descendants(matching: .any)["piiPill"].exists,
-            "Visual detections should no longer be surfaced as the old PII pill."
-        )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["metadataFoundLabel"].exists,
-            "Metadata should remain its own section when visual sensitive data is present."
-        )
-        snapshot("04_Metadata")
-        attachScreen("04_Metadata")
-
-        // 04 — Redaction editor: create one manual redaction on top of detected regions.
-        editRedactionsButton.tap()
-
-        let addRedactionButton = app.descendants(matching: .any)["addRedactionButton"]
-        XCTAssertTrue(addRedactionButton.waitForExistence(timeout: 5))
-        addRedactionButton.tap()
-
-        let preview = app.descendants(matching: .any)["metadataPhotoPreview"]
-        let start = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.30, dy: 0.30))
-        let end = preview.coordinate(withNormalizedOffset: CGVector(dx: 0.58, dy: 0.45))
-        start.press(forDuration: 0.1, thenDragTo: end)
-        try await Task.sleep(for: .seconds(0.5))
-        snapshot("03_RedactionEditor")
-        attachScreen("03_RedactionEditor")
+        // Each finding gets the cover that suits it; the card stays solid.
+        try await cover("detected-phoneNumber-0", with: "pixelate", in: app)
+        try await cover("detected-barcode-0", with: "pixelate", in: app)
+        try await cover("detected-face-0", with: "blur", in: app)
+        try await cover("detected-face-1", with: "emoji", emoji: "😎", in: app)
+        // The region list from its first row, not cut off part-way through one.
+        app.scrollViews.containing(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch.swipeDown(velocity: .slow)
+        try await Task.sleep(for: .seconds(1))
+        snapshot("04_Redaction")
+        attachScreen("04_Redaction")
         app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
-        try await Task.sleep(for: .seconds(0.3))
 
-        // 05 — Review & save sheet: tap Save to Photos.
+        // Where the photo was taken, as it says to anyone it is sent to.
+        let location = app.buttons["badge_GPS"]
+        XCTAssertTrue(location.waitForExistence(timeout: 10), "The photo's location is found.")
+        location.tap()
+        XCTAssertTrue(app.staticTexts["Latitude"].firstMatch.waitForExistence(timeout: 5), "The latitude is listed.")
+        try await Task.sleep(for: .seconds(1))
+        snapshot("02_Location")
+        attachScreen("02_Location")
+        location.tap()
+        try await Task.sleep(for: .seconds(0.5))
+
         let saveButton = app.buttons["saveButton"]
         XCTAssertTrue(saveButton.waitForExistence(timeout: 5))
         saveButton.tap()
-        // Wait for the pre-save review sheet to slide up.
-        try await Task.sleep(for: .seconds(1.2))
         XCTAssertTrue(
-            app.descendants(matching: .any)["savePreviewImage"].waitForExistence(timeout: 5),
+            app.descendants(matching: .any)["savePreviewImage"].waitForExistence(timeout: 10),
             "Review sheet should show the processed image preview before saving."
         )
-        XCTAssertTrue(
-            app.descendants(matching: .any)["savePreviewLabel"].exists,
-            "Review sheet should label the visual save preview."
+        let share = app.buttons["shareCleanedImageButton"]
+        let ready = expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: share)
+        await fulfillment(of: [ready], timeout: 20)
+        XCTAssertFalse(
+            app.descendants(matching: .any)["manualReviewAcknowledgement"].exists,
+            "Every check finished: nothing asks for a manual review."
         )
-        XCTAssertTrue(app.buttons["shareCleanedImageButton"].isHittable,
-                      "The primary share action must remain visible while reviewing the photo")
+        try await Task.sleep(for: .seconds(1))
         snapshot("05_ReviewAndShare")
         attachScreen("05_ReviewAndShare")
-        // The review is a short form sheet on iPad; the button may be below the fold.
-        reveal(app.buttons["inspectFullImageButton"], in: app)
-        app.buttons["inspectFullImageButton"].tap()
-        XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
-        snapshot("01_FullPreview")
-        attachScreen("01_FullPreview")
+    }
 
-        // ─────────────────────────────────────────────────────────────────────
-        // LAUNCH 3: A video — the editor with its covers, timeline and a bleep
-        // ─────────────────────────────────────────────────────────────────────
-        app.terminate()
-        let videoPath = "/tmp/picstrip_screenshot_video.mov"
-        try await writeFaceMovie(to: URL(fileURLWithPath: videoPath))
-        app.launchEnvironment["PICSTRIP_FIXTURE"] = nil
-        app.launchEnvironment["PICSTRIP_VIDEO_FIXTURE"] = videoPath
+    /// 03 — the viewfinder in Photo mode, outlining a visitor's face, the email
+    /// on their badge and its code before the photo is taken.
+    private func captureViewfinder(_ app: XCUIApplication, environment: [String: String]) async throws {
+        app.launchEnvironment = environment
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_LIVE_CAMERA_FIXTURE"] = try stagedFixture("store_badge", "jpg")
         app.launch()
-        XCTAssertTrue(app.buttons["addCoverButton"].waitForExistence(timeout: 180), "The video opens in its editor.")
-        // A stretch of sound bleeped from the audio lane's menu (its first item,
-        // whatever the language).
-        let audio = app.descendants(matching: .any)["audioLane"]
-        if audio.exists {
-            audio.coordinate(withNormalizedOffset: CGVector(dx: 0.35, dy: 0.5)).press(
-                forDuration: 0.8, thenDragTo: audio.coordinate(withNormalizedOffset: CGVector(dx: 0.7, dy: 0.5))
-            )
-            let bleep = app.menuItems.firstMatch
-            if bleep.waitForExistence(timeout: 5) { bleep.tap() }
+        let status = app.descendants(matching: .any)["liveCameraStatus"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
+        // The live scan finds all three within a few passes; the guide over the
+        // picture fades after five seconds.
+        try await Task.sleep(for: .seconds(8))
+        snapshot("03_Viewfinder")
+        attachScreen("03_Viewfinder")
+    }
+
+    /// 06 — photos and videos picked together, about to be cleaned as one batch.
+    private func captureBatch(_ app: XCUIApplication, environment: [String: String]) async throws {
+        // A day's worth: the fixtures several times over.
+        let photos = [try stagedFixture("store_cafe", "jpg"), try stagedFixture("store_badge", "jpg"), try stagedFixture("test_list", "png")]
+        let video = try stagedFixture("store_street", "mov")
+        let files = Array(repeating: photos, count: 4).flatMap { $0 } + Array(repeating: video, count: 3)
+        app.launchEnvironment = environment
+        app.launchEnvironment["PICSTRIP_BATCH_FIXTURE"] = files.joined(separator: "\n")
+        app.launch()
+        XCTAssertTrue(app.descendants(matching: .any)["videoBatchNote"].waitForExistence(timeout: 20), "The batch has its videos.")
+        try await Task.sleep(for: .seconds(1))
+        snapshot("06_Batch")
+        attachScreen("06_Batch")
+    }
+
+    /// Selects a region in the editor and gives it `style` (and `emoji`).
+    private func cover(_ region: String, with style: String, emoji: String? = nil, in app: XCUIApplication) async throws {
+        // The region list is short and scrolls: look up it, then down it.
+        let row = app.descendants(matching: .any)["regionRow-\(region)"].firstMatch
+        let list = app.scrollViews.containing(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch
+        for attempt in 0..<10 where !(row.exists && row.isHittable) {
+            if attempt < 4 { list.swipeDown(velocity: .slow) } else { list.swipeUp(velocity: .slow) }
         }
-        try await Task.sleep(for: .seconds(1.0))
-        snapshot("02_VideoEditor")
-        attachScreen("02_VideoEditor")
+        XCTAssertTrue(row.waitForExistence(timeout: 5), "\(region) is found.")
+        row.tap()
+        let styleButton = app.buttons["editRegionStyleButton"]
+        XCTAssertTrue(styleButton.waitForExistence(timeout: 5))
+        styleButton.tap()
+        let choice = app.buttons["styleButton-\(style)"]
+        XCTAssertTrue(choice.waitForExistence(timeout: 5))
+        choice.tap()
+        if let emoji {
+            let pick = app.buttons["emojiChoice-\(emoji)"]
+            XCTAssertTrue(pick.waitForExistence(timeout: 5))
+            pick.tap()
+        }
+        app.buttons["doneStyleButton"].tap()
+        try await Task.sleep(for: .seconds(0.4))
+    }
+
+    /// Copies a bundled fixture to the simulator's /tmp, where the app can read it.
+    private func stagedFixture(_ name: String, _ ext: String) throws -> String {
+        let source = try XCTUnwrap(
+            Bundle(for: type(of: self)).url(forResource: name, withExtension: ext), "\(name).\(ext) must be in the UI test bundle"
+        )
+        let path = "/tmp/picstrip_store_\(name).\(ext)"
+        try? FileManager.default.removeItem(atPath: path)
+        try FileManager.default.copyItem(at: source, to: URL(fileURLWithPath: path))
+        return path
     }
 
     /// The simulator has no camera, so by default the home screen must not offer a scan.

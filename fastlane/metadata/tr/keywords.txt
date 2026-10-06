@@ -1,1 +1,1 @@
-video,sansür,karart,meta veri,konum,GPS,anonim,gizlilik,piksel,bip,kamera,ekran görüntüsü,plaka
+video,fotoğraf,sansür,mozaik,kapatma,buzlama,plaka,metadata,GPS,gizleme,emoji,yazı,çocuk,QR,bip,blur

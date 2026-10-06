@@ -1,1 +1,1 @@
-video,difuminar,pixelear,ocultar,EXIF,GPS,ubicación,eliminar,anonimizar,privacidad,pitido,captura
+video,foto,cara,tapar,pixelear,pixelar,censurar,ocultar,placa,EXIF,GPS,quitar,eliminar,emoji,texto

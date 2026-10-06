@@ -1,4 +1,6 @@
-Comparte el momento, no la historia que hay detrás. PicStrip encuentra lo que revela una foto o un video (caras, números de teléfono, direcciones de correo, números de tarjeta, códigos QR, dónde se tomó y con qué dispositivo) y te ayuda a censurarlo o eliminarlo antes de compartir. Todo se procesa en tu iPhone o iPad.
+Difumina caras y textos en fotos y videos, y elimina los datos ocultos de ubicación, dispositivo y fecha antes de compartir. Gratis y todo en tu iPhone o iPad: sin cuenta, sin anuncios y sin rastreo.
+
+Comparte el momento, no la historia que hay detrás. PicStrip encuentra lo que revela una foto o un video (caras, números de teléfono, direcciones de correo, números de tarjeta, códigos QR, dónde se tomó y con qué dispositivo) y te ayuda a censurarlo o eliminarlo antes de compartir.
 
 Videos censurados en movimiento
 Graba con PicStrip o elige un video (o varios, para limpiarlos a la vez). PicStrip encuentra caras, texto, códigos y tus palabras de “Censurar siempre”, los sigue cuadro por cuadro y los censura: las caras, con un desenfoque fuerte, un recuadro opaco o el emoji que elijas. Enmarca cualquier otra cosa (una persona, un auto, una pantalla, un letrero) y se seguirá hacia adelante y atrás. Una línea de tiempo de video muestra cada censura y edición de sonido como un clip recortable; selecciona un tramo de sonido para ponerle un pitido o silenciarlo. La vista previa muestra la copia tal como se guarda, que sale sin ubicación, dispositivo ni fechas.
@@ -16,12 +18,12 @@ Haz la copia a tu manera
 Dibuja un recuadro o toca un objeto en iOS 27, y muévelo o redimensiónalo con controles accesibles. Elige sólido, trama cruzada, pixelado, desenfoque o un emoji, con colores, intensidad y deshacer/rehacer. Para secretos se recomienda una cobertura sólida: el desenfoque y el pixelado pueden dejar detalles reconocibles. Puedes dejar visibles los últimos dígitos de una tarjeta o un teléfono y comparar con el original antes de compartir. Agrega palabras a “Censurar siempre” (tu nombre, una placa, tu calle) y se censurarán donde PicStrip las lea.
 
 Elimina los detalles ocultos
-Revisa los metadatos de ubicación, cámara, fecha, pie de foto y dispositivo. Elige qué eliminar y comprueba el resultado. Exporta en PNG, JPEG, HEIC o un formato de origen compatible, con el tamaño de archivo visible. Los preajustes para compartir ayudan a elegir formato para fotos, capturas y documentos. Conserva el movimiento de una Live Photo si no se censura nada en ella.
+Revisa los metadatos de ubicación, cámara, fecha, pie de foto y dispositivo. Elige qué eliminar y comprueba el resultado. Exporta en PNG, JPEG, HEIC o un formato de origen compatible, con el tamaño de archivo visible.
 
 Más formas de empezar
 Prueba el ejemplo ficticio integrado. Elige fotos y videos (uno o varios, o solo tus capturas), escanea un documento, explora Archivos, pega o arrastra y suelta. Limpia muchas fotos y videos a la vez con una política común, usa la extensión para compartir o empieza desde Atajos: la acción en segundo plano solo elimina metadatos.
 
 Privacidad en el dispositivo
-Sin cuenta, anuncios, rastreo, suscripciones ni servidor de fotos del desarrollador. En sistemas compatibles, un modelo opcional de selección de objetos puede descargarse de Apple con tu permiso. Importar desde la nube, guardar en una fototeca sincronizada y compartir con una app que elijas se rigen por la configuración de esos servicios. Los archivos temporales protegidos se eliminan según la política de privacidad. PicStrip es de código abierto, con procedencia de compilación verificable para las versiones publicadas.
+Sin suscripciones ni servidor de fotos del desarrollador. En sistemas compatibles, un modelo opcional de selección de objetos puede descargarse de Apple con tu permiso. Importar desde la nube, guardar en una fototeca sincronizada y compartir con una app que elijas se rigen por la configuración de esos servicios. Los archivos temporales protegidos se eliminan según la política de privacidad. PicStrip es de código abierto, con procedencia de compilación verificable para las versiones publicadas.
 
 La detección automática puede omitir detalles, y censurar lo que encuentra no hace anónimo a nadie. Revisa siempre toda la foto o el video antes de compartir.

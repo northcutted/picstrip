@@ -1,4 +1,6 @@
-Dela ögonblicket, inte historien bakom det. PicStrip hittar det en bild eller video avslöjar – ansikten, telefonnummer, e-postadresser, kortnummer, QR-koder, var den togs och vilken enhet som tog den – och hjälper dig att dölja eller ta bort det innan du delar. Bearbetningen sker på din iPhone eller iPad.
+Blurra ansikten och text i bilder och videor, och ta bort dolda uppgifter om plats, enhet och datum innan du delar. Gratis och på din enhet: inget konto, inga annonser, ingen spårning.
+
+Dela ögonblicket, inte historien bakom det. PicStrip hittar det en bild eller video avslöjar – ansikten, telefonnummer, e-postadresser, kortnummer, QR-koder, var den togs och vilken enhet som tog den – och hjälper dig att dölja eller ta bort det innan du delar.
 
 Videor som maskeras i rörelse
 Spela in med PicStrips kamera eller välj en video – eller flera, för att rensa alla på en gång. PicStrip hittar ansikten, text, koder och dina Maskera alltid-ord, följer dem bildruta för bildruta och maskerar dem: ansikten med kraftig oskärpa, en fylld ruta eller en emoji du väljer. Rita en ruta runt något annat – en person, en bil, en skärm, en skylt – så följs det framåt och bakåt. En tidslinje som i en videoredigerare visar varje maskering och ljudändring som ett klipp du kan korta; markera ett ljudavsnitt för att lägga pip över det eller tysta det. Förhandsvisningen ritas på samma sätt som kopian sparas, och kopian lämnar enheten utan plats, enhetsuppgifter och datum.
@@ -16,7 +18,7 @@ Gör kopian till din
 Rita en ruta, eller tryck på ett objekt i iOS 27, och flytta och ändra sedan storlek med tillgänglighetsanpassade reglage. Välj fylld, korsskrafferad, pixlad, suddig eller en emoji, med färger, styrka och ångra/gör om. Fylld maskering rekommenderas för hemligheter: oskärpa och pixling kan lämna detaljer igenkännbara. Låt de sista siffrorna i ett kort- eller telefonnummer synas om du vill, och jämför med originalet innan du delar. Lägg till ord i Maskera alltid – ditt namn, en registreringsskylt, din gata – så maskeras de var PicStrip än läser dem.
 
 Ta bort dolda uppgifter
-Granska metadata om plats, kamera, datum, bildtext och enhet. Välj vad du tar bort och kontrollera resultatet. Exportera som PNG, JPEG, HEIC eller i källformatet om det stöds, med synlig filstorlek. Delningsförinställningar hjälper dig att välja format för bilder, skärmbilder och dokument. Behåll rörelsen i Live Photo-bilder när inget i dem är maskerat.
+Granska metadata om plats, kamera, datum, bildtext och enhet. Välj vad du tar bort och kontrollera resultatet. Exportera som PNG, JPEG, HEIC eller i källformatet om det stöds, med synlig filstorlek. Behåll rörelsen i Live Photo-bilder när inget i dem är maskerat.
 
 Fler sätt att börja
 Prova det påhittade inbyggda exemplet. Välj bilder och videor – en eller flera, eller bara dina skärmbilder – skanna ett dokument, bläddra i Filer, klistra in eller dra och släpp. Rensa många bilder och videor på en gång med gemensamma inställningar, använd delningstillägget eller börja i Genvägar – bakgrundsåtgärden tar bara bort metadata.

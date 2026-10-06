@@ -121,6 +121,8 @@ The full rule set is `DetectionRegistry.build()` (60 rules). Representative base
 
 **Face detector revision:** a default-initialised `DetectFaceRectanglesRequest` still resolves to revision 3 on iOS 27, so revision 4 is requested by name — on devices only (it is unimplemented in the simulator) and behind `#if compiler(>=6.4)` + `#available(iOS 27, *)`. If it errors, `scanImage` retries face detection with the default revision and a failed retry remains visible in `ScanCoverage`. A completed detector can still miss a face.
 
+**On the simulator:** the face, barcode and document-rectangle requests run on the CPU (`PIIScanner.onSimulatorCPU`, iOS 27 SDK and runtime only) — inside the app the simulator's GPU cannot create their inference context, and the failed checks would put "Some checks could not finish" on every review. Vision's barcode model never loads on the simulator at all (it times out and reports no codes), so there, and only there, QR codes come from Core Image's detector (`simulatorQRCodes`). Device builds compile neither.
+
 ### Duplicate Detection
 
 `DetectedInstance` conforms to `Equatable` on `(snippet, boundingBox)`. When both the regex pass and `NSDataDetector` fire on the same text span, `record()` silently drops the duplicate and only upgrades the score if the new instance is stronger.

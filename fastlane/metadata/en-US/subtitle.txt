@@ -1,1 +1,1 @@
-Blur faces. Strip metadata.
+Remove photo location & EXIF

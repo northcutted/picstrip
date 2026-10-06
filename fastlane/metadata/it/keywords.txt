@@ -1,1 +1,1 @@
-video,censura,oscurare,EXIF,GPS,posizione,anonimo,pixelare,privacy,bip,sfocatura,viso,schermata,foto
+video,foto,viso,targa,pixelare,oscurare,censura,coprire,nascondere,EXIF,GPS,eliminare,emoji,testo

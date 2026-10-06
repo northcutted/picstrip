@@ -1,1 +1,1 @@
-PicStrip
+PicStrip: Blur Faces in Video

@@ -1,1 +1,1 @@
-Flouter visages, effacer EXIF
+Supprimer localisation et EXIF

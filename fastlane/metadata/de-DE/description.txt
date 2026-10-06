@@ -1,7 +1,9 @@
-Teile den Moment, nicht die Geschichte dahinter. PicStrip findet, was ein Foto oder Video verrät – Gesichter, Telefonnummern, E-Mail-Adressen, Kartennummern, QR-Codes, wo es aufgenommen wurde und mit welchem Gerät – und hilft dir, es vor dem Teilen zu verdecken oder zu entfernen. Alles wird auf deinem iPhone oder iPad verarbeitet.
+Mach Gesichter und Text in Fotos und Videos unkenntlich und entferne versteckte Angaben zu Standort, Gerät und Datum, bevor du teilst. Kostenlos und direkt auf deinem iPhone oder iPad: kein Account, keine Werbung, kein Tracking.
+
+Teile den Moment, nicht die Geschichte dahinter. PicStrip findet, was ein Foto oder Video verrät – Gesichter, Telefonnummern, E-Mail-Adressen, Kartennummern, QR-Codes, wo es aufgenommen wurde und mit welchem Gerät – und hilft dir, es vor dem Teilen zu verdecken oder zu entfernen.
 
 Videos, verdeckt in Bewegung
-Nimm mit PicStrip auf oder wähle ein Video – oder mehrere, um alle auf einmal zu bereinigen. PicStrip findet Gesichter, Text, Codes und deine Wörter aus „Immer verdecken“, folgt ihnen Bild für Bild und verdeckt sie: Gesichter mit starker Weichzeichnung, vollem Kasten oder Emoji deiner Wahl. Umrahme alles andere – eine Person, ein Auto, einen Bildschirm, ein Schild –, und es wird vor- und rückwärts verfolgt. Eine Videoeditor-Zeitleiste zeigt jede Abdeckung und Tonbearbeitung als kürzbaren Clip; markiere Ton zum Überpiepen oder Stummschalten. Die Vorschau entspricht der gesicherten Kopie, die ohne Standort, Gerät und Datum geteilt wird.
+Nimm mit PicStrip auf oder wähle ein Video – oder mehrere, um alle auf einmal zu bereinigen. PicStrip findet Gesichter, Text, Codes und deine Wörter aus „Immer verdecken“, folgt ihnen Bild für Bild und verdeckt sie: Gesichter mit starker Weichzeichnung, vollem Kasten oder Emoji deiner Wahl. Umrahme alles andere – eine Person, ein Auto, einen Bildschirm, ein Schild –, und es wird vor- und rückwärts verfolgt. Eine Videoeditor-Zeitleiste zeigt jede Abdeckung und Tonbearbeitung als kürzbaren Clip; markiere Ton für einen Piepton oder zum Stummschalten. Die Vorschau entspricht der gesicherten Kopie, die ohne Standort, Gerät und Datum geteilt wird.
 
 Aufnehmen ohne Kompromisse
 Eine Kamera für Fotos, Videos und Dokumente. Der Videomodus nimmt auf wie die Kamera-App: 4K oder HD, 24–120 fps, HDR, verbesserte Stabilisierung, alle Objektive mit Zoom, Fokus und Belichtung, Taschenlampe sowie Lautstärketasten oder Kamerasteuerung zum Starten und Stoppen. Aufnahmen gehen direkt zum Bereinigen und nie unverändert in die Mediathek.
@@ -16,12 +18,12 @@ Deine Kopie, deine Regeln
 Zieh einen Rahmen oder tippe unter iOS 27 auf ein Objekt und verschiebe oder skaliere ihn mit barrierefreien Steuerelementen. Wähle Deckend, Kreuzschraffur, Verpixeln, Weichzeichnen oder ein Emoji, mit Farben, Stärke und Widerrufen/Wiederholen. Für Geheimnisse wird eine deckende Fläche empfohlen: Weichzeichnen und Verpixeln können Details erkennbar lassen. Lass auf Wunsch die letzten Ziffern einer Karten- oder Telefonnummer sichtbar und vergleiche vor dem Teilen mit dem Original. Wörter in „Immer verdecken“ – dein Name, ein Kennzeichen, deine Straße – werden verdeckt, wo immer PicStrip sie liest.
 
 Verborgene Details entfernen
-Prüfe Metadaten zu Standort, Kamera, Datum, Bildunterschrift und Gerät. Wähle, was entfernt wird, und prüfe das Ergebnis. Exportiere als PNG, JPEG, HEIC oder unterstütztes Originalformat, mit sichtbarer Dateigröße. Teilen-Voreinstellungen helfen bei der Formatwahl für Fotos, Screenshots und Dokumente. Behalte die Live-Photo-Bewegung, wenn darin nichts verdeckt wird.
+Prüfe Metadaten zu Standort, Kamera, Datum, Bildunterschrift und Gerät. Wähle, was entfernt wird, und prüfe das Ergebnis. Exportiere als PNG, JPEG, HEIC oder unterstütztes Originalformat, mit sichtbarer Dateigröße.
 
 Weitere Wege hinein
 Probiere das erfundene Beispiel aus. Wähle Fotos und Videos – eins, viele oder nur Screenshots –, scanne ein Dokument, durchsuche Dateien, füge ein oder nutze Drag & Drop. Bereinige viele Fotos und Videos auf einmal mit denselben Datenschutzoptionen, nutze die Teilen-Erweiterung oder starte in Kurzbefehle – die Hintergrundaktion entfernt nur Metadaten.
 
 Datenschutz auf dem Gerät
-Kein Account, keine Werbung, kein Tracking, keine Abos und kein Fotoserver des Entwicklers. Ein optionales Modell zur Objektauswahl kann auf unterstützten Systemen nach deiner Zustimmung von Apple geladen werden. Cloud-Import, Sichern in eine synchronisierte Mediathek und Teilen mit einer App deiner Wahl folgen den Einstellungen dieser Dienste. Geschützte temporäre Dateien werden laut Datenschutzerklärung bereinigt. PicStrip ist Open Source, mit überprüfbarer Build-Herkunft für veröffentlichte Versionen.
+Keine Abos und kein Fotoserver des Entwicklers. Ein optionales Modell zur Objektauswahl kann auf unterstützten Systemen nach deiner Zustimmung von Apple geladen werden. Cloud-Import, Sichern in eine synchronisierte Mediathek und Teilen mit einer App deiner Wahl folgen den Einstellungen dieser Dienste. Geschützte temporäre Dateien werden laut Datenschutzerklärung bereinigt. PicStrip ist Open Source, mit überprüfbarer Build-Herkunft für veröffentlichte Versionen.
 
 Die automatische Erkennung kann Details übersehen, und das Verdecken des Gefundenen macht niemanden anonym. Prüfe vor dem Teilen immer das ganze Foto oder Video.

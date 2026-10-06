@@ -185,10 +185,9 @@ struct BatchConfigView: View {
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 4)
 
-                        AdvancedOptionsView(
-                            viewModel: viewModel,
-                            hasPII: config.redactVisualPII
-                        )
+                        // No PNG recommendation here: it is for a single photo of
+                        // text, and a batch — mostly camera photos — is HEIC by default.
+                        AdvancedOptionsView(viewModel: viewModel)
                     }
                 }
 
