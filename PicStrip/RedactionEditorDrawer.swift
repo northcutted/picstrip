@@ -302,6 +302,9 @@ struct RedactionEditorDrawer: View {
     var onApplyToAllFaces: ((String) -> Void)?
     /// Adds a finding's text to the Always Cover list.
     var onAlwaysCover: ((String) -> Void)?
+    /// How tall the list of regions may grow: a few rows below the photo, the
+    /// whole column beside it.
+    var regionListMaxHeight: CGFloat = 160
 
     // MARK: - Multi-select local state
 
@@ -443,7 +446,7 @@ struct RedactionEditorDrawer: View {
                         }
                     }
                 }
-                .frame(minHeight: 120, maxHeight: 160)
+                .frame(minHeight: 120, maxHeight: regionListMaxHeight)
                 .onChange(of: selectedRegionID) { _, id in
                     if let id { proxy.scrollTo(id, anchor: .center) }
                 }

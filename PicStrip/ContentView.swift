@@ -730,8 +730,25 @@ struct ContentView: View {
 
     // MARK: - Photo layout (existing layout when a photo is loaded)
 
+    /// The photo screen's frame and its window's, in the window's coordinates:
+    /// they decide whether the controls go below the photo or beside it.
+    @State private var photoFrame: CGRect = .zero
+    @State private var photoWindowFrame: CGRect = .zero
+    @Environment(\.layoutDirection) private var layoutDirection
+
+    private var photoCanvasLayout: CanvasLayout {
+        CanvasLayout.resolve(for: photoFrame.size, isEligible: CanvasLayout.isEligibleDevice)
+    }
+
+    /// The photo with its controls below it — or, on a wide display such as
+    /// iPhone Duo's inner one, beside it.  One `AnyLayout` for both, so
+    /// unfolding or folding the phone keeps the editor as it was: the same
+    /// views, rearranged.
     private var photoLayout: some View {
-        VStack(spacing: 0) {
+        let isSideBySide = photoCanvasLayout == .sideBySide
+        let arrangement = isSideBySide ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
+        let columnWidth = CanvasLayout.sideColumnWidth(content: photoFrame, window: photoWindowFrame, layoutDirection: layoutDirection)
+        return arrangement {
             imageDisplay
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color(.secondarySystemBackground))
@@ -755,6 +772,25 @@ struct ContentView: View {
 
             Divider()
 
+            photoControls(isSideBySide: isSideBySide)
+                .frame(width: isSideBySide ? columnWidth : nil)
+                .frame(maxHeight: isSideBySide ? .infinity : nil, alignment: .top)
+                .background(isSideBySide ? Color(.systemBackground) : .clear)
+        }
+        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { photoFrame = $0 }
+        .background {
+            Color.clear
+                .ignoresSafeArea()
+                .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { photoWindowFrame = $0 }
+        }
+        .animation(.spring(duration: 0.35, bounce: 0.1), value: isRedactionEditing)
+    }
+
+    /// The redaction drawer while editing, the control panel otherwise: below
+    /// the photo, or in the column beside it.
+    private func photoControls(isSideBySide: Bool) -> some View {
+        let edge: Edge = isSideBySide ? .trailing : .bottom
+        return VStack(spacing: 0) {
             if isRedactionEditing {
                 RedactionEditorDrawer(
                     regions: viewModel.redactionRegions,
@@ -820,12 +856,14 @@ struct ContentView: View {
                     onChangeEmoji: { id, emoji in viewModel.changeRedactionEmoji(id: id, emoji: emoji) },
                     onBulkChangeEmoji: { ids, emoji in viewModel.bulkChangeRedactionEmoji(ids: ids, emoji: emoji) },
                     onApplyToAllFaces: { id in viewModel.applyStyleToAllFaces(from: id) },
-                    onAlwaysCover: { term in viewModel.alwaysCover(term) }
+                    onAlwaysCover: { term in viewModel.alwaysCover(term) },
+                    // Beside the photo, the list of regions takes the column's height.
+                    regionListMaxHeight: isSideBySide ? .infinity : 160
                 )
                 .background(Color(.systemBackground))
                 .transition(.asymmetric(
-                    insertion: .move(edge: .bottom).combined(with: .opacity),
-                    removal: .move(edge: .bottom).combined(with: .opacity)
+                    insertion: .move(edge: edge).combined(with: .opacity),
+                    removal: .move(edge: edge).combined(with: .opacity)
                 ))
             } else {
                 controlPanel
@@ -833,12 +871,11 @@ struct ContentView: View {
                     .padding(.vertical, 16)
                     .background(Color(.systemBackground))
                     .transition(.asymmetric(
-                        insertion: .move(edge: .bottom).combined(with: .opacity),
-                        removal: .move(edge: .bottom).combined(with: .opacity)
+                        insertion: .move(edge: edge).combined(with: .opacity),
+                        removal: .move(edge: edge).combined(with: .opacity)
                     ))
             }
         }
-        .animation(.spring(duration: 0.35, bounce: 0.1), value: isRedactionEditing)
     }
 
     // MARK: - Image display region
