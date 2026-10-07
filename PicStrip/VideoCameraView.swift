@@ -89,9 +89,12 @@ struct CameraModePicker: View {
     /// its view has faded out — the next mode's session, or the document
     /// scanner, is starting on the same camera.
     var leaving: () -> Void = {}
+    /// Across, below the picture; down, in the column beside it.
+    var axis: Axis = .horizontal
 
     var body: some View {
-        HStack(spacing: 2) {
+        let stack = axis == .horizontal ? AnyLayout(HStackLayout(spacing: 2)) : AnyLayout(VStackLayout(spacing: 2))
+        stack {
             ForEach(CameraView.Mode.available) { option in
                 let isSelected = option == mode
                 Button {
@@ -103,6 +106,7 @@ struct CameraModePicker: View {
                         .foregroundStyle(isSelected ? .yellow : .primary)
                         .padding(.horizontal, 16)
                         .frame(minHeight: 36)
+                        .frame(maxWidth: axis == .vertical ? .infinity : nil)
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -110,8 +114,10 @@ struct CameraModePicker: View {
                 .accessibilityIdentifier("cameraMode-\(option.rawValue)")
             }
         }
+        // Down the column, every mode as wide as the widest.
+        .fixedSize(horizontal: axis == .vertical, vertical: false)
         .padding(3)
-        .glassEffect(in: .capsule)
+        .glassEffect(in: axis == .horizontal ? AnyShape(.capsule) : AnyShape(.rect(cornerRadius: 21)))
         .sensoryFeedback(.selection, trigger: mode)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Camera mode")
@@ -150,8 +156,8 @@ struct VideoCameraView: View {
                             .disabled(model.state != .running)
                     }
                 }
-            } bottom: {
-                bottomBar
+            } bottom: { layout in
+                bottomBar(layout)
             }
             .disabled(model.state == .starting)
         }
@@ -262,14 +268,17 @@ struct VideoCameraView: View {
 
     /// Below the picture: the mode, and the record button between the
     /// microphone notice and the camera switch.  The mode keeps its place while
-    /// recording, so the picture does not jump.
-    private var bottomBar: some View {
-        VStack(spacing: 12) {
-            CameraModePicker(mode: $mode) { model.stop() }
+    /// recording, so the picture does not jump.  Beside the picture, the same
+    /// controls run down a column.
+    private func bottomBar(_ layout: CanvasLayout) -> some View {
+        let isColumn = layout == .sideBySide
+        let row = isColumn ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout())
+        return VStack(spacing: isColumn ? 20 : 12) {
+            CameraModePicker(mode: $mode, leaving: { model.stop() }, axis: isColumn ? .vertical : .horizontal)
                 .opacity(model.isRecording ? 0 : 1)
                 .disabled(model.isRecording)
                 .accessibilityHidden(model.isRecording)
-            HStack {
+            row {
                 microphoneButton
                     .frame(width: 60)
                 Spacer()

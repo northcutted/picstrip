@@ -49,8 +49,8 @@ struct LiveCameraView: View {
                 viewfinder
             } inPicture: {
                 inPicture
-            } bottom: {
-                bottomBar
+            } bottom: { layout in
+                bottomBar(layout)
             }
         }
         .statusBarHidden()
@@ -198,14 +198,17 @@ struct LiveCameraView: View {
     }
 
     /// Below the picture: the mode, and the shutter with the camera switch.
-    private var bottomBar: some View {
-        VStack(spacing: 12) {
+    /// Beside the picture, the same controls run down a column.
+    private func bottomBar(_ layout: CanvasLayout) -> some View {
+        let isColumn = layout == .sideBySide
+        let row = isColumn ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout())
+        return VStack(spacing: isColumn ? 20 : 12) {
             if let mode {
-                CameraModePicker(mode: mode) { model.stop() }
+                CameraModePicker(mode: mode, leaving: { model.stop() }, axis: isColumn ? .vertical : .horizontal)
                     .opacity(model.isCapturing ? 0 : 1)
                     .allowsHitTesting(!model.isCapturing)
             }
-            HStack {
+            row {
                 Color.clear.frame(width: 60, height: 44)
                 Spacer()
                 shutterButton
