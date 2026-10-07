@@ -9,6 +9,7 @@ Edit the locale files in [fastlane/metadata](../../fastlane/metadata); they are 
 | Screenshot headlines | `fastlane/MarketingHeadlines.xcstrings` | Inspect composed iPhone/iPad screenshots |
 | Screenshot captures and inventory | `.github/ios-release.json`, `PicStripUITests` | Six screens in two classes for all 17 store locales |
 | Accessibility declarations | `fastlane/accessibility_declarations.json` | Evaluate the claimed tasks on the supported devices |
+| App previews | `scripts/make_app_previews.py`, `testAppPreviewFlow` in `PicStripUITests` | Watch both videos; the script checks them against Apple's specification |
 
 Capture and composition prepare reviewable assets. App Store mutation uses the verified deployment workflow and its approval gates. Release notes are curated in every locale; engineering changelogs never replace them.
 
@@ -30,3 +31,30 @@ The release pipeline does not upload it yet. `scripts/upload_creative_assets.py`
 python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8          # plan
 python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8 --apply  # upload
 ```
+
+## App previews
+
+Two App Preview videos per language, real screen recordings of the app: `PicStrip-preview-<locale>-iphone.mp4` (886 × 1920, 6.9" iPhone) and `…-ipad.mp4` (1200 × 1600, 13" iPad). Each is 27.2 seconds of H.264 High 4.0 at 30 fps and 11 Mbit/s, tagged BT.709, with a silent stereo AAC track at 256 kbit/s and 48 kHz. `scripts/make_app_previews.py` makes them in two steps:
+
+1. **Record.** It boots the iPhone 18 Pro Max and iPad Pro 13-inch (M5) simulators on iOS 27.0, sets the status bar to 9:41 and a full battery (a brief 9:42 at the start lines the recording up with the test's clock), builds the `PicStripScreenshots` scheme and runs the UI test `testAppPreviewFlow` while `simctl io recordVideo` records the screen. The test plays the store-screenshot fixtures in five scenes and writes a mark at each step to `/tmp/picstrip_app_preview/marks.jsonl`. It runs only when the script has written `request.json` there, so it is skipped in CI and in other UI test runs.
+2. **Compose.** It cuts each scene from the recording at those marks (the `STORYBOARD` table), shortening the stretches where the screen stands still while XCTest looks for the next control. It puts the recording in the screenshots' device frame on their gradient, captions each scene with line 1 of its screenshot headline (`fastlane/MarketingHeadlines.xcstrings`; the bleep scene has no screenshot and takes its caption from `CAPTIONS` in the script), crossfades the scenes and encodes the result. Then it checks the file against Apple's specification with `ffprobe`.
+
+| Seconds | Scene | Caption |
+|---|---|---|
+| 0–10.8 | The street video is scanned with its faces and the flyer's number outlined. In the editor, Face 2's clip is held and given 😎. Then the timeline is tapped at three points, and the blur, the 😎 and the black bar over the number follow along. | Blur faces in videos |
+| 10.4–14.6 | A stretch of the audio lane is held and dragged across, then Bleep is chosen | Bleep what was said |
+| 14.2–19.2 | Photo mode outlines a visitor's face, email and QR code, then previews them covered | See it before you shoot |
+| 18.8–23.0 | The café photo's Location details, then its Camera & date details | Remove hidden location |
+| 22.6–27.2 | Review & Share shows the location removed and the fields stripped; the photo is held to compare it with the original | Check, then share |
+
+Scenes overlap by their 0.4 s crossfades.
+
+```sh
+python3 -m venv build/preview-venv
+build/preview-venv/bin/pip install --require-hashes -r scripts/requirements.txt
+build/preview-venv/bin/python scripts/make_app_previews.py                  # record and compose both (about 20 minutes)
+build/preview-venv/bin/python scripts/make_app_previews.py --compose-only   # re-cut the last recordings after editing STORYBOARD
+build/preview-venv/bin/python scripts/make_app_previews.py --device ipad --simulator ipad=<UDID>
+```
+
+It needs Xcode 27.0 (`DEVELOPER_DIR`, by default `/Applications/Xcode.app`) and `ffmpeg`/`ffprobe` with libx264 (`brew install ffmpeg`). If more than one simulator has a device's name on iOS 27.0, name it with `--simulator`. The videos go to `~/Desktop/PicStrip App Previews/`, with a poster frame (the frame at 7 s) and a contact sheet of each in `previews/`. Recordings, marks and intermediate clips stay in `build/app-previews/`. Another language needs its `CAPTIONS` entry for the bleep scene; the rest comes from the headline catalog and the app's own localization.
