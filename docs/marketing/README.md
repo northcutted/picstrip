@@ -23,3 +23,10 @@ build/creative-venv/bin/python scripts/make_creative_assets.py   # or --locale e
 ```
 
 The asset is not part of the fastlane deployment. Upload it in App Store Connect → Asset Library and submit it as a standalone submission (no app version needed): each locale's image under its localization, and the textless image wherever a language-free version is wanted.
+
+The release pipeline does not upload it yet. `scripts/upload_creative_assets.py` does, with your own App Store Connect API key (App Manager or Admin; standard library and `openssl` only, nothing stored). For each language of an app version still in Prepare for Submission it uploads that locale's image to Asset Library and places it as both the header and the search results asset; languages already placed are skipped, so it can be run again. It only shows its plan unless given `--apply`:
+
+```sh
+python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8          # plan
+python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8 --apply  # upload
+```
