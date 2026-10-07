@@ -1,1 +1,1 @@
-Video,Metadaten,entfernen,löschen,unkenntlich,schwärzen,zensieren,anonym,GPS,Standort,Screenshot
+Video,Foto,Bild,Gesicht,Kennzeichen,EXIF,GPS,löschen,unkenntlich,schwärzen,Kinder,Text,Emoji,QR

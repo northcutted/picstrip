@@ -1,1 +1,1 @@
-vídeo,censurar,rosto,EXIF,GPS,localização,anónimo,privacidade,pixelizar,bipe,câmara,captura,ecrã
+vídeo,rosto,metadados,censurar,pixelizar,matrícula,EXIF,GPS,apagar,ocultar,emoji,texto,criança,QR

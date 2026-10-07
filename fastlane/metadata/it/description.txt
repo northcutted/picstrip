@@ -1,4 +1,6 @@
-Condividi il momento, non la storia che c’è dietro. PicStrip trova ciò che una foto o un video rivela — volti, numeri di telefono, indirizzi email, numeri di carta, codici QR, luogo dello scatto e dispositivo usato — e ti aiuta a coprirlo o rimuoverlo prima di condividere. L’elaborazione avviene sul tuo iPhone o iPad.
+Sfoca volti e testi in foto e video e rimuovi i dati nascosti su posizione, dispositivo e data prima di condividere. Gratis, sul tuo iPhone o iPad: niente account, pubblicità o tracciamento.
+
+Condividi il momento, non la storia che c’è dietro. PicStrip trova ciò che una foto o un video rivela — volti, numeri di telefono, indirizzi email, numeri di carta, codici QR, luogo dello scatto e dispositivo usato — e ti aiuta a coprirlo o rimuoverlo prima di condividere.
 
 Video coperti in movimento
 Registra con PicStrip o scegli un video — o più, da pulire tutti insieme. PicStrip trova volti, testo, codici e le tue parole di Copri sempre, li segue fotogramma per fotogramma e li copre: i volti con una sfocatura intensa, un riquadro pieno o un’emoji a tua scelta. Racchiudi in un riquadro qualsiasi altra cosa — persona, auto, schermo, cartello — e verrà seguita avanti e indietro. Una timeline da editor video mostra ogni copertura e modifica audio come clip da accorciare; seleziona un tratto audio per metterci un bip o silenziarlo. L’anteprima corrisponde alla copia salvata, che esce senza posizione, dispositivo e date.
@@ -16,12 +18,12 @@ Una copia a modo tuo
 Disegna un riquadro, o tocca un oggetto su iOS 27, poi spostalo e ridimensionalo con controlli accessibili. Scegli solido, tratteggio, pixel, sfocatura o un’emoji, con colori, intensità, annulla e ripristina. Per i segreti è consigliata una copertura piena: sfocatura e pixelatura possono lasciare dettagli riconoscibili. Se vuoi, lascia visibili le ultime cifre di una carta o di un numero di telefono e confronta con l’originale prima di condividere. Aggiungi parole a Copri sempre — il tuo nome, una targa, la tua via — e verranno coperte ovunque PicStrip le legga.
 
 Rimuovi i dettagli nascosti
-Controlla i metadati di posizione, fotocamera, data, didascalia e dispositivo. Scegli cosa rimuovere e verifica il risultato. Esporta in PNG, JPEG, HEIC o formato di origine supportato, con dimensione file visibile. I preset di condivisione aiutano a scegliere il formato. Mantieni il movimento di una Live Photo se nulla viene coperto.
+Controlla i metadati di posizione, fotocamera, data, didascalia e dispositivo. Scegli cosa rimuovere e verifica il risultato. Esporta in PNG, JPEG, HEIC o formato di origine supportato, con dimensione file visibile.
 
 Altri modi per iniziare
 Prova l’esempio inventato integrato. Scegli foto e video (uno o più, o solo le schermate), scansiona un documento, sfoglia File, incolla o trascina. Pulisci più foto e video insieme con una politica comune, usa l’estensione di condivisione o parti da Comandi Rapidi — l’azione in background rimuove solo i metadati.
 
 Privacy sul dispositivo
-Nessun account, pubblicità, tracciamento, abbonamento o server di foto dello sviluppatore. Sui sistemi supportati, un modello facoltativo per selezionare oggetti può essere scaricato da Apple con il tuo consenso. Importare dal cloud, salvare in una libreria sincronizzata e condividere con l’app scelta dipende dalle impostazioni di quei servizi. I file temporanei protetti vengono eliminati come descritto nell’informativa sulla privacy. PicStrip è open source, con provenienza della build verificabile per le versioni pubblicate.
+Nessun abbonamento né server di foto dello sviluppatore. Sui sistemi supportati, un modello facoltativo per selezionare oggetti può essere scaricato da Apple con il tuo consenso. Importare dal cloud, salvare in una libreria sincronizzata e condividere con l’app scelta dipende dalle impostazioni di quei servizi. I file temporanei protetti vengono eliminati come descritto nell’informativa sulla privacy. PicStrip è open source, con provenienza della build verificabile per le versioni pubblicate.
 
 Il rilevamento automatico può perdere dettagli, e coprire ciò che trova non rende nessuno anonimo. Controlla sempre tutta la foto o il video prima di condividere.

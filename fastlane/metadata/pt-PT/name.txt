@@ -1,1 +1,1 @@
-PicStrip
+PicStrip: Desfocar caras

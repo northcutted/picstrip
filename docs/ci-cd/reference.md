@@ -32,12 +32,12 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | Upload adapter | <code>transporter</code> |
 | Store release policy | <code>AFTER_APPROVAL</code>; phased release: <code>true</code> |
 | Automatic TestFlight groups | None configured |
-| Replacement override | <code>1.7.0</code> replaces recorded build <code>77.1</code> |
+| Replacement override | <code>1.7.0</code> replaces recorded build <code>105.1</code> |
 | Store locales | 17: <code>en-US</code>, <code>ar-SA</code>, <code>de-DE</code>, <code>es-ES</code>, <code>es-MX</code>, <code>fr-FR</code>, <code>it</code>, <code>ja</code>, <code>ko</code>, <code>nl-NL</code>, <code>pl</code>, <code>pt-BR</code>, <code>pt-PT</code>, <code>sv</code>, <code>tr</code>, <code>zh-Hans</code>, <code>zh-Hant</code> |
 | App translations | 16 in addition to the source language |
 | Screenshot devices | iPhone 18 Pro Max, iPad Pro 13-inch (M5) |
 | Screenshot inventory | 204 images; 6 scenes per device class and store locale |
-| Screenshot scenes | <code>01_FullPreview</code>, <code>02_VideoEditor</code>, <code>03_RedactionEditor</code>, <code>04_Metadata</code>, <code>05_ReviewAndShare</code>, <code>06_Sample</code> |
+| Screenshot scenes | <code>01_VideoEditor</code>, <code>02_Location</code>, <code>03_Viewfinder</code>, <code>04_Redaction</code>, <code>05_ReviewAndShare</code>, <code>06_Batch</code> |
 
 ## Which checks run?
 
@@ -47,7 +47,7 @@ Single-path examples evaluated by the consumer classifier. Mixed changes and fal
 | --- | --- | --- | --- | --- |
 | <code>docs/release-pipeline.md</code> | — | — | — | — |
 | <code>fastlane/metadata/en-US/description.txt</code> | — | — | Yes | Yes |
-| <code>fastlane/screenshots/processed/en-US/01_FullPreview.png</code> | — | — | Yes | Yes |
+| <code>fastlane/screenshots/processed/en-US/01_VideoEditor.png</code> | — | — | Yes | Yes |
 | <code>PicStrip/ContentView.swift</code> | Yes | Yes | Yes | — |
 | <code>PicStripTests/ImageProcessorTests.swift</code> | Yes | — | Yes | — |
 | <code>.github/workflows/pr.yml</code> | Yes | Yes | Yes | Yes |

@@ -1,3 +1,4 @@
+import CoreImage
 import CoreML
 import CoreText
 import CoreVideo
@@ -244,11 +245,13 @@ nonisolated struct PIIScanner {
         // boxes come back in the space the photo is shown and covered in
         // (see `ImageProcessor.displayOrientation`).
         let handler = ImageRequestHandler(data, orientation: ImageProcessor.displayOrientation(of: data))
+        // The detection models run on the CPU on the simulator, whose GPU cannot
+        // create their inference context inside the app (`onSimulatorCPU`).
         let requests: [any VisionRequest] = [
             Self.makeTextRequest(level: .accurate),
-            Self.makeFaceRequest(),
-            DetectBarcodesRequest(),
-            Self.makeDocumentRectangleRequest()
+            Self.onSimulatorCPU(Self.makeFaceRequest()),
+            Self.onSimulatorCPU(DetectBarcodesRequest()),
+            Self.onSimulatorCPU(Self.makeDocumentRectangleRequest())
         ]
 
         var observations: [RecognizedTextObservation] = []
@@ -320,7 +323,7 @@ nonisolated struct PIIScanner {
         // The pinned iOS 27 face revision may be unavailable on some hardware.  A
         // missed face is a privacy miss, so retry with the OS default revision.
         if faceDetectionFailed {
-            if let found = try? await handler.perform(DetectFaceRectanglesRequest()) {
+            if let found = try? await handler.perform(Self.onSimulatorCPU(DetectFaceRectanglesRequest())) {
                 faces = found
                 coverage[.faces] = .complete
             }
@@ -334,7 +337,12 @@ nonisolated struct PIIScanner {
 
         let primaryLineContexts = Self.recognizedLineContexts(from: observations)
         let faceRects = faces.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
-        let barcodeContexts = Self.barcodeContexts(from: barcodes)
+        var barcodeContexts = Self.barcodeContexts(from: barcodes)
+        #if targetEnvironment(simulator)
+        if barcodeContexts.isEmpty, let image = CIImage(data: data, options: [.applyOrientationProperty: true]) {
+            barcodeContexts = Self.simulatorQRCodes(in: image)
+        }
+        #endif
         var documentRects = rectangles.map { Self.swiftUIBox(from: $0.boundingBox.cgRect) }
         let wholeImage: WholeImageDocument? = hints.wholeImageIsDocument
             ? WholeImageDocument(aspectRatio: Self.displayAspectRatio(of: source))
@@ -389,8 +397,8 @@ nonisolated struct PIIScanner {
     ) async -> LiveFrameScan {
         let requests: [any VisionRequest] = [
             makeTextRequest(level: textLevel),
-            DetectFaceRectanglesRequest(),
-            DetectBarcodesRequest()
+            onSimulatorCPU(DetectFaceRectanglesRequest()),
+            onSimulatorCPU(DetectBarcodesRequest())
         ]
         var observations: [RecognizedTextObservation] = []
         var scan = LiveFrameScan()
@@ -410,6 +418,13 @@ nonisolated struct PIIScanner {
                 break
             }
         }
+        #if targetEnvironment(simulator)
+        if !scan.detections.contains(where: { $0.type == .barcode }) {
+            scan.detections += simulatorQRCodes(in: CIImage(cvPixelBuffer: pixelBuffer).oriented(orientation)).map {
+                LiveDetection(type: .barcode, boundingBox: $0.boundingBox, score: visualDetectionScore)
+            }
+        }
+        #endif
         scan.textLines = observations.map { swiftUIBox(from: $0.boundingBox.cgRect) }
         let textFindings = (try? detectPII(in: observations)) ?? []
         let userFindings = AlwaysCoverMatcher.results(terms: alwaysCover, lines: scannedLines(from: observations))
@@ -477,6 +492,28 @@ nonisolated struct PIIScanner {
         return request
         #endif
     }
+
+    #if targetEnvironment(simulator)
+    /// The QR codes in `image`, found by Core Image.  Only for the simulator:
+    /// there Vision's barcode model never loads (it times out and reports no
+    /// codes at all), so without this the simulator — and the App Store
+    /// screenshots taken on it — would miss every code a phone finds.
+    nonisolated static func simulatorQRCodes(in image: CIImage) -> [BarcodeContext] {
+        let extent = image.extent
+        guard extent.width > 0, extent.height > 0,
+              let detector = CIDetector(ofType: CIDetectorTypeQRCode, context: nil, options: [CIDetectorAccuracy: CIDetectorAccuracyHigh])
+        else { return [] }
+        return detector.features(in: image).compactMap { $0 as? CIQRCodeFeature }.map { code in
+            // Core Image measures from the bottom left, as Vision does.
+            let bounds = code.bounds
+            let normalized = CGRect(
+                x: (bounds.minX - extent.minX) / extent.width, y: (bounds.minY - extent.minY) / extent.height,
+                width: bounds.width / extent.width, height: bounds.height / extent.height
+            )
+            return BarcodeContext(boundingBox: swiftUIBox(from: normalized), symbology: "qr", payload: code.messageString)
+        }
+    }
+    #endif
 
     /// Highest score first, alphabetical tiebreak.
     nonisolated static func sorted(_ results: [DetectionResult]) -> [DetectionResult] {

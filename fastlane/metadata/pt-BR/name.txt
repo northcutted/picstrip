@@ -1,1 +1,1 @@
-PicStrip
+PicStrip: Borrar rosto

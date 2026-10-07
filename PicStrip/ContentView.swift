@@ -195,6 +195,7 @@ struct ContentView: View {
             // A scan lives only as long as its batch sheet; swiping the sheet
             // away must release the un-redacted pages too.
             viewModel.scannedBatchSources = []
+            viewModel.fileBatchVideos = []
         }, content: { sheet in
             switch sheet {
             case .preSave: PreSaveReviewView(viewModel: viewModel)
@@ -236,7 +237,7 @@ struct ContentView: View {
         )
         .sheet(isPresented: Binding(get: { openVideo != nil }, set: { if !$0 { closeVideo() } }), onDismiss: openHandedOffVideo) {
             if let openVideo {
-                VideoCleanerView(source: openVideo)
+                VideoCleanerView(source: openVideo, reviewPrompt: viewModel.reviewPrompt)
                     // On iPad, room for the preview, the faces and the notes together.
                     .presentationSizing(.page)
             }
@@ -284,6 +285,10 @@ struct ContentView: View {
         .task {
             if let path = ProcessInfo.processInfo.environment["PICSTRIP_VIDEO_FIXTURE"] {
                 fixtureVideo = URL(fileURLWithPath: path)
+            }
+            // PICSTRIP_BATCH_FIXTURE: photos and videos, one path per line, as one batch.
+            if let list = ProcessInfo.processInfo.environment["PICSTRIP_BATCH_FIXTURE"] {
+                viewModel.openFileBatch(list.split(separator: "\n").map { URL(fileURLWithPath: String($0)) })
             }
         }
         .confirmationDialog("Use a smaller copy?", isPresented: $viewModel.showResizeOffer, titleVisibility: .visible) {

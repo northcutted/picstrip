@@ -1,1 +1,1 @@
-video,censurera,sudda,oskärpa,pixla,GPS,plats,anonym,integritet,pip,kamera,skärmbild,blurra,EXIF
+video,bild,ansikte,sudda,censurera,oskärpa,pixla,EXIF,GPS,regnummer,emoji,text,dölj,barn,QR,maskera

@@ -442,6 +442,19 @@ struct AboutView: View {
 
                 // ── Section 8: Open Source & Developer ─────────────────────
                 Section(header: Text("About the Project")) {
+                    // Opens the App Store's write-a-review page for PicStrip (the
+                    // ID in README's download badge).  PicStrip sends nothing itself.
+                    if let reviewURL = URL(string: "https://apps.apple.com/app/id6765989071?action=write-review") {
+                        Link(destination: reviewURL) {
+                            Label {
+                                Text("Rate PicStrip", comment: "About screen link that opens PicStrip's App Store page to rate and review it")
+                            } icon: {
+                                Image(systemName: "star.fill")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                        }
+                    }
+
                     if let sourceURL = URL(string: "https://github.com/northcutted/picstrip") {
                         Link(destination: sourceURL) {
                             Label {

@@ -51,7 +51,7 @@
     "change_examples": [
       "docs/release-pipeline.md",
       "fastlane/metadata/en-US/description.txt",
-      "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+      "fastlane/screenshots/processed/en-US/01_VideoEditor.png",
       "PicStrip/ContentView.swift",
       "PicStripTests/ImageProcessorTests.swift",
       ".github/workflows/pr.yml",
@@ -139,18 +139,18 @@
       "iPad Pro 13-inch (M5)"
     ],
     "screens": [
-      "01_FullPreview",
-      "02_VideoEditor",
-      "03_RedactionEditor",
-      "04_Metadata",
+      "01_VideoEditor",
+      "02_Location",
+      "03_Viewfinder",
+      "04_Redaction",
       "05_ReviewAndShare",
-      "06_Sample"
+      "06_Batch"
     ],
     "replacement_release": {
       "version": "1.7.0",
       "source_tag": "v1.7.0",
-      "build_number": "77.1",
-      "app_store_build_id": "043d3495-15f2-4955-9a20-5dbf97f072d1"
+      "build_number": "105.1",
+      "app_store_build_id": "d13bc3d3-0646-44f0-b326-e3e33ba2b583"
     },
     "app_store": {
       "release_type": "AFTER_APPROVAL",
@@ -176,7 +176,7 @@
       "store": true
     },
     {
-      "path": "fastlane/screenshots/processed/en-US/01_FullPreview.png",
+      "path": "fastlane/screenshots/processed/en-US/01_VideoEditor.png",
       "qa": false,
       "screenshots": false,
       "prepare": true,

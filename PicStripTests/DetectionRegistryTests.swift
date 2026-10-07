@@ -353,6 +353,8 @@ final class DetectionRegistryTests: XCTestCase {
         // Aadhaar / Japanese My Number — 4 4 4 with spaces
         XCTAssertTrue(matches(.governmentID, in: "1234 5678 9012"),
                       "Should detect an Aadhaar or My Number (4-4-4 format)")
+        XCTAssertFalse(matches(.governmentID, in: "4242 4242 4242 4242"),
+                       "Three groups of a card number are not an Aadhaar or My Number")
 
         // Canadian SIN — 3-3-3 with spaces or hyphens
         XCTAssertTrue(matches(.governmentID, in: "046 454 286"),

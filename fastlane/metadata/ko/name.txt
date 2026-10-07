@@ -1,1 +1,1 @@
-PicStrip
+PicStrip: 동영상 얼굴 모자이크
