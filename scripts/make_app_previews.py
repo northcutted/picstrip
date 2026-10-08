@@ -5,9 +5,11 @@ Each preview is a screen recording of the app itself on the simulator, played
 by the UI test ``testAppPreviewFlow`` (PicStripUITests) on the store-screenshot
 fixtures. The test writes a mark at every step; this script records the
 simulator's screen while the test runs, cuts the recording at those marks (a
-little faster where waiting would drag), puts each scene in the screenshots'
-device frame on their teal gradient with a one-line caption above it, and
-encodes the result to Apple's App Preview specification:
+little faster where waiting would drag), lets the recording fill the picture
+with a one-line caption on a translucent band over the status bar (App Review
+guideline 2.3.4: screen captures of the app, with text overlays; --framed
+puts it in the screenshots' device frame instead, for comparison), and encodes
+the result to Apple's App Preview specification:
 
     iPhone 6.9" (Dynamic Island, large)  886 x 1920   iPhone 18 Pro Max
     iPad 13"                             1200 x 1600  iPad Pro 13-inch (M5)
@@ -381,16 +383,16 @@ def stage(device: Device, capture: tuple[int, int]) -> Stage:
     return Stage((x0, y0, x1 - x0, y1 - y0), mask, canvas, shadow)
 
 
-def caption_size(texts: list[str], references: list[str], device: Device, capture: tuple[int, int]) -> int:
+def caption_size(texts: list[str], references: list[str], device: Device, capture: tuple[int, int],
+                 band: tuple[int, int, int, int]) -> int:
     """One type size for every caption: the largest that fits each on one line
-    in the caption band, but no larger than the screenshots' headlines are on
-    their canvas, so the captions read like them."""
+    in ``band``, but no larger than the screenshots' headlines are on their
+    canvas, so the captions read like them."""
     probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
     box = shots._device_layout(*capture, device.is_ipad).headline_box
     screenshot = min(getattr(shots._fit_headline_font(text, box[2] - box[0], box[3] - box[1], probe)[0], "size", 32)
                      for text in references)
     largest = int(screenshot * device.size[0] / capture[0])
-    band = layout(device).headline_box
     width, height = band[2] - band[0], band[3] - band[1]
     sizes = []
     for text in texts:
@@ -443,7 +445,7 @@ def backgrounds(device: Device, locale: str, place: Stage, capture: tuple[int, i
     texts = captions(locale)
     catalog = shots._load_headlines_xcstrings(HEADLINES)
     references = [shots._resolve_headline(key, STORE_LOCALES[locale], catalog) for key in shots.HEADLINES]
-    size = caption_size(texts, references, device, capture)
+    size = caption_size(texts, references, device, capture, plan.headline_box)
     paths = []
     for index, text in enumerate(texts):
         canvas = Image.new("RGBA", device.size, (0, 0, 0, 255))
@@ -455,6 +457,35 @@ def backgrounds(device: Device, locale: str, place: Stage, capture: tuple[int, i
         canvas.convert("RGB").save(path)
         paths.append(path)
     return paths
+
+
+# How much of the top of the screen the caption band covers in the default,
+# full-screen layout: the status bar and a little more.
+BAND_FRAC = {"iphone": 0.078, "ipad": 0.066}
+BAND_TINT = (6, 44, 33, 168)   # the gradient's dark teal, about two-thirds opaque
+BAND_BLUR = 14                 # how much the recording under the band is softened
+
+
+def bands(device: Device, locale: str, capture: tuple[int, int], folder: Path) -> tuple[list[Path], int]:
+    """One caption band per scene for the full-screen layout: the dark teal
+    of the screenshots, translucent over the softened top of the recording,
+    with the caption in the screenshots' type. Returns the bands and their height."""
+    width = device.size[0]
+    height = round(device.size[1] * BAND_FRAC[device.key])
+    box = (round(width * 0.06), round(height * 0.16), width - round(width * 0.06), height - round(height * 0.12))
+    texts = captions(locale)
+    catalog = shots._load_headlines_xcstrings(HEADLINES)
+    references = [shots._resolve_headline(key, STORE_LOCALES[locale], catalog) for key in shots.HEADLINES]
+    size = caption_size(texts, references, device, capture, box)
+    paths = []
+    for index, text in enumerate(texts):
+        band = Image.new("RGBA", (width, height), BAND_TINT)
+        ImageDraw.Draw(band).line([(0, height - 1), (width, height - 1)], fill=(255, 255, 255, 46))
+        draw_caption(band, text, box, size)
+        path = folder / f"band-{index + 1}.png"
+        band.save(path)
+        paths.append(path)
+    return paths, height
 
 
 # ── Cutting and composing ──────────────────────────────────────────────────
@@ -544,20 +575,32 @@ def retime(start: float, end: float, seconds: float, still: list[tuple[float, fl
     return [(a, b) for a, b in kept if b > a], speed
 
 
-def compose(device: Device, locale: str, folder: Path, output: Path) -> list[tuple[str, float, float]]:
+def compose(device: Device, locale: str, folder: Path, output: Path, framed: bool = False) -> list[tuple[str, float, float]]:
     """Cuts the recording in ``folder`` to the storyboard and encodes ``output``.
+
+    By default the recording fills the picture, as App Review guideline 2.3.4
+    asks of previews (screen captures of the app, with text overlays), and
+    each caption is a translucent band over the status bar. ``framed`` puts
+    it in the screenshots' device frame on their gradient instead.
 
     Returns each scene's caption with its start and end in the preview."""
     marks = json.loads((folder / "marks.json").read_text())
     raw = folder / "raw.mov"
     video = next(s for s in probe(raw)["streams"] if s["codec_type"] == "video")
     capture = (int(video["width"]), int(video["height"]))
-    place = stage(device, capture)
-    place.frame.save(folder / "frame.png")
-    place.mask.save(folder / "screen-mask.png")
-    scene_backgrounds = backgrounds(device, locale, place, capture, folder)
+    width, height = device.size
+    if framed:
+        place = stage(device, capture)
+        place.frame.save(folder / "frame.png")
+        place.mask.save(folder / "screen-mask.png")
+        overlays = backgrounds(device, locale, place, capture, folder)
+        x, y, w, h = place.screen
+    else:
+        overlays, band = bands(device, locale, capture, folder)
+        # The capture's shape is the preview's within a few pixels: fill the
+        # width and trim what is left over from the top and bottom evenly.
+        scaled = max(height, round(capture[1] * width / capture[0]))
     still = still_stretches(raw, folder)
-    x, y, w, h = place.screen
     # The simulator records Display P3; the preview is BT.709 (sRGB primaries).
     primaries = video.get("color_primaries", "bt709")
     source = {"smpte432": "smpte432", "bt709": "bt709"}.get(primaries, "bt709")
@@ -579,19 +622,31 @@ def compose(device: Device, locale: str, folder: Path, output: Path) -> list[tup
             seek = max(0.0, start - 10)
             path = folder / f"clip-{len(clips) + 1:02d}.mkv"
             keep = "+".join(f"between(t,{a - seek:.4f},{b - seek:.4f})" for a, b in kept)
-            graph = (
+            cut = (
                 f"[0:v]fps={FPS},select='{keep}',setpts=N/{FPS}/TB,setpts=PTS/{speed:.5f},"
                 f"fps={FPS},tpad=stop_mode=clone:stop_duration={clip.seconds:.2f},trim=end_frame={frames},"
                 f"colorspace=space=bt709:trc=srgb:primaries=bt709:range=tv:ispace=bt709:itrc=srgb:iprimaries={source}:irange=tv,"
-                f"scale={w}:{h}:flags=lanczos:in_color_matrix=bt709:in_range=tv,format=gbrp[picture];"
-                f"[3:v]format=gray[corners];[picture][corners]alphamerge[screen];"
-                f"[1:v]format=gbrp[back];[2:v]format=gbrap[frame];"
-                f"[back][screen]overlay={x}:{y}:format=gbrp:shortest=1[on];"
-                f"[on][frame]overlay=0:0:format=gbrp,settb=1/{FPS},setpts=N[out]"
             )
-            ffmpeg("-ss", f"{seek:.3f}", "-i", raw, "-loop", "1", "-framerate", FPS, "-i", scene_backgrounds[scene_index],
-                   "-loop", "1", "-framerate", FPS, "-i", folder / "frame.png",
-                   "-loop", "1", "-framerate", FPS, "-i", folder / "screen-mask.png", "-filter_complex", graph, "-map", "[out]",
+            looped = ["-loop", "1", "-framerate", FPS, "-i"]
+            if framed:
+                graph = cut + (
+                    f"scale={w}:{h}:flags=lanczos:in_color_matrix=bt709:in_range=tv,format=gbrp[picture];"
+                    f"[3:v]format=gray[corners];[picture][corners]alphamerge[screen];"
+                    f"[1:v]format=gbrp[back];[2:v]format=gbrap[frame];"
+                    f"[back][screen]overlay={x}:{y}:format=gbrp:shortest=1[on];"
+                    f"[on][frame]overlay=0:0:format=gbrp,settb=1/{FPS},setpts=N[out]"
+                )
+                inputs = [*looped, overlays[scene_index], *looped, folder / "frame.png", *looped, folder / "screen-mask.png"]
+            else:
+                graph = cut + (
+                    f"scale={width}:{scaled}:flags=lanczos:in_color_matrix=bt709:in_range=tv,"
+                    f"crop={width}:{height}:0:{(scaled - height) // 2},format=gbrp,split[picture][top];"
+                    f"[top]crop={width}:{band}:0:0,gblur=sigma={BAND_BLUR}[soft];"
+                    f"[picture][soft]overlay=0:0:format=gbrp[under];[1:v]format=gbrap[band];"
+                    f"[under][band]overlay=0:0:format=gbrp,settb=1/{FPS},setpts=N[out]"
+                )
+                inputs = [*looped, overlays[scene_index]]
+            ffmpeg("-ss", f"{seek:.3f}", "-i", raw, *inputs, "-filter_complex", graph, "-map", "[out]",
                    "-frames:v", frames, "-r", FPS, "-c:v", "ffv1", "-pix_fmt", "gbrp", path)
             fade = clip.fade if clips else 0.0
             elapsed -= fade
@@ -712,6 +767,9 @@ def main() -> int:
                         help="the simulator to use, e.g. iphone=225A67E4-… (default: the one with the device's name)")
     parser.add_argument("--compose-only", action="store_true", help="re-cut the last recordings in build/app-previews")
     parser.add_argument("--skip-build", action="store_true", help="reuse the last UI test build")
+    parser.add_argument("--framed", action="store_true",
+                        help="put the recording in the screenshots' device frame, as PicStrip-preview-…-framed.mp4 "
+                             "(for comparison: App Review wants previews to be screen captures)")
     parser.add_argument("--out", default=str(OUT))
     args = parser.parse_args()
 
@@ -728,8 +786,8 @@ def main() -> int:
                    build=not args.skip_build)
         elif not (folder / "marks.json").exists():
             sys.exit(f"No recording in {folder}; run without --compose-only first")
-        output = out / f"PicStrip-preview-{args.locale}-{device.key}.mp4"
-        timeline = compose(device, args.locale, folder, output)
+        output = out / f"PicStrip-preview-{args.locale}-{device.key}{'-framed' if args.framed else ''}.mp4"
+        timeline = compose(device, args.locale, folder, output, framed=args.framed)
         summary = verify(output, device)
         poster, contact = review_images(output, out / "previews")
         summaries.append((output, summary, timeline, poster, contact))
