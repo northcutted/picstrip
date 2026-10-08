@@ -152,8 +152,9 @@ final class AccessibilityAuditTests: XCTestCase {
             // XCTest calls a control behind the tall Share footer hittable, and
             // a tap there lands on Share: bring Inspect out from under it.
             let footer = app.buttons["shareCleanedImageButton"].frame.minY
-            for _ in 0..<6 where inspect.frame.maxY >= footer || inspect.frame.minY < list.frame.minY + 60 {
-                let downwards = inspect.frame.minY < list.frame.minY + 60
+            // Scrolled away, a lazy row is gone: drag down, toward it.
+            for _ in 0..<6 where !inspect.exists || inspect.frame.maxY >= footer || inspect.frame.minY < list.frame.minY + 60 {
+                let downwards = !inspect.exists || inspect.frame.minY < list.frame.minY + 60
                 let from = list.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: downwards ? 0.25 : 0.5))
                 from.press(forDuration: 0.05, thenDragTo: list.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: downwards ? 0.45 : 0.3)),
                            withVelocity: .slow, thenHoldForDuration: 0.3)
@@ -320,6 +321,12 @@ final class AccessibilityAuditTests: XCTestCase {
 
     private static let cameraScreens: Set<String> = ["Viewfinder", "Video mode"]
 
+    /// Screens presented as sheets, which on iPad float over the screen they
+    /// came from.
+    private static let sheetScreens: Set<String> = [
+        "Style sheet", "Position & size", "Review & Share", "Review & Share, scrolled", "Cover an object"
+    ]
+
     /// Reviewed findings that are not defects, each with why.  Everything else fails.
     private func acceptedReason(
         for issue: XCUIAccessibilityAuditIssue, _ element: (any XCUIElementSnapshot)?, on screen: String, in app: XCUIApplication
@@ -340,6 +347,12 @@ final class AccessibilityAuditTests: XCTestCase {
         case .textClipped where screen == "Viewfinder":
             return "Labels on the live picture are capped at 18 pt and 240 pt so they never cover what they mark; "
                 + "the status names every finding in full, and VoiceOver announces it."
+        case .textClipped where element.map({ isUnderNavigationBar($0, in: app) }) == true:
+            return "Scrolled partly under the navigation bar; the audit counts the covered part as clipped."
+        case .elementDetection where element == nil && UIDevice.current.userInterfaceIdiom == .pad
+            && Self.sheetScreens.contains(screen):
+            return "On iPad the sheet floats over the dimmed screen it came from; the audit reads that screen's text, "
+                + "which VoiceOver rightly leaves out while the sheet is open."
         default:
             break
         }
@@ -363,9 +376,20 @@ final class AccessibilityAuditTests: XCTestCase {
 
     private func isNavigationBarButton(_ element: any XCUIElementSnapshot, in app: XCUIApplication) -> Bool {
         guard element.elementType == .button else { return false }
+        return barFrames(in: app).contains { $0.contains(element.frame) }
+    }
+
+    /// Content whose top has scrolled beneath a navigation bar.
+    private func isUnderNavigationBar(_ element: any XCUIElementSnapshot, in app: XCUIApplication) -> Bool {
+        barFrames(in: app).contains { bar in
+            bar.intersects(element.frame) && element.frame.minY < bar.maxY && element.frame.maxY > bar.maxY
+        }
+    }
+
+    private func barFrames(in app: XCUIApplication) -> [CGRect] {
         let bars = navigationBarFrames ?? app.navigationBars.allElementsBoundByIndex.map(\.frame)
         navigationBarFrames = bars
-        return bars.contains { $0.contains(element.frame) }
+        return bars
     }
 
     // MARK: - Helpers
