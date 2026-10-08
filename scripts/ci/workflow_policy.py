@@ -64,6 +64,11 @@ def validate(workflows):
     check("/release.yml@" in promote["promote"]["uses"], "Release must use the verified selection interface")
     check(workflows["promote.yml"]["on"]["workflow_dispatch"]["inputs"]["source"].get("required"), "Release must identify an explicit source")
     check(deploy["deploy"]["with"].get("metadata_commit") == "${{ needs.resolve.outputs.metadata_commit }}", "Metadata updates must preserve the resolved exact commit")
+    # The settings export holds an App Store key and publishes an artifact from a public repository.
+    export = workflows["app-store-settings.yml"]
+    job = export["jobs"]["export"]
+    check(list(export["on"]) == ["workflow_dispatch"] and job.get("if") == "github.ref == 'refs/heads/main'" and job.get("environment") == "app-store-observe" and not job.get("permissions"), "Settings export must stay manual, main-only and read-only")
+    check(all(step.get("with", {}).get("retention-days") == 1 for step in job["steps"] if step.get("uses", "").startswith("actions/upload-artifact@")), "Public settings exports must expire after one day")
     return errors
 
 

@@ -59,3 +59,14 @@ class WorkflowTests(unittest.TestCase):
         errors = "\n".join(validate(w))
         for text in ["supported platform command", "Every configured screenshot device", "exactly its matrix device"]:
             self.assertIn(text, errors)
+
+    def test_settings_export_stays_manual_main_only_and_short_lived(self):
+        for mutate in [lambda w: w["on"].update(push={}),
+                       lambda w: w["jobs"]["export"].pop("if"),
+                       lambda w: w["jobs"]["export"].update(permissions={"contents": "write"})]:
+            w = self.workflows()
+            mutate(w["app-store-settings.yml"])
+            self.assertIn("manual, main-only and read-only", "\n".join(validate(w)))
+        w = self.workflows()
+        w["app-store-settings.yml"]["jobs"]["export"]["steps"][-1]["with"]["retention-days"] = 14
+        self.assertIn("expire after one day", "\n".join(validate(w)))
