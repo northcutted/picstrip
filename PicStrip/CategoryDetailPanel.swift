@@ -16,6 +16,7 @@ struct CategoryDetailPanel: View {
     let onDismiss: () -> Void
 
     @AccessibilityFocusState private var isHeaderFocused: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverRunning
 
     private var color: Color { metadataIconColor(for: category) }
     private var supportsPreservation: Bool { ImageProcessor.canPreserveMetadata(category: category) }
@@ -132,6 +133,7 @@ struct CategoryDetailPanel: View {
 
     /// After the slide-in has started, so VoiceOver finds the header on screen.
     private func focusHeader() {
+        guard isVoiceOverRunning else { return }
         Task {
             try? await Task.sleep(for: .milliseconds(350))
             isHeaderFocused = true
