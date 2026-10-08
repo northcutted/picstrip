@@ -149,11 +149,16 @@ final class AccessibilityAuditTests: XCTestCase {
             let list = app.collectionViews.firstMatch
             list.swipeUp()
             audit("Review & Share, scrolled", in: app)
-            // Back to the top: XCTest calls a control behind the tall Share
-            // footer hittable, and the tap would land on Share.
-            list.swipeDown()
-            list.swipeDown()
-            XCTAssertLessThan(inspect.frame.maxY, app.buttons["shareCleanedImageButton"].frame.minY, "Inspect is above the footer.")
+            // XCTest calls a control behind the tall Share footer hittable, and
+            // a tap there lands on Share: bring Inspect out from under it.
+            let footer = app.buttons["shareCleanedImageButton"].frame.minY
+            for _ in 0..<6 where inspect.frame.maxY >= footer || inspect.frame.minY < list.frame.minY + 60 {
+                let downwards = inspect.frame.minY < list.frame.minY + 60
+                let from = list.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: downwards ? 0.25 : 0.5))
+                from.press(forDuration: 0.05, thenDragTo: list.coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: downwards ? 0.45 : 0.3)),
+                           withVelocity: .slow, thenHoldForDuration: 0.3)
+            }
+            XCTAssertLessThan(inspect.frame.maxY, footer, "Inspect is above the footer.")
             inspect.tap()
             XCTAssertTrue(app.descendants(matching: .any)["fullReviewImage"].waitForExistence(timeout: 10))
             audit("Full preview", in: app)
