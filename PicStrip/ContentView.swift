@@ -52,6 +52,7 @@ struct ContentView: View {
 
     /// VoiceOver's place when the editor closes: the row that opened it.
     @AccessibilityFocusState private var isEditRowFocused: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverRunning
 
     @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -827,9 +828,13 @@ struct ContentView: View {
                             viewModel.selectRedactionRegion(id: nil)
                         }
                         // VoiceOver goes back to where the editor was opened from.
-                        Task {
-                            try? await Task.sleep(for: .milliseconds(400))
-                            isEditRowFocused = true
+                        // Only for VoiceOver: a focus move is no use to anyone else,
+                        // and under XCTest it can land on a tap in progress.
+                        if isVoiceOverRunning {
+                            Task {
+                                try? await Task.sleep(for: .milliseconds(400))
+                                isEditRowFocused = true
+                            }
                         }
                     },
                     onSetPartial: { id, isPartial in viewModel.setPartialCover(id: id, isPartial) },

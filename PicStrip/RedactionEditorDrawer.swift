@@ -328,6 +328,7 @@ struct RedactionEditorDrawer: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     /// The editor replaces the controls VoiceOver was on: it starts at the header.
     @AccessibilityFocusState private var isHeaderFocused: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverRunning
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -367,7 +368,8 @@ struct RedactionEditorDrawer: View {
         .animation(.spring(duration: 0.22), value: isMultiSelectMode)
         .animation(.spring(duration: 0.18), value: multiSelectedIDs)
         .task {
-            // Once the drawer has slid in.
+            // Once the drawer has slid in; only for VoiceOver.
+            guard isVoiceOverRunning else { return }
             try? await Task.sleep(for: .milliseconds(400))
             isHeaderFocused = true
         }
