@@ -451,6 +451,7 @@ struct ContentView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ScannerHeroView()
                         .frame(height: 150)
@@ -1466,7 +1467,10 @@ nonisolated private struct PillLabel: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .accessibilityHidden(true)
+            // Wraps, rather than truncating, when large text outgrows the capsule.
             Text(text)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.callout.weight(.semibold))
         .frame(maxWidth: .infinity)
