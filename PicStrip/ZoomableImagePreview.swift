@@ -100,7 +100,9 @@ struct ZoomableImagePreview: View {
             ? highlightedResults.reduce(0) { $0 + $1.matchCount }
             : redactionRegions.filter(\.isEnabled).count
         guard regionCount > 0 else { return String(localized: "No sensitive data highlighted") }
-        return String(localized: "^[\(regionCount) sensitive data region](inflect: true) highlighted")
+        // Through `AttributedString`, which applies the English inflection;
+        // `String(localized:)` would hand VoiceOver the markup itself.
+        return String(AttributedString(localized: "^[\(regionCount) sensitive data region](inflect: true) highlighted").characters)
     }
 
     var body: some View {
@@ -154,6 +156,8 @@ struct ZoomableImagePreview: View {
                 if showZoomHint {
                     Label(zoomHintText, systemImage: isAddingRedaction ? "plus.square.dashed" : "hand.draw")
                         .font(.caption2.weight(.semibold))
+                        // A hint over the photo must not hide it at accessibility sizes.
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                         .foregroundStyle(.primary)
                         .padding(.horizontal, 9)
                         .padding(.vertical, 6)

@@ -4,8 +4,8 @@ import SwiftUI
 
 /// The style choices, shared by the single-region panel and the bulk panel.
 ///
-/// Text follows Dynamic Type; at accessibility sizes four chips no longer fit
-/// side by side, so they wrap into two rows instead of shrinking past legibility.
+/// Text follows Dynamic Type; at accessibility sizes the chips no longer fit
+/// side by side, so they wrap into rows instead of shrinking past legibility.
 private struct RedactionStylePicker: View {
     /// `nil` when the selected regions do not share one style.
     let selection: RedactionStyle?
@@ -15,42 +15,58 @@ private struct RedactionStylePicker: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
-        let columns = dynamicTypeSize.isAccessibilitySize ? 2 : RedactionStyle.allCases.count
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: columns), spacing: 6) {
-            ForEach(RedactionStyle.allCases, id: \.self) { style in
-                let isActive = selection == style
-                Button {
-                    onSelect(style)
-                } label: {
-                    VStack(spacing: 3) {
-                        Image(systemName: style.symbolName)
-                            .font(.subheadline)
-                            .fontWeight(isActive ? .bold : .regular)
-                        Text(style.displayName)
-                            .font(.caption2)
-                            .fontWeight(isActive ? .semibold : .regular)
-                            .lineLimit(1)
-                            .minimumScaleFactor(0.75)
-                    }
-                    .foregroundStyle(isActive ? Color.accentColor : .primary)
-                    .frame(maxWidth: .infinity, minHeight: 44)
-                    .background(
-                        isActive ? AnyShapeStyle(Color.accentColor.opacity(0.12)) : AnyShapeStyle(Color(.tertiarySystemFill)),
-                        in: RoundedRectangle(cornerRadius: 8)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .strokeBorder(isActive ? Color.accentColor.opacity(0.5) : Color(.separator), lineWidth: 1)
-                    )
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel(
-                    isBulk ? "Apply \(style.displayName) style to selected regions" : "\(style.displayName) style"
-                )
-                .accessibilityAddTraits(isActive ? .isSelected : [])
-                .accessibilityIdentifier(isBulk ? "bulkStyleButton-\(style.rawValue)" : "styleButton-\(style.rawValue)")
+        // Two to a row at the first accessibility sizes, then one: a style's
+        // name is a single word that cannot wrap.
+        let columns = dynamicTypeSize >= .accessibility3 ? 1
+            : (dynamicTypeSize.isAccessibilitySize ? 2 : RedactionStyle.allCases.count)
+        if columns == 1 {
+            // One to a row, as a list: the symbol beside the name.
+            VStack(spacing: 6) {
+                ForEach(RedactionStyle.allCases, id: \.self) { style in styleButton(style, symbolBesideName: true) }
+            }
+        } else {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: columns), spacing: 6) {
+                ForEach(RedactionStyle.allCases, id: \.self) { style in styleButton(style, symbolBesideName: false) }
             }
         }
+    }
+
+    private func styleButton(_ style: RedactionStyle, symbolBesideName: Bool) -> some View {
+        let isActive = selection == style
+        let layout = symbolBesideName ? AnyLayout(HStackLayout(spacing: 10)) : AnyLayout(VStackLayout(spacing: 3))
+        return Button {
+            onSelect(style)
+        } label: {
+            layout {
+                Image(systemName: style.symbolName)
+                    .font(.subheadline)
+                    .fontWeight(isActive ? .bold : .regular)
+                Text(style.displayName)
+                    .font(.caption2)
+                    .fontWeight(isActive ? .semibold : .regular)
+                    // Five to a row, a long name may shrink a little; at
+                    // accessibility sizes the rows are wide enough not to.
+                    .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                    .minimumScaleFactor(dynamicTypeSize.isAccessibilitySize ? 1 : 0.75)
+            }
+            .foregroundStyle(isActive ? Color.accentColor : .primary)
+            .padding(.vertical, symbolBesideName ? 8 : 0)
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .background(
+                isActive ? AnyShapeStyle(Color.accentColor.opacity(0.12)) : AnyShapeStyle(Color(.tertiarySystemFill)),
+                in: RoundedRectangle(cornerRadius: 8)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 8)
+                    .strokeBorder(isActive ? Color.accentColor.opacity(0.5) : Color(.separator), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(
+            isBulk ? "Apply \(style.displayName) style to selected regions" : "\(style.displayName) style"
+        )
+        .accessibilityAddTraits(isActive ? .isSelected : [])
+        .accessibilityIdentifier(isBulk ? "bulkStyleButton-\(style.rawValue)" : "styleButton-\(style.rawValue)")
     }
 }
 
@@ -312,21 +328,74 @@ struct RedactionEditorDrawer: View {
     @State private var showStyles = false
     @State private var isMultiSelectMode: Bool = false
     @State private var multiSelectedIDs: Set<String> = []
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    /// The editor replaces the controls VoiceOver was on: it starts at the header.
+    @AccessibilityFocusState private var isHeaderFocused: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
+            // At accessibility sizes the controls scroll; Undo, Redo and Done stay put.
+            editingControls
+                .scrollsAtAccessibilitySizes()
+
+            // ── Action bar ────────────────────────────────────────────────
+            if isMultiSelectMode {
+                bulkActionBar
+            } else {
+                normalActionBar
+            }
+        }
+        .sheet(isPresented: $showStyles) {
+            NavigationStack {
+                ScrollView {
+                    if isMultiSelectMode { bulkStyleColorPanel() } else if let region = regions.first(where: { $0.id == selectedRegionID }) { styleColorPanel(for: region) }
+                }
+                .navigationTitle("Style")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Done") { showStyles = false }.accessibilityIdentifier("doneStyleButton")
+                    }
+                }
+            }
+            .presentationDetents([.medium, .large])
+        }
+        .sheet(isPresented: $showPosition) {
+            if let region = regions.first(where: { $0.id == selectedRegionID }) {
+                RegionPositionView(region: region, onAdjust: onAdjust)
+            }
+        }
+        .animation(.spring(duration: 0.22), value: isAddingRedaction)
+        .animation(.spring(duration: 0.22), value: regions.count)
+        .animation(.spring(duration: 0.22), value: isMultiSelectMode)
+        .animation(.spring(duration: 0.18), value: multiSelectedIDs)
+        .task {
+            // Once the drawer has slid in.
+            try? await Task.sleep(for: .milliseconds(400))
+            isHeaderFocused = true
+        }
+    }
+
+    // MARK: - Editing controls
+
+    /// Everything above the action bar: the header, the regions, and the
+    /// selected region's style and position.
+    private var editingControls: some View {
+        VStack(alignment: .leading, spacing: 0) {
 
             // ── Header ────────────────────────────────────────────────────
-            HStack {
+            AccessibilityStack {
                 Label("Redaction Regions", systemImage: "square.dashed")
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(.primary)
+                    .accessibilityAddTraits(.isHeader)
+                    .accessibilityFocused($isHeaderFocused)
 
                 Spacer()
 
                 // Select / Done — multi-select mode toggle
                 if !regions.isEmpty {
-                    Button(isMultiSelectMode ? "Done" : "Select") {
+                    Button {
                         withAnimation(.spring(duration: 0.22)) {
                             isMultiSelectMode.toggle()
                             if !isMultiSelectMode {
@@ -336,7 +405,13 @@ struct RedactionEditorDrawer: View {
                                 onSelect(nil)
                             }
                         }
+                    } label: {
+                        Text(isMultiSelectMode ? "Done" : "Select")
+                            // A full-height target in a header that stays as tall as its text.
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                     }
+                    .padding(.vertical, dynamicTypeSize.isAccessibilitySize ? 0 : -13)
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(Color.accentColor)
                     .accessibilityLabel(isMultiSelectMode ? "Exit multi-select mode" : "Enter multi-select mode")
@@ -434,22 +509,19 @@ struct RedactionEditorDrawer: View {
                     Spacer()
                 }
             } else {
-                ScrollViewReader { proxy in
-                ScrollView {
-                    LazyVStack(spacing: 0) {
-                        ForEach(regions) { region in
-                            regionRow(region).id(region.id)
-                            if region.id != regions.last?.id {
-                                Divider()
-                                    .padding(.leading, 44)
-                            }
+                Group {
+                    if dynamicTypeSize.isAccessibilitySize {
+                        // Already inside the drawer's scroll view: every row, in full.
+                        regionRows
+                    } else {
+                        ScrollViewReader { proxy in
+                            ScrollView { regionRows }
+                                .frame(minHeight: 120, maxHeight: regionListMaxHeight)
+                                .onChange(of: selectedRegionID) { _, id in
+                                    if let id { proxy.scrollTo(id, anchor: .center) }
+                                }
                         }
                     }
-                }
-                .frame(minHeight: 120, maxHeight: regionListMaxHeight)
-                .onChange(of: selectedRegionID) { _, id in
-                    if let id { proxy.scrollTo(id, anchor: .center) }
-                }
                 }
                 .onChange(of: regions) { _, newRegions in
                     // Prune stale IDs (e.g. after undo removes regions)
@@ -474,12 +546,22 @@ struct RedactionEditorDrawer: View {
                 HStack {
                     Button { showStyles = true } label: {
                         Label(selectedRegion.style.displayName, systemImage: "paintbrush")
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Style")
+                    .accessibilityValue(Text(selectedRegion.style.displayName))
                     .accessibilityIdentifier("editRegionStyleButton")
                     Spacer()
-                    Button("Position & size") { showPosition = true }
-                        .accessibilityIdentifier("regionPositionButton")
+                    Button {
+                        showPosition = true
+                    } label: {
+                        Text("Position & size")
+                            .frame(minHeight: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityHint("Moves or resizes the selected region without dragging.")
+                    .accessibilityIdentifier("regionPositionButton")
                 }
                 .font(.subheadline)
                 .frame(minHeight: 44)
@@ -501,7 +583,7 @@ struct RedactionEditorDrawer: View {
                         onAlwaysCover(term)
                     } label: {
                         Label("Always cover “\(term)”", systemImage: "pin")
-                            .lineLimit(1)
+                            .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
                             .truncationMode(.middle)
                     }
                     .font(.subheadline)
@@ -516,44 +598,34 @@ struct RedactionEditorDrawer: View {
                     .accessibilityIdentifier("editBulkStyleButton")
                 Divider()
             }
+        }
+    }
 
-            // ── Action bar ────────────────────────────────────────────────
-            if isMultiSelectMode {
-                bulkActionBar
-            } else {
-                normalActionBar
+    /// Lazy in the short list of ordinary sizes; every row at once at
+    /// accessibility sizes, where the drawer's own scroll view holds them.
+    @ViewBuilder
+    private var regionRows: some View {
+        if dynamicTypeSize.isAccessibilitySize {
+            VStack(spacing: 0) { regionRowContent }
+        } else {
+            LazyVStack(spacing: 0) { regionRowContent }
+        }
+    }
+
+    private var regionRowContent: some View {
+        ForEach(regions) { region in
+            regionRow(region).id(region.id)
+            if region.id != regions.last?.id {
+                Divider()
+                    .padding(.leading, 44)
             }
         }
-        .sheet(isPresented: $showStyles) {
-            NavigationStack {
-                ScrollView {
-                    if isMultiSelectMode { bulkStyleColorPanel() } else if let region = regions.first(where: { $0.id == selectedRegionID }) { styleColorPanel(for: region) }
-                }
-                .navigationTitle("Style")
-                .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button("Done") { showStyles = false }.accessibilityIdentifier("doneStyleButton")
-                    }
-                }
-            }
-            .presentationDetents([.medium, .large])
-        }
-        .sheet(isPresented: $showPosition) {
-            if let region = regions.first(where: { $0.id == selectedRegionID }) {
-                RegionPositionView(region: region, onAdjust: onAdjust)
-            }
-        }
-        .animation(.spring(duration: 0.22), value: isAddingRedaction)
-        .animation(.spring(duration: 0.22), value: regions.count)
-        .animation(.spring(duration: 0.22), value: isMultiSelectMode)
-        .animation(.spring(duration: 0.18), value: multiSelectedIDs)
     }
 
     // MARK: - Normal action bar
 
     private var normalActionBar: some View {
-        HStack(spacing: 8) {
+        actionBar(done: doneButton) {
             Button(action: onUndo) {
                 Image(systemName: "arrow.uturn.backward")
             }
@@ -579,26 +651,48 @@ struct RedactionEditorDrawer: View {
             .controlSize(.small)
             .accessibilityLabel("Reset zoom to fit image")
             .accessibilityIdentifier("resetZoomButton")
+        }
+    }
 
-            Spacer()
-
-            Button(action: onDone) {
-                Text("Done")
-                    .font(.subheadline.weight(.semibold))
+    /// Done, at the trailing end of the bar — or, at accessibility sizes, on a
+    /// row of its own under the other buttons, where its word fits.
+    private func actionBar<Tools: View>(done: some View, @ViewBuilder tools: () -> Tools) -> some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                // No spacer here: the bar is outside the scroll view and must
+                // not take height from the photo.
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 8) { tools() }
+                    done
+                }
+            } else {
+                HStack(spacing: 8) {
+                    HStack(spacing: 8) { tools() }
+                    Spacer()
+                    done
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .accessibilityLabel("Done editing redactions")
-            .accessibilityIdentifier("doneEditingRedactionsButton")
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
     }
 
+    private var doneButton: some View {
+        Button(action: onDone) {
+            Text("Done")
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: dynamicTypeSize.isAccessibilitySize ? .infinity : nil)
+        }
+        .buttonStyle(.borderedProminent)
+        .controlSize(.regular)
+        .accessibilityLabel("Done editing redactions")
+        .accessibilityIdentifier("doneEditingRedactionsButton")
+    }
+
     // MARK: - Bulk action bar
 
     private var bulkActionBar: some View {
-        HStack(spacing: 8) {
+        actionBar(done: doneButton) {
             // Toggle enable / disable for all selected
             Button {
                 onBulkToggle(multiSelectedIDs)
@@ -626,20 +720,7 @@ struct RedactionEditorDrawer: View {
             .controlSize(.small)
             .disabled(multiSelectedIDs.isEmpty)
             .accessibilityLabel("Delete selected regions")
-
-            Spacer()
-
-            Button(action: onDone) {
-                Text("Done")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.regular)
-            .accessibilityLabel("Done editing redactions")
-            .accessibilityIdentifier("doneEditingRedactionsButton")
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
     }
 
     // MARK: - Single-region Style + Colour Panel
@@ -831,138 +912,161 @@ struct RedactionEditorDrawer: View {
         let isMultiChecked   = isMultiSelectMode  && multiSelectedIDs.contains(region.id)
         let isHighlighted    = isSingleSelected || isMultiChecked
 
-        Button {
-            if isMultiSelectMode {
-                if multiSelectedIDs.contains(region.id) {
-                    multiSelectedIDs.remove(region.id)
-                } else {
-                    multiSelectedIDs.insert(region.id)
-                }
-            } else {
-                onSelect(isSingleSelected ? nil : region.id)
-            }
-        } label: {
-            HStack(spacing: 12) {
-
-                // ── Leading icon: risk-level colour for detected, accent for custom ──
-                Group {
-                    if let type = region.type {
-                        Image(systemName: type.riskLevel.symbolName)
-                            .foregroundStyle(type.riskLevel.color)
+        // The row's description selects it; its toggle and delete are buttons
+        // of their own beside it, so VoiceOver stops on each once.
+        HStack(spacing: 12) {
+            Button {
+                if isMultiSelectMode {
+                    if multiSelectedIDs.contains(region.id) {
+                        multiSelectedIDs.remove(region.id)
                     } else {
-                        Image(systemName: "square.dashed")
-                            .foregroundStyle(.accent)
+                        multiSelectedIDs.insert(region.id)
                     }
+                } else {
+                    onSelect(isSingleSelected ? nil : region.id)
                 }
-                .font(.callout.weight(.semibold))
-                .frame(width: 28, height: 28)
-                .background(
-                    (region.type.map { $0.riskLevel.color } ?? Color.accentColor).opacity(0.12),
-                    in: RoundedRectangle(cornerRadius: 7)
-                )
-                .accessibilityHidden(true)
+            } label: {
+                regionDescription(region, isSingleSelected: isSingleSelected, isMultiChecked: isMultiChecked)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(Text(verbatim: region.displayName))
+            .accessibilityValue(Text(verbatim: regionAccessibilityValue(region)))
+            // The trait, not a hand-appended ", selected": VoiceOver announces it in
+            // the user's language.
+            .accessibilityAddTraits(isHighlighted ? .isSelected : [])
+            .accessibilityHint(
+                isMultiSelectMode
+                    ? (isMultiChecked ? "Double tap to deselect" : "Double tap to add to selection")
+                    : (isSingleSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
+            )
+            .accessibilityIdentifier("regionRow-\(region.id)")
+            .accessibilityAction(named: region.isEnabled ? "Disable redaction" : "Enable redaction") {
+                onToggleRegion(region.id)
+            }
+            .accessibilityAction(named: "Delete redaction") {
+                onDeleteRegion(region.id)
+            }
 
-                // ── Middle: name + snippet + confidence + risk ──────────────
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(region.displayName)
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(isSingleSelected ? Color.accentColor : .primary)
+            // ── Trailing: toggle + delete in normal mode ─────────────────
+            if !isMultiSelectMode {
+                HStack(spacing: 0) {
+                    // Enable / disable toggle
+                    Button {
+                        onToggleRegion(region.id)
+                    } label: {
+                        Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundStyle(region.isEnabled ? .red : .secondary)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(region.isEnabled
+                        ? "Disable redaction for \(region.displayName)"
+                        : "Enable redaction for \(region.displayName)")
+                    .accessibilityIdentifier("toggleRegionButton-\(region.id)")
 
-                    if let snippet = region.snippet, !snippet.isEmpty {
-                        Text(snippet)
+                    // Delete
+                    Button {
+                        onDeleteRegion(region.id)
+                    } label: {
+                        Image(systemName: "trash")
+                            .font(.footnote.weight(.medium))
+                            .foregroundStyle(.red)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Delete \(region.displayName) region")
+                    .accessibilityIdentifier("deleteRedactionButton")
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(isHighlighted ? Color.accentColor.opacity(0.07) : Color.clear)
+        .opacity(region.isEnabled ? 1 : 0.45)
+    }
+
+    /// What the row shows besides its name, for VoiceOver: the text found, how
+    /// strong the match is, the risk, and whether the region is covered at all.
+    private func regionAccessibilityValue(_ region: RedactionRegion) -> String {
+        var parts: [String] = []
+        if let snippet = region.snippet, !snippet.isEmpty { parts.append(snippet) }
+        if let score = region.score { parts.append(ConfidenceLevel(score: score).matchLabel) }
+        if let type = region.type { parts.append(type.riskLevel.shortLabel) }
+        if !region.isEnabled { parts.append(String(localized: "Not covered")) }
+        return parts.joined(separator: ", ")
+    }
+
+    /// The region's icon, name, text, match strength and risk — and, choosing
+    /// several, its checkbox.
+    private func regionDescription(_ region: RedactionRegion, isSingleSelected: Bool, isMultiChecked: Bool) -> some View {
+        HStack(spacing: 12) {
+
+            // ── Leading icon: risk-level colour for detected, accent for custom ──
+            Group {
+                if let type = region.type {
+                    Image(systemName: type.riskLevel.symbolName)
+                        .foregroundStyle(type.riskLevel.color)
+                } else {
+                    Image(systemName: "square.dashed")
+                        .foregroundStyle(.accent)
+                }
+            }
+            .font(.callout.weight(.semibold))
+            .frame(width: 28, height: 28)
+            .background(
+                (region.type.map { $0.riskLevel.color } ?? Color.accentColor).opacity(0.12),
+                in: RoundedRectangle(cornerRadius: 7)
+            )
+
+            // ── Middle: name + snippet + confidence + risk ──────────────
+            VStack(alignment: .leading, spacing: 2) {
+                Text(region.displayName)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(isSingleSelected ? Color.accentColor : .primary)
+
+                if let snippet = region.snippet, !snippet.isEmpty {
+                    Text(snippet)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(dynamicTypeSize.isAccessibilitySize ? nil : 1)
+                        .truncationMode(.tail)
+                }
+
+                // Confidence score + risk badge on the same line — or one
+                // under the other at accessibility sizes, beside the row's buttons.
+                AccessibilityStack(spacing: 6) {
+                    if let score = region.score {
+                        Text(ConfidenceLevel(score: score).matchLabel)
                             .font(.caption2)
                             .foregroundStyle(.secondary)
-                            .lineLimit(1)
-                            .truncationMode(.tail)
                     }
-
-                    // Confidence score + risk badge on the same line
-                    HStack(spacing: 6) {
-                        if let score = region.score {
-                            Text(ConfidenceLevel(score: score).matchLabel)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        }
-                        if let type = region.type {
-                            Text(type.riskLevel.shortLabel)
-                                .font(.caption2.weight(.semibold))
-                                .foregroundStyle(type.riskLevel.color)
-                                .padding(.horizontal, 5)
-                                .padding(.vertical, 1)
-                                .background(
-                                    type.riskLevel.color.opacity(0.12),
-                                    in: Capsule()
-                                )
-                        }
-                    }
-                }
-
-                Spacer(minLength: 8)
-
-                // ── Trailing: checkbox in multi-select; toggle+delete in normal ──
-                if isMultiSelectMode {
-                    Image(systemName: isMultiChecked ? "checkmark.circle.fill" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(isMultiChecked ? Color.accentColor : .secondary)
-                        .frame(width: 44, height: 44)
-                        .accessibilityHidden(true)
-                } else {
-                    HStack(spacing: 0) {
-                        // Enable / disable toggle
-                        Button {
-                            onToggleRegion(region.id)
-                        } label: {
-                            Image(systemName: region.isEnabled ? "checkmark.circle.fill" : "circle")
-                                .font(.title3)
-                                .foregroundStyle(region.isEnabled ? .red : .secondary)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel(region.isEnabled
-                            ? "Disable redaction for \(region.displayName)"
-                            : "Enable redaction for \(region.displayName)")
-                        .accessibilityIdentifier("toggleRegionButton-\(region.id)")
-
-                        // Delete
-                        Button {
-                            onDeleteRegion(region.id)
-                        } label: {
-                            Image(systemName: "trash")
-                                .font(.footnote.weight(.medium))
-                                .foregroundStyle(.red)
-                                .frame(width: 44, height: 44)
-                                .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                        .accessibilityLabel("Delete \(region.displayName) region")
-                        .accessibilityIdentifier("deleteRedactionButton")
+                    if let type = region.type {
+                        Text(type.riskLevel.shortLabel)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(type.riskLevel.color)
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 1)
+                            .background(
+                                type.riskLevel.color.opacity(0.12),
+                                in: Capsule()
+                            )
                     }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(isHighlighted ? Color.accentColor.opacity(0.07) : Color.clear)
-            .contentShape(Rectangle())
+
+            Spacer(minLength: 8)
+
+            // ── Trailing checkbox, choosing several ─────────────────────
+            if isMultiSelectMode {
+                Image(systemName: isMultiChecked ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundStyle(isMultiChecked ? Color.accentColor : .secondary)
+                    .frame(width: 44, height: 44)
+            }
         }
-        .buttonStyle(.plain)
-        .opacity(region.isEnabled ? 1 : 0.45)
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(Text(verbatim: region.displayName))
-        // The trait, not a hand-appended ", selected": VoiceOver announces it in
-        // the user's language.
-        .accessibilityAddTraits(isSingleSelected ? .isSelected : [])
-        .accessibilityHint(
-            isMultiSelectMode
-                ? (isMultiChecked ? "Double tap to deselect" : "Double tap to add to selection")
-                : (isSingleSelected ? "Double tap to deselect" : "Double tap to select and highlight on image")
-        )
-        .accessibilityIdentifier("regionRow-\(region.id)")
-        .accessibilityAction(named: region.isEnabled ? "Disable redaction" : "Enable redaction") {
-            onToggleRegion(region.id)
-        }
-        .accessibilityAction(named: "Delete redaction") {
-            onDeleteRegion(region.id)
-        }
+        .contentShape(Rectangle())
     }
 }

@@ -50,6 +50,9 @@ struct ContentView: View {
     /// Shown when the camera permission has been refused.
     @State private var isShowingCameraDenied = false
 
+    /// VoiceOver's place when the editor closes: the row that opened it.
+    @AccessibilityFocusState private var isEditRowFocused: Bool
+
     @Environment(IntentRouter.self) private var intentRouter
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @Environment(\.scenePhase) private var scenePhase
@@ -448,6 +451,7 @@ struct ContentView: View {
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
                     ScannerHeroView()
                         .frame(height: 150)
@@ -748,9 +752,13 @@ struct ContentView: View {
         let isSideBySide = photoCanvasLayout == .sideBySide
         let arrangement = isSideBySide ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
         let columnWidth = CanvasLayout.sideColumnWidth(content: photoFrame, window: photoWindowFrame, layoutDirection: layoutDirection)
+        // At accessibility sizes the controls below take what they need, and
+        // the photo keeps at least a usable strip of the screen.
+        let isLargeText = dynamicTypeSize.isAccessibilitySize
         return arrangement {
             imageDisplay
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(minHeight: isLargeText ? 220 : nil)
                 .background(Color(.secondarySystemBackground))
                 .overlay(alignment: .top) {
                     if let confirmation = viewModel.savedConfirmation {
@@ -810,6 +818,9 @@ struct ContentView: View {
                     onAddCentered: {
                         viewModel.addCustomRedaction(rect: CGRect(x: 0.25, y: 0.4, width: 0.5, height: 0.2))
                         isAddingRedaction = false
+                        AccessibilityNotification.Announcement(
+                            String(localized: "Region added in the middle of the photo and selected. Use Position & size to move it.")
+                        ).post()
                     },
                     onAdjust: { id, rect in viewModel.adjustRedactionRegion(id: id, rect: rect) },
                     onToggleRegion: { id in
@@ -851,6 +862,11 @@ struct ContentView: View {
                             isAddingRedaction = false
                             viewModel.selectRedactionRegion(id: nil)
                         }
+                        // VoiceOver goes back to where the editor was opened from.
+                        Task {
+                            try? await Task.sleep(for: .milliseconds(400))
+                            isEditRowFocused = true
+                        }
                     },
                     onSetPartial: { id, isPartial in viewModel.setPartialCover(id: id, isPartial) },
                     onChangeEmoji: { id, emoji in viewModel.changeRedactionEmoji(id: id, emoji: emoji) },
@@ -861,6 +877,7 @@ struct ContentView: View {
                     regionListMaxHeight: isSideBySide ? .infinity : 160
                 )
                 .background(Color(.systemBackground))
+                .layoutPriority(isLargeText ? 1 : 0)
                 .transition(.asymmetric(
                     insertion: .move(edge: edge).combined(with: .opacity),
                     removal: .move(edge: edge).combined(with: .opacity)
@@ -869,7 +886,9 @@ struct ContentView: View {
                 controlPanel
                     .padding(.horizontal, 20)
                     .padding(.vertical, 16)
+                    .scrollsAtAccessibilitySizes()
                     .background(Color(.systemBackground))
+                    .layoutPriority(isLargeText ? 1 : 0)
                     .transition(.asymmetric(
                         insertion: .move(edge: edge).combined(with: .opacity),
                         removal: .move(edge: edge).combined(with: .opacity)
@@ -966,10 +985,11 @@ struct ContentView: View {
                     .transition(.opacity.animation(.easeInOut(duration: 0.2)))
                 }
 
-                // Category detail panel
+                // Category detail panel — there only while open, so a closed
+                // panel leaves nothing behind for VoiceOver to land on.
                 if let metadata = viewModel.allSourceMetadata,
                    !metadata.isEmpty,
-                   hasPhoto {
+                   hasPhoto, isPanelOpen {
                     let fields = metadata.fields.filter { $0.category == visiblePanelCategory }
 
                     CategoryDetailPanel(
@@ -980,8 +1000,7 @@ struct ContentView: View {
                     )
                     .padding(.horizontal, 8)
                     .padding(.bottom, 8)
-                    .offset(y: isPanelOpen ? 0 : geo.size.height)
-                    .opacity(isPanelOpen ? 1 : 0)
+                    .transition(.offset(y: geo.size.height).combined(with: .opacity))
                 }
             }
         }
@@ -1072,7 +1091,7 @@ struct ContentView: View {
             }
 
             if hasPhoto {
-                HStack {
+                AccessibilityStack {
                     Menu {
                         Picker("Sharing as", selection: Binding(
                             get: { viewModel.sharingPurpose },
@@ -1095,7 +1114,12 @@ struct ContentView: View {
                                 .imageScale(.small)
                                 .accessibilityHidden(true)
                         }
+                        // A full-height target over a caption-sized row: the
+                        // padding is taken back outside, so the row keeps its height.
+                        .padding(.vertical, 15)
+                        .contentShape(Rectangle())
                     }
+                    .padding(.vertical, -15)
                     .accessibilityLabel("Sharing preset")
                     .accessibilityValue(viewModel.sharingPurpose.title)
                     .accessibilityIdentifier("sharingPresetButton")
@@ -1111,7 +1135,7 @@ struct ContentView: View {
             if let metadata = viewModel.allSourceMetadata, sourceHasPrivacyMetadata, hasPhoto {
 
                 // Label row
-                HStack {
+                AccessibilityStack {
                     Label("Metadata found in this photo", systemImage: "tag.fill")
                         .font(.caption.weight(.medium))
                         .foregroundStyle(.secondary)
@@ -1173,6 +1197,25 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.35), value: viewModel.detectedPII)
         .animation(.easeInOut(duration: 0.25), value: viewModel.isScanningPII)
         .animation(.easeInOut(duration: 0.25), value: viewModel.isFindingNames)
+        .onChange(of: viewModel.isScanningPII) { wasScanning, isScanning in
+            if wasScanning, !isScanning, hasPhoto { announceScanResult() }
+        }
+    }
+
+    /// VoiceOver hears that the scan is over and what it found: the screen
+    /// changes under the user's finger without moving focus.
+    private func announceScanResult() {
+        let covered = viewModel.enabledRedactionRegions.count
+        let message: String
+        if viewModel.scanCoverage.requiresManualReview {
+            message = String(localized: "Some checks could not finish")
+        } else if covered > 0 {
+            // Through `AttributedString`, which applies the English inflection.
+            message = String(AttributedString(localized: "Scan finished. ^[\(covered) region](inflect: true) covered.").characters)
+        } else {
+            message = String(localized: "Scan finished. Nothing found to cover.")
+        }
+        AccessibilityNotification.Announcement(message).post()
     }
 
     // MARK: - Scanning row (not interactive)
@@ -1243,7 +1286,7 @@ struct ContentView: View {
                 closePanel()
             }
         } label: {
-            HStack(spacing: 10) {
+            AccessibilityStack(spacing: 10) {
                 Label(
                     "Edit Redactions",
                     systemImage: hasPIIDetections ? "eye.fill" : "square.dashed"
@@ -1295,6 +1338,7 @@ struct ContentView: View {
         ))
         .accessibilityHint("Opens the redaction editor")
         .accessibilityIdentifier("editRedactionsButton")
+        .accessibilityFocused($isEditRowFocused)
     }
 
 }
@@ -1460,7 +1504,10 @@ nonisolated private struct PillLabel: View {
         HStack(spacing: 10) {
             Image(systemName: icon)
                 .accessibilityHidden(true)
+            // Wraps, rather than truncating, when large text outgrows the capsule.
             Text(text)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
         }
         .font(.callout.weight(.semibold))
         .frame(maxWidth: .infinity)

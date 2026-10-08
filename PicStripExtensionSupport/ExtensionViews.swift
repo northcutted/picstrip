@@ -57,6 +57,18 @@ struct HandoffPreparedView: View {
     let onDiscard: () -> Void
 
     var body: some View {
+        // Centred when it fits; at the largest text sizes, in the share sheet's
+        // half height, it scrolls instead of clipping Done.
+        GeometryReader { geometry in
+            ScrollView {
+                content
+                    .frame(minHeight: geometry.size.height)
+            }
+            .scrollBounceBehavior(.basedOnSize)
+        }
+    }
+
+    private var content: some View {
         VStack(spacing: 24) {
             Spacer()
 
