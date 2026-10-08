@@ -51712,8 +51712,8 @@
     "Scan finished. Nothing found to cover." : {
       "comment" : "VoiceOver announcement when the photo's privacy scan ends without finding anything to cover."
     },
-    "Scan finished. ^[%lld region](inflect: true) covered." : {
-      "comment" : "VoiceOver announcement when the photo's privacy scan ends; the number is how many regions PicStrip covered. Plural: use plural variations, not inflect."
+    "Scan finished. Regions covered: %lld." : {
+      "comment" : "VoiceOver announcement when the photo scan finishes; %lld is how many regions are covered. Keep the “label: number” form (no plural forms)."
     },
     "Scanning for sensitive data" : {
       "localizations" : {

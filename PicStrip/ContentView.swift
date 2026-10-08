@@ -798,6 +798,8 @@ struct ContentView: View {
     /// the photo, or in the column beside it.
     private func photoControls(isSideBySide: Bool) -> some View {
         let edge: Edge = isSideBySide ? .trailing : .bottom
+        // At accessibility sizes the controls take the space they need first.
+        let isLargeText = dynamicTypeSize.isAccessibilitySize
         return VStack(spacing: 0) {
             if isRedactionEditing {
                 RedactionEditorDrawer(
@@ -1210,8 +1212,8 @@ struct ContentView: View {
         if viewModel.scanCoverage.requiresManualReview {
             message = String(localized: "Some checks could not finish")
         } else if covered > 0 {
-            // Through `AttributedString`, which applies the English inflection.
-            message = String(AttributedString(localized: "Scan finished. ^[\(covered) region](inflect: true) covered.").characters)
+            // "Label: number", as the app's other counts: no plural forms to translate.
+            message = String(localized: "Scan finished. Regions covered: \(covered).")
         } else {
             message = String(localized: "Scan finished. Nothing found to cover.")
         }
