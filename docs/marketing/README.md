@@ -58,3 +58,10 @@ build/preview-venv/bin/python scripts/make_app_previews.py --device ipad --simul
 ```
 
 It needs Xcode 27.0 (`DEVELOPER_DIR`, by default `/Applications/Xcode.app`) and `ffmpeg`/`ffprobe` with libx264 (`brew install ffmpeg`). If more than one simulator has a device's name on iOS 27.0, name it with `--simulator`. The videos go to `~/Desktop/PicStrip App Previews/`, with a poster frame (the frame at 7 s) and a contact sheet of each in `previews/`. Recordings, marks and intermediate clips stay in `build/app-previews/`. Another language needs its `CAPTIONS` entry for the bleep scene; the rest comes from the headline catalog and the app's own localization.
+
+Upload them with the same uploader as the creative asset, adding `--previews`. For each language it uploads the videos to Asset Library (App Screenshots and Previews, with the poster frame at 7 s, or `--poster-time`, sent as an `HH:MM:SS:FF` time code at 30 fps) and places each as that language's App Preview for the 6.9" iPhone (`IPHONE_DYNAMIC_ISLAND_LARGE_DISPLAY`) or the 13" iPad (`IPAD_13_DISPLAY`). It looks up the placement group of each display class in Apple's Asset Library reference data. A language and device that already has an App Preview is left alone. A video uploaded by an earlier run that stopped before placing it is placed, not uploaded again. Nothing is deleted. As before, it shows only its plan unless given `--apply`:
+
+```sh
+python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8 --previews          # plan
+python3 scripts/upload_creative_assets.py --key-id <Key ID> --issuer-id <Issuer ID> --key ~/Downloads/AuthKey_<Key ID>.p8 --previews --apply  # upload
+```
