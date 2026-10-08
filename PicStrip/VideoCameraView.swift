@@ -112,6 +112,7 @@ struct CameraModePicker: View {
         }
         .padding(3)
         .glassEffect(in: .capsule)
+        .cameraNote()
         .sensoryFeedback(.selection, trigger: mode)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Camera mode")
@@ -161,6 +162,8 @@ struct VideoCameraView: View {
             if event.phase == .ended { toggleRecording() }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: recordToggles)
+        // VoiceOver's two-finger double tap starts and stops recording, as in the Camera app.
+        .accessibilityAction(.magicTap) { toggleRecording() }
         .task { await model.start() }
         .onDisappear { model.stop() }
         .onChange(of: model.recording) { _, recording in
@@ -192,6 +195,17 @@ struct VideoCameraView: View {
 
     // MARK: Preview
 
+    /// Focus, zoom and exposure, for the gestures and for VoiceOver alike.
+    private var adjustments: ViewfinderAdjustments {
+        ViewfinderAdjustments(
+            focus: { model.focus(at: $0) },
+            pinch: { model.pinch($0) },
+            endPinch: { model.endPinch() },
+            exposure: { model.adjustExposure(by: $0) },
+            endExposure: { model.endExposureAdjustment() }
+        )
+    }
+
     private var preview: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
@@ -211,15 +225,14 @@ struct VideoCameraView: View {
                         .position(x: min(point.x + 52, geometry.size.width - 20), y: point.y)
                 }
             }
-            .cameraGestures(
-                focus: { model.focus(at: $0) },
-                pinch: { model.pinch($0) },
-                endPinch: { model.endPinch() },
-                exposure: { model.adjustExposure(by: $0) },
-                endExposure: { model.endExposureAdjustment() }
+            .cameraGestures(adjustments)
+            .viewfinderAccessibility(
+                adjustments,
+                zoom: model.zoomLevel,
+                center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),
+                isFocused: model.focusPoint != nil
             )
         }
-        .accessibilityHidden(true)
     }
 
     /// The picture's shape: the movie's for the stand-in, else the format's —
@@ -258,6 +271,7 @@ struct VideoCameraView: View {
                 .frame(height: 44)
             }
         }
+        .cameraChrome()
     }
 
     /// Below the picture: the mode, and the record button between the
@@ -295,6 +309,7 @@ struct VideoCameraView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .glassEffect(in: .rect(cornerRadius: 16))
+                .cameraNote()
                 .accessibilityIdentifier("videoCameraStatus")
         }
     }
@@ -311,6 +326,7 @@ struct VideoCameraView: View {
         .buttonBorderShape(.circle)
         .accessibilityLabel("Close camera")
         .accessibilityIdentifier("liveCameraCloseButton")
+        .largeContent()
     }
 
     private var torchToggle: some View {
@@ -326,6 +342,7 @@ struct VideoCameraView: View {
         .foregroundStyle(model.isTorchOn ? .yellow : .primary)
         .disabled(model.state != .running)
         .accessibilityIdentifier("videoTorchToggle")
+        .largeContent()
     }
 
     private var stabilizationToggle: some View {
@@ -345,6 +362,7 @@ struct VideoCameraView: View {
         .accessibilityValue(isOn ? Text("On") : Text("Off"))
         .accessibilityHint("Steadier video when you walk or run, with a slightly narrower view.")
         .accessibilityIdentifier("videoStabilizationToggle")
+        .largeContent()
     }
 
     private var hdrToggle: some View {
@@ -364,6 +382,7 @@ struct VideoCameraView: View {
         .accessibilityLabel("HDR video")
         .accessibilityValue(isOn ? Text("On") : Text("Off"))
         .accessibilityIdentifier("videoHDRToggle")
+        .largeContent()
     }
 
     /// "4K · 30": tap the resolution or the frame rate to change it, as in the Camera app.
@@ -373,12 +392,15 @@ struct VideoCameraView: View {
                 model.toggleResolution()
             } label: {
                 Text(verbatim: model.setup.quality.resolution.label)
-                    .frame(minWidth: 26)
+                    // The capsule's full height is the target, not just the text.
+                    .frame(minWidth: 26, minHeight: 36)
+                    .contentShape(Rectangle())
             }
             .disabled(!model.canChangeSettings || !model.canChangeResolution)
             .accessibilityLabel("Resolution")
             .accessibilityValue(Text(verbatim: model.setup.quality.resolution.label))
             .accessibilityIdentifier("videoResolutionButton")
+            .largeContent()
             Text(verbatim: "·")
                 .accessibilityHidden(true)
             Button {
@@ -386,12 +408,14 @@ struct VideoCameraView: View {
             } label: {
                 Text(verbatim: "\(model.setup.quality.frameRate)")
                     .monospacedDigit()
-                    .frame(minWidth: 26)
+                    .frame(minWidth: 26, minHeight: 36)
+                    .contentShape(Rectangle())
             }
             .disabled(!model.canChangeSettings || !model.canChangeFrameRate)
             .accessibilityLabel("Frame rate")
             .accessibilityValue(Text("\(model.setup.quality.frameRate) frames per second"))
             .accessibilityIdentifier("videoFrameRateButton")
+            .largeContent()
         }
         .font(.caption.weight(.heavy))
         .buttonStyle(.plain)
@@ -450,6 +474,8 @@ struct VideoCameraView: View {
             .buttonBorderShape(.circle)
             .accessibilityLabel("Recording without sound")
             .accessibilityIdentifier("videoMicrophoneOffButton")
+            .largeContent()
+            .cameraChrome()
         } else {
             Color.clear.frame(width: 44, height: 44)
         }

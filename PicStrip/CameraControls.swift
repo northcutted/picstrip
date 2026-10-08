@@ -31,8 +31,10 @@ struct CameraZoomButtons: View {
                 .accessibilityLabel("Zoom")
                 .accessibilityValue(Text(verbatim: Self.label(level, suffix: true)))
                 .accessibilityAddTraits(isCurrent ? .isSelected : [])
+                .largeContent()
             }
         }
+        .cameraChrome()
     }
 
     /// "1×", "1.6×"; ".5" and "2" on the lenses not in use, as in the Camera app.
@@ -81,36 +83,91 @@ struct CameraFlipButton: View {
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
         .accessibilityLabel(position == .back ? Text("Switch to the front camera") : Text("Switch to the back camera"))
+        .largeContent()
+        .cameraChrome()
+    }
+}
+
+// MARK: - Camera chrome at large text sizes
+
+extension View {
+    /// The controls over and under the picture keep their size, as in the
+    /// Camera app, so the picture stays in view.  At accessibility text sizes,
+    /// touching and holding one shows it large instead (`largeContent()`).
+    func cameraChrome() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.large)
+    }
+
+    /// What the camera says on the picture grows, but only so far: past it,
+    /// the words would cover what they describe.
+    func cameraNote() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.accessibility1)
+    }
+
+    /// Shown large by a touch and hold at accessibility text sizes — for
+    /// controls that keep their size.
+    func largeContent() -> some View {
+        accessibilityShowsLargeContentViewer()
     }
 }
 
 // MARK: - Camera gestures
 
+/// What the viewfinder's gestures do to the camera, for both of them: a
+/// finger's (`cameraGestures`) and VoiceOver's (`viewfinderAccessibility`).
+struct ViewfinderAdjustments {
+    /// Focus at a point in the viewfinder's coordinates.
+    let focus: (CGPoint) -> Void
+    /// Zoom by a factor from where the pinch started, then end it.
+    let pinch: (CGFloat) -> Void
+    let endPinch: () -> Void
+    /// Exposure by stops from where the drag started, then end it.
+    let exposure: (Float) -> Void
+    let endExposure: () -> Void
+}
+
 extension View {
     /// The Camera app's gestures on a viewfinder: tap to focus, pinch to zoom,
     /// and — after focusing — drag up or down for exposure.
-    func cameraGestures(
-        focus: @escaping (CGPoint) -> Void,
-        pinch: @escaping (CGFloat) -> Void,
-        endPinch: @escaping () -> Void,
-        exposure: @escaping (Float) -> Void,
-        endExposure: @escaping () -> Void
-    ) -> some View {
+    func cameraGestures(_ adjust: ViewfinderAdjustments) -> some View {
         contentShape(Rectangle())
-            .onTapGesture { location in focus(location) }
+            .onTapGesture { location in adjust.focus(location) }
             .gesture(
                 MagnifyGesture()
-                    .onChanged { pinch($0.magnification) }
-                    .onEnded { _ in endPinch() }
+                    .onChanged { adjust.pinch($0.magnification) }
+                    .onEnded { _ in adjust.endPinch() }
             )
             .simultaneousGesture(
                 DragGesture(minimumDistance: 12)
                     .onChanged { drag in
                         guard abs(drag.translation.height) > abs(drag.translation.width) else { return }
-                        exposure(Float(-drag.translation.height / 120))
+                        adjust.exposure(Float(-drag.translation.height / 120))
                     }
-                    .onEnded { _ in endExposure() }
+                    .onEnded { _ in adjust.endExposure() }
             )
+    }
+
+    /// The viewfinder as VoiceOver and Switch Control see it, with what the
+    /// gestures above do for a finger: swipe up or down to zoom, and Brighter
+    /// or Darker from the actions — focusing on the middle first when nothing
+    /// is focused, as the exposure drag needs a focus point.
+    func viewfinderAccessibility(_ adjust: ViewfinderAdjustments, zoom: CGFloat, center: CGPoint, isFocused: Bool) -> some View {
+        let changeExposure = { (stops: Float) in
+            if !isFocused { adjust.focus(center) }
+            adjust.exposure(stops)
+            adjust.endExposure()
+        }
+        return accessibilityElement(children: .ignore)
+            .accessibilityLabel("Viewfinder")
+            .accessibilityValue(Text("Zoom \(CameraZoomButtons.label(zoom, suffix: true))"))
+            .accessibilityHint("Swipe up or down to zoom.")
+            .accessibilityAdjustableAction { direction in
+                adjust.pinch(direction == .increment ? 1.25 : 0.8)
+                adjust.endPinch()
+            }
+            .accessibilityAction(named: Text("Brighter")) { changeExposure(0.5) }
+            .accessibilityAction(named: Text("Darker")) { changeExposure(-0.5) }
+            .accessibilityIdentifier("viewfinder")
     }
 }
 
