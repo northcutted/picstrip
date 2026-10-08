@@ -933,6 +933,11 @@ final class PicStripUITests: XCTestCase {
         let top = max(containerFrame.minY, navigationBottom) + 4
         let bottom = min(containerFrame.maxY, footer.map { $0.frame.minY - 12 } ?? containerFrame.maxY) - 4
         let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
+        // Never start near the bottom of the window: scroll views reach under
+        // the home indicator, whose drags are the system's, and on iPad the
+        // trailing corner is the window's resize grabber — a drag there shrinks
+        // the window, and the next launch opens at that size.
+        let lowestStart = min(viewport.maxY, app.frame.maxY - 100)
         XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
 
         for _ in 0..<8 {
@@ -944,7 +949,13 @@ final class PicStripUITests: XCTestCase {
             }
             // Use the enclosing list's edge: iPad sheets do not fill the screen,
             // and dragging through the preview image would pan that image.
-            let origin = app.coordinate(withNormalizedOffset: .zero)
+            // Frames are in screen coordinates; offsets count from the app's own
+            // frame, which on iPad need not start at the screen's origin (a
+            // window lower down the screen).
+            let appFrame = app.frame
+            func point(_ x: CGFloat, _ y: CGFloat) -> XCUICoordinate {
+                app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: x - appFrame.minX, dy: y - appFrame.minY))
+            }
             let frame = element.exists ? element.frame : .null
             let span = viewport.height - 40
             // Content moves by `distance` (negative = up) to bring the control in.
@@ -957,17 +968,17 @@ final class PicStripUITests: XCTestCase {
                 // sheet at large text sizes every time.  (A held drag does not
                 // scroll a plain scroll view that starts under a button, so the
                 // home screen keeps the quick swipe.)
-                let startY = distance < 0 ? viewport.maxY - 20 : viewport.minY + 20
-                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY))
-                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY + distance))
+                let startY = distance < 0 ? min(viewport.maxY - 20, lowestStart) : viewport.minY + 20
+                let start = point(viewport.maxX - 8, startY)
+                let end = point(viewport.maxX - 8, startY + distance)
                 start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .default, thenHoldForDuration: 0.3)
             } else {
                 // Far, or not created yet: a quick swipe toward it.
                 let upwards = distance.map { $0 < 0 } ?? true
                 let upper = viewport.minY + viewport.height * 0.25
-                let lower = viewport.maxY - 24
-                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
-                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+                let lower = min(viewport.maxY - 24, lowestStart)
+                let start = point(viewport.maxX - 8, upwards ? lower : upper)
+                let end = point(viewport.maxX - 8, upwards ? upper : lower)
                 start.press(forDuration: 0.05, thenDragTo: end)
             }
         }
