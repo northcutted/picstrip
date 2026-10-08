@@ -252,6 +252,85 @@ final class PicStripUITests: XCTestCase {
         return path
     }
 
+    // MARK: - Wide displays (iPhone Duo, unfolded)
+
+    /// On a display wide and tall enough — iPhone Duo's inner one, unfolded —
+    /// the redaction drawer stands beside the photo.  Folding or unfolding the
+    /// phone changes the size live; here an iPad, allowed the side layout, is
+    /// turned instead.  The editor is rearranged, not rebuilt: still editing,
+    /// the same region selected, every region kept.
+    @MainActor
+    func testEditorKeepsItsStateWhenItsControlsMoveBesideThePhoto() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Only an iPad simulator is tall enough sideways for the side layout.")
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_SIDE_LAYOUT_ON_ANY_DEVICE"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
+        app.launch()
+
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30), "The scan finishes.")
+        let regions = edit.label
+        edit.tap()
+        let done = app.descendants(matching: .any)["doneEditingRedactionsButton"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch.tap()
+        let style = app.buttons["editRegionStyleButton"]
+        XCTAssertTrue(style.waitForExistence(timeout: 5), "A region is selected.")
+        let photo = app.descendants(matching: .any)["metadataPhotoPreview"]
+        XCTAssertGreaterThanOrEqual(done.frame.minY, photo.frame.maxY, "Upright, the drawer is below the photo.")
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(done.frame.minX, photo.frame.maxX, "Sideways, the drawer stands beside the photo.")
+        XCTAssertTrue(style.exists, "The region is still selected.")
+        attachScreen("wide_editor")
+
+        XCUIDevice.shared.orientation = .portrait
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(done.frame.minY, photo.frame.maxY, "Upright again, below.")
+        XCTAssertTrue(style.exists, "Still selected.")
+        done.tap()
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        XCTAssertEqual(edit.label, regions, "Every region is kept.")
+    }
+
+    /// The viewfinder, on the same wide display: the shutter and the modes in
+    /// a column beside the picture, and the viewfinder still running after
+    /// the size changes back and forth.
+    @MainActor
+    func testViewfinderPutsItsControlsBesideThePictureWhenWide() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Only an iPad simulator is tall enough sideways for the side layout.")
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_SIDE_LAYOUT_ON_ANY_DEVICE"] = "1"
+        app.launchEnvironment["PICSTRIP_LIVE_CAMERA_FIXTURE"] = try stagedFixture("store_badge", "jpg")
+        app.launch()
+
+        let status = app.descendants(matching: .any)["liveCameraStatus"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
+        let shutter = app.buttons["liveCameraShutterButton"]
+        XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright, the shutter is below the picture.")
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(shutter.frame.minX, status.frame.maxX, "Sideways, the shutter is beside the picture.")
+        XCTAssertTrue(app.buttons["cameraMode-photo"].isSelected, "Still in Photo mode.")
+        attachScreen("wide_viewfinder")
+
+        XCUIDevice.shared.orientation = .portrait
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright again, below.")
+        let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
+        await fulfillment(of: [found], timeout: 20)
+        shutter.tap()
+        XCTAssertTrue(app.buttons["dismissPhotoButton"].waitForExistence(timeout: 15), "The viewfinder still takes the photo.")
+    }
+
     /// The simulator has no camera, so by default the home screen must not offer a scan.
     @MainActor
     func testHomeScreenHidesScanWithoutACamera() throws {
