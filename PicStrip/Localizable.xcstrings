@@ -8684,6 +8684,9 @@
         }
       }
     },
+    "Brighter" : {
+      "comment" : "VoiceOver action on the camera viewfinder: raises the exposure."
+    },
     "Browse Files" : {
       "localizations" : {
         "ar" : {
@@ -12621,6 +12624,9 @@
           }
         }
       }
+    },
+    "Cleaned copy ready to share or save." : {
+      "comment" : "VoiceOver announcement when the cleaned copy of a video has been made."
     },
     "Cleaned image · pinch to inspect" : {
       "localizations" : {
@@ -17629,6 +17635,9 @@
           }
         }
       }
+    },
+    "Darker" : {
+      "comment" : "VoiceOver action on the camera viewfinder: lowers the exposure."
     },
     "Database Connection String" : {
       "localizations" : {
@@ -28400,107 +28409,6 @@
         }
       }
     },
-    "Hold and drag to select a stretch of sound." : {
-      "comment" : "VoiceOver hint of the timeline's audio lane.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المس مع الاستمرار واسحب لتحديد جزء من الصوت."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gedrückt halten und ziehen, um einen Tonabschnitt auszuwählen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén pulsado y arrastra para seleccionar un fragmento de sonido."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén presionado y arrastra para seleccionar un fragmento de sonido."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maintenez le doigt et faites glisser pour sélectionner un passage audio."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tieni premuto e trascina per selezionare un tratto di audio."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "長押ししてドラッグすると、音声の区間を選択できます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "길게 누른 채 드래그하면 소리 구간을 선택할 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Houd ingedrukt en sleep om een stuk geluid te selecteren."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przytrzymaj i przeciągnij, aby zaznaczyć fragment dźwięku."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toque, segure e arraste para selecionar um trecho do som."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantenha premido e arraste para selecionar um excerto do som."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Håll ned och dra för att markera ett ljudavsnitt."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesin bir bölümünü seçmek için basılı tutup sürükleyin."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住并拖动可选择一段声音。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住並拖移可選取一段聲音。"
-          }
-        }
-      }
-    },
     "Horizontal position" : {
       "localizations" : {
         "ar" : {
@@ -35464,6 +35372,9 @@
         }
       }
     },
+    "Moves or resizes the selected region without dragging." : {
+      "comment" : "VoiceOver hint on the “Position & size” button in the redaction editor."
+    },
     "Multiline PEM private-key blocks, including their encoded contents" : {
       "localizations" : {
         "ar" : {
@@ -37789,6 +37700,9 @@
           }
         }
       }
+    },
+    "Not covered" : {
+      "comment" : "VoiceOver value of a redaction region that is turned off: it will not be covered in the saved copy."
     },
     "OK" : {
       "localizations" : {
@@ -48404,6 +48318,9 @@
         }
       }
     },
+    "Region added in the middle of the photo and selected. Use Position & size to move it." : {
+      "comment" : "VoiceOver announcement after “Add centered region”. “Position & size” is the editor button of that name."
+    },
     "Remove" : {
       "comment" : "Menu item: delete a drawn object cover or a sound edit.",
       "localizations" : {
@@ -51788,6 +51705,15 @@
           }
         }
       }
+    },
+    "Scan finished. Faces: %lld. Text and codes: %lld." : {
+      "comment" : "VoiceOver announcement when a video's scan ends: how many faces, and how many pieces of text or codes, were found."
+    },
+    "Scan finished. Nothing found to cover." : {
+      "comment" : "VoiceOver announcement when the photo's privacy scan ends without finding anything to cover."
+    },
+    "Scan finished. ^[%lld region](inflect: true) covered." : {
+      "comment" : "VoiceOver announcement when the photo's privacy scan ends; the number is how many regions PicStrip covered. Plural: use plural variations, not inflect."
     },
     "Scanning for sensitive data" : {
       "localizations" : {
@@ -58267,6 +58193,12 @@
           }
         }
       }
+    },
+    "Swipe up or down to bleep or mute a second from the playhead." : {
+      "comment" : "VoiceOver hint on the video editor's audio lane: its actions bleep or mute one second starting at the playhead."
+    },
+    "Swipe up or down to zoom." : {
+      "comment" : "VoiceOver hint on the camera viewfinder (VoiceOver's swipe up/down adjusts it)."
     },
     "Switch to the back camera" : {
       "comment" : "VoiceOver label of the flip-camera button when the front camera is in use.",
@@ -66132,6 +66064,9 @@
         }
       }
     },
+    "Viewfinder" : {
+      "comment" : "VoiceOver name of the live camera picture."
+    },
     "Visa, Mastercard, Amex, Discover — with or without spaces" : {
       "localizations" : {
         "ar" : {
@@ -67647,6 +67582,9 @@
           }
         }
       }
+    },
+    "Zoom %@" : {
+      "comment" : "VoiceOver value of the camera viewfinder: its zoom, for example “Zoom 1.5×”."
     },
     "Zoom In" : {
       "comment" : "VoiceOver action on the video editor timeline.",
