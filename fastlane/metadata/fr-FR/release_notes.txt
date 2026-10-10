@@ -1,15 +1,9 @@
-PicStrip 1.7 est une mise à jour majeure : l’app nettoie désormais les vidéos, et son appareil photo montre ce qu’il masquerait avant même la prise de vue.
+PicStrip 1.8 est plus facile à utiliser avec VoiceOver et Texte plus grand.
 
-• Vidéos : les visages, le texte, les codes et vos mots Toujours masquer sont repérés, suivis en mouvement et masqués — avec un flou, un aplat opaque ou un emoji pour chaque visage.
-• Masquez n’importe quel objet d’une vidéo en l’encadrant ; PicStrip le suit vers l’avant comme vers l’arrière.
-• Raccourcissez chaque masquage sur une chronologie de montage vidéo, et couvrez les paroles d’un bip ou coupez le son.
-• Un seul appareil photo pour les photos, les vidéos et les documents. Filmez jusqu’en 4K avec HDR, avec les commandes que vous connaissez dans l’app Appareil photo ; en mode Photo, un viseur en direct encadre ce qu’il masquerait.
-• Choisissez des photos et des vidéos ensemble : un seul élément ouvre l’éditeur, plusieurs sont nettoyés d’un coup.
-• Partagez des vidéos avec PicStrip depuis n’importe quelle app pour supprimer leurs métadonnées, ou ouvrez-les pour masquer les visages et le texte. Une nouvelle action dans Raccourcis supprime les métadonnées des vidéos.
-• Masquez avec un emoji, touchez un objet pour le masquer sous iOS 27, et laissez visibles les derniers chiffres d’une carte ou d’un numéro de téléphone.
-• Toujours masquer : votre nom, une plaque ou votre rue, masqués partout où PicStrip les lit.
-• Scannez des documents, choisissez uniquement vos captures d’écran, conservez l’animation d’une Live Photo et comparez avant/après.
-• Préréglages de partage, taille du fichier visible et résumé de ce qui a été supprimé.
-• Exportations et traitements par lots plus rapides, un éditeur vidéo plus fluide et un appareil photo qui économise la batterie quand vous le tenez immobile.
+• VoiceOver : chaque commande a un libellé, et tout ce que vous feriez glisser peut se faire autrement : balayez vers le haut ou le bas pour déplacer ou redimensionner un masque, choisir quand un masque commence et se termine dans une vidéo, ou avancer dans la chronologie.
+• PicStrip vous indique quand l’analyse est terminée et combien de zones ont été masquées, et l’appareil photo vous signale les données sensibles dans le cadre.
+• Sur le viseur, balayez vers le haut ou le bas pour zoomer, et utilisez ses actions pour rendre l’image plus claire ou plus sombre. Prenez une photo, ou démarrez et arrêtez une vidéo, en touchant deux fois avec deux doigts.
+• Dans l’éditeur vidéo, chaque piste est un titre : passez directement aux visages, au texte, aux objets ou à l’audio.
+• Texte plus grand : aux plus grandes tailles, le texte passe à la ligne au lieu d’être coupé, les panneaux défilent et la photo reste visible. Maintenez le doigt sur un bouton de l’appareil photo pour l’afficher en grand.
 
 La détection automatique peut manquer des détails. Vérifiez l’intégralité de la photo ou de la vidéo avant de la partager.

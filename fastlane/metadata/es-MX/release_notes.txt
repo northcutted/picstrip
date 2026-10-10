@@ -1,15 +1,9 @@
-PicStrip 1.7 es una gran actualización: ahora limpia videos, y su cámara muestra lo que censuraría antes de que tomes la foto.
+PicStrip 1.8 es más fácil de usar con VoiceOver y “Texto más grande”.
 
-• Videos: se encuentran caras, texto, códigos y tus palabras de “Censurar siempre”, se siguen mientras se mueven y se censuran, con un desenfoque, un recuadro opaco o un emoji para cada cara.
-• Censura cualquier objeto de un video dibujando un recuadro a su alrededor; PicStrip lo sigue hacia adelante y hacia atrás.
-• Recorta cada censura en una línea de tiempo de editor de video, y pon un pitido o silencia lo que se dijo.
-• Una sola cámara para fotos, video y documentos. Graba hasta en 4K con HDR con los controles que ya conoces de la app Cámara; en el modo Foto, un visor en vivo marca lo que censuraría.
-• Elige fotos y videos juntos: uno solo se abre en el editor y varios se limpian a la vez.
-• Comparte videos con PicStrip desde cualquier app para eliminar sus metadatos, o ábrelos para censurar caras y texto. Una nueva acción de Atajos elimina los metadatos de los videos.
-• Censura con un emoji, toca un objeto para censurarlo en iOS 27 y deja visibles los últimos dígitos de una tarjeta o un número de teléfono.
-• Censurar siempre: tu nombre, una placa o tu calle, censurados dondequiera que PicStrip los lea.
-• Escanea documentos, elige solo tus capturas de pantalla, conserva el movimiento de una Live Photo y compara el antes y el después.
-• Preajustes para compartir, tamaño de archivo visible y un resumen de lo que se eliminó.
-• Exportaciones y lotes más rápidos, un editor de video más fluido y una cámara que ahorra batería mientras la mantienes quieta.
+• VoiceOver: todos los controles tienen etiqueta, y todo lo que arrastrarías se puede hacer de otra forma: desliza hacia arriba o hacia abajo para mover o cambiar el tamaño de una censura, elegir cuándo empieza y termina en un video, o avanzar por la línea de tiempo.
+• PicStrip te avisa cuando termina el análisis y cuántas áreas censuró, y la cámara te dice qué datos sensibles están a la vista.
+• En el visor, desliza hacia arriba o hacia abajo para hacer zoom y usa sus acciones para aclarar u oscurecer la imagen. Toma una foto, o inicia y detén un video, tocando dos veces con dos dedos.
+• En el editor de video, cada pista es un encabezado, así que puedes saltar directamente a rostros, texto, objetos o audio.
+• Texto más grande: en los tamaños más grandes, el texto se ajusta en vez de cortarse, los paneles se desplazan y la foto sigue a la vista. Mantén presionado un botón de la cámara para verlo más grande.
 
 La detección automática puede omitir detalles. Revisa toda la foto o el video antes de compartir.

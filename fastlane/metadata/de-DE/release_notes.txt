@@ -1,15 +1,9 @@
-PicStrip 1.7 ist ein großes Update: Die App bereinigt jetzt Videos, und ihre Kamera zeigt schon vor der Aufnahme, was sie verdecken würde.
+PicStrip 1.8 lässt sich mit VoiceOver und „Größerer Text“ leichter bedienen.
 
-• Videos: Gesichter, Text, Codes und deine Wörter aus „Immer verdecken“ werden gefunden, in Bewegung verfolgt und verdeckt – mit Weichzeichnung, einem vollen Kasten oder einem Emoji für jedes Gesicht.
-• Verdecke beliebige Objekte in einem Video, indem du einen Rahmen darum ziehst; PicStrip verfolgt sie vorwärts und rückwärts.
-• Kürze jede Abdeckung auf einer Zeitleiste wie im Videoeditor, und überpiepe Gesagtes oder schalte es stumm.
-• Eine Kamera für Fotos, Videos und Dokumente. Nimm in bis zu 4K mit HDR auf – mit den Bedienelementen, die du aus der Kamera-App kennst; im Fotomodus umrandet ein Live-Sucher, was geschwärzt würde.
-• Wähle Fotos und Videos zusammen aus: Ein einzelnes wird im Editor geöffnet, mehrere werden auf einmal bereinigt.
-• Teile Videos aus jeder App mit PicStrip, um ihre Metadaten zu entfernen, oder öffne sie, um Gesichter und Text zu verdecken. Eine neue Kurzbefehle-Aktion entfernt Metadaten aus Videos.
-• Mit einem Emoji verdecken, unter iOS 27 zum Verdecken auf ein Objekt tippen und die letzten Ziffern einer Karten- oder Telefonnummer sichtbar lassen.
-• „Immer verdecken“: dein Name, ein Kennzeichen oder deine Straße – verdeckt, wo immer PicStrip sie liest.
-• Dokumente scannen, nur Screenshots auswählen, die Live-Photo-Bewegung behalten und vorher und nachher vergleichen.
-• Voreinstellungen zum Teilen, sichtbare Dateigröße und eine Übersicht darüber, was entfernt wurde.
-• Schnellere Exporte und Stapelverarbeitung, ein flüssigerer Videoeditor und eine Kamera, die Akku spart, solange du sie ruhig hältst.
+• VoiceOver: Jedes Bedienelement ist beschriftet, und alles, was du sonst ziehen würdest, geht auch anders: Streiche nach oben oder unten, um eine Abdeckung zu verschieben oder ihre Größe zu ändern, festzulegen, wann eine Abdeckung im Video beginnt und endet, oder dich durch die Zeitleiste zu bewegen.
+• PicStrip sagt dir, wenn ein Scan abgeschlossen ist und wie viele Bereiche verdeckt wurden, und die Kamera sagt dir, welche sensiblen Daten im Bild sind.
+• Streiche auf dem Sucher nach oben oder unten, um zu zoomen, und mach das Bild mit seinen Aktionen heller oder dunkler. Nimm ein Foto auf oder starte und stoppe ein Video, indem du mit zwei Fingern doppelt tippst.
+• Im Videoeditor ist jede Spur eine Überschrift, sodass du direkt zu Gesichtern, Text, Objekten oder Audio springen kannst.
+• Größerer Text: In den größten Schriftgrößen wird Text umbrochen statt abgeschnitten, Bereiche lassen sich scrollen, und das Foto bleibt sichtbar. Halte den Finger auf eine Taste der Kamera, um sie vergrößert zu sehen.
 
 Die automatische Erkennung kann Details übersehen. Prüfe vor dem Teilen bitte das ganze Foto oder Video.
