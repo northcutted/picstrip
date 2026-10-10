@@ -32,7 +32,7 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | Upload adapter | <code>transporter</code> |
 | Store release policy | <code>AFTER_APPROVAL</code>; phased release: <code>true</code> |
 | Automatic TestFlight groups | None configured |
-| Replacement override | <code>1.7.0</code> replaces recorded build <code>105.1</code> |
+| Replacement override | None |
 | Store locales | 17: <code>en-US</code>, <code>ar-SA</code>, <code>de-DE</code>, <code>es-ES</code>, <code>es-MX</code>, <code>fr-FR</code>, <code>it</code>, <code>ja</code>, <code>ko</code>, <code>nl-NL</code>, <code>pl</code>, <code>pt-BR</code>, <code>pt-PT</code>, <code>sv</code>, <code>tr</code>, <code>zh-Hans</code>, <code>zh-Hant</code> |
 | App translations | 16 in addition to the source language |
 | Screenshot devices | iPhone 18 Pro Max, iPad Pro 13-inch (M5) |
