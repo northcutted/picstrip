@@ -89,9 +89,12 @@ struct CameraModePicker: View {
     /// its view has faded out — the next mode's session, or the document
     /// scanner, is starting on the same camera.
     var leaving: () -> Void = {}
+    /// Across, below the picture; down, in the column beside it.
+    var axis: Axis = .horizontal
 
     var body: some View {
-        HStack(spacing: 2) {
+        let stack = axis == .horizontal ? AnyLayout(HStackLayout(spacing: 2)) : AnyLayout(VStackLayout(spacing: 2))
+        stack {
             ForEach(CameraView.Mode.available) { option in
                 let isSelected = option == mode
                 Button {
@@ -103,6 +106,7 @@ struct CameraModePicker: View {
                         .foregroundStyle(isSelected ? .yellow : .primary)
                         .padding(.horizontal, 16)
                         .frame(minHeight: 36)
+                        .frame(maxWidth: axis == .vertical ? .infinity : nil)
                         .contentShape(Capsule())
                 }
                 .buttonStyle(.plain)
@@ -110,8 +114,11 @@ struct CameraModePicker: View {
                 .accessibilityIdentifier("cameraMode-\(option.rawValue)")
             }
         }
+        // Down the column, every mode as wide as the widest.
+        .fixedSize(horizontal: axis == .vertical, vertical: false)
         .padding(3)
-        .glassEffect(in: .capsule)
+        .glassEffect(in: axis == .horizontal ? AnyShape(.capsule) : AnyShape(.rect(cornerRadius: 21)))
+        .cameraNote()
         .sensoryFeedback(.selection, trigger: mode)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Camera mode")
@@ -150,8 +157,8 @@ struct VideoCameraView: View {
                             .disabled(model.state != .running)
                     }
                 }
-            } bottom: {
-                bottomBar
+            } bottom: { layout in
+                bottomBar(layout)
             }
             .disabled(model.state == .starting)
         }
@@ -161,6 +168,8 @@ struct VideoCameraView: View {
             if event.phase == .ended { toggleRecording() }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: recordToggles)
+        // VoiceOver's two-finger double tap starts and stops recording, as in the Camera app.
+        .accessibilityAction(.magicTap) { toggleRecording() }
         .task { await model.start() }
         .onDisappear { model.stop() }
         .onChange(of: model.recording) { _, recording in
@@ -192,6 +201,17 @@ struct VideoCameraView: View {
 
     // MARK: Preview
 
+    /// Focus, zoom and exposure, for the gestures and for VoiceOver alike.
+    private var adjustments: ViewfinderAdjustments {
+        ViewfinderAdjustments(
+            focus: { model.focus(at: $0) },
+            pinch: { model.pinch($0) },
+            endPinch: { model.endPinch() },
+            exposure: { model.adjustExposure(by: $0) },
+            endExposure: { model.endExposureAdjustment() }
+        )
+    }
+
     private var preview: some View {
         GeometryReader { geometry in
             ZStack(alignment: .topLeading) {
@@ -211,15 +231,14 @@ struct VideoCameraView: View {
                         .position(x: min(point.x + 52, geometry.size.width - 20), y: point.y)
                 }
             }
-            .cameraGestures(
-                focus: { model.focus(at: $0) },
-                pinch: { model.pinch($0) },
-                endPinch: { model.endPinch() },
-                exposure: { model.adjustExposure(by: $0) },
-                endExposure: { model.endExposureAdjustment() }
+            .cameraGestures(adjustments)
+            .viewfinderAccessibility(
+                adjustments,
+                zoom: model.zoomLevel,
+                center: CGPoint(x: geometry.size.width / 2, y: geometry.size.height / 2),
+                isFocused: model.focusPoint != nil
             )
         }
-        .accessibilityHidden(true)
     }
 
     /// The picture's shape: the movie's for the stand-in, else the format's —
@@ -258,18 +277,22 @@ struct VideoCameraView: View {
                 .frame(height: 44)
             }
         }
+        .cameraChrome()
     }
 
     /// Below the picture: the mode, and the record button between the
     /// microphone notice and the camera switch.  The mode keeps its place while
-    /// recording, so the picture does not jump.
-    private var bottomBar: some View {
-        VStack(spacing: 12) {
-            CameraModePicker(mode: $mode) { model.stop() }
+    /// recording, so the picture does not jump.  Beside the picture, the same
+    /// controls run down a column.
+    private func bottomBar(_ layout: CanvasLayout) -> some View {
+        let isColumn = layout == .sideBySide
+        let row = isColumn ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout())
+        return VStack(spacing: isColumn ? 20 : 12) {
+            CameraModePicker(mode: $mode, leaving: { model.stop() }, axis: isColumn ? .vertical : .horizontal)
                 .opacity(model.isRecording ? 0 : 1)
                 .disabled(model.isRecording)
                 .accessibilityHidden(model.isRecording)
-            HStack {
+            row {
                 microphoneButton
                     .frame(width: 60)
                 Spacer()
@@ -295,6 +318,7 @@ struct VideoCameraView: View {
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .glassEffect(in: .rect(cornerRadius: 16))
+                .cameraNote()
                 .accessibilityIdentifier("videoCameraStatus")
         }
     }
@@ -311,6 +335,7 @@ struct VideoCameraView: View {
         .buttonBorderShape(.circle)
         .accessibilityLabel("Close camera")
         .accessibilityIdentifier("liveCameraCloseButton")
+        .largeContent()
     }
 
     private var torchToggle: some View {
@@ -326,6 +351,7 @@ struct VideoCameraView: View {
         .foregroundStyle(model.isTorchOn ? .yellow : .primary)
         .disabled(model.state != .running)
         .accessibilityIdentifier("videoTorchToggle")
+        .largeContent()
     }
 
     private var stabilizationToggle: some View {
@@ -345,6 +371,7 @@ struct VideoCameraView: View {
         .accessibilityValue(isOn ? Text("On") : Text("Off"))
         .accessibilityHint("Steadier video when you walk or run, with a slightly narrower view.")
         .accessibilityIdentifier("videoStabilizationToggle")
+        .largeContent()
     }
 
     private var hdrToggle: some View {
@@ -364,6 +391,7 @@ struct VideoCameraView: View {
         .accessibilityLabel("HDR video")
         .accessibilityValue(isOn ? Text("On") : Text("Off"))
         .accessibilityIdentifier("videoHDRToggle")
+        .largeContent()
     }
 
     /// "4K · 30": tap the resolution or the frame rate to change it, as in the Camera app.
@@ -373,12 +401,15 @@ struct VideoCameraView: View {
                 model.toggleResolution()
             } label: {
                 Text(verbatim: model.setup.quality.resolution.label)
-                    .frame(minWidth: 26)
+                    // The capsule's full height is the target, not just the text.
+                    .frame(minWidth: 26, minHeight: 36)
+                    .contentShape(Rectangle())
             }
             .disabled(!model.canChangeSettings || !model.canChangeResolution)
             .accessibilityLabel("Resolution")
             .accessibilityValue(Text(verbatim: model.setup.quality.resolution.label))
             .accessibilityIdentifier("videoResolutionButton")
+            .largeContent()
             Text(verbatim: "·")
                 .accessibilityHidden(true)
             Button {
@@ -386,12 +417,14 @@ struct VideoCameraView: View {
             } label: {
                 Text(verbatim: "\(model.setup.quality.frameRate)")
                     .monospacedDigit()
-                    .frame(minWidth: 26)
+                    .frame(minWidth: 26, minHeight: 36)
+                    .contentShape(Rectangle())
             }
             .disabled(!model.canChangeSettings || !model.canChangeFrameRate)
             .accessibilityLabel("Frame rate")
             .accessibilityValue(Text("\(model.setup.quality.frameRate) frames per second"))
             .accessibilityIdentifier("videoFrameRateButton")
+            .largeContent()
         }
         .font(.caption.weight(.heavy))
         .buttonStyle(.plain)
@@ -450,6 +483,8 @@ struct VideoCameraView: View {
             .buttonBorderShape(.circle)
             .accessibilityLabel("Recording without sound")
             .accessibilityIdentifier("videoMicrophoneOffButton")
+            .largeContent()
+            .cameraChrome()
         } else {
             Color.clear.frame(width: 44, height: 44)
         }

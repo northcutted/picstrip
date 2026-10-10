@@ -1,15 +1,9 @@
-O PicStrip 1.7 é uma grande atualização: agora limpa vídeos, e a câmara mostra o que iria ocultar antes de fotografar.
+O PicStrip 1.8 está mais fácil de utilizar com o VoiceOver e o Texto maior.
 
-• Vídeos: rostos, texto, códigos e as suas palavras de Ocultar sempre são encontrados, seguidos enquanto se movem e ocultados — com desfoque, uma caixa sólida ou um emoji para cada rosto.
-• Oculte qualquer objeto num vídeo desenhando à sua volta; o PicStrip segue-o para a frente e para trás.
-• Ajuste cada ocultação numa linha temporal de editor de vídeo e ponha um bipe ou silencie o que foi dito.
-• Uma câmara para fotografias, vídeos e documentos. Grave até 4K com HDR, com os controlos que já conhece da app Câmara; no modo Foto, um visor ao vivo contorna o que iria ocultar.
-• Escolha fotografias e vídeos em conjunto: um item abre o editor, vários são limpos de uma vez.
-• Partilhe vídeos de qualquer app com o PicStrip para remover os metadados, ou abra-os para ocultar rostos e texto. Uma nova ação na app Atalhos remove os metadados dos vídeos.
-• Oculte com um emoji, toque num objeto para o ocultar no iOS 27 e deixe visíveis os últimos dígitos de um cartão ou número de telefone.
-• Ocultar sempre: o seu nome, uma matrícula ou a sua rua, ocultados onde quer que o PicStrip os leia.
-• Digitalize documentos, escolha apenas as suas capturas de ecrã, mantenha o movimento de uma Live Photo e compare o antes e o depois.
-• Predefinições de partilha, tamanho do ficheiro visível e um resumo do que foi removido.
-• Exportações e lotes mais rápidos, um editor de vídeo mais fluido e uma câmara que poupa bateria enquanto a mantém imóvel.
+• VoiceOver: todos os controlos têm etiqueta, e tudo o que arrastaria pode ser feito de outra forma: passe o dedo para cima ou para baixo para mover ou redimensionar uma ocultação, definir quando começa e termina num vídeo ou avançar na linha cronológica.
+• O PicStrip avisa quando a análise termina e quantas áreas foram ocultadas, e a câmara indica que dados sensíveis estão no enquadramento.
+• No visor, passe o dedo para cima ou para baixo para fazer zoom e use as respetivas ações para tornar a imagem mais clara ou mais escura. Tire uma fotografia, ou inicie e pare um vídeo, tocando duas vezes com dois dedos.
+• No editor de vídeo, cada faixa é um cabeçalho, para poder ir diretamente para rostos, texto, objetos ou áudio.
+• Texto maior: nos tamanhos maiores, o texto passa para a linha seguinte em vez de ser cortado, os painéis deslocam-se e a fotografia continua visível. Mantenha o dedo num botão da câmara para o ver maior.
 
 A deteção automática pode deixar passar detalhes. Reveja a fotografia ou o vídeo completo antes de partilhar.

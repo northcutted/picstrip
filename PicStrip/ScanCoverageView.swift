@@ -33,7 +33,7 @@ struct ScanCoverageView: View {
                     .font(.subheadline)
             }
 
-            DisclosureGroup("Checks performed") {
+            DisclosureGroup {
                 ForEach(ScanCoverage.Check.allCases, id: \.self) { check in
                     HStack(alignment: .top) {
                         Text(check.title)
@@ -45,6 +45,11 @@ struct ScanCoverageView: View {
                     .font(.caption)
                     .accessibilityElement(children: .combine)
                 }
+            } label: {
+                // A full-height row, not just the line of text, to open it.
+                Text("Checks performed")
+                    .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
+                    .contentShape(Rectangle())
             }
             .font(.subheadline)
 

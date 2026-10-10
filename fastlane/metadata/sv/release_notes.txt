@@ -1,15 +1,9 @@
-PicStrip 1.7 är en stor uppdatering: nu rensar appen videor, och kameran visar vad den skulle maskera innan du tar bilden.
+PicStrip 1.8 är enklare att använda med VoiceOver och Större text.
 
-• Videor: ansikten, text, koder och dina Maskera alltid-ord hittas, följs när de rör sig och maskeras – med oskärpa, en fylld ruta eller en emoji för varje ansikte.
-• Maskera vilket objekt som helst i en video genom att rita runt det; PicStrip följer det framåt och bakåt.
-• Korta varje maskering på en tidslinje som i en videoredigerare, och lägg pip över eller tysta det som sägs.
-• En enda kamera för bilder, video och dokument. Spela in i upp till 4K med HDR, med reglagen du känner igen från appen Kamera; i läget Bild ringar en livesökare in det som skulle maskeras.
-• Välj bilder och videor tillsammans: en öppnas i redigeraren, flera rensas på en gång.
-• Dela videor med PicStrip från valfri app för att ta bort deras metadata, eller öppna dem för att maskera ansikten och text. En ny åtgärd i Genvägar tar bort metadata från videor.
-• Maskera med en emoji, tryck på ett objekt för att maskera det i iOS 27 och låt de sista siffrorna i ett kort- eller telefonnummer synas.
-• Maskera alltid: ditt namn, en registreringsskylt eller din gata maskeras var PicStrip än läser dem.
-• Skanna dokument, välj bara bland dina skärmbilder, behåll rörelsen i Live Photo-bilder och jämför före och efter.
-• Delningsförinställningar, synlig filstorlek och en sammanfattning av vad som togs bort.
-• Snabbare export och batchbearbetning, en smidigare videoredigerare och en kamera som sparar batteri medan du håller den stilla.
+• VoiceOver: alla reglage har etiketter, och allt du annars skulle dra går att göra på ett annat sätt: svep uppåt eller nedåt för att flytta en maskering eller ändra dess storlek, ställa in när en maskering i en video börjar och slutar eller stega längs tidslinjen.
+• PicStrip berättar när sökningen är klar och hur många områden som maskerades, och kameran berättar vilka känsliga uppgifter som finns i bild.
+• Svep uppåt eller nedåt på sökaren för att zooma och använd dess åtgärder för att göra bilden ljusare eller mörkare. Ta en bild, eller starta och stoppa en video, genom att dubbeltrycka med två fingrar.
+• I videoredigeraren är varje spår en rubrik, så att du kan hoppa direkt till ansikten, text, objekt eller ljud.
+• Större text: i de största storlekarna radbryts texten i stället för att klippas av, panelerna går att rulla och bilden syns hela tiden. Håll fingret på en kameraknapp för att se den större.
 
 Automatisk upptäckt kan missa detaljer. Granska hela bilden eller videon innan du delar.

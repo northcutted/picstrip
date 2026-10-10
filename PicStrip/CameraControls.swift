@@ -31,8 +31,10 @@ struct CameraZoomButtons: View {
                 .accessibilityLabel("Zoom")
                 .accessibilityValue(Text(verbatim: Self.label(level, suffix: true)))
                 .accessibilityAddTraits(isCurrent ? .isSelected : [])
+                .largeContent()
             }
         }
+        .cameraChrome()
     }
 
     /// "1×", "1.6×"; ".5" and "2" on the lenses not in use, as in the Camera app.
@@ -81,36 +83,91 @@ struct CameraFlipButton: View {
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
         .accessibilityLabel(position == .back ? Text("Switch to the front camera") : Text("Switch to the back camera"))
+        .largeContent()
+        .cameraChrome()
+    }
+}
+
+// MARK: - Camera chrome at large text sizes
+
+extension View {
+    /// The controls over and under the picture keep their size, as in the
+    /// Camera app, so the picture stays in view.  At accessibility text sizes,
+    /// touching and holding one shows it large instead (`largeContent()`).
+    func cameraChrome() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.large)
+    }
+
+    /// What the camera says on the picture grows, but only so far: past it,
+    /// the words would cover what they describe.
+    func cameraNote() -> some View {
+        dynamicTypeSize(...DynamicTypeSize.accessibility1)
+    }
+
+    /// Shown large by a touch and hold at accessibility text sizes — for
+    /// controls that keep their size.
+    func largeContent() -> some View {
+        accessibilityShowsLargeContentViewer()
     }
 }
 
 // MARK: - Camera gestures
 
+/// What the viewfinder's gestures do to the camera, for both of them: a
+/// finger's (`cameraGestures`) and VoiceOver's (`viewfinderAccessibility`).
+struct ViewfinderAdjustments {
+    /// Focus at a point in the viewfinder's coordinates.
+    let focus: (CGPoint) -> Void
+    /// Zoom by a factor from where the pinch started, then end it.
+    let pinch: (CGFloat) -> Void
+    let endPinch: () -> Void
+    /// Exposure by stops from where the drag started, then end it.
+    let exposure: (Float) -> Void
+    let endExposure: () -> Void
+}
+
 extension View {
     /// The Camera app's gestures on a viewfinder: tap to focus, pinch to zoom,
     /// and — after focusing — drag up or down for exposure.
-    func cameraGestures(
-        focus: @escaping (CGPoint) -> Void,
-        pinch: @escaping (CGFloat) -> Void,
-        endPinch: @escaping () -> Void,
-        exposure: @escaping (Float) -> Void,
-        endExposure: @escaping () -> Void
-    ) -> some View {
+    func cameraGestures(_ adjust: ViewfinderAdjustments) -> some View {
         contentShape(Rectangle())
-            .onTapGesture { location in focus(location) }
+            .onTapGesture { location in adjust.focus(location) }
             .gesture(
                 MagnifyGesture()
-                    .onChanged { pinch($0.magnification) }
-                    .onEnded { _ in endPinch() }
+                    .onChanged { adjust.pinch($0.magnification) }
+                    .onEnded { _ in adjust.endPinch() }
             )
             .simultaneousGesture(
                 DragGesture(minimumDistance: 12)
                     .onChanged { drag in
                         guard abs(drag.translation.height) > abs(drag.translation.width) else { return }
-                        exposure(Float(-drag.translation.height / 120))
+                        adjust.exposure(Float(-drag.translation.height / 120))
                     }
-                    .onEnded { _ in endExposure() }
+                    .onEnded { _ in adjust.endExposure() }
             )
+    }
+
+    /// The viewfinder as VoiceOver and Switch Control see it, with what the
+    /// gestures above do for a finger: swipe up or down to zoom, and Brighter
+    /// or Darker from the actions — focusing on the middle first when nothing
+    /// is focused, as the exposure drag needs a focus point.
+    func viewfinderAccessibility(_ adjust: ViewfinderAdjustments, zoom: CGFloat, center: CGPoint, isFocused: Bool) -> some View {
+        let changeExposure = { (stops: Float) in
+            if !isFocused { adjust.focus(center) }
+            adjust.exposure(stops)
+            adjust.endExposure()
+        }
+        return accessibilityElement(children: .ignore)
+            .accessibilityLabel("Viewfinder")
+            .accessibilityValue(Text("Zoom \(CameraZoomButtons.label(zoom, suffix: true))"))
+            .accessibilityHint("Swipe up or down to zoom.")
+            .accessibilityAdjustableAction { direction in
+                adjust.pinch(direction == .increment ? 1.25 : 0.8)
+                adjust.endPinch()
+            }
+            .accessibilityAction(named: Text("Brighter")) { changeExposure(0.5) }
+            .accessibilityAction(named: Text("Darker")) { changeExposure(-0.5) }
+            .accessibilityIdentifier("viewfinder")
     }
 }
 
@@ -120,6 +177,13 @@ extension View {
 /// picture, and the picture fitted between them — so no control sits half on
 /// the picture and half on the black.  `inPicture` is laid over the picture
 /// itself, inside its edges: what is in view, and the lens buttons.
+///
+/// On a display wide enough for it (`CanvasLayout.sideBySide`: iPhone Duo's
+/// inner display, unfolded) the bottom controls stand in a column beside the
+/// picture, as in the Camera app held sideways, and the picture gets the
+/// height the bar below would have taken.  `bottom` is told which, to lay
+/// itself out across or down.  The same views either way, so folding or
+/// unfolding the phone does not restart the viewfinder.
 struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: View>: View {
     /// The picture's width over its height, for a viewfinder of the given size.
     let aspect: (CGSize) -> CGFloat?
@@ -128,10 +192,14 @@ struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: V
     @ViewBuilder let top: () -> Top
     @ViewBuilder let viewfinder: () -> Viewfinder
     @ViewBuilder let inPicture: () -> InPicture
-    @ViewBuilder let bottom: () -> Bottom
+    @ViewBuilder let bottom: (CanvasLayout) -> Bottom
+
+    @State private var size: CGSize = .zero
 
     var body: some View {
-        VStack(spacing: 0) {
+        let layout = CanvasLayout.resolve(for: size, isEligible: CanvasLayout.isEligibleDevice)
+        let isSideBySide = layout == .sideBySide
+        CameraFrameArrangement(isSideBySide: isSideBySide) {
             top()
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
@@ -150,14 +218,69 @@ struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: V
                         .allowsHitTesting(!controlsHidden)
                 }
             }
-            bottom()
-                .padding(.horizontal, 20)
-                .padding(.top, 12)
+            bottom(layout)
+                .padding(.horizontal, isSideBySide ? 16 : 20)
+                .padding(.top, isSideBySide ? 8 : 12)
                 .padding(.bottom, 8)
                 .opacity(controlsHidden ? 0 : 1)
                 .allowsHitTesting(!controlsHidden)
         }
+        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
         .animation(.easeInOut(duration: 0.2), value: controlsHidden)
+    }
+}
+
+/// `CameraFrameLayout`'s three parts — the top bar, the picture, the bottom
+/// controls — stacked down the screen, or with the bottom controls in a column
+/// beside the other two.  The top and bottom take the room they need; the
+/// picture takes the rest.
+private struct CameraFrameArrangement: Layout {
+    let isSideBySide: Bool
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        proposal.replacingUnspecifiedDimensions()
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 3 else { return }
+        let (top, picture, bottom) = (subviews[0], subviews[1], subviews[2])
+        // The bars are centred across the space they are given, as a VStack centres them.
+        if isSideBySide {
+            let columnWidth = min(bottom.sizeThatFits(ProposedViewSize(width: nil, height: bounds.height)).width, bounds.width / 2)
+            let mainWidth = bounds.width - columnWidth
+            let topHeight = top.sizeThatFits(ProposedViewSize(width: mainWidth, height: nil)).height
+            top.place(
+                at: CGPoint(x: bounds.minX + mainWidth / 2, y: bounds.minY),
+                anchor: .top,
+                proposal: ProposedViewSize(width: mainWidth, height: topHeight)
+            )
+            picture.place(
+                at: CGPoint(x: bounds.minX, y: bounds.minY + topHeight),
+                proposal: ProposedViewSize(width: mainWidth, height: max(0, bounds.height - topHeight))
+            )
+            bottom.place(
+                at: CGPoint(x: bounds.maxX - columnWidth / 2, y: bounds.midY),
+                anchor: .center,
+                proposal: ProposedViewSize(width: columnWidth, height: bounds.height)
+            )
+        } else {
+            let topHeight = top.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)).height
+            let bottomHeight = bottom.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)).height
+            top.place(
+                at: CGPoint(x: bounds.midX, y: bounds.minY),
+                anchor: .top,
+                proposal: ProposedViewSize(width: bounds.width, height: topHeight)
+            )
+            picture.place(
+                at: CGPoint(x: bounds.minX, y: bounds.minY + topHeight),
+                proposal: ProposedViewSize(width: bounds.width, height: max(0, bounds.height - topHeight - bottomHeight))
+            )
+            bottom.place(
+                at: CGPoint(x: bounds.midX, y: bounds.maxY),
+                anchor: .bottom,
+                proposal: ProposedViewSize(width: bounds.width, height: bottomHeight)
+            )
+        }
     }
 }
 

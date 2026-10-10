@@ -1,15 +1,9 @@
-PicStrip 1.7 is een grote update: de app schoont nu video’s op, en de camera laat zien wat hij zou afdekken voordat je fotografeert.
+PicStrip 1.8 is makkelijker te gebruiken met VoiceOver en Grotere tekst.
 
-• Video’s: gezichten, tekst, codes en je woorden voor Altijd afdekken worden gevonden, gevolgd terwijl ze bewegen en afgedekt — met een vervaging, een effen vlak of een emoji per gezicht.
-• Dek elk object in een video af door er een kader omheen te trekken; PicStrip volgt het vooruit en achteruit.
-• Kort elke afdekking in op een tijdbalk zoals in een video-editor, en zet een piep over wat er gezegd is of demp het.
-• Eén camera voor foto’s, video en documenten. Neem op tot 4K met HDR, met de bediening die je kent van de Camera-app; in de fotomodus omlijnt een livezoeker wat hij zou afdekken.
-• Kies foto’s en video’s samen: één opent de editor, meerdere worden in één keer opgeschoond.
-• Deel video’s vanuit elke app met PicStrip om hun metadata te verwijderen, of open ze om gezichten en tekst af te dekken. Met Opdrachten verwijder je nu ook metadata uit video’s.
-• Dek af met een emoji, tik op iOS 27 op een object om het af te dekken, en laat de laatste cijfers van een kaart- of telefoonnummer zichtbaar.
-• Altijd afdekken: je naam, een kenteken of je straat, afgedekt overal waar PicStrip ze leest.
-• Scan documenten, kies alleen je schermafbeeldingen, behoud de beweging van een Live Photo en vergelijk voor en na.
-• Deelvoorinstellingen, een zichtbare bestandsgrootte en een overzicht van wat er is verwijderd.
-• Snellere exports en batches, een soepelere video-editor en een camera die batterij spaart als je hem stilhoudt.
+• VoiceOver: elke regelaar heeft een label, en alles wat je zou slepen kan ook anders: veeg omhoog of omlaag om een afdekking te verplaatsen of van grootte te veranderen, in te stellen wanneer een afdekking in een video begint en eindigt, of door de tijdbalk te gaan.
+• PicStrip laat weten wanneer een scan klaar is en hoeveel gebieden zijn afgedekt, en de camera vertelt welke gevoelige gegevens in beeld zijn.
+• Veeg op de zoeker omhoog of omlaag om te zoomen, en maak het beeld met de acties lichter of donkerder. Maak een foto, of start en stop een video, door met twee vingers dubbel te tikken.
+• In de video-editor is elk spoor een kop, zodat je direct naar gezichten, tekst, objecten of audio springt.
+• Grotere tekst: bij de grootste formaten loopt tekst door op de volgende regel in plaats van te worden afgekapt, kun je panelen scrollen en blijft de foto in beeld. Houd een cameraknop ingedrukt om hem groter te zien.
 
 Automatische detectie kan details missen. Controleer de hele foto of video voordat je deelt.

@@ -15,6 +15,9 @@ struct CategoryDetailPanel: View {
     @Binding var stripConfig: StripConfig
     let onDismiss: () -> Void
 
+    @AccessibilityFocusState private var isHeaderFocused: Bool
+    @Environment(\.accessibilityVoiceOverEnabled) private var isVoiceOverRunning
+
     private var color: Color { metadataIconColor(for: category) }
     private var supportsPreservation: Bool { ImageProcessor.canPreserveMetadata(category: category) }
 
@@ -47,6 +50,11 @@ struct CategoryDetailPanel: View {
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
+                // The panel opens over the photo, away from the badge that opened
+                // it: VoiceOver starts here rather than leaving the user to look.
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isHeader)
+                .accessibilityFocused($isHeaderFocused)
 
                 Spacer()
 
@@ -119,6 +127,17 @@ struct CategoryDetailPanel: View {
         // Floats over the photo, which is exactly the layer Liquid Glass is for.
         // The system draws its own shadow and handles Reduce Transparency.
         .glassEffect(.regular, in: .rect(cornerRadius: 20))
+        .onAppear(perform: focusHeader)
+        .onChange(of: category) { _, _ in focusHeader() }
+    }
+
+    /// After the slide-in has started, so VoiceOver finds the header on screen.
+    private func focusHeader() {
+        guard isVoiceOverRunning else { return }
+        Task {
+            try? await Task.sleep(for: .milliseconds(350))
+            isHeaderFocused = true
+        }
     }
 
     // MARK: - Field row
@@ -300,9 +319,15 @@ struct CategoryDetailPanel: View {
                     topTrailingRadius: side == .right ? 10 : 0
                 )
             )
+            // 44 pt to touch, the segment's own height to look at.
+            .padding(.vertical, 5)
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        // The extra 5 pt each way is touched, not drawn: taken back outside.
+        .padding(.vertical, -5)
         .accessibilityLabel(label.accessibilityLabel)
+        .accessibilityAddTraits(active ? .isSelected : [])
     }
 
     // MARK: - Bulk helpers

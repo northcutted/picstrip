@@ -1,15 +1,9 @@
-PicStrip 1.7 büyük bir güncelleme: Artık videoları temizliyor ve kamerası, siz çekmeden önce neleri karartacağını gösteriyor.
+PicStrip 1.8, VoiceOver ve Daha Büyük Metin ile daha kolay kullanılıyor.
 
-• Videolar: Yüzler, metinler, kodlar ve Her zaman karart sözcükleriniz bulunur, hareket ettikçe takip edilir ve karartılır — her yüz için bulanıklık, düz bir kutu veya bir emoji ile.
-• Videodaki herhangi bir nesnenin çevresini çizerek onu karartın; PicStrip onu ileri ve geri takip eder.
-• Video düzenleyici tarzı bir zaman çizelgesinde her karartmayı kırpın, söylenenlere bip ekleyin veya sessize alın.
-• Fotoğraf, video ve belgeler için tek bir kamera. Kamera uygulamasından tanıdığınız denetimlerle 4K’ya kadar HDR video çekin; Fotoğraf modunda canlı vizör, neleri karartacağını çerçeveler.
-• Fotoğrafları ve videoları birlikte seçin: Tek bir öğe düzenleyicide açılır, birden fazlası aynı anda temizlenir.
-• Herhangi bir uygulamadan videoları PicStrip ile paylaşarak meta verilerini kaldırın ya da yüzleri ve metinleri karartmak için PicStrip’te açın. Yeni bir Kestirmeler eylemi, videolardaki meta verileri kaldırır.
-• Emoji ile karartın, iOS 27’de bir nesneye dokunarak onu karartın ve kart ya da telefon numaralarının son hanelerini görünür bırakın.
-• Her zaman karart: Adınız, bir plaka veya sokağınız, PicStrip nerede okursa okusun karartılır.
-• Belgeleri tarayın, yalnızca ekran görüntülerinizi seçin, Live Photo hareketini koruyun ve öncesiyle sonrasını karşılaştırın.
-• Paylaşım ön ayarları, görünür dosya boyutu ve nelerin kaldırıldığına dair bir özet.
-• Daha hızlı dışa aktarma ve toplu işlemler, daha akıcı bir video düzenleyici ve sabit tuttuğunuzda pil tasarrufu yapan bir kamera.
+• VoiceOver: Her denetimin bir etiketi var ve sürükleyerek yaptığınız her şeyin başka bir yolu da var: Bir karartmayı taşımak veya yeniden boyutlandırmak, bir videoda karartmanın ne zaman başlayıp bittiğini ayarlamak ya da zaman çizelgesinde ilerlemek için yukarı veya aşağı kaydırın.
+• PicStrip taramanın ne zaman bittiğini ve kaç bölgeyi kararttığını söyler; kamera da kadrajda hangi hassas bilgilerin olduğunu bildirir.
+• Vizörde yakınlaştırmak için yukarı veya aşağı kaydırın, görüntüyü daha aydınlık veya daha karanlık yapmak için eylemlerini kullanın. İki parmakla çift dokunarak fotoğraf çekin ya da video kaydını başlatıp durdurun.
+• Video düzenleyicide her şerit bir başlıktır; böylece doğrudan yüzlere, metinlere, nesnelere veya sese geçebilirsiniz.
+• Daha Büyük Metin: En büyük boyutlarda metin kesilmek yerine alt satıra geçer, paneller kaydırılabilir ve fotoğraf görünür kalır. Büyük hâlini görmek için bir kamera düğmesine dokunup basılı tutun.
 
 Otomatik algılama ayrıntıları kaçırabilir. Paylaşmadan önce fotoğrafın veya videonun tamamını inceleyin.

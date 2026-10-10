@@ -49,8 +49,8 @@ struct LiveCameraView: View {
                 viewfinder
             } inPicture: {
                 inPicture
-            } bottom: {
-                bottomBar
+            } bottom: { layout in
+                bottomBar(layout)
             }
         }
         .statusBarHidden()
@@ -59,6 +59,8 @@ struct LiveCameraView: View {
             if event.phase == .ended { takePhoto() }
         }
         .sensoryFeedback(.impact(weight: .medium), trigger: shutterCount)
+        // VoiceOver's two-finger double tap takes the photo, as in the Camera app.
+        .accessibilityAction(.magicTap) { takePhoto() }
         .task {
             await model.start()
             if model.state == .unavailable { onFinish(.unavailable) }
@@ -76,6 +78,17 @@ struct LiveCameraView: View {
     }
 
     // MARK: Viewfinder
+
+    /// Focus, zoom and exposure, for the gestures and for VoiceOver alike.
+    private var adjustments: ViewfinderAdjustments {
+        ViewfinderAdjustments(
+            focus: { model.focus(at: $0) },
+            pinch: { model.pinch($0) },
+            endPinch: { model.endPinch() },
+            exposure: { model.adjustExposure(by: $0) },
+            endExposure: { model.endExposureAdjustment() }
+        )
+    }
 
     private var viewfinder: some View {
         GeometryReader { geo in
@@ -123,15 +136,14 @@ struct LiveCameraView: View {
             }
             // Vision/video rectangles use pixel coordinates, not reading order.
             .environment(\.layoutDirection, .leftToRight)
-            .cameraGestures(
-                focus: { model.focus(at: $0) },
-                pinch: { model.pinch($0) },
-                endPinch: { model.endPinch() },
-                exposure: { model.adjustExposure(by: $0) },
-                endExposure: { model.endExposureAdjustment() }
+            .cameraGestures(adjustments)
+            .viewfinderAccessibility(
+                adjustments,
+                zoom: model.zoomLevel,
+                center: CGPoint(x: geo.size.width / 2, y: geo.size.height / 2),
+                isFocused: model.focusPoint != nil
             )
         }
-        .accessibilityHidden(true)
     }
 
     /// The frames' shape once they arrive; a phone camera's 4:3 until then.
@@ -155,6 +167,7 @@ struct LiveCameraView: View {
             }
             .frame(height: 44)
         }
+        .cameraChrome()
     }
 
     /// On the picture, inside its edges: the guide at the top; what is in
@@ -168,6 +181,7 @@ struct LiveCameraView: View {
                     .padding(.horizontal, 12)
                     .padding(.vertical, 8)
                     .glassEffect(in: .rect(cornerRadius: 16))
+                    .cameraNote()
                     .transition(.opacity)
                     .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { controlFrames[0] = $0 }
             }
@@ -198,14 +212,17 @@ struct LiveCameraView: View {
     }
 
     /// Below the picture: the mode, and the shutter with the camera switch.
-    private var bottomBar: some View {
-        VStack(spacing: 12) {
+    /// Beside the picture, the same controls run down a column.
+    private func bottomBar(_ layout: CanvasLayout) -> some View {
+        let isColumn = layout == .sideBySide
+        let row = isColumn ? AnyLayout(VStackLayout(spacing: 16)) : AnyLayout(HStackLayout())
+        return VStack(spacing: isColumn ? 20 : 12) {
             if let mode {
-                CameraModePicker(mode: mode) { model.stop() }
+                CameraModePicker(mode: mode, leaving: { model.stop() }, axis: isColumn ? .vertical : .horizontal)
                     .opacity(model.isCapturing ? 0 : 1)
                     .allowsHitTesting(!model.isCapturing)
             }
-            HStack {
+            row {
                 Color.clear.frame(width: 60, height: 44)
                 Spacer()
                 shutterButton
@@ -236,6 +253,7 @@ struct LiveCameraView: View {
         .buttonBorderShape(.circle)
         .accessibilityLabel("Close camera")
         .accessibilityIdentifier("liveCameraCloseButton")
+        .largeContent()
     }
 
     private var torchToggle: some View {
@@ -251,6 +269,7 @@ struct LiveCameraView: View {
         .foregroundStyle(model.isTorchOn ? .yellow : .primary)
         .disabled(model.state != .running)
         .accessibilityIdentifier("liveCameraTorchToggle")
+        .largeContent()
     }
 
     private var previewToggle: some View {
@@ -264,6 +283,7 @@ struct LiveCameraView: View {
         .buttonStyle(.glass)
         .buttonBorderShape(.circle)
         .accessibilityIdentifier("liveCameraPreviewToggle")
+        .largeContent()
     }
 
     private var shutterButton: some View {
@@ -333,6 +353,7 @@ private struct LiveStatusView: View {
             .accessibilityAddTraits(.updatesFrequently)
             .accessibilityIdentifier("liveCameraStatus")
             .opacity(state == .starting ? 0 : 1)
+            .cameraNote()
     }
 
     @ViewBuilder

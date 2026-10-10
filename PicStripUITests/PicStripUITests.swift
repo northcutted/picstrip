@@ -1,4 +1,3 @@
-import AVFoundation
 import Synchronization
 import UIKit
 import XCTest
@@ -21,6 +20,9 @@ import XCTest
 ///   04_Redaction — a photo's findings covered with blur, pixelate and an emoji
 ///   05_ReviewAndShare — the cleaned photo, every check finished, ready to share
 ///   06_Batch — photos and videos cleaned together
+///
+/// `testAppPreviewFlow` plays the App Store preview video through once for
+/// `scripts/make_app_previews.py`, which records it; it is skipped otherwise.
 @MainActor
 final class PicStripUITests: XCTestCase {
     private nonisolated let recordingIssue = Mutex(false)
@@ -216,6 +218,225 @@ final class PicStripUITests: XCTestCase {
         attachScreen("06_Batch")
     }
 
+    // MARK: - App Preview — one recorded session
+
+    /// Where scripts/make_app_previews.py asks for the preview flow, and where
+    /// the flow writes when each scene starts and ends.
+    private static let previewFolder = URL(fileURLWithPath: "/tmp/picstrip_app_preview")
+
+    /// The App Store preview, played through once while
+    /// scripts/make_app_previews.py records the simulator's screen: the street
+    /// video's faces found, one given an emoji and both followed; a stretch of
+    /// sound bleeped; the viewfinder outlining a visitor's badge; the location
+    /// and camera details in the café photo; and the review before sharing.
+    /// The script cuts the recording at the marks written here and shortens
+    /// the moments the screen stands still, so waits cost the preview little.
+    /// Skipped unless that script asked for it.
+    @MainActor
+    func testAppPreviewFlow() async throws {
+        let request = Self.previewFolder.appendingPathComponent("request.json")
+        guard let data = try? Data(contentsOf: request),
+              let options = try JSONSerialization.jsonObject(with: data) as? [String: String] else {
+            throw XCTSkip("Only scripts/make_app_previews.py runs the App Preview flow.")
+        }
+        let marks = Self.previewFolder.appendingPathComponent("marks.jsonl")
+        try? FileManager.default.removeItem(at: marks)
+        XCTAssertTrue(FileManager.default.createFile(atPath: marks.path, contents: nil))
+
+        let app = XCUIApplication()
+        app.launchArguments += [
+            "-AppleLanguages", "(\(options["language"] ?? "en"))", "-AppleLocale", options["locale"] ?? "en_US",
+            // As in the store screenshots: no note that the simulator shows one frame.
+            "-FASTLANE_SNAPSHOT", "YES"
+        ]
+        try await previewVideo(app)
+        app.terminate()
+        try await previewViewfinder(app)
+        app.terminate()
+        try await previewPhoto(app)
+        previewMark("done")
+    }
+
+    /// Scenes 1 and 2: the street video scanned, a face given 😎 from its clip,
+    /// both covers followed along the timeline, then a stretch bleeped.
+    private func previewVideo(_ app: XCUIApplication) async throws {
+        app.launchEnvironment = ["PICSTRIP_VIDEO_FIXTURE": try stagedFixture("store_street", "mov")]
+        app.launch()
+        XCTAssertTrue(app.buttons["skipFacesButton"].waitForExistence(timeout: 60), "The video is scanned.")
+        previewMark("video.scan")
+        // The frame being scanned, with what is found outlined (the card shown
+        // before it is hidden from accessibility).
+        XCTAssertTrue(app.descendants(matching: .any)["scanGlimpse"].firstMatch.waitForExistence(timeout: 60),
+                      "The scan shows the frame it is looking at.")
+        previewMark("video.found")
+        let add = app.buttons["addCoverButton"]
+        XCTAssertTrue(add.waitForExistence(timeout: 180), "The video opens in its editor.")
+        previewMark("video.scanned")
+        // Both faces blurred and the flyer's number covered, on the paused frame.
+        let still = app.descendants(matching: .any)["videoPreviewStill"]
+        XCTAssertTrue(still.waitForExistence(timeout: 30), "The covered frame is drawn.")
+        try await Task.sleep(for: .seconds(1.5))
+        previewMark("video.editor")
+        var frame = still.screenshot().pngRepresentation
+
+        // Holding a face's clip offers its covers.  (Clips count from 0.)
+        let face = app.descendants(matching: .any)["clip-face-1"]
+        XCTAssertTrue(face.waitForExistence(timeout: 5), "The second face has a clip.")
+        // (XCTest's own pace between steps is about a second: no pauses needed.)
+        previewMark("video.hold")
+        face.press(forDuration: 0.8)
+        let emoji = app.buttons["emojiCoverButton"].firstMatch
+        XCTAssertTrue(emoji.waitForExistence(timeout: 5), "Holding the clip offers an emoji.")
+        emoji.tap()
+        let sunglasses = app.buttons["emojiChoice-😎"]
+        XCTAssertTrue(sunglasses.waitForExistence(timeout: 5))
+        sunglasses.tap()
+        app.buttons["emojiDoneButton"].tap()
+        previewMark("video.done")
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        // The paused frame is drawn again, with the emoji.
+        frame = try await redrawn(still, from: frame)
+        try await Task.sleep(for: .seconds(1.5))
+        previewMark("video.emoji")
+
+        // Along the timeline: the covers stay on the faces as they move.
+        let track = app.descendants(matching: .any)["coverTimelineTrack"]
+        XCTAssertTrue(track.exists, "The timeline is in view.")
+        previewMark("video.follow0")
+        for (index, place) in [0.1, 0.55, 0.95].enumerated() {
+            track.coordinate(withNormalizedOffset: CGVector(dx: place, dy: 0.5)).tap()
+            frame = try await redrawn(still, from: frame)
+            try await Task.sleep(for: .seconds(1))
+            previewMark("video.follow\(index + 1)")
+        }
+
+        // A stretch of what they say, bleeped from the audio lane's menu (its
+        // first item, whatever the language).
+        previewMark("bleep.start")
+        let audio = app.descendants(matching: .any)["audioLane"]
+        XCTAssertTrue(audio.waitForExistence(timeout: 5), "The video has sound.")
+        let bleep = app.menuItems.firstMatch
+        let start = audio.coordinate(withNormalizedOffset: CGVector(dx: 0.42, dy: 0.5))
+        previewMark("bleep.hold")
+        for _ in 0..<3 where !bleep.exists {
+            start.tap()
+            start.press(forDuration: 0.8, thenDragTo: audio.coordinate(withNormalizedOffset: CGVector(dx: 0.70, dy: 0.5)))
+            _ = bleep.waitForExistence(timeout: 3)
+        }
+        XCTAssertTrue(bleep.exists, "The selected stretch offers Bleep.")
+        previewMark("bleep.menu")
+        try await Task.sleep(for: .seconds(0.5))
+        bleep.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["clip-audio-0"].waitForExistence(timeout: 5))
+        previewMark("bleep.done")
+        try await Task.sleep(for: .seconds(1.5))
+        previewMark("bleep.end")
+    }
+
+    /// Scene 3: Photo mode outlining the visitor's face, the email on their
+    /// badge and its code, then showing them covered.
+    private func previewViewfinder(_ app: XCUIApplication) async throws {
+        app.launchEnvironment = [
+            "PICSTRIP_DISABLE_NAME_DETECTION": "1",
+            "PICSTRIP_LIVE_CAMERA_FIXTURE": try stagedFixture("store_badge", "jpg")
+        ]
+        app.launch()
+        let status = app.descendants(matching: .any)["liveCameraStatus"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
+        previewMark("viewfinder.start")
+        // The guide over the picture fades after five seconds.
+        try await Task.sleep(for: .seconds(5.5))
+        previewMark("viewfinder.found")
+        let toggle = app.descendants(matching: .any)["liveCameraPreviewToggle"].firstMatch
+        XCTAssertTrue(toggle.exists, "The covers can be previewed.")
+        toggle.tap()
+        previewMark("viewfinder.covered")
+        try await Task.sleep(for: .seconds(2.5))
+        previewMark("viewfinder.end")
+    }
+
+    /// Scenes 4 and 5: the café photo's location and camera details, then the
+    /// review — held to compare with the original — before sharing.
+    private func previewPhoto(_ app: XCUIApplication) async throws {
+        app.launchEnvironment = [
+            "PICSTRIP_DISABLE_NAME_DETECTION": "1",
+            "PICSTRIP_FIXTURE": try stagedFixture("store_cafe", "jpg")
+        ]
+        app.launch()
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30), "The scan finishes.")
+        // Off camera: the covers of the store screenshots.
+        edit.tap()
+        XCTAssertTrue(app.descendants(matching: .any)["addRedactionButton"].waitForExistence(timeout: 5))
+        try await cover("detected-phoneNumber-0", with: "pixelate", in: app)
+        try await cover("detected-barcode-0", with: "pixelate", in: app)
+        try await cover("detected-face-0", with: "blur", in: app)
+        try await cover("detected-face-1", with: "emoji", emoji: "😎", in: app)
+        app.descendants(matching: .any)["doneEditingRedactionsButton"].tap()
+        let location = app.buttons["badge_GPS"]
+        XCTAssertTrue(location.waitForExistence(timeout: 10), "The photo's location is found.")
+        try await Task.sleep(for: .seconds(2))
+        previewMark("location.start")
+
+        location.tap()
+        XCTAssertTrue(app.staticTexts["Latitude"].firstMatch.waitForExistence(timeout: 5), "The latitude is listed.")
+        try await Task.sleep(for: .seconds(1.5))
+        let camera = app.buttons["badge_EXIF"]
+        XCTAssertTrue(camera.exists, "The camera and date are found too.")
+        camera.tap()
+        try await Task.sleep(for: .seconds(1.5))
+        camera.tap()
+        previewMark("location.end")
+
+        previewMark("review.start")
+        app.buttons["saveButton"].tap()
+        // Looked for without waitForExistence's one-second steps: the mark says
+        // when the review sheet comes up.
+        let preview = app.descendants(matching: .any)["savePreviewImage"].firstMatch
+        let deadline = Date.now.addingTimeInterval(10)
+        while !preview.exists, Date.now < deadline {
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        XCTAssertTrue(preview.exists, "The review shows the cleaned photo.")
+        previewMark("review.sheet")
+        let share = app.buttons["shareCleanedImageButton"]
+        let ready = expectation(for: NSPredicate(format: "isEnabled == true"), evaluatedWith: share)
+        await fulfillment(of: [ready], timeout: 20)
+        previewMark("review.ready")
+        try await Task.sleep(for: .seconds(1))
+        // Held: the original, for comparison; let go: the copy that is shared.
+        previewMark("review.hold")
+        preview.press(forDuration: 1.6)
+        previewMark("review.released")
+        try await Task.sleep(for: .seconds(1.5))
+        previewMark("review.end")
+    }
+
+    /// Waits until `element` no longer looks like `before` — the simulator
+    /// draws the covered frame as a still, which can take a while on a busy
+    /// machine, and a step taken before it lands would replace it — and
+    /// returns how it looks now.
+    private func redrawn(_ element: XCUIElement, from before: Data, timeout: TimeInterval = 90) async throws -> Data {
+        let deadline = Date.now.addingTimeInterval(timeout)
+        while Date.now < deadline {
+            try await Task.sleep(for: .milliseconds(250))
+            let now = element.screenshot().pngRepresentation
+            if now != before { return now }
+        }
+        XCTFail("\(element.identifier) was not drawn again within \(Int(timeout)) seconds.")
+        return before
+    }
+
+    /// Notes the moment `name` happens on screen for scripts/make_app_previews.py.
+    private func previewMark(_ name: String) {
+        let line = "{\"mark\": \"\(name)\", \"time\": \(Date().timeIntervalSince1970)}\n"
+        let url = Self.previewFolder.appendingPathComponent("marks.jsonl")
+        guard let handle = try? FileHandle(forWritingTo: url) else { return XCTFail("Cannot write \(url.path)") }
+        defer { try? handle.close() }
+        handle.seekToEndOfFile()
+        handle.write(Data(line.utf8))
+    }
+
     /// Selects a region in the editor and gives it `style` (and `emoji`).
     private func cover(_ region: String, with style: String, emoji: String? = nil, in app: XCUIApplication) async throws {
         // The region list is short and scrolls: look up it, then down it.
@@ -250,6 +471,85 @@ final class PicStripUITests: XCTestCase {
         try? FileManager.default.removeItem(atPath: path)
         try FileManager.default.copyItem(at: source, to: URL(fileURLWithPath: path))
         return path
+    }
+
+    // MARK: - Wide displays (iPhone Duo, unfolded)
+
+    /// On a display wide and tall enough — iPhone Duo's inner one, unfolded —
+    /// the redaction drawer stands beside the photo.  Folding or unfolding the
+    /// phone changes the size live; here an iPad, allowed the side layout, is
+    /// turned instead.  The editor is rearranged, not rebuilt: still editing,
+    /// the same region selected, every region kept.
+    @MainActor
+    func testEditorKeepsItsStateWhenItsControlsMoveBesideThePhoto() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Only an iPad simulator is tall enough sideways for the side layout.")
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_SIDE_LAYOUT_ON_ANY_DEVICE"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
+        app.launch()
+
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30), "The scan finishes.")
+        let regions = edit.label
+        edit.tap()
+        let done = app.descendants(matching: .any)["doneEditingRedactionsButton"]
+        XCTAssertTrue(done.waitForExistence(timeout: 5))
+        app.descendants(matching: .any).matching(NSPredicate(format: "identifier BEGINSWITH 'regionRow-'")).firstMatch.tap()
+        let style = app.buttons["editRegionStyleButton"]
+        XCTAssertTrue(style.waitForExistence(timeout: 5), "A region is selected.")
+        let photo = app.descendants(matching: .any)["metadataPhotoPreview"]
+        XCTAssertGreaterThanOrEqual(done.frame.minY, photo.frame.maxY, "Upright, the drawer is below the photo.")
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(done.frame.minX, photo.frame.maxX, "Sideways, the drawer stands beside the photo.")
+        XCTAssertTrue(style.exists, "The region is still selected.")
+        attachScreen("wide_editor")
+
+        XCUIDevice.shared.orientation = .portrait
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(done.frame.minY, photo.frame.maxY, "Upright again, below.")
+        XCTAssertTrue(style.exists, "Still selected.")
+        done.tap()
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
+        XCTAssertEqual(edit.label, regions, "Every region is kept.")
+    }
+
+    /// The viewfinder, on the same wide display: the shutter and the modes in
+    /// a column beside the picture, and the viewfinder still running after
+    /// the size changes back and forth.
+    @MainActor
+    func testViewfinderPutsItsControlsBesideThePictureWhenWide() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Only an iPad simulator is tall enough sideways for the side layout.")
+        XCUIDevice.shared.orientation = .portrait
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_SIDE_LAYOUT_ON_ANY_DEVICE"] = "1"
+        app.launchEnvironment["PICSTRIP_LIVE_CAMERA_FIXTURE"] = try stagedFixture("store_badge", "jpg")
+        app.launch()
+
+        let status = app.descendants(matching: .any)["liveCameraStatus"]
+        XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
+        let shutter = app.buttons["liveCameraShutterButton"]
+        XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright, the shutter is below the picture.")
+
+        XCUIDevice.shared.orientation = .landscapeLeft
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(shutter.frame.minX, status.frame.maxX, "Sideways, the shutter is beside the picture.")
+        XCTAssertTrue(app.buttons["cameraMode-photo"].isSelected, "Still in Photo mode.")
+        attachScreen("wide_viewfinder")
+
+        XCUIDevice.shared.orientation = .portrait
+        try await Task.sleep(for: .seconds(2))
+        XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright again, below.")
+        let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
+        await fulfillment(of: [found], timeout: 20)
+        shutter.tap()
+        XCTAssertTrue(app.buttons["dismissPhotoButton"].waitForExistence(timeout: 15), "The viewfinder still takes the photo.")
     }
 
     /// The simulator has no camera, so by default the home screen must not offer a scan.
@@ -934,6 +1234,11 @@ final class PicStripUITests: XCTestCase {
         let top = max(containerFrame.minY, navigationBottom) + 4
         let bottom = min(containerFrame.maxY, footer.map { $0.frame.minY - 12 } ?? containerFrame.maxY) - 4
         let viewport = CGRect(x: containerFrame.minX + 4, y: top, width: containerFrame.width - 8, height: bottom - top)
+        // Never start near the bottom of the window: scroll views reach under
+        // the home indicator, whose drags are the system's, and on iPad the
+        // trailing corner is the window's resize grabber — a drag there shrinks
+        // the window, and the next launch opens at that size.
+        let lowestStart = min(viewport.maxY, app.frame.maxY - 100)
         XCTAssertGreaterThan(viewport.height, 80, "The scrolling content must have a visible viewport", file: file, line: line)
 
         for _ in 0..<8 {
@@ -945,7 +1250,13 @@ final class PicStripUITests: XCTestCase {
             }
             // Use the enclosing list's edge: iPad sheets do not fill the screen,
             // and dragging through the preview image would pan that image.
-            let origin = app.coordinate(withNormalizedOffset: .zero)
+            // Frames are in screen coordinates; offsets count from the app's own
+            // frame, which on iPad need not start at the screen's origin (a
+            // window lower down the screen).
+            let appFrame = app.frame
+            func point(_ x: CGFloat, _ y: CGFloat) -> XCUICoordinate {
+                app.coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: x - appFrame.minX, dy: y - appFrame.minY))
+            }
             let frame = element.exists ? element.frame : .null
             let span = viewport.height - 40
             // Content moves by `distance` (negative = up) to bring the control in.
@@ -958,17 +1269,17 @@ final class PicStripUITests: XCTestCase {
                 // sheet at large text sizes every time.  (A held drag does not
                 // scroll a plain scroll view that starts under a button, so the
                 // home screen keeps the quick swipe.)
-                let startY = distance < 0 ? viewport.maxY - 20 : viewport.minY + 20
-                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY))
-                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: startY + distance))
+                let startY = distance < 0 ? min(viewport.maxY - 20, lowestStart) : viewport.minY + 20
+                let start = point(viewport.maxX - 8, startY)
+                let end = point(viewport.maxX - 8, startY + distance)
                 start.press(forDuration: 0.05, thenDragTo: end, withVelocity: .default, thenHoldForDuration: 0.3)
             } else {
                 // Far, or not created yet: a quick swipe toward it.
                 let upwards = distance.map { $0 < 0 } ?? true
                 let upper = viewport.minY + viewport.height * 0.25
-                let lower = viewport.maxY - 24
-                let start = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? lower : upper))
-                let end = origin.withOffset(CGVector(dx: viewport.maxX - 8, dy: upwards ? upper : lower))
+                let lower = min(viewport.maxY - 24, lowestStart)
+                let start = point(viewport.maxX - 8, upwards ? lower : upper)
+                let end = point(viewport.maxX - 8, upwards ? upper : lower)
                 start.press(forDuration: 0.05, thenDragTo: end)
             }
         }
@@ -988,105 +1299,6 @@ final class PicStripUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.6)
         let url = URL(fileURLWithPath: folder).appendingPathComponent("\(name).png")
         try? XCUIScreen.main.screenshot().pngRepresentation.write(to: url)
-    }
-
-    /// A movie of 🧑🏽 drifting across a pale frame — a face Vision finds, even
-    /// on the simulator — with an email address on a label in the corner, and a
-    /// tone for its sound.  The picture and the sound are written separately and
-    /// put together: one writer with both inputs stalls waiting on itself.
-    private func writeFaceMovie(to url: URL, seconds: Double = 2.5) async throws {
-        let picture = url.deletingLastPathComponent().appendingPathComponent("picture-\(url.lastPathComponent)")
-        let sound = url.deletingLastPathComponent().appendingPathComponent("sound-\(UUID().uuidString).caf")
-        defer {
-            try? FileManager.default.removeItem(at: picture)
-            try? FileManager.default.removeItem(at: sound)
-        }
-        try await writeSilentFaceMovie(to: picture, seconds: seconds)
-
-        let rate = 44_100.0
-        let format = try XCTUnwrap(AVAudioFormat(standardFormatWithSampleRate: rate, channels: 1))
-        let frames = AVAudioFrameCount(seconds * rate)
-        let tone = try XCTUnwrap(AVAudioPCMBuffer(pcmFormat: format, frameCapacity: frames))
-        tone.frameLength = frames
-        let samples = try XCTUnwrap(tone.floatChannelData?[0])
-        for index in 0..<Int(frames) { samples[index] = 0.3 * Float(sin(2 * Double.pi * 440 * Double(index) / rate)) }
-        let file = try AVAudioFile(forWriting: sound, settings: format.settings)
-        try file.write(from: tone)
-        file.close()
-
-        let composition = AVMutableComposition()
-        let pictureAsset = AVURLAsset(url: picture)
-        let soundAsset = AVURLAsset(url: sound)
-        let videoTracks = try await pictureAsset.loadTracks(withMediaType: .video)
-        let audioTracks = try await soundAsset.loadTracks(withMediaType: .audio)
-        let videoTrack = try XCTUnwrap(videoTracks.first)
-        let audioTrack = try XCTUnwrap(audioTracks.first)
-        let duration = try await pictureAsset.load(.duration)
-        try composition.addMutableTrack(withMediaType: .video, preferredTrackID: kCMPersistentTrackID_Invalid)?
-            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: videoTrack, at: .zero)
-        try composition.addMutableTrack(withMediaType: .audio, preferredTrackID: kCMPersistentTrackID_Invalid)?
-            .insertTimeRange(CMTimeRange(start: .zero, duration: duration), of: audioTrack, at: .zero)
-        try? FileManager.default.removeItem(at: url)
-        let session = try XCTUnwrap(AVAssetExportSession(asset: composition, presetName: AVAssetExportPresetHighestQuality))
-        try await session.export(to: url, as: .mov)
-    }
-
-    private func writeSilentFaceMovie(to url: URL, seconds: Double) async throws {
-        try? FileManager.default.removeItem(at: url)
-        let size = CGSize(width: 640, height: 360)
-        let writer = try AVAssetWriter(outputURL: url, fileType: .mov)
-        let input = AVAssetWriterInput(mediaType: .video, outputSettings: [
-            AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: Int(size.width), AVVideoHeightKey: Int(size.height)
-        ])
-        let adaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: input, sourcePixelBufferAttributes: [
-            kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
-        ])
-        writer.add(input)
-        XCTAssertTrue(writer.startWriting())
-        writer.startSession(atSourceTime: .zero)
-        let fps = 30
-        func waitFor(_ writerInput: AVAssetWriterInput) async throws {
-            while !writerInput.isReadyForMoreMediaData {
-                guard writer.status == .writing else { throw writer.error ?? CocoaError(.fileWriteUnknown) }
-                try await Task.sleep(for: .milliseconds(5))
-            }
-        }
-        let frames = Int(seconds * Double(fps))
-        let font = UIFont.systemFont(ofSize: 220)
-        let face = "🧑🏽" as NSString
-        let glyph = face.size(withAttributes: [.font: font])
-        let format = UIGraphicsImageRendererFormat()
-        format.scale = 1
-        for frame in 0..<frames {
-            try await waitFor(input)
-            let x = size.width * (0.4 + 0.2 * CGFloat(frame) / CGFloat(max(frames - 1, 1)))
-            let image = UIGraphicsImageRenderer(size: size, format: format).image { context in
-                UIColor(red: 0.82, green: 0.86, blue: 0.9, alpha: 1).setFill()
-                context.fill(CGRect(origin: .zero, size: size))
-                face.draw(at: CGPoint(x: x - glyph.width / 2, y: size.height / 2 - glyph.height / 2), withAttributes: [.font: font])
-                UIColor.white.setFill()
-                context.fill(CGRect(x: 6, y: 4, width: 196, height: 30))
-                ("alex@example.com" as NSString).draw(
-                    at: CGPoint(x: 12, y: 8),
-                    withAttributes: [.font: UIFont.systemFont(ofSize: 18, weight: .medium), .foregroundColor: UIColor.black]
-                )
-            }
-            var made: CVPixelBuffer?
-            CVPixelBufferCreate(nil, Int(size.width), Int(size.height), kCVPixelFormatType_32BGRA, nil, &made)
-            let buffer = try XCTUnwrap(made)
-            CVPixelBufferLockBaseAddress(buffer, [])
-            let context = CGContext(
-                data: CVPixelBufferGetBaseAddress(buffer), width: Int(size.width), height: Int(size.height),
-                bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(buffer), space: CGColorSpaceCreateDeviceRGB(),
-                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
-            )
-            context?.draw(try XCTUnwrap(image.cgImage), in: CGRect(origin: .zero, size: size))
-            CVPixelBufferUnlockBaseAddress(buffer, [])
-            XCTAssertTrue(adaptor.append(buffer, withPresentationTime: CMTime(value: CMTimeValue(frame), timescale: CMTimeScale(fps))))
-        }
-        input.markAsFinished()
-        await writer.finishWriting()
-        XCTAssertEqual(writer.status, .completed, "\(String(describing: writer.error))")
     }
 
     private func makeCleanPNG() throws -> Data {
