@@ -6,4 +6,6 @@ O PicStrip 1.8 ficou mais fácil de usar com o VoiceOver e o Texto Maior.
 • No editor de vídeo, cada faixa é um cabeçalho, para você ir direto para rostos, textos, objetos ou áudio.
 • Texto Maior: nos maiores tamanhos, o texto quebra a linha em vez de ser cortado, os painéis rolam e a foto continua visível. Toque e mantenha pressionado um botão da câmera para vê-lo maior.
 
+No iPhone Duo, o PicStrip agora usa a tela inteira. Com o iPhone aberto, o editor de fotos e a câmera mostram os controles ao lado da imagem, e você pode dobrá-lo ou desdobrá-lo no meio de uma edição sem perder nada.
+
 A detecção automática pode deixar passar detalhes. Revise a foto ou o vídeo inteiro antes de compartilhar.

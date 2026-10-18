@@ -6,4 +6,6 @@ PicStrip 1.8 jest łatwiejszy w obsłudze z VoiceOver i funkcją Większy tekst.
 • W edytorze wideo każda ścieżka jest nagłówkiem, więc możesz przejść od razu do twarzy, tekstu, obiektów lub dźwięku.
 • Większy tekst: przy największych rozmiarach tekst jest zawijany zamiast obcinany, panele można przewijać, a zdjęcie pozostaje widoczne. Dotknij i przytrzymaj przycisk aparatu, aby zobaczyć go w powiększeniu.
 
+Na iPhonie Duo PicStrip korzysta teraz z całego ekranu. Po rozłożeniu edytor zdjęć i aparat wyświetlają elementy sterujące obok obrazu, a w trakcie edycji możesz złożyć lub rozłożyć telefon, nic nie tracąc.
+
 Automatyczne wykrywanie może pomijać szczegóły. Sprawdź całe zdjęcie lub wideo przed udostępnieniem.

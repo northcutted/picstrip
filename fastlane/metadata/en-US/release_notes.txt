@@ -6,4 +6,6 @@ PicStrip 1.8 is easier to use with VoiceOver and Larger Text.
 • In the video editor, each lane is a heading, so you can jump straight to faces, text, objects or audio.
 • Larger Text: at the largest sizes, text wraps instead of being cut off, panels scroll, and the photo stays in view. Touch and hold a camera button to see it larger.
 
+On iPhone Duo, PicStrip now uses the whole display. Unfolded, the photo editor and the camera put their controls beside the picture, and you can fold or unfold in the middle of an edit without losing anything.
+
 Automatic detection can miss details. Please review the entire photo or video before sharing.

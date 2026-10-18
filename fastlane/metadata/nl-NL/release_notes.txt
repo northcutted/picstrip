@@ -6,4 +6,6 @@ PicStrip 1.8 is makkelijker te gebruiken met VoiceOver en Grotere tekst.
 • In de video-editor is elk spoor een kop, zodat je direct naar gezichten, tekst, objecten of audio springt.
 • Grotere tekst: bij de grootste formaten loopt tekst door op de volgende regel in plaats van te worden afgekapt, kun je panelen scrollen en blijft de foto in beeld. Houd een cameraknop ingedrukt om hem groter te zien.
 
+Op de iPhone Duo gebruikt PicStrip nu het hele scherm. Uitgevouwen staan de regelaars van de foto-editor en de camera naast het beeld, en je kunt midden in een bewerking dichtvouwen of uitvouwen zonder iets kwijt te raken.
+
 Automatische detectie kan details missen. Controleer de hele foto of video voordat je deelt.

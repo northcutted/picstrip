@@ -6,4 +6,6 @@ PicStrip 1.8, VoiceOver ve Daha Büyük Metin ile daha kolay kullanılıyor.
 • Video düzenleyicide her şerit bir başlıktır; böylece doğrudan yüzlere, metinlere, nesnelere veya sese geçebilirsiniz.
 • Daha Büyük Metin: En büyük boyutlarda metin kesilmek yerine alt satıra geçer, paneller kaydırılabilir ve fotoğraf görünür kalır. Büyük hâlini görmek için bir kamera düğmesine dokunup basılı tutun.
 
+PicStrip artık iPhone Duo’da ekranın tamamını kullanıyor. Açıkken fotoğraf düzenleyici ve kamera, denetimlerini görüntünün yanında gösterir; düzenlemenin ortasında katlayıp açsanız bile hiçbir şey kaybolmaz.
+
 Otomatik algılama ayrıntıları kaçırabilir. Paylaşmadan önce fotoğrafın veya videonun tamamını inceleyin.

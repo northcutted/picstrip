@@ -6,4 +6,6 @@ PicStrip 1.8 är enklare att använda med VoiceOver och Större text.
 • I videoredigeraren är varje spår en rubrik, så att du kan hoppa direkt till ansikten, text, objekt eller ljud.
 • Större text: i de största storlekarna radbryts texten i stället för att klippas av, panelerna går att rulla och bilden syns hela tiden. Håll fingret på en kameraknapp för att se den större.
 
+På iPhone Duo använder PicStrip nu hela skärmen. När telefonen är utfälld visas fotoredigerarens och kamerans reglage bredvid bilden, och du kan fälla ihop eller ut den mitt i en redigering utan att något försvinner.
+
 Automatisk upptäckt kan missa detaljer. Granska hela bilden eller videon innan du delar.

@@ -6,4 +6,6 @@ PicStrip 1.8 lässt sich mit VoiceOver und „Größerer Text“ leichter bedien
 • Im Videoeditor ist jede Spur eine Überschrift, sodass du direkt zu Gesichtern, Text, Objekten oder Audio springen kannst.
 • Größerer Text: In den größten Schriftgrößen wird Text umbrochen statt abgeschnitten, Bereiche lassen sich scrollen, und das Foto bleibt sichtbar. Halte den Finger auf eine Taste der Kamera, um sie vergrößert zu sehen.
 
+Auf dem iPhone Duo nutzt PicStrip jetzt das ganze Display. Aufgeklappt zeigen der Fotoeditor und die Kamera ihre Bedienelemente neben dem Bild, und du kannst mitten in der Bearbeitung auf- oder zuklappen, ohne etwas zu verlieren.
+
 Die automatische Erkennung kann Details übersehen. Prüfe vor dem Teilen bitte das ganze Foto oder Video.
