@@ -804,7 +804,7 @@ final class ScrubberViewModel {
         }
         currentHints = hints
         startPIIScan(data: data, hints: hints)
-        async let metadata: Void = catalogSourceMetadata(from: data)
+        async let metadata: Void = catalogSourceMetadata(from: data, load: token)
         let preview = await Self.makePreviewImage(from: data)
         guard loadToken == token else { return }
 
@@ -883,13 +883,18 @@ final class ScrubberViewModel {
     /// populate without paying the cost of a full ImageProcessor encode.  The
     /// encode itself is deferred to `prepareAndReview`, which runs only when the
     /// user opens the review sheet to save or share.
-    private func catalogSourceMetadata(from data: Data) async {
+    ///
+    /// `load` is the load this read belongs to.  It runs as a child task, so it
+    /// can start after a newer photo has replaced this one; checking `load`
+    /// keeps it from overwriting the newer photo's format and purpose.
+    private func catalogSourceMetadata(from data: Data, load: UUID) async {
+        guard loadToken == load else { return }
         let token = UUID()
         processingToken = token
 
         let catalog = await Self.makeSourceCatalog(from: data, config: stripConfig)
 
-        guard processingToken == token else { return }
+        guard processingToken == token, loadToken == load else { return }
         rawSourceProps          = catalog.props
         pendingStrippedMetadata = catalog.stripped
         allSourceMetadata       = catalog.all
