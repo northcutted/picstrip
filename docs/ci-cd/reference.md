@@ -24,7 +24,7 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | Setting | Checked-in value |
 | --- | --- |
 | Project / scheme | <code>PicStrip.xcodeproj</code> / <code>PicStrip</code> |
-| Primary Xcode / build / simulator / SDK | <code>27.0</code> / <code>27A266a</code> / <code>27.0</code> / <code>27.0</code> |
+| Primary Xcode / build / simulator / SDK | <code>27.1</code> / <code>27A9275</code> / <code>27.0</code> / <code>27.1</code> |
 | Compatibility Xcode / build / simulator / SDK | <code>26.6</code> / <code>17F113</code> / <code>26.5</code> / <code>26.5</code> |
 | Unit test device | iPhone 17 |
 | Developer Ruby | <code>3.4.10</code> |
