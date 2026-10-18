@@ -281,26 +281,39 @@ final class AccessibilityAuditTests: XCTestCase {
         add(shot)
         let types: XCUIAccessibilityAuditType = isLargestText ? .all : .all.subtracting([.dynamicType, .textClipped])
         navigationBarFrames = nil
-        do {
-            try app.performAccessibilityAudit(for: types) { issue in
-                if issue.auditType == .contrast {
-                    // Recorded, not resolved: looking each element up costs more than the audit.
-                    self.contrastFindings.append("\(name): \(issue.compactDescription)")
+        // The audit has its own time limit, and a busy CI simulator can run past
+        // it.  Running out of time checks nothing, so try once more before failing.
+        for attempt in 1...2 {
+            do {
+                try app.performAccessibilityAudit(for: types) { issue in
+                    if issue.auditType == .contrast {
+                        // Recorded, not resolved: looking each element up costs more than the audit.
+                        self.contrastFindings.append("\(name): \(issue.compactDescription)")
+                        return true
+                    }
+                    // One snapshot per issue: each property of a live element is a query of its own.
+                    let element = try? issue.element?.snapshot()
+                    let description = Self.describe(issue, element)
+                    if let reason = self.acceptedReason(for: issue, element, on: screen, in: app) {
+                        XCTContext.runActivity(named: "Accepted on \(name): \(description) — \(reason)") { _ in }
+                    } else {
+                        XCTFail("\(name): \(description)", file: file, line: line)
+                    }
                     return true
                 }
-                // One snapshot per issue: each property of a live element is a query of its own.
-                let element = try? issue.element?.snapshot()
-                let description = Self.describe(issue, element)
-                if let reason = self.acceptedReason(for: issue, element, on: screen, in: app) {
-                    XCTContext.runActivity(named: "Accepted on \(name): \(description) — \(reason)") { _ in }
-                } else {
-                    XCTFail("\(name): \(description)", file: file, line: line)
-                }
-                return true
+                return
+            } catch let error as NSError where attempt == 1 && Self.isAuditTimeout(error) {
+                XCTContext.runActivity(named: "\(name): the audit ran out of time; trying again") { _ in }
+            } catch {
+                XCTFail("\(name): the audit could not run: \(error)", file: file, line: line)
+                return
             }
-        } catch {
-            XCTFail("\(name): the audit could not run: \(error)", file: file, line: line)
         }
+    }
+
+    /// "Audit failed to complete in time" (XCTest has no public constant for it).
+    private static func isAuditTimeout(_ error: NSError) -> Bool {
+        error.domain == "com.apple.xcode.xctest.accessibilityAudit" && error.code == -56
     }
 
     private static func describe(_ issue: XCUIAccessibilityAuditIssue, _ element: (any XCUIElementSnapshot)?) -> String {
