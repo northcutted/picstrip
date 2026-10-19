@@ -64,7 +64,7 @@ jobs:
       - name: Package matching symbols
         run: tar -czf build/native-canary-symbols.tar.gz -C build/application.xcarchive dSYMs
       - name: Retain the signed canary and verification report
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: native-signed-canary
           path: |
@@ -76,7 +76,7 @@ jobs:
           compression-level: 0
       - name: Retain archive failure logs
         if: failure()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: native-canary-failure
           path: build/logs/
@@ -108,7 +108,7 @@ jobs:
           tar -xzf build/native-canary-symbols.tar.gz -C build/application.xcarchive
           build/native-platform/rust/target/release/ios-release release verify-archive --version 1.7.0 --build-number 9998.1
       - name: Retain independent verification
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: native-canary-independent-verification
           path: build/rust-archive.json
