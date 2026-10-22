@@ -547,7 +547,7 @@ final class PicStripUITests: XCTestCase {
         try await Task.sleep(for: .seconds(2))
         XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright again, below.")
         let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
-        await fulfillment(of: [found], timeout: 20)
+        await fulfillment(of: [found], timeout: 60)
         shutter.tap()
         XCTAssertTrue(app.buttons["dismissPhotoButton"].waitForExistence(timeout: 15), "The viewfinder still takes the photo.")
     }
@@ -623,7 +623,8 @@ final class PicStripUITests: XCTestCase {
         XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
         XCTAssertTrue(app.buttons["cameraMode-photo"].isSelected, "The camera opens in Photo mode, with Video beside it.")
         let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
-        wait(for: [found], timeout: 20)
+        // Generous: on a busy CI iPad one read of the label has taken 20 s.
+        wait(for: [found], timeout: 60)
         XCTAssertTrue(status.label.contains("Email Address"), "The status names what is in view; got \"\(status.label)\".")
         attachScreen("live_01_highlight")
 

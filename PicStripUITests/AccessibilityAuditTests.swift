@@ -197,7 +197,8 @@ final class AccessibilityAuditTests: XCTestCase {
             let status = app.descendants(matching: .any)["liveCameraStatus"]
             XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
             let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
-            wait(for: [found], timeout: 20)
+            // Generous: on a busy CI iPad one read of the label has taken 20 s.
+            wait(for: [found], timeout: 60)
             XCTAssertTrue(app.descendants(matching: .any)["viewfinder"].exists, "VoiceOver can reach the viewfinder to zoom it.")
             audit("Viewfinder", in: app)
             app.buttons["cameraMode-video"].tap()
@@ -281,33 +282,43 @@ final class AccessibilityAuditTests: XCTestCase {
         add(shot)
         let types: XCUIAccessibilityAuditType = isLargestText ? .all : .all.subtracting([.dynamicType, .textClipped])
         navigationBarFrames = nil
-        // The audit has its own time limit, and a busy CI simulator can run past
-        // it.  Running out of time checks nothing, so try once more before failing.
-        for attempt in 1...2 {
+        // The audit has a time limit of its own (about 15 s), and a busy CI
+        // simulator can run past it, which checks nothing.  The retry leaves out
+        // contrast: it is the slowest check, and its findings never fail the test.
+        do {
+            try audit(types, screen: screen, name: name, in: app, file: file, line: line)
+        } catch let error as NSError where Self.isAuditTimeout(error) && types.contains(.contrast) {
+            contrastFindings.append("\(name): not checked — the audit ran out of time")
+            XCTContext.runActivity(named: "\(name): the audit ran out of time; trying again without contrast") { _ in }
             do {
-                try app.performAccessibilityAudit(for: types) { issue in
-                    if issue.auditType == .contrast {
-                        // Recorded, not resolved: looking each element up costs more than the audit.
-                        self.contrastFindings.append("\(name): \(issue.compactDescription)")
-                        return true
-                    }
-                    // One snapshot per issue: each property of a live element is a query of its own.
-                    let element = try? issue.element?.snapshot()
-                    let description = Self.describe(issue, element)
-                    if let reason = self.acceptedReason(for: issue, element, on: screen, in: app) {
-                        XCTContext.runActivity(named: "Accepted on \(name): \(description) — \(reason)") { _ in }
-                    } else {
-                        XCTFail("\(name): \(description)", file: file, line: line)
-                    }
-                    return true
-                }
-                return
-            } catch let error as NSError where attempt == 1 && Self.isAuditTimeout(error) {
-                XCTContext.runActivity(named: "\(name): the audit ran out of time; trying again") { _ in }
+                try audit(types.subtracting(.contrast), screen: screen, name: name, in: app, file: file, line: line)
             } catch {
                 XCTFail("\(name): the audit could not run: \(error)", file: file, line: line)
-                return
             }
+        } catch {
+            XCTFail("\(name): the audit could not run: \(error)", file: file, line: line)
+        }
+    }
+
+    private func audit(
+        _ types: XCUIAccessibilityAuditType, screen: String, name: String, in app: XCUIApplication,
+        file: StaticString, line: UInt
+    ) throws {
+        try app.performAccessibilityAudit(for: types) { issue in
+            if issue.auditType == .contrast {
+                // Recorded, not resolved: looking each element up costs more than the audit.
+                self.contrastFindings.append("\(name): \(issue.compactDescription)")
+                return true
+            }
+            // One snapshot per issue: each property of a live element is a query of its own.
+            let element = try? issue.element?.snapshot()
+            let description = Self.describe(issue, element)
+            if let reason = self.acceptedReason(for: issue, element, on: screen, in: app) {
+                XCTContext.runActivity(named: "Accepted on \(name): \(description) — \(reason)") { _ in }
+            } else {
+                XCTFail("\(name): \(description)", file: file, line: line)
+            }
+            return true
         }
     }
 
