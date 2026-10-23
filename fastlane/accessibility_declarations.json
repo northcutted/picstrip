@@ -2,9 +2,9 @@
   "declarations": [
     {
       "deviceFamily": "IPHONE",
-      "supportsVoiceover": false,
+      "supportsVoiceover": true,
       "supportsVoiceControl": false,
-      "supportsLargerText": false,
+      "supportsLargerText": true,
       "supportsDarkInterface": true,
       "supportsDifferentiateWithoutColorAlone": true,
       "supportsSufficientContrast": false,
@@ -14,9 +14,9 @@
     },
     {
       "deviceFamily": "IPAD",
-      "supportsVoiceover": false,
+      "supportsVoiceover": true,
       "supportsVoiceControl": false,
-      "supportsLargerText": false,
+      "supportsLargerText": true,
       "supportsDarkInterface": true,
       "supportsDifferentiateWithoutColorAlone": true,
       "supportsSufficientContrast": false,
