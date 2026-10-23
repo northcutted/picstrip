@@ -1,0 +1,38 @@
+name: App Store Settings Export
+# Manual, read-only snapshot of App Store Connect settings for an App Store
+# optimization review. scripts/export_app_store_settings.py issues GET requests
+# only and omits contact details, demo credentials, testers and sales data,
+# because artifacts of this public repository are visible to signed-in users.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: app-store-settings-export
+  cancel-in-progress: false
+jobs:
+  export:
+    name: Export read-only App Store Connect settings
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: app-store-observe
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+      - name: Read App Store Connect settings with GET requests
+        run: python3 scripts/export_app_store_settings.py --output "$RUNNER_TEMP/app-store-settings/app-store-settings.json"
+        env:
+          APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+          APP_STORE_CONNECT_API_KEY_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ISSUER_ID }}
+          APP_STORE_CONNECT_API_KEY_CONTENT: ${{ secrets.APP_STORE_CONNECT_API_KEY_CONTENT }}
+      - name: Retain app-store-settings-${{ github.run_id }}-${{ github.run_attempt }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: app-store-settings-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/app-store-settings/app-store-settings.json
+          retention-days: 1
+          if-no-files-found: error
