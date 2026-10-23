@@ -1,11 +1,11 @@
 {
   "repository": "northcutted/picstrip",
   "xcode": {
-    "version": "27.0",
-    "build": "27A266a",
-    "path": "/Applications/Xcode_27.0.app/Contents/Developer",
+    "version": "27.1",
+    "build": "27A9275",
+    "path": "/Applications/Xcode_27.1.app/Contents/Developer",
     "runtime": "27.0",
-    "sdk": "27.0"
+    "sdk": "27.1"
   },
   "compatibility": {
     "version": "26.6",

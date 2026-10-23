@@ -82,9 +82,13 @@ struct VideoCleanerView: View {
         .onChange(of: model.stage) { old, new in
             if old == .scanning, new == .review { reviewPrompt.record(.scanned) }
             if case .failed = new { reviewPrompt.record(.setback) }
+            announce(old, new)
         }
         .onChange(of: saveState) { _, state in
-            if state == .saved { reviewPrompt.record(.saved) }
+            if state == .saved {
+                reviewPrompt.record(.saved)
+                AccessibilityNotification.Announcement(String(localized: "Saved to Photos")).post()
+            }
             if case .failed = state { reviewPrompt.record(.setback) }
         }
         .onDisappear { model.discard() }
@@ -99,6 +103,21 @@ struct VideoCleanerView: View {
                 onUseForEveryFace: model.faces.count > 1 ? { model.setCoverForEveryFace(model.cover(for: face)) } : nil
             )
         }
+    }
+
+    /// VoiceOver hears when the scan is over and when the copy is ready: each
+    /// replaces the whole screen while focus may be anywhere.
+    private func announce(_ old: VideoCleanerModel.Stage, _ new: VideoCleanerModel.Stage) {
+        let message: String
+        switch (old, new) {
+        case (.scanning, .review):
+            message = String(localized: "Scan finished. Faces: \(model.faces.count). Text and codes: \(model.findingGroups.count).")
+        case (.saving, .cleaned):
+            message = String(localized: "Cleaned copy ready to share or save.")
+        default:
+            return
+        }
+        AccessibilityNotification.Announcement(message).post()
     }
 
     // MARK: Opening
@@ -125,6 +144,7 @@ struct VideoCleanerView: View {
         }
         .padding(32)
         .frame(maxWidth: 480, maxHeight: .infinity)
+        .scrollsAtAccessibilitySizes()
     }
 
     // MARK: Scanning
@@ -135,7 +155,9 @@ struct VideoCleanerView: View {
                 .frame(maxHeight: 340)
             VStack(spacing: 14) {
                 ScanStatusView(progress: model.scanProgress)
+                // VoiceOver hears how far the scan is from the status above it.
                 ProgressView(value: model.scanProgress.fraction)
+                    .accessibilityHidden(true)
                     .accessibilityIdentifier("videoScanProgress")
             }
             if model.isLong { longVideoNote }
@@ -149,6 +171,7 @@ struct VideoCleanerView: View {
         }
         .padding(32)
         .frame(maxWidth: 480, maxHeight: .infinity)
+        .scrollsAtAccessibilitySizes()
     }
 
     private var longVideoNote: some View {
@@ -741,6 +764,7 @@ struct VideoCleanerView: View {
         }
         .padding(32)
         .frame(maxWidth: 480, maxHeight: .infinity)
+        .scrollsAtAccessibilitySizes()
     }
 
     // MARK: Cleaned
@@ -990,8 +1014,11 @@ private struct ScanStatusView: View {
     /// Kinds of text shown as symbols before the rest are counted.
     private static let maximumSymbols = 4
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     var body: some View {
-        HStack(spacing: 8) {
+        // At accessibility sizes the words take the whole width, the counts under them.
+        AccessibilityStack(spacing: 8) {
             if progress.isCooling {
                 Image(systemName: "thermometer.high")
                 Text("Paused while the device cools down")
@@ -1017,13 +1044,14 @@ private struct ScanStatusView: View {
         .font(.footnote.weight(.semibold))
         .padding(.horizontal, 14)
         .padding(.vertical, 9)
-        .glassEffect(in: .capsule)
+        .glassEffect(in: dynamicTypeSize.isAccessibilitySize ? AnyShape(RoundedRectangle(cornerRadius: 20)) : AnyShape(Capsule()))
         .animation(.snappy, value: progress.faceCount)
         .animation(.snappy, value: progress.textCount)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Text(progress.isCooling ? "Paused while the device cools down" : "Looking for faces and text…"))
         .accessibilityValue(Text("^[\(progress.faceCount) face](inflect: true) found so far") + Text(verbatim: ", ")
-            + Text("Text and codes found so far: \(progress.textCount)"))
+            + Text("Text and codes found so far: \(progress.textCount)") + Text(verbatim: ", ")
+            + Text(progress.fraction, format: .percent.precision(.fractionLength(0))))
         .accessibilityAddTraits(.updatesFrequently)
         .accessibilityIdentifier("scanCounts")
     }
@@ -1144,34 +1172,7 @@ private struct DrawCoverSheet: View {
                 }
                 .frame(maxHeight: .infinity)
 
-                if let progress = model.followProgress {
-                    VStack(spacing: 6) {
-                        Text("Tracking it through the video…")
-                            .font(.headline)
-                        ProgressView(value: progress)
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityIdentifier("followProgress")
-                } else {
-                    Group {
-                        if box == nil {
-                            Button("Add a Box in the Middle") {
-                                box = CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3)
-                            }
-                            .accessibilityIdentifier("addCenteredCoverButton")
-                        } else {
-                            Button("Position & size") { showsPosition = true }
-                                .accessibilityIdentifier("coverPositionButton")
-                        }
-                    }
-                    .frame(minHeight: 44)
-                    Text(box == nil
-                         ? "Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it."
-                         : "Drag the box to move it, or its corner to resize it. Then tap Track, and PicStrip follows it through the video, forwards and back.")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                }
+                drawingControls
             }
             .padding(20)
             .navigationTitle("Cover an Object")
@@ -1205,6 +1206,44 @@ private struct DrawCoverSheet: View {
                     }
                 }
             }
+        }
+    }
+
+    /// Under the frame: the button that adds a box or places it, and what to
+    /// do — or how far the tracking has got.  It scrolls at accessibility
+    /// sizes rather than squeezing the frame away.
+    @ViewBuilder
+    private var drawingControls: some View {
+        if let progress = model.followProgress {
+            VStack(spacing: 6) {
+                Text("Tracking it through the video…")
+                    .font(.headline)
+                ProgressView(value: progress)
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityIdentifier("followProgress")
+        } else {
+            VStack(spacing: 16) {
+                Group {
+                    if box == nil {
+                        Button("Add a Box in the Middle") {
+                            box = CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3)
+                        }
+                        .accessibilityIdentifier("addCenteredCoverButton")
+                    } else {
+                        Button("Position & size") { showsPosition = true }
+                            .accessibilityIdentifier("coverPositionButton")
+                    }
+                }
+                .frame(minHeight: 44)
+                Text(box == nil
+                     ? "Draw a box around anything — a person, a car, a screen, a sign. PicStrip tracks it through the video, forwards and back, for as long as it can see it."
+                     : "Drag the box to move it, or its corner to resize it. Then tap Track, and PicStrip follows it through the video, forwards and back.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center)
+            }
+            .scrollsAtAccessibilitySizes()
         }
     }
 
