@@ -108,7 +108,7 @@ jobs:
         env:
           SCREENSHOT_DEVICE: ${{ matrix.device }}
       - name: Upload screenshots for this device
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: pr-screenshots-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
           path: fastlane/screenshots/en-US/
@@ -117,7 +117,7 @@ jobs:
           if-no-files-found: error
         if: always()
       - name: Retain simulator readiness and recovery evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: simulator-recovery-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
           path: |
@@ -130,7 +130,7 @@ jobs:
       # This secret-free job uses fresh hosted simulators and repository-owned
       # synthetic fixtures only. Preserve the failing device's XCTest evidence.
       - name: Retain screenshot failure diagnostics
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: screenshot-failure-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
           path: |
