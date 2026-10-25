@@ -633,8 +633,7 @@ final class PicStripUITests: XCTestCase {
         XCUIDevice.shared.orientation = .portrait
         try await Task.sleep(for: .seconds(2))
         XCTAssertGreaterThanOrEqual(shutter.frame.minY, status.frame.maxY, "Upright again, below.")
-        let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
-        await fulfillment(of: [found], timeout: 60)
+        XCTAssertTrue(liveFindingStatus(in: app).waitForExistence(timeout: 60), "The live scan resumes after rotation.")
         shutter.tap()
         XCTAssertTrue(app.buttons["dismissPhotoButton"].waitForExistence(timeout: 15), "The viewfinder still takes the photo.")
     }
@@ -709,10 +708,10 @@ final class PicStripUITests: XCTestCase {
         let status = app.descendants(matching: .any)["liveCameraStatus"]
         XCTAssertTrue(status.waitForExistence(timeout: 15), "The viewfinder opens on the fixture.")
         XCTAssertTrue(app.buttons["cameraMode-photo"].isSelected, "The camera opens in Photo mode, with Video beside it.")
-        let found = expectation(for: NSPredicate(format: "label CONTAINS 'Sensitive details in view'"), evaluatedWith: status)
+        let findings = liveFindingStatus(in: app)
         // Generous: on a busy CI iPad one read of the label has taken 20 s.
-        wait(for: [found], timeout: 60)
-        XCTAssertTrue(status.label.contains("Email Address"), "The status names what is in view; got \"\(status.label)\".")
+        XCTAssertTrue(findings.waitForExistence(timeout: 60), "The live scan names the sensitive details in view.")
+        XCTAssertTrue(findings.label.contains("Email Address"), "The status names what is in view; got \"\(findings.label)\".")
         attachScreen("live_01_highlight")
 
         app.descendants(matching: .any)["liveCameraPreviewToggle"].firstMatch.tap()
@@ -724,6 +723,15 @@ final class PicStripUITests: XCTestCase {
             "The photo goes straight to the editor."
         )
         attachScreen("live_03_editor")
+    }
+
+    private func liveFindingStatus(in app: XCUIApplication) -> XCUIElement {
+        // SwiftUI replaces the initial StaticText with an Other containing the
+        // findings. A label expectation bound to that original element can
+        // keep reading "Looking…" even while the current tree shows findings.
+        app.descendants(matching: .any).matching(NSPredicate(
+            format: "identifier == %@ AND label CONTAINS %@", "liveCameraStatus", "Sensitive details in view"
+        )).firstMatch
     }
 
     @MainActor
