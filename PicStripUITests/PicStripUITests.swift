@@ -517,16 +517,22 @@ final class PicStripUITests: XCTestCase {
         let edit = app.descendants(matching: .any)["editRedactionsButton"]
         XCTAssertTrue(edit.waitForExistence(timeout: 30))
         edit.tap()
+        XCTAssertTrue(app.buttons["doneEditingRedactionsButton"].waitForExistence(timeout: 5))
+        // The drawer slides in from the side. AX exposes the final button
+        // coordinates before that animation has finished moving its pixels.
+        try await Task.sleep(for: .milliseconds(500))
         app.buttons["addCenteredRedactionButton"].tap()
+        let style = app.buttons["editRegionStyleButton"]
+        XCTAssertTrue(style.waitForExistence(timeout: 5), "Start with a selected custom region.")
         let sidebar = app.buttons["togglePhotoSidebarButton"]
         let photo = app.descendants(matching: .any)["metadataPhotoPreview"]
         let originalWidth = photo.frame.width
         sidebar.tap()
         try await Task.sleep(for: .seconds(1))
         XCTAssertGreaterThan(photo.frame.width, originalWidth)
-        XCTAssertFalse(app.buttons["editRegionStyleButton"].exists)
+        XCTAssertFalse(style.exists)
         sidebar.tap()
-        XCTAssertTrue(app.buttons["editRegionStyleButton"].waitForExistence(timeout: 5))
+        XCTAssertTrue(style.waitForExistence(timeout: 5))
         attachScreen("sidebar_restored")
     }
 
