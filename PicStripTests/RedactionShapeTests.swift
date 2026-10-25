@@ -115,8 +115,10 @@ final class RedactionShapeTests: XCTestCase {
         let rendered = try XCTUnwrap(CIContext().createCGImage(result, from: image.extent))
         let data = try pixels(UIImage(cgImage: rendered))
         let original = try pixels(source)
-        XCTAssertEqual(pixel(data, 160, 160), pixel(original, 160, 160))
-        XCTAssertEqual(pixel(data, 50, 50), [0, 0, 0, 255])
+        XCTAssertEqual(pixel(original, 160, 162), [255, 255, 255, 255])
+        XCTAssertEqual(pixel(data, 160, 162), pixel(original, 160, 162), "Outside the triangle stays visible")
+        XCTAssertEqual(pixel(original, 52, 50), [255, 255, 255, 255])
+        XCTAssertEqual(pixel(data, 52, 50), [0, 0, 0, 255], "The triangle covers an originally white pixel")
     }
 
     private func checkerboard() -> UIImage {
