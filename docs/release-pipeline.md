@@ -11,6 +11,7 @@
 | Ship a tested build | [Prepare the App Store submission](ci-cd/operations.md#prepare-an-app-store-submission). |
 | Change store text without a new binary | [Update metadata](ci-cd/operations.md#update-store-metadata). |
 | Refresh store images | [Capture screenshots and review their PR](ci-cd/operations.md#refresh-screenshots). |
+| Review live App Store settings | [Export a read-only settings snapshot](ci-cd/operations.md#export-app-store-settings-for-review). |
 | Recover a failed operation | [Retry the original run](ci-cd/operations.md#recover-a-failed-run). |
 | Understand the design | [Architecture and trust boundaries](ci-cd/architecture.md). |
 | Change the pipeline or its docs | [Maintenance guide for humans and agents](ci-cd/maintenance.md). |

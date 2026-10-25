@@ -58,6 +58,7 @@ Single-path examples evaluated by the consumer classifier. Mixed changes and fal
 | Workflow | File | Events |
 | --- | --- | --- |
 | [App Store Deploy (internal)](#app-store-deploy-internal) | [app-store-deploy.yml](../../.github/workflows/app-store-deploy.yml) | <code>create</code>, <code>release</code>, <code>workflow_dispatch</code> |
+| [App Store Settings Export](#app-store-settings-export) | [app-store-settings.yml](../../.github/workflows/app-store-settings.yml) | <code>workflow_dispatch</code> |
 | [Release Prep](#release-prep) | [main.yml](../../.github/workflows/main.yml) | <code>push</code>, <code>workflow_dispatch</code> |
 | [Native CLI signed canary](#native-cli-signed-canary) | [native-canary.yml](../../.github/workflows/native-canary.yml) | <code>workflow_dispatch</code> |
 | [Release Maintenance](#release-maintenance) | [observe.yml](../../.github/workflows/observe.yml) | <code>schedule</code>, <code>workflow_dispatch</code> |
@@ -97,6 +98,24 @@ Concurrency: <code>{"group":"app-store-deploy-${{ github.ref }}","cancel-in-prog
 | --- | --- | --- | --- |
 | <code>resolve</code> | — | <code>ubuntu-24.04</code>; 5 min | <code>github.event_name != 'create' &#124;&#124; (github.event.ref_type == 'tag' &amp;&amp; contains(github.ref_name, '-deploy-'))</code> |
 | <code>deploy</code> | <code>resolve</code> | [deploy.yml](https://github.com/northcutted/ios-release-workflows/blob/25ac025ed3faa9934a217bec520cfc07809480d6/.github/workflows/deploy.yml) | — |
+
+### App Store Settings Export
+
+[Source](../../.github/workflows/app-store-settings.yml) · [Actions](https://github.com/northcutted/picstrip/actions/workflows/app-store-settings.yml)
+
+Triggers (cron expressions use UTC):
+
+```json
+{
+  "workflow_dispatch": {}
+}
+```
+
+Concurrency: <code>{"group":"app-store-settings-export","cancel-in-progress":false}</code>. Default token permissions: <code>{"contents":"read"}</code>.
+
+| Job | Needs | Execution | Condition |
+| --- | --- | --- | --- |
+| <code>export</code><br>Export read-only App Store Connect settings | — | <code>ubuntu-24.04</code>; 20 min<br>Environment: <code>app-store-observe</code> | <code>github.ref == 'refs/heads/main'</code> |
 
 ### Release Prep
 
