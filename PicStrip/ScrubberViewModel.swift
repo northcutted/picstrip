@@ -1097,9 +1097,12 @@ final class ScrubberViewModel {
         appendDetections(found)
     }
 
-    func addCustomRedaction(rect: CGRect) {
+    func addCustomRedaction(rect: CGRect, shape: RedactionShape = .rectangle, vertices: [CGPoint] = []) {
         pushUndoSnapshot()
-        let region = RedactionRegion.custom(rect: rect)
+        var region = RedactionRegion.custom(rect: rect)
+        region.shape = shape
+        region.vertices = shape == .custom && RedactionShape.validVertices(vertices) ? vertices : []
+        region.rect = shape.constrained(region.rect, imageSize: sourceUIImage?.size ?? .zero)
         redactionRegions.append(region)
         selectedRedactionRegionID = region.id
         redactedUIImage = nil
@@ -1186,7 +1189,31 @@ final class ScrubberViewModel {
 
     func updateRedactionRegion(id: String, rect: CGRect) {
         guard let index = redactionRegions.firstIndex(where: { $0.id == id }) else { return }
-        redactionRegions[index].rect = RedactionRegion.clamped(rect)
+        redactionRegions[index].rect = redactionRegions[index].shape.constrained(
+            RedactionRegion.clamped(rect), imageSize: sourceUIImage?.size ?? .zero
+        )
+        redactedUIImage = nil
+    }
+
+    func changeRedactionShape(id: String, shape: RedactionShape) {
+        guard let index = redactionRegions.firstIndex(where: { $0.id == id }),
+              redactionRegions[index].shape != shape else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].shape = shape
+        if shape == .custom && !RedactionShape.validVertices(redactionRegions[index].vertices) {
+            redactionRegions[index].vertices = RedactionShape.defaultVertices
+        }
+        redactionRegions[index].rect = shape.constrained(redactionRegions[index].rect, imageSize: sourceUIImage?.size ?? .zero)
+        redactedUIImage = nil
+    }
+
+    func changeRedactionOutline(id: String, vertices: [CGPoint]) {
+        guard RedactionShape.validVertices(vertices),
+              let index = redactionRegions.firstIndex(where: { $0.id == id }),
+              redactionRegions[index].vertices != vertices || redactionRegions[index].shape != .custom else { return }
+        pushUndoSnapshot()
+        redactionRegions[index].shape = .custom
+        redactionRegions[index].vertices = vertices
         redactedUIImage = nil
     }
 

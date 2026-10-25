@@ -62,6 +62,8 @@ struct RedactionRegion: Identifiable, Hashable {
     var strength: Double = RedactionStrength.standard
     /// The emoji an `.emoji` region is covered with; each region has its own.
     var emoji: String = EmojiCover.defaultEmoji
+    var shape: RedactionShape = .rectangle
+    var vertices: [CGPoint] = []
     /// The whole finding and the part of it to cover when its end stays
     /// readable; `nil` for findings that cannot be shortened.
     var partialCover: PartialCover?
@@ -105,7 +107,8 @@ struct RedactionRegion: Identifiable, Hashable {
 
     /// Converts this region into a `RedactionSpec` suitable for the rendering pipeline.
     var spec: RedactionSpec {
-        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled, strength: strength, emoji: emoji)
+        RedactionSpec(rect: rect, style: style, color: color, isEnabled: isEnabled, strength: strength, emoji: emoji,
+                      shape: shape, vertices: vertices)
     }
 
     static func detected(

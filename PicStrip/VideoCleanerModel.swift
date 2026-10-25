@@ -301,7 +301,7 @@ final class VideoCleanerModel {
 
     /// Follows what the user drew around at the playhead through the video, and
     /// adds it as a cover.  `box` is normalised, top-left origin, upright.
-    func addDrawnCover(_ box: CGRect, at time: Double) async {
+    func addDrawnCover(_ box: CGRect, at time: Double, shape: RedactionShape = .rectangle, vertices: [CGPoint] = []) async {
         guard let source else { return }
         followProgress = 0
         defer { followProgress = nil }
@@ -312,6 +312,8 @@ final class VideoCleanerModel {
                 }
             }
             var cover = FaceTrack(id: nextDrawnID, samples: samples, isDrawn: true)
+            cover.shape = shape
+            cover.vertices = vertices
             nextDrawnID += 1
             if cover.samples.isEmpty { cover.samples = [FaceTrack.Sample(time: time, box: box)] }
             drawnCovers.append(cover)
@@ -327,6 +329,23 @@ final class VideoCleanerModel {
         drawnCovers.removeAll { $0.id == cover.id }
         ranges[cover.id] = nil
         if selection == .drawn(cover.id) { selection = nil }
+        refreshPreview()
+    }
+
+    func setShape(_ shape: RedactionShape, for cover: FaceTrack) {
+        guard let index = drawnCovers.firstIndex(where: { $0.id == cover.id }) else { return }
+        drawnCovers[index].shape = shape
+        if shape == .custom && !RedactionShape.validVertices(drawnCovers[index].vertices) {
+            drawnCovers[index].vertices = RedactionShape.defaultVertices
+        }
+        refreshPreview()
+    }
+
+    func setOutline(_ vertices: [CGPoint], for cover: FaceTrack) {
+        guard RedactionShape.validVertices(vertices),
+              let index = drawnCovers.firstIndex(where: { $0.id == cover.id }) else { return }
+        drawnCovers[index].shape = .custom
+        drawnCovers[index].vertices = vertices
         refreshPreview()
     }
 

@@ -436,7 +436,17 @@ nonisolated enum VideoRedactor {
             )
         }
 
-        func obscure(_ full: CGRect, style: RedactionStyle) {
+        func shaped(_ layer: CIImage, box: CGRect, shape: RedactionShape, vertices: [CGPoint]) -> CIImage {
+            guard shape != .rectangle else { return layer }
+            let area = pixels(box).integral.intersection(extent)
+            let spec = RedactionSpec(rect: box, style: .solid, color: .black, isEnabled: true, shape: shape, vertices: vertices)
+            guard let mask = ImageRedactor.shapeMask([spec], area: area, extent: extent) else { return layer }
+            return layer.applyingFilter("CIBlendWithMask", parameters: [
+                kCIInputBackgroundImageKey: CIImage.empty(), kCIInputMaskImageKey: mask
+            ]).cropped(to: area)
+        }
+
+        func obscure(_ full: CGRect, style: RedactionStyle, box: CGRect? = nil, shape: RedactionShape = .rectangle, vertices: [CGPoint] = []) {
             let rect = full.intersection(extent)
             guard !rect.isNull, rect.width > 0, rect.height > 0 else { return }
             let cover: CIImage
@@ -449,7 +459,8 @@ nonisolated enum VideoRedactor {
                 cover = ImageRedactor.obscuredLayer(style == .pixelate ? .pixelate : .blur, blockSize: blockSize, of: frame)
                     ?? CIImage(color: .black)
             }
-            layers.append(cover.cropped(to: rect))
+            let layer = cover.cropped(to: rect)
+            layers.append(box.map { shaped(layer, box: $0, shape: shape, vertices: vertices) } ?? layer)
         }
 
         for finding in plan.findings {
@@ -459,13 +470,14 @@ nonisolated enum VideoRedactor {
         for face in plan.faces {
             guard let box = face.track.coverBox(at: time, within: face.range) else { continue }
             let full = pixels(box)
-            obscure(full, style: face.style == .solid ? .solid : .blur)
+            obscure(full, style: face.style == .solid ? .solid : .blur, box: box, shape: face.track.shape, vertices: face.track.vertices)
             if let emoji = face.style.emoji, let glyph = glyphs[emoji] {
                 let scale = max(full.width, full.height) * EmojiCover.coverage / max(glyph.extent.width, glyph.extent.height)
                 let sized = glyph.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
-                layers.append(sized.transformed(by: CGAffineTransform(
+                let emojiLayer = sized.transformed(by: CGAffineTransform(
                     translationX: full.midX - sized.extent.midX, y: full.midY - sized.extent.midY
-                )))
+                ))
+                layers.append(shaped(emojiLayer, box: box, shape: face.track.shape, vertices: face.track.vertices))
             }
         }
         guard let covers = stacked(layers) else { return frame }

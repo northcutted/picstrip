@@ -31,7 +31,7 @@ final class CanvasLayoutTests: XCTestCase {
         XCTAssertEqual(CanvasLayout.resolve(for: CGSize(width: 669, height: 900), isEligible: true), .stacked)
     }
 
-    func testIPadKeepsItsLayout() {
+    func testIneligibleWindowsKeepTheirLayout() {
         for size in [CGSize(width: 1376, height: 960), CGSize(width: 1032, height: 1300), CGSize(width: 951, height: 669)] {
             XCTAssertEqual(CanvasLayout.resolve(for: size, isEligible: false), .stacked, "\(size)")
         }
@@ -39,6 +39,27 @@ final class CanvasLayoutTests: XCTestCase {
 
     func testNoSizeYetIsStacked() {
         XCTAssertEqual(CanvasLayout.resolve(for: .zero, isEligible: true), .stacked)
+    }
+
+    func testAnActiveFoldDeterminesTheAxisEvenInPortrait() throws {
+        let portrait = CGSize(width: 669, height: 951)
+        let book = CGRect(x: 320, y: 0, width: 29, height: 951)
+        XCTAssertEqual(CanvasLayout.resolve(for: portrait, isEligible: true, division: book), .sideBySide)
+        let tabletop = CGRect(x: 0, y: 460, width: 669, height: 31)
+        XCTAssertEqual(CanvasLayout.resolve(for: portrait, isEligible: true, division: tabletop), .tabletop)
+        XCTAssertEqual(CanvasLayout.resolve(for: portrait, isEligible: true, division: nil), .stacked)
+    }
+
+    func testPaneEdgesStayOutsideTheFoldAndItsMargins() throws {
+        let canvas = CanvasGeometry(frame: CGRect(x: 84, y: 0, width: 867, height: 600),
+                                    division: CGRect(x: 375, y: 0, width: 32, height: 600))
+        let leftToRight = try XCTUnwrap(canvas.panes(layoutDirection: .leftToRight))
+        XCTAssertEqual(leftToRight, CanvasPanes(picture: 375, controls: 460, gap: 32))
+        let rightToLeft = try XCTUnwrap(canvas.panes(layoutDirection: .rightToLeft))
+        XCTAssertEqual(rightToLeft, CanvasPanes(picture: 460, controls: 375, gap: 32))
+        let tabletop = CanvasGeometry(frame: CGRect(x: 0, y: 0, width: 669, height: 900),
+                                      division: CGRect(x: 0, y: 400, width: 669, height: 40))
+        XCTAssertEqual(tabletop.panes(layoutDirection: .rightToLeft), CanvasPanes(picture: 400, controls: 460, gap: 40))
     }
 
     func testTheColumnStartsAtTheFold() {

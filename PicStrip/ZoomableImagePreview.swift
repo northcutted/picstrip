@@ -52,12 +52,14 @@ struct ZoomableImagePreview: View {
     var selectedRedactionRegionID: Binding<String?>?
     var isRedactionEditing: Bool = false
     var isAddingRedaction: Bool = false
+    var drawingShape: RedactionShape = .rectangle
     var resetZoomRequest: Int = 0
     var isScanning: Bool = false
     var showZoomHint: Bool = true
     var accessibilityIdentifier: String = "metadataPhotoPreview"
     var onTap: (() -> Void)?
     var onAddRedaction: ((CGRect) -> Void)?
+    var onAddOutline: ((CGRect, [CGPoint]) -> Void)?
     /// A single tap while adding a region: outline the object under it.
     /// `nil` where tap-an-object is not available.
     var onSelectObject: ((CGPoint) -> Void)?
@@ -71,6 +73,7 @@ struct ZoomableImagePreview: View {
     @State private var lastOffset: CGSize = .zero
     @State private var focusPulse = false
     @State private var draftRedactionRect: CGRect?
+    @State private var draftVertices: [CGPoint] = []
     @State private var dragStartRect: CGRect?
     /// The live normalised rect for the region currently being moved or resized.
     ///
@@ -180,7 +183,8 @@ struct ZoomableImagePreview: View {
             await renderMissingObscuredLayers()
         }
         .onChange(of: focusedResult?.id) { _, _ in pulseFocusedResult() }
-        .onChange(of: isAddingRedaction) { _, _ in draftRedactionRect = nil }
+        .onChange(of: isAddingRedaction) { _, _ in draftRedactionRect = nil; draftVertices = [] }
+        .onChange(of: drawingShape) { _, _ in draftRedactionRect = nil; draftVertices = [] }
         .onChange(of: resetZoomRequest) { _, _ in resetZoom() }
     }
 
@@ -219,13 +223,28 @@ struct ZoomableImagePreview: View {
                     isSelected: true,
                     isEnabled: true,
                     overlayColor: .accentColor,
-                    isDraft: true
+                    isDraft: true,
+                    shape: drawingShape
                 )
                 .allowsHitTesting(false)
                 .position(
                     x: (draftRedactionRect.minX + draftRedactionRect.width  / 2) * size.width,
                     y: (draftRedactionRect.minY + draftRedactionRect.height / 2) * size.height
                 )
+            }
+            if drawingShape == .custom, !draftVertices.isEmpty {
+                Path { path in
+                    path.addLines(draftVertices.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) })
+                    path.closeSubpath()
+                }
+                .fill(Color.accentColor.opacity(0.24))
+                .overlay {
+                    Path { path in
+                        path.addLines(draftVertices.map { CGPoint(x: $0.x * size.width, y: $0.y * size.height) })
+                        path.closeSubpath()
+                    }.stroke(Color.accentColor, lineWidth: 2)
+                }
+                .allowsHitTesting(false)
             }
         }
         .frame(width: size.width, height: size.height)
@@ -288,21 +307,44 @@ struct ZoomableImagePreview: View {
         DragGesture(minimumDistance: 6)
             .onChanged { value in
                 guard isRedactionEditing, isAddingRedaction else { return }
-                draftRedactionRect = normalizedRect(
+                if drawingShape == .custom {
+                    let raw = imageNormalizedPoint(value.location, imageSize: image, containerSize: container,
+                                                   scale: scale, panOffset: offset)
+                    let point = CGPoint(x: min(1, max(0, raw.x)), y: min(1, max(0, raw.y)))
+                    if draftVertices.isEmpty {
+                        let start = imageNormalizedPoint(value.startLocation, imageSize: image, containerSize: container,
+                                                         scale: scale, panOffset: offset)
+                        guard (0...1).contains(start.x), (0...1).contains(start.y) else { return }
+                        draftVertices = [start]
+                    }
+                    RedactionShape.append(point, to: &draftVertices, minimumDistance: 0.003)
+                    return
+                }
+                draftRedactionRect = drawingShape.constrained(normalizedRect(
                     from: value.startLocation,
                     to: value.location,
                     image: image,
                     container: container
-                )
+                ), imageSize: imageSize)
             }
             .onEnded { value in
                 guard isRedactionEditing, isAddingRedaction else { return }
-                let rect = normalizedRect(
+                if drawingShape == .custom {
+                    defer { draftVertices = [] }
+                    guard draftVertices.count >= 3 else { return }
+                    let bounds = draftVertices.reduce(CGRect.null) { $0.union(CGRect(origin: $1, size: .zero)) }
+                    guard bounds.width >= 0.015, bounds.height >= 0.015 else { return }
+                    let points = draftVertices.map { CGPoint(x: ($0.x - bounds.minX) / bounds.width, y: ($0.y - bounds.minY) / bounds.height) }
+                    guard RedactionShape.validVertices(points) else { return }
+                    onAddOutline?(bounds, points)
+                    return
+                }
+                let rect = drawingShape.constrained(normalizedRect(
                     from: value.startLocation,
                     to: value.location,
                     image: image,
                     container: container
-                )
+                ), imageSize: imageSize)
                 draftRedactionRect = nil
                 guard rect.width >= 0.015, rect.height >= 0.015 else { return }
                 onAddRedaction?(rect)
@@ -331,9 +373,11 @@ struct ZoomableImagePreview: View {
                     size: size,
                     isSelected: selectedRedactionRegionID?.wrappedValue == region.id,
                     isEnabled: region.isEnabled,
-                    overlayColor: region.color.color
+                    overlayColor: region.color.color,
+                    shape: region.shape,
+                    vertices: region.vertices
                 )
-                .contentShape(Rectangle())
+                .contentShape(RedactionOutlineShape(shape: region.shape, vertices: region.vertices))
                 .onTapGesture {
                     guard isRedactionEditing else { return }
                     selectRedaction(region.id)
@@ -414,9 +458,13 @@ struct ZoomableImagePreview: View {
     private func redactionStylePreview(size: CGSize) -> some View {
         ZStack(alignment: .topLeading) {
             ForEach(obscuredGroups, id: \.pass) { group in
-                let mask = Path { path in
-                    for region in group.regions { path.addRect(displayRect(liveRect(of: region), in: size)) }
+                let mask = ZStack(alignment: .topLeading) {
+                    ForEach(group.regions) { region in
+                        Path(region.shape.path(in: displayRect(liveRect(of: region), in: size), vertices: region.vertices))
+                            .fill(.white)
+                    }
                 }
+                .frame(width: size.width, height: size.height)
                 // While a new block size renders (a resize just ended), keep showing
                 // the last render of this style instead of flashing a placeholder.
                 let stale = obscuredLayers.first { $0.key.style == group.key.style }?.value
@@ -427,7 +475,7 @@ struct ZoomableImagePreview: View {
                         .mask(alignment: .topLeading) { mask.frame(width: size.width, height: size.height) }
                 } else {
                     // Until the render lands, never show the region untouched.
-                    mask.fill(Color(.systemGray3))
+                    Color(.systemGray3).mask { mask }
                 }
             }
 
@@ -445,7 +493,8 @@ struct ZoomableImagePreview: View {
                     var layer = context
                     let isMoving = isDraggingRedaction && selectedRedactionRegionID?.wrappedValue == region.id
                     layer.opacity = isMoving ? 0.55 : 1
-                    layer.fill(Path(rect), with: .color(region.color.color))
+                    let outline = Path(region.shape.path(in: rect, vertices: region.vertices))
+                    layer.fill(outline, with: .color(region.color.color))
 
                     guard region.style == .crosshatch else { continue }
                     let exportRect = CGRect(
@@ -453,7 +502,7 @@ struct ZoomableImagePreview: View {
                         width: live.width * exportPixels.width, height: live.height * exportPixels.height
                     )
                     let lattice = RedactionLattice.metrics(rect: exportRect, imageSize: exportPixels)
-                    layer.clip(to: Path(rect))
+                    layer.clip(to: outline)
                     layer.stroke(
                         Path(RedactionLattice.path(in: rect, spacing: lattice.spacing * pointsPerExportPixel)),
                         with: .color(Color(uiColor: region.color.latticeColor)),
@@ -468,6 +517,7 @@ struct ZoomableImagePreview: View {
                     var layer = context
                     let isMoving = isDraggingRedaction && selectedRedactionRegionID?.wrappedValue == region.id
                     layer.opacity = isMoving ? 0.55 : 1
+                    if region.shape != .rectangle { layer.clip(to: Path(region.shape.path(in: rect, vertices: region.vertices))) }
                     let fontSize = EmojiCover.fontSize(for: region.emoji, covering: rect.size)
                     layer.draw(Text(region.emoji).font(.system(size: fontSize)), at: CGPoint(x: rect.midX, y: rect.midY))
                 }
@@ -501,12 +551,16 @@ struct ZoomableImagePreview: View {
         isSelected: Bool,
         isEnabled: Bool,
         overlayColor: Color,
-        isDraft: Bool = false
+        isDraft: Bool = false,
+        shape: RedactionShape = .rectangle,
+        vertices: [CGPoint] = []
     ) -> some View {
         let marksSelection = isSelected && !isDraft
         let fillOpacity = isDraft ? 0.24 : (isEnabled ? 0 : 0.05)
-        return RoundedRectangle(cornerRadius: isSelected ? 4 : 2)
-            .strokeBorder(
+        let bounds = CGRect(x: 0, y: 0, width: rect.width * size.width, height: rect.height * size.height)
+        let outline = Path(shape.path(in: bounds, vertices: vertices))
+        return outline
+            .stroke(
                 overlayColor.opacity(marksSelection ? 0 : (isEnabled ? 0.95 : 0.4)),
                 style: StrokeStyle(
                     lineWidth: isSelected ? 3 : 1.5,
@@ -514,8 +568,7 @@ struct ZoomableImagePreview: View {
                 )
             )
             .background(
-                RoundedRectangle(cornerRadius: isSelected ? 4 : 2)
-                    .fill(overlayColor.opacity(fillOpacity))
+                outline.fill(overlayColor.opacity(fillOpacity))
             )
             .overlay {
                 // Drawn outside the box, so it never covers the style preview
@@ -607,7 +660,7 @@ struct ZoomableImagePreview: View {
     private func resizeGesture(for region: RedactionRegion, image: CGSize, container: CGSize) -> some Gesture {
         DragGesture(minimumDistance: 2, coordinateSpace: .named("zoomablePreviewContainer"))
             .onChanged { value in
-                guard isRedactionEditing else { return }
+                guard isRedactionEditing, !isAddingRedaction else { return }
                 if dragStartRect == nil {
                     dragStartRect = region.rect
                     isDraggingRedaction = true
@@ -625,7 +678,7 @@ struct ZoomableImagePreview: View {
                     image: image,
                     container: container
                 )
-                dragLiveRect = RedactionRegion.resized(dragStartRect, by: delta)
+                dragLiveRect = region.shape.constrained(RedactionRegion.resized(dragStartRect, by: delta), imageSize: imageSize)
             }
             .onEnded { _ in
                 if let live = dragLiveRect {

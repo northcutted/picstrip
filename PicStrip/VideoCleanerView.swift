@@ -20,6 +20,7 @@ struct VideoCleanerView: View {
     @State private var hasSavedRecording = false
     @State private var isConfirmingDiscard = false
     @State private var emojiFace: FaceTrack?
+    @State private var outlineTrack: FaceTrack?
     /// The playhead time a new cover is being drawn at.
     @State private var drawingAt: DrawingTime?
 
@@ -102,6 +103,14 @@ struct VideoCleanerView: View {
                 onSelect: { model.setCover(.emoji($0), for: face) },
                 onUseForEveryFace: model.faces.count > 1 ? { model.setCoverForEveryFace(model.cover(for: face)) } : nil
             )
+        }
+        .sheet(item: $outlineTrack) { track in
+            let box = track.coverBox(at: model.playhead.time, within: model.range(of: track)) ?? track.samples.first?.box ?? CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+            RedactionOutlineEditor(region: {
+                var region = RedactionRegion.custom(rect: box)
+                region.vertices = track.vertices
+                return region
+            }(), image: model.previewStill) { model.setOutline($0, for: track) }
         }
     }
 
@@ -395,6 +404,18 @@ struct VideoCleanerView: View {
             .buttonStyle(.plain)
             .accessibilityHint("Shows it in the preview")
             .accessibilityIdentifier("drawnRow-\(number)")
+            Menu {
+                ForEach(RedactionShape.allCases, id: \.self) { shape in
+                    Button { model.setShape(shape, for: cover) } label: {
+                        Label(shape.displayName, systemImage: shape == cover.shape ? "checkmark" : shape.symbolName)
+                    }
+                }
+                if cover.shape == .custom {
+                    Button("Edit Outline") { outlineTrack = cover }
+                }
+            } label: { Image(systemName: cover.shape.symbolName).frame(minWidth: 44, minHeight: 44) }
+            .accessibilityLabel("Shape")
+            .accessibilityValue(Text(cover.shape.displayName))
 
             Menu {
                 drawnMenu(cover)
@@ -1142,6 +1163,9 @@ private struct DrawCoverSheet: View {
     /// The box as a move or resize began.
     @State private var dragStart: CGRect?
     @State private var showsPosition = false
+    @State private var showsOutline = false
+    @State private var shape: RedactionShape = .rectangle
+    @State private var vertices = RedactionShape.defaultVertices
     @State private var following: Task<Void, Never>?
 
     /// The smallest box that can be followed, as a share of the frame.
@@ -1189,7 +1213,7 @@ private struct DrawCoverSheet: View {
                     Button("Track") {
                         guard let followable else { return }
                         following = Task {
-                            await model.addDrawnCover(followable, at: time)
+                            await model.addDrawnCover(followable, at: time, shape: shape, vertices: shape == .custom ? vertices : [])
                             if !Task.isCancelled { dismiss() }
                         }
                     }
@@ -1201,9 +1225,14 @@ private struct DrawCoverSheet: View {
             .interactiveDismissDisabled(following != nil)
             .sheet(isPresented: $showsPosition) {
                 if let box {
-                    RegionPositionView(region: .custom(rect: box)) { _, rect in
-                        self.box = RedactionRegion.clamped(rect, minimumSize: Self.minimumSize)
+                    RegionPositionView(region: outlineRegion(box), imageSize: frame?.size ?? .zero) { _, rect in
+                        self.box = shape.constrained(RedactionRegion.clamped(rect, minimumSize: Self.minimumSize), imageSize: frame?.size ?? .zero)
                     }
+                }
+            }
+            .sheet(isPresented: $showsOutline) {
+                if let box {
+                    RedactionOutlineEditor(region: outlineRegion(box), image: frame) { vertices = $0 }
                 }
             }
         }
@@ -1224,10 +1253,17 @@ private struct DrawCoverSheet: View {
             .accessibilityIdentifier("followProgress")
         } else {
             VStack(spacing: 16) {
+                RedactionShapePicker(selection: shape) { selected in
+                    shape = selected
+                    if let box { self.box = shape.constrained(box, imageSize: frame?.size ?? .zero) }
+                }
+                if shape == .custom && box != nil {
+                    Button("Edit Outline") { showsOutline = true }.frame(minHeight: 44)
+                }
                 Group {
                     if box == nil {
                         Button("Add a Box in the Middle") {
-                            box = CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3)
+                            box = shape.constrained(CGRect(x: 0.35, y: 0.35, width: 0.3, height: 0.3), imageSize: frame?.size ?? .zero)
                         }
                         .accessibilityIdentifier("addCenteredCoverButton")
                     } else {
@@ -1275,7 +1311,7 @@ private struct DrawCoverSheet: View {
 
     /// The box, outlined like a selected redaction on a photo: drag it to move it.
     private func boxView(_ box: CGRect, in size: CGSize) -> some View {
-        RoundedRectangle(cornerRadius: 4)
+        Path(shape.path(in: CGRect(x: 0, y: 0, width: box.width * size.width, height: box.height * size.height), vertices: vertices))
             .fill(Color.accentColor.opacity(0.18))
             .overlay {
                 RoundedRectangle(cornerRadius: 6)
@@ -1323,7 +1359,7 @@ private struct DrawCoverSheet: View {
                         let resized = RedactionRegion.resized(start, by: CGSize(
                             width: drag.translation.width / size.width, height: drag.translation.height / size.height
                         ))
-                        self.box = RedactionRegion.clamped(resized, minimumSize: Self.minimumSize)
+                        self.box = shape.constrained(RedactionRegion.clamped(resized, minimumSize: Self.minimumSize), imageSize: frame?.size ?? .zero)
                     }
                     .onEnded { _ in dragStart = nil }
             )
@@ -1336,15 +1372,22 @@ private struct DrawCoverSheet: View {
         DragGesture(minimumDistance: 4, coordinateSpace: .named(Self.space))
             .onChanged { drag in
                 guard following == nil, size.width > 0, size.height > 0 else { return }
-                draft = Self.rect(from: drag.startLocation, to: drag.location, in: size)
+                draft = shape.constrained(Self.rect(from: drag.startLocation, to: drag.location, in: size), imageSize: frame?.size ?? .zero)
             }
             .onEnded { drag in
                 defer { draft = nil }
                 guard following == nil, size.width > 0, size.height > 0 else { return }
-                let drawn = Self.rect(from: drag.startLocation, to: drag.location, in: size)
+                let drawn = shape.constrained(Self.rect(from: drag.startLocation, to: drag.location, in: size), imageSize: frame?.size ?? .zero)
                 // A slip of a finger leaves the box there was.
                 if drawn.width >= Self.minimumSize, drawn.height >= Self.minimumSize { box = drawn }
             }
+    }
+
+    private func outlineRegion(_ box: CGRect) -> RedactionRegion {
+        var region = RedactionRegion.custom(rect: box)
+        region.shape = shape
+        region.vertices = vertices
+        return region
     }
 
     /// The normalised box between two points on the frame.

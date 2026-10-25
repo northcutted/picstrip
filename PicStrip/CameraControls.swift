@@ -194,12 +194,15 @@ struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: V
     @ViewBuilder let inPicture: () -> InPicture
     @ViewBuilder let bottom: (CanvasLayout) -> Bottom
 
-    @State private var size: CGSize = .zero
+    @State private var canvasGeometry = CanvasGeometry()
+    @Environment(\.layoutDirection) private var layoutDirection
 
     var body: some View {
-        let layout = CanvasLayout.resolve(for: size, isEligible: CanvasLayout.isEligibleDevice)
+        let layout = canvasGeometry.layout
         let isSideBySide = layout == .sideBySide
-        CameraFrameArrangement(isSideBySide: isSideBySide) {
+        let panes = canvasGeometry.panes(layoutDirection: layoutDirection)
+        CameraFrameArrangement(layout: layout, pictureLength: panes?.picture, controlsLength: panes?.controls,
+                               gap: panes?.gap ?? 0, isRightToLeft: layoutDirection == .rightToLeft) {
             top()
                 .padding(.horizontal, 20)
                 .padding(.vertical, 8)
@@ -225,7 +228,7 @@ struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: V
                 .opacity(controlsHidden ? 0 : 1)
                 .allowsHitTesting(!controlsHidden)
         }
-        .onGeometryChange(for: CGSize.self) { $0.size } action: { size = $0 }
+        .onCanvasGeometryChange { canvasGeometry = $0 }
         .animation(.easeInOut(duration: 0.2), value: controlsHidden)
     }
 }
@@ -235,7 +238,11 @@ struct CameraFrameLayout<Top: View, Viewfinder: View, InPicture: View, Bottom: V
 /// beside the other two.  The top and bottom take the room they need; the
 /// picture takes the rest.
 private struct CameraFrameArrangement: Layout {
-    let isSideBySide: Bool
+    let layout: CanvasLayout
+    let pictureLength: CGFloat?
+    let controlsLength: CGFloat?
+    let gap: CGFloat
+    let isRightToLeft: Bool
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         proposal.replacingUnspecifiedDimensions()
@@ -245,27 +252,30 @@ private struct CameraFrameArrangement: Layout {
         guard subviews.count == 3 else { return }
         let (top, picture, bottom) = (subviews[0], subviews[1], subviews[2])
         // The bars are centred across the space they are given, as a VStack centres them.
-        if isSideBySide {
-            let columnWidth = min(bottom.sizeThatFits(ProposedViewSize(width: nil, height: bounds.height)).width, bounds.width / 2)
-            let mainWidth = bounds.width - columnWidth
+        if layout == .sideBySide {
+            let columnWidth = controlsLength ?? min(bottom.sizeThatFits(ProposedViewSize(width: nil, height: bounds.height)).width, bounds.width / 2)
+            let mainWidth = pictureLength ?? (bounds.width - columnWidth)
+            let mainX = isRightToLeft ? bounds.minX + columnWidth + gap : bounds.minX
+            let controlsX = isRightToLeft ? bounds.minX + columnWidth / 2 : bounds.maxX - columnWidth / 2
             let topHeight = top.sizeThatFits(ProposedViewSize(width: mainWidth, height: nil)).height
             top.place(
-                at: CGPoint(x: bounds.minX + mainWidth / 2, y: bounds.minY),
+                at: CGPoint(x: mainX + mainWidth / 2, y: bounds.minY),
                 anchor: .top,
                 proposal: ProposedViewSize(width: mainWidth, height: topHeight)
             )
             picture.place(
-                at: CGPoint(x: bounds.minX, y: bounds.minY + topHeight),
+                at: CGPoint(x: mainX, y: bounds.minY + topHeight),
                 proposal: ProposedViewSize(width: mainWidth, height: max(0, bounds.height - topHeight))
             )
             bottom.place(
-                at: CGPoint(x: bounds.maxX - columnWidth / 2, y: bounds.midY),
+                at: CGPoint(x: controlsX, y: bounds.midY),
                 anchor: .center,
                 proposal: ProposedViewSize(width: columnWidth, height: bounds.height)
             )
         } else {
             let topHeight = top.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)).height
-            let bottomHeight = bottom.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)).height
+            let bottomHeight = controlsLength ?? bottom.sizeThatFits(ProposedViewSize(width: bounds.width, height: nil)).height
+            let pictureHeight = pictureLength.map { max(0, $0 - topHeight) } ?? max(0, bounds.height - topHeight - bottomHeight)
             top.place(
                 at: CGPoint(x: bounds.midX, y: bounds.minY),
                 anchor: .top,
@@ -273,7 +283,7 @@ private struct CameraFrameArrangement: Layout {
             )
             picture.place(
                 at: CGPoint(x: bounds.minX, y: bounds.minY + topHeight),
-                proposal: ProposedViewSize(width: bounds.width, height: max(0, bounds.height - topHeight - bottomHeight))
+                proposal: ProposedViewSize(width: bounds.width, height: pictureHeight)
             )
             bottom.place(
                 at: CGPoint(x: bounds.midX, y: bounds.maxY),
