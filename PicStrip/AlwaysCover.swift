@@ -97,7 +97,7 @@ struct AlwaysCoverView: View {
         NavigationStack {
             List {
                 Section {
-                    HStack {
+                    AccessibilityStack {
                         TextField("Add a word or phrase", text: $newTerm)
                             .textInputAutocapitalization(.never)
                             .autocorrectionDisabled()

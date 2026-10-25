@@ -169,10 +169,13 @@ struct PreSaveReviewView: View {
                 if metadataCount + visualRedactionCount == 0 {
                     Text("No changes selected")
                         .font(.subheadline.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
                 } else {
                     VStack(alignment: .leading, spacing: 5) {
                         Text("Your sharing summary")
                             .font(.subheadline.weight(.semibold))
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityAddTraits(.isHeader)
 
                         if viewModel.sharingSummary.locationRemoved {
                             Label("Location removed", systemImage: "location.slash")
@@ -221,6 +224,14 @@ struct PreSaveReviewView: View {
                         .accessibilityIdentifier("savePreviewLabel")
 
                     comparablePreview(previewImage)
+                    if viewModel.sourceUIImage != nil, dynamicTypeSize.isAccessibilitySize {
+                        // VoiceOver reads the same words from the preview's hint.
+                        Text("Touch and hold to compare with the original")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityHidden(true)
+                    }
                     Button {
                         showFullPreview = true
                     } label: {
@@ -262,7 +273,8 @@ struct PreSaveReviewView: View {
             }
             .overlay(alignment: .bottom) {
                 // On the preview rather than under it: the review sheet is short on iPad.
-                if original != nil, !showsOriginal {
+                // At accessibility sizes it goes under it instead (`summaryCard`).
+                if original != nil, !showsOriginal, !dynamicTypeSize.isAccessibilitySize {
                     Text("Touch and hold to compare with the original")
                         .font(.caption2.weight(.medium))
                         // A hint on top of the preview must not hide it at large sizes;

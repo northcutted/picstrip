@@ -302,6 +302,7 @@ struct BatchConfigView: View {
             Spacer()
         }
         .padding()
+        .scrollsAtAccessibilitySizes()
     }
 }
 

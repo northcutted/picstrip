@@ -8684,6 +8684,107 @@
         }
       }
     },
+    "Brighter" : {
+      "comment" : "VoiceOver action on the camera viewfinder: raises the exposure.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أكثر سطوعًا"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heller"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más claro"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más claro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus clair"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più chiaro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "明るくする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 밝게"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lichter"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jaśniej"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais claro"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais claro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ljusare"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha aydınlık"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调亮"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調亮"
+          }
+        }
+      }
+    },
     "Browse Files" : {
       "localizations" : {
         "ar" : {
@@ -12618,6 +12719,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已清理並儲存：%lld"
+          }
+        }
+      }
+    },
+    "Cleaned copy ready to share or save." : {
+      "comment" : "VoiceOver announcement when the cleaned copy of a video has been made.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "النسخة المنظَّفة جاهزة للمشاركة أو الحفظ."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereinigte Kopie bereit zum Teilen oder Sichern."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia limpia lista para compartir o guardar."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia limpia lista para compartir o guardar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copie nettoyée prête à être partagée ou enregistrée."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copia pulita pronta da condividere o salvare."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "クリーンアップしたコピーを共有または保存できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "정리된 사본을 공유하거나 저장할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opgeschoonde kopie klaar om te delen of te bewaren."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wyczyszczona kopia jest gotowa do udostępnienia lub zachowania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia limpa pronta para compartilhar ou salvar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cópia limpa pronta para partilhar ou guardar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Den rensade kopian är redo att delas eller sparas."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temizlenmiş kopya paylaşılmaya veya kaydedilmeye hazır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理后的副本已就绪，可共享或存储。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "清理後的拷貝已就緒，可分享或儲存。"
           }
         }
       }
@@ -17626,6 +17828,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "自訂遮蓋"
+          }
+        }
+      }
+    },
+    "Darker" : {
+      "comment" : "VoiceOver action on the camera viewfinder: lowers the exposure.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أكثر قتامة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dunkler"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más oscuro"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Más oscuro"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plus sombre"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Più scuro"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "暗くする"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "더 어둡게"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Donkerder"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ciemniej"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais escuro"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mais escuro"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mörkare"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Daha karanlık"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "调暗"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "調暗"
           }
         }
       }
@@ -28400,107 +28703,6 @@
         }
       }
     },
-    "Hold and drag to select a stretch of sound." : {
-      "comment" : "VoiceOver hint of the timeline's audio lane.",
-      "localizations" : {
-        "ar" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "المس مع الاستمرار واسحب لتحديد جزء من الصوت."
-          }
-        },
-        "de" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gedrückt halten und ziehen, um einen Tonabschnitt auszuwählen."
-          }
-        },
-        "es" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén pulsado y arrastra para seleccionar un fragmento de sonido."
-          }
-        },
-        "es-419" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantén presionado y arrastra para seleccionar un fragmento de sonido."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Maintenez le doigt et faites glisser pour sélectionner un passage audio."
-          }
-        },
-        "it" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tieni premuto e trascina per selezionare un tratto di audio."
-          }
-        },
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "長押ししてドラッグすると、音声の区間を選択できます。"
-          }
-        },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "길게 누른 채 드래그하면 소리 구간을 선택할 수 있습니다."
-          }
-        },
-        "nl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Houd ingedrukt en sleep om een stuk geluid te selecteren."
-          }
-        },
-        "pl" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Przytrzymaj i przeciągnij, aby zaznaczyć fragment dźwięku."
-          }
-        },
-        "pt-BR" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Toque, segure e arraste para selecionar um trecho do som."
-          }
-        },
-        "pt-PT" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mantenha premido e arraste para selecionar um excerto do som."
-          }
-        },
-        "sv" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Håll ned och dra för att markera ett ljudavsnitt."
-          }
-        },
-        "tr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Sesin bir bölümünü seçmek için basılı tutup sürükleyin."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住并拖动可选择一段声音。"
-          }
-        },
-        "zh-Hant" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "按住並拖移可選取一段聲音。"
-          }
-        }
-      }
-    },
     "Horizontal position" : {
       "localizations" : {
         "ar" : {
@@ -35464,6 +35666,107 @@
         }
       }
     },
+    "Moves or resizes the selected region without dragging." : {
+      "comment" : "VoiceOver hint on the “Position & size” button in the redaction editor.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ينقل المنطقة المحددة أو يغيّر حجمها دون سحب."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bewegt den ausgewählten Bereich oder ändert seine Größe, ohne zu ziehen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mueve o redimensiona el área seleccionada sin arrastrar."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mueve o redimensiona el área seleccionada sin arrastrar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplace ou redimensionne la zone sélectionnée sans la faire glisser."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sposta o ridimensiona l’area selezionata senza trascinarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ドラッグせずに、選択した領域を移動したりサイズを変更したりします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "드래그하지 않고 선택한 영역을 이동하거나 크기를 조절합니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Verplaatst het geselecteerde gebied of past het formaat aan zonder te slepen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuwa zaznaczony obszar lub zmienia jego rozmiar bez przeciągania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move ou redimensiona a área selecionada sem arrastar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move ou redimensiona a área selecionada sem arrastar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Flyttar det markerade området eller ändrar dess storlek utan att dra."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seçili bölgeyi sürüklemeden taşır veya yeniden boyutlandırır."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "无需拖移即可移动所选区域或调整其大小。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "不必拖移即可移動所選區域或調整其大小。"
+          }
+        }
+      }
+    },
     "Multiline PEM private-key blocks, including their encoded contents" : {
       "localizations" : {
         "ar" : {
@@ -37786,6 +38089,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "未清理：%lld。這些項目沒有儲存任何內容。"
+          }
+        }
+      }
+    },
+    "Not covered" : {
+      "comment" : "VoiceOver value of a redaction region that is turned off: it will not be covered in the saved copy.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "غير محجوبة"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nicht verdeckt"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin censurar"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sin censurar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non masquée"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Non coperta"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "マスクなし"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "가리지 않음"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Niet afgedekt"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bez zamazania"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem ocultação"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sem ocultação"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maskeras inte"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Karartılmıyor"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未遮盖"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未遮蓋"
           }
         }
       }
@@ -48404,6 +48808,107 @@
         }
       }
     },
+    "Region added in the middle of the photo and selected. Use Position & size to move it." : {
+      "comment" : "VoiceOver announcement after “Add centered region”. “Position & size” is the editor button of that name.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "أُضيفت منطقة في وسط الصورة وحُدِّدت. استخدم ”الموضع والحجم“ لنقلها."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bereich in der Mitte des Fotos hinzugefügt und ausgewählt. Verwende „Position & Größe“, um ihn zu bewegen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Área añadida en el centro de la foto y seleccionada. Usa «Posición y tamaño» para moverla."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Área agregada en el centro de la foto y seleccionada. Usa “Posición y tamaño” para moverla."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zone ajoutée au centre de la photo et sélectionnée. Utilisez Position et taille pour la déplacer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Area aggiunta al centro della foto e selezionata. Usa Posizione e dimensioni per spostarla."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "写真の中央に領域を追加して選択しました。「位置とサイズ」で移動できます。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "사진 중앙에 영역을 추가하고 선택했습니다. ‘위치 및 크기’를 사용하여 이동할 수 있습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gebied in het midden van de foto toegevoegd en geselecteerd. Gebruik Positie en grootte om het te verplaatsen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dodano obszar na środku zdjęcia i zaznaczono go. Użyj opcji Pozycja i rozmiar, aby go przesunąć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Área adicionada no centro da foto e selecionada. Use Posição e tamanho para movê-la."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Área adicionada no centro da fotografia e selecionada. Use Posição e tamanho para a mover."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ett område har lagts till mitt i bilden och markerats. Använd Position och storlek för att flytta det."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fotoğrafın ortasına bir bölge eklendi ve seçildi. Taşımak için Konum ve boyut düğmesini kullanın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在照片中央添加区域并选中。使用“位置与大小”可移动它。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已在照片中央加入區域並選取。使用「位置與大小」可移動它。"
+          }
+        }
+      }
+    },
     "Remove" : {
       "comment" : "Menu item: delete a drawn object cover or a sound edit.",
       "localizations" : {
@@ -51785,6 +52290,309 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "儲存中…"
+          }
+        }
+      }
+    },
+    "Scan finished. Faces: %lld. Text and codes: %lld." : {
+      "comment" : "VoiceOver announcement when a video's scan ends: how many faces, and how many pieces of text or codes, were found.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اكتمل الفحص. الوجوه: %lld. النصوص والرموز: %lld."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan abgeschlossen. Gesichter: %lld. Texte und Codes: %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. Caras: %lld. Texto y códigos: %lld."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. Caras: %lld. Texto y códigos: %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse terminée. Visages : %lld. Textes et codes : %lld."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansione completata. Volti: %lld. Testo e codici: %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキャンが完了しました。顔：%lld。文字とコード：%lld。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검사가 완료되었습니다. 얼굴: %lld. 텍스트 및 코드: %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan voltooid. Gezichten: %lld. Tekst en codes: %lld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skanowanie zakończone. Twarze: %lld. Tekst i kody: %lld."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Rostos: %lld. Textos e códigos: %lld."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Rostos: %lld. Texto e códigos: %lld."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sökningen är klar. Ansikten: %lld. Text och koder: %lld."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarama tamamlandı. Yüzler: %lld. Metinler ve kodlar: %lld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扫描完成。面孔：%lld。文字和条码：%lld。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描完成。臉孔：%lld。文字和條碼：%lld。"
+          }
+        }
+      }
+    },
+    "Scan finished. Nothing found to cover." : {
+      "comment" : "VoiceOver announcement when the photo's privacy scan ends without finding anything to cover.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اكتمل الفحص. لم يُعثر على شيء لحجبه."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan abgeschlossen. Nichts zum Verdecken gefunden."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. No se ha encontrado nada que censurar."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. No se encontró nada que censurar."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse terminée. Rien à masquer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansione completata. Non è stato trovato nulla da coprire."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキャンが完了しました。マスクする項目は見つかりませんでした。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검사가 완료되었습니다. 가릴 항목을 찾지 못했습니다."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan voltooid. Niets gevonden om af te dekken."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skanowanie zakończone. Nie znaleziono nic do zamazania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Nada encontrado para ocultar."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Não foi encontrado nada para ocultar."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sökningen är klar. Inget att maskera hittades."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarama tamamlandı. Karartılacak bir şey bulunamadı."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扫描完成。未找到需要遮盖的内容。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描完成。找不到需要遮蓋的內容。"
+          }
+        }
+      }
+    },
+    "Scan finished. Regions covered: %lld." : {
+      "comment" : "VoiceOver announcement when the photo scan finishes; %lld is how many regions are covered. Keep the “label: number” form (no plural forms).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اكتمل الفحص. المناطق المحجوبة: %lld."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan abgeschlossen. Verdeckte Bereiche: %lld."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. Áreas censuradas: %lld."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análisis terminado. Áreas censuradas: %lld."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Analyse terminée. Zones masquées : %lld."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scansione completata. Aree coperte: %lld."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "スキャンが完了しました。マスクした領域：%lld。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "검사가 완료되었습니다. 가린 영역: %lld."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scan voltooid. Afgedekte gebieden: %lld."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Skanowanie zakończone. Zamazane obszary: %lld."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Áreas ocultadas: %lld."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Análise concluída. Áreas ocultadas: %lld."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sökningen är klar. Maskerade områden: %lld."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tarama tamamlandı. Karartılan bölgeler: %lld."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "扫描完成。已遮盖的区域：%lld。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "掃描完成。已遮蓋的區域：%lld。"
           }
         }
       }
@@ -58264,6 +59072,208 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "已成功清理並儲存 %lld 張照片。"
+          }
+        }
+      }
+    },
+    "Swipe up or down to bleep or mute a second from the playhead." : {
+      "comment" : "VoiceOver hint on the video editor's audio lane: its actions bleep or mute one second starting at the playhead.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب لأعلى أو لأسفل لإضافة صفير أو كتم لثانية بدءًا من مؤشر التشغيل."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nach oben oder unten streichen, um eine Sekunde ab der Abspielposition zu überpiepen oder stummzuschalten."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza hacia arriba o hacia abajo para poner un pitido o silenciar un segundo desde el cursor de reproducción."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza hacia arriba o hacia abajo para poner un pitido o silenciar un segundo desde el cursor de reproducción."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balayez vers le haut ou vers le bas pour biper ou couper le son une seconde à partir de la tête de lecture."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorri verso l’alto o verso il basso per mettere un bip o silenziare un secondo a partire dall’indicatore di riproduzione."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "再生ヘッドから1秒間ピー音を入れるかミュートするには、上または下にスワイプします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "재생 헤드부터 1초간 삐 소리를 넣거나 음소거하려면 위 또는 아래로 쓸어넘기세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veeg omhoog of omlaag om één seconde vanaf de afspeelkop te laten piepen of te dempen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń palcem w górę lub w dół, aby dodać sekundowy pisk lub wyciszenie od głowicy odtwarzania."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o dedo para cima ou para baixo para colocar um bipe ou silenciar um segundo a partir do indicador de reprodução."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o dedo para cima ou para baixo para pôr um bipe ou silenciar um segundo a partir da cabeça de reprodução."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svep uppåt eller nedåt för att lägga pip över eller tysta en sekund från uppspelningshuvudet."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Oynatma imlecinden itibaren bir saniyelik bip eklemek veya bir saniyeyi sessize almak için yukarı ya da aşağı kaydırın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上或向下轻扫以从播放头起添加 1 秒哔声或静音。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上或向下滑動以從播放頭起加入 1 秒嗶聲或靜音。"
+          }
+        }
+      }
+    },
+    "Swipe up or down to zoom." : {
+      "comment" : "VoiceOver hint on the camera viewfinder (VoiceOver's swipe up/down adjusts it).",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "اسحب لأعلى أو لأسفل لضبط التكبير."
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zum Zoomen nach oben oder unten streichen."
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza hacia arriba o hacia abajo para hacer zoom."
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Desliza hacia arriba o hacia abajo para hacer zoom."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Balayez vers le haut ou vers le bas pour zoomer."
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Scorri verso l’alto o verso il basso per regolare lo zoom."
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ズームするには、上または下にスワイプします。"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "줌을 조절하려면 위 또는 아래로 쓸어넘기세요."
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veeg omhoog of omlaag om te zoomen."
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Przesuń palcem w górę lub w dół, aby powiększyć lub pomniejszyć."
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o dedo para cima ou para baixo para ajustar o zoom."
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Passe o dedo para cima ou para baixo para ajustar o zoom."
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Svep uppåt eller nedåt för att zooma."
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yakınlaştırmak veya uzaklaştırmak için yukarı ya da aşağı kaydırın."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上或向下轻扫以缩放。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "向上或向下滑動以縮放。"
           }
         }
       }
@@ -66132,6 +67142,107 @@
         }
       }
     },
+    "Viewfinder" : {
+      "comment" : "VoiceOver name of the live camera picture.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "معيّن المنظر"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sucher"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visor"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visor"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Viseur"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mirino"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ビューファインダー"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "뷰파인더"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoeker"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wizjer"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visor"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Visor"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sökare"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vizör"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "取景器"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "觀景窗"
+          }
+        }
+      }
+    },
     "Visa, Mastercard, Amex, Discover — with or without spaces" : {
       "localizations" : {
         "ar" : {
@@ -67644,6 +68755,107 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "縮放"
+          }
+        }
+      }
+    },
+    "Zoom %@" : {
+      "comment" : "VoiceOver value of the camera viewfinder: its zoom, for example “Zoom 1.5×”.",
+      "localizations" : {
+        "ar" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "التكبير %@"
+          }
+        },
+        "de" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "es" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "es-419" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "it" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "ズーム%@"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "줌 %@"
+          }
+        },
+        "nl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "pl" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "pt-BR" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "pt-PT" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "sv" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Zoom %@"
+          }
+        },
+        "tr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yakınlaştırma: %@"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "缩放 %@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "縮放 %@"
           }
         }
       }

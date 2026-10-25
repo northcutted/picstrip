@@ -24,7 +24,7 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | Setting | Checked-in value |
 | --- | --- |
 | Project / scheme | <code>PicStrip.xcodeproj</code> / <code>PicStrip</code> |
-| Primary Xcode / build / simulator / SDK | <code>27.0</code> / <code>27A266a</code> / <code>27.0</code> / <code>27.0</code> |
+| Primary Xcode / build / simulator / SDK | <code>27.1</code> / <code>27A9275</code> / <code>27.0</code> / <code>27.1</code> |
 | Compatibility Xcode / build / simulator / SDK | <code>26.6</code> / <code>17F113</code> / <code>26.5</code> / <code>26.5</code> |
 | Unit test device | iPhone 17 |
 | Developer Ruby | <code>3.4.10</code> |
@@ -32,7 +32,7 @@ Source: [app configuration](../../.github/ios-release.json), [platform pin](../.
 | Upload adapter | <code>transporter</code> |
 | Store release policy | <code>AFTER_APPROVAL</code>; phased release: <code>true</code> |
 | Automatic TestFlight groups | None configured |
-| Replacement override | <code>1.7.0</code> replaces recorded build <code>105.1</code> |
+| Replacement override | None |
 | Store locales | 17: <code>en-US</code>, <code>ar-SA</code>, <code>de-DE</code>, <code>es-ES</code>, <code>es-MX</code>, <code>fr-FR</code>, <code>it</code>, <code>ja</code>, <code>ko</code>, <code>nl-NL</code>, <code>pl</code>, <code>pt-BR</code>, <code>pt-PT</code>, <code>sv</code>, <code>tr</code>, <code>zh-Hans</code>, <code>zh-Hant</code> |
 | App translations | 16 in addition to the source language |
 | Screenshot devices | iPhone 18 Pro Max, iPad Pro 13-inch (M5) |
