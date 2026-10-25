@@ -10,6 +10,7 @@ struct ContentView: View {
     @State private var visiblePanelCategory: String = ""
     @State private var isRedactionEditing = false
     @State private var isAddingRedaction = false
+    @State private var drawingShape: RedactionShape = .rectangle
     @State private var zoomResetRequest = 0
 
     /// Set to true when `StripImageIntent` asks for the multi-photo picker.
@@ -739,10 +740,12 @@ struct ContentView: View {
     /// they decide whether the controls go below the photo or beside it.
     @State private var photoFrame: CGRect = .zero
     @State private var photoWindowFrame: CGRect = .zero
+    @State private var canvasGeometry = CanvasGeometry()
+    @SceneStorage("photoInspectorVisible") private var inspectorVisible = true
     @Environment(\.layoutDirection) private var layoutDirection
 
     private var photoCanvasLayout: CanvasLayout {
-        CanvasLayout.resolve(for: photoFrame.size, isEligible: CanvasLayout.isEligibleDevice)
+        canvasGeometry.layout
     }
 
     /// The photo with its controls below it — or, on a wide display such as
@@ -751,14 +754,18 @@ struct ContentView: View {
     /// views, rearranged.
     private var photoLayout: some View {
         let isSideBySide = photoCanvasLayout == .sideBySide
+        let panes = canvasGeometry.panes(layoutDirection: layoutDirection)
+        let isDivided = panes != nil
+        let showsControls = !isSideBySide || isDivided || inspectorVisible
         let arrangement = isSideBySide ? AnyLayout(HStackLayout(spacing: 0)) : AnyLayout(VStackLayout(spacing: 0))
-        let columnWidth = CanvasLayout.sideColumnWidth(content: photoFrame, window: photoWindowFrame, layoutDirection: layoutDirection)
+        let columnWidth = panes?.controls ?? CanvasLayout.sideColumnWidth(content: photoFrame, window: photoWindowFrame, layoutDirection: layoutDirection)
         // At accessibility sizes the controls below take what they need, and
         // the photo keeps at least a usable strip of the screen.
         let isLargeText = dynamicTypeSize.isAccessibilitySize
         return arrangement {
             imageDisplay
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .frame(width: isSideBySide ? panes?.picture : nil, height: photoCanvasLayout == .tabletop ? panes?.picture : nil)
                 .frame(minHeight: isLargeText ? 220 : nil)
                 .background(Color(.secondarySystemBackground))
                 .overlay(alignment: .top) {
@@ -780,19 +787,42 @@ struct ContentView: View {
                 }
 
             Divider()
+                .frame(width: isSideBySide ? max(1, panes?.gap ?? 1) : nil,
+                       height: photoCanvasLayout == .tabletop ? max(1, panes?.gap ?? 1) : nil)
+                .opacity(showsControls ? 1 : 0)
 
             photoControls(isSideBySide: isSideBySide)
-                .frame(width: isSideBySide ? columnWidth : nil)
+                .frame(width: isSideBySide ? (showsControls ? columnWidth : 0) : nil,
+                       height: photoCanvasLayout == .tabletop ? panes?.controls : nil)
                 .frame(maxHeight: isSideBySide ? .infinity : nil, alignment: .top)
+                .clipped()
+                .opacity(showsControls ? 1 : 0)
+                .allowsHitTesting(showsControls)
+                .accessibilityHidden(!showsControls)
                 .background(isSideBySide ? Color(.systemBackground) : .clear)
         }
-        .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { photoFrame = $0 }
+        .onCanvasGeometryChange { canvasGeometry = $0; photoFrame = $0.frame }
         .background {
             Color.clear
                 .ignoresSafeArea()
                 .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { photoWindowFrame = $0 }
         }
         .animation(.spring(duration: 0.35, bounce: 0.1), value: isRedactionEditing)
+        .toolbar {
+            ToolbarItemGroup(placement: .topBarTrailing) {
+                if isRedactionEditing {
+                    Button { viewModel.undoRedaction() } label: { Image(systemName: "arrow.uturn.backward") }
+                        .disabled(!viewModel.canUndo).accessibilityLabel("Undo")
+                    Button { viewModel.redoRedaction() } label: { Image(systemName: "arrow.uturn.forward") }
+                        .disabled(!viewModel.canRedo).accessibilityLabel("Redo")
+                }
+                if isSideBySide && !isDivided {
+                    Button { inspectorVisible.toggle() } label: { Image(systemName: "sidebar.trailing") }
+                        .accessibilityLabel(inspectorVisible ? "Hide Sidebar" : "Show Sidebar")
+                        .accessibilityIdentifier("togglePhotoSidebarButton")
+                }
+            }
+        }
     }
 
     /// The redaction drawer while editing, the control panel otherwise: below
@@ -819,7 +849,8 @@ struct ContentView: View {
                         }
                     },
                     onAddCentered: {
-                        viewModel.addCustomRedaction(rect: CGRect(x: 0.25, y: 0.4, width: 0.5, height: 0.2))
+                        viewModel.addCustomRedaction(rect: CGRect(x: 0.25, y: 0.4, width: 0.5, height: 0.2),
+                                                     shape: drawingShape, vertices: drawingShape == .custom ? RedactionShape.defaultVertices : [])
                         isAddingRedaction = false
                         AccessibilityNotification.Announcement(
                             String(localized: "Region added in the middle of the photo and selected. Use Position & size to move it.")
@@ -881,7 +912,13 @@ struct ContentView: View {
                     onApplyToAllFaces: { id in viewModel.applyStyleToAllFaces(from: id) },
                     onAlwaysCover: { term in viewModel.alwaysCover(term) },
                     // Beside the photo, the list of regions takes the column's height.
-                    regionListMaxHeight: isSideBySide ? .infinity : 160
+                    regionListMaxHeight: isSideBySide ? 280 : 160,
+                    drawingShape: drawingShape,
+                    onDrawingShape: { drawingShape = $0 },
+                    onChangeShape: { viewModel.changeRedactionShape(id: $0, shape: $1) },
+                    onChangeOutline: { viewModel.changeRedactionOutline(id: $0, vertices: $1) },
+                    outlineImage: viewModel.sourceUIImage,
+                    fillsColumn: isSideBySide || photoCanvasLayout == .tabletop
                 )
                 .background(Color(.systemBackground))
                 .layoutPriority(isLargeText ? 1 : 0)
@@ -890,10 +927,13 @@ struct ContentView: View {
                     removal: .move(edge: edge).combined(with: .opacity)
                 ))
             } else {
-                controlPanel
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 16)
-                    .scrollsAtAccessibilitySizes()
+                Group {
+                    if photoCanvasLayout == .stacked {
+                        paddedControlPanel.scrollsAtAccessibilitySizes()
+                    } else {
+                        ScrollView { paddedControlPanel }
+                    }
+                }
                     .background(Color(.systemBackground))
                     .layoutPriority(isLargeText ? 1 : 0)
                     .transition(.asymmetric(
@@ -902,6 +942,10 @@ struct ContentView: View {
                     ))
             }
         }
+    }
+
+    private var paddedControlPanel: some View {
+        controlPanel.padding(.horizontal, 20).padding(.vertical, 16)
     }
 
     // MARK: - Image display region
@@ -922,6 +966,7 @@ struct ContentView: View {
                         ),
                         isRedactionEditing: isRedactionEditing,
                         isAddingRedaction: isAddingRedaction,
+                        drawingShape: drawingShape,
                         resetZoomRequest: zoomResetRequest,
                         isScanning: viewModel.isScanningPII,
                         showZoomHint: hasPhoto,
@@ -929,10 +974,14 @@ struct ContentView: View {
                             if isPanelOpen { closePanel() }
                         },
                         onAddRedaction: { rect in
-                            viewModel.addCustomRedaction(rect: rect)
+                            viewModel.addCustomRedaction(rect: rect, shape: drawingShape)
                             isAddingRedaction = false
                         },
-                        onSelectObject: viewModel.isObjectSelectionSupported ? { point in
+                        onAddOutline: { rect, vertices in
+                            viewModel.addCustomRedaction(rect: rect, shape: .custom, vertices: vertices)
+                            isAddingRedaction = false
+                        },
+                        onSelectObject: viewModel.isObjectSelectionSupported && drawingShape != .custom ? { point in
                             haptic(.light)
                             Task {
                                 let before = viewModel.redactionRegions.count

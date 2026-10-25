@@ -17,6 +17,8 @@ nonisolated struct FaceTrack: Identifiable, Hashable, Sendable {
     /// Drawn by the user and followed, rather than found: the box is what they
     /// drew, so it is padded only lightly.
     var isDrawn = false
+    var shape: RedactionShape = .rectangle
+    var vertices: [CGPoint] = []
 
     var start: Double { samples.first?.time ?? 0 }
     var end: Double { samples.last?.time ?? 0 }

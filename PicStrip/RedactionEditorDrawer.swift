@@ -321,11 +321,18 @@ struct RedactionEditorDrawer: View {
     /// How tall the list of regions may grow: a few rows below the photo, the
     /// whole column beside it.
     var regionListMaxHeight: CGFloat = 160
+    var drawingShape: RedactionShape = .rectangle
+    var onDrawingShape: (RedactionShape) -> Void = { _ in }
+    var onChangeShape: (String, RedactionShape) -> Void = { _, _ in }
+    var onChangeOutline: (String, [CGPoint]) -> Void = { _, _ in }
+    var outlineImage: UIImage?
+    var fillsColumn = false
 
     // MARK: - Multi-select local state
 
     @State private var showPosition = false
     @State private var showStyles = false
+    @State private var showOutline = false
     @State private var isMultiSelectMode: Bool = false
     @State private var multiSelectedIDs: Set<String> = []
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
@@ -336,8 +343,11 @@ struct RedactionEditorDrawer: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             // At accessibility sizes the controls scroll; Undo, Redo and Done stay put.
-            editingControls
-                .scrollsAtAccessibilitySizes()
+            if fillsColumn {
+                ScrollView { editingControls }
+            } else {
+                editingControls.scrollsAtAccessibilitySizes()
+            }
 
             // ── Action bar ────────────────────────────────────────────────
             if isMultiSelectMode {
@@ -360,10 +370,15 @@ struct RedactionEditorDrawer: View {
                 }
             }
             .presentationDetents([.medium, .large])
+            .sheet(isPresented: $showOutline) {
+                if let region = regions.first(where: { $0.id == selectedRegionID }) {
+                    RedactionOutlineEditor(region: region, image: outlineImage) { onChangeOutline(region.id, $0) }
+                }
+            }
         }
         .sheet(isPresented: $showPosition) {
             if let region = regions.first(where: { $0.id == selectedRegionID }) {
-                RegionPositionView(region: region, onAdjust: onAdjust)
+                RegionPositionView(region: region, imageSize: outlineImage?.size ?? .zero, onAdjust: onAdjust)
             }
         }
         .animation(.spring(duration: 0.22), value: isAddingRedaction)
@@ -469,12 +484,14 @@ struct RedactionEditorDrawer: View {
 
             // ── Draw-mode hint (single-select only) ──────────────────────
             if isAddingRedaction && !isMultiSelectMode {
+                RedactionShapePicker(selection: drawingShape, onSelect: onDrawingShape)
+                    .padding(.horizontal, 16).padding(.bottom, 8)
                 HStack(spacing: 8) {
                     Image(systemName: "hand.draw")
                         .imageScale(.small)
                         .foregroundStyle(.orange)
                         .accessibilityHidden(true)
-                    Text(canSelectObjects
+                    Text(drawingShape == .custom ? "Trace an outline on the photo. Lift your finger to close it." : canSelectObjects
                          ? "Drag on the photo to draw a redaction box, or tap an object"
                          : "Drag on the photo to draw a redaction box")
                         .font(.caption)
@@ -732,6 +749,14 @@ struct RedactionEditorDrawer: View {
     @ViewBuilder
     private func styleColorPanel(for region: RedactionRegion) -> some View {
         VStack(alignment: .leading, spacing: 10) {
+
+            Text("Shape").font(.caption.weight(.semibold)).foregroundStyle(.secondary)
+            RedactionShapePicker(selection: region.shape) { onChangeShape(region.id, $0) }
+            if region.shape == .custom {
+                Button("Edit Outline") { showOutline = true }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("editOutlineButton")
+            }
 
             // ── Style row ─────────────────────────────────────────────────
             VStack(alignment: .leading, spacing: 6) {

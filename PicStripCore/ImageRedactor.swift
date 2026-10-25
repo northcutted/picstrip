@@ -201,6 +201,84 @@ nonisolated enum RedactionLattice {
     }
 }
 
+// MARK: - Redaction geometry
+
+/// Shapes use image coordinates, never the preview's aspect ratio. Custom
+/// vertices are local to the region (0...1), so moving and resizing keep them.
+nonisolated enum RedactionShape: String, CaseIterable, Codable, Hashable {
+    case rectangle, square, circle, oval, custom
+
+    var displayName: String {
+        switch self {
+        case .rectangle: return String(localized: "Rectangle")
+        case .square: return String(localized: "Square")
+        case .circle: return String(localized: "Circle")
+        case .oval: return String(localized: "Oval")
+        case .custom: return String(localized: "Custom")
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .rectangle: return "rectangle"
+        case .square: return "square"
+        case .circle: return "circle"
+        case .oval: return "oval"
+        case .custom: return "lasso"
+        }
+    }
+
+    var hasEqualSides: Bool { self == .square || self == .circle }
+
+    static let defaultVertices = [
+        CGPoint(x: 0.5, y: 0), CGPoint(x: 1, y: 0.4),
+        CGPoint(x: 0.8, y: 1), CGPoint(x: 0.2, y: 1), CGPoint(x: 0, y: 0.4)
+    ]
+
+    func path(in rect: CGRect, vertices: [CGPoint] = []) -> CGPath {
+        let path = CGMutablePath()
+        var bounds = rect
+        if hasEqualSides {
+            let edge = min(rect.width, rect.height)
+            bounds = CGRect(x: rect.midX - edge / 2, y: rect.midY - edge / 2, width: edge, height: edge)
+        }
+        switch self {
+        case .rectangle, .square: path.addRect(bounds)
+        case .circle, .oval: path.addEllipse(in: bounds)
+        case .custom:
+            let points = Self.validVertices(vertices) ? vertices : Self.defaultVertices
+            for (index, point) in points.enumerated() {
+                let mapped = CGPoint(x: rect.minX + point.x * rect.width, y: rect.minY + point.y * rect.height)
+                if index == 0 { path.move(to: mapped) } else { path.addLine(to: mapped) }
+            }
+            path.closeSubpath()
+        }
+        return path
+    }
+
+    static func validVertices(_ points: [CGPoint]) -> Bool {
+        guard (3...256).contains(points.count), points.allSatisfy({
+            $0.x.isFinite && $0.y.isFinite && (0...1).contains($0.x) && (0...1).contains($0.y)
+        }) else { return false }
+        // Reject an empty or collinear outline. Self-intersections use the
+        // nonzero winding rule in both the preview and the export.
+        let area = points.indices.reduce(CGFloat.zero) { sum, index in
+            let next = points[(index + 1) % points.count]
+            return sum + points[index].x * next.y - next.x * points[index].y
+        }
+        return abs(area) > 0.0001
+    }
+
+    /// Expands a box to equal pixel sides, then fits it within the image.
+    func constrained(_ rect: CGRect, imageSize: CGSize) -> CGRect {
+        guard hasEqualSides, imageSize.width > 0, imageSize.height > 0 else { return rect }
+        let edge = min(max(rect.width * imageSize.width, rect.height * imageSize.height), min(imageSize.width, imageSize.height))
+        let width = edge / imageSize.width, height = edge / imageSize.height
+        return CGRect(x: min(max(0, rect.midX - width / 2), 1 - width),
+                      y: min(max(0, rect.midY - height / 2), 1 - height), width: width, height: height)
+    }
+}
+
 // MARK: - RedactionSpec
 
 /// A lightweight rendering descriptor that is available in both the main app
@@ -220,6 +298,8 @@ nonisolated struct RedactionSpec: Equatable {
     var strength: Double = RedactionStrength.standard
     /// The emoji drawn by `.emoji`; ignored by every other style.
     var emoji: String = EmojiCover.defaultEmoji
+    var shape: RedactionShape = .rectangle
+    var vertices: [CGPoint] = []
 
     /// The strength of this region's scramble pass.
     var passStrength: Double {
@@ -335,6 +415,12 @@ nonisolated struct ImageRedactor {
                 )
                 guard rect.width > 0, rect.height > 0 else { continue }
 
+                ctx.cgContext.saveGState()
+                if spec.shape != .rectangle {
+                    ctx.cgContext.addPath(spec.shape.path(in: rect, vertices: spec.vertices))
+                    ctx.cgContext.clip()
+                }
+
                 switch spec.style {
                 case .solid:
                     Self.renderSolid(color: spec.color.uiColor, rect: rect)
@@ -344,6 +430,7 @@ nonisolated struct ImageRedactor {
                     // Only reached when the Core Image pass failed.
                     Self.renderSolid(color: RedactionColor.black.uiColor, rect: rect)
                 }
+                ctx.cgContext.restoreGState()
             }
 
             // The emoji go on last, over their blur (or the solid fill that
@@ -354,7 +441,14 @@ nonisolated struct ImageRedactor {
                     width: spec.rect.width * size.width, height: spec.rect.height * size.height
                 )
                 guard rect.width > 0, rect.height > 0 else { continue }
+                ctx.cgContext.saveGState()
+                // Preserve the existing oversized emoji for rectangular regions.
+                if spec.shape != .rectangle {
+                    ctx.cgContext.addPath(spec.shape.path(in: rect, vertices: spec.vertices))
+                    ctx.cgContext.clip()
+                }
                 EmojiCover.draw(spec.emoji, covering: rect)
+                ctx.cgContext.restoreGState()
             }
         }
     }
@@ -495,8 +589,18 @@ nonisolated struct ImageRedactor {
                 }
                 let layer = CIImage(cgImage: rendered)
                     .transformed(by: CGAffineTransform(translationX: area.minX, y: area.minY))
-                for region in regions {
-                    composite = layer.cropped(to: region.rect).composited(over: composite)
+                if group.contains(where: { $0.shape != .rectangle }) {
+                    guard let mask = shapeMask(group, area: area, extent: extent) else {
+                        scramble.paintedSolidInstead += group
+                        continue
+                    }
+                    composite = layer.applyingFilter("CIBlendWithMask", parameters: [
+                        kCIInputBackgroundImageKey: composite, kCIInputMaskImageKey: mask
+                    ]).cropped(to: extent)
+                } else {
+                    for region in regions {
+                        composite = layer.cropped(to: region.rect).composited(over: composite)
+                    }
                 }
                 covered += regions
             }
@@ -519,6 +623,27 @@ nonisolated struct ImageRedactor {
             scramble.patches.append((UIImage(cgImage: cgImage, scale: image.scale, orientation: .up), points))
         }
         return scramble
+    }
+
+    /// A local grayscale mask in Core Image's Y-up pixel space. Only the
+    /// rendered patch is allocated, even for a full-resolution photograph.
+    nonisolated static func shapeMask(_ specs: [RedactionSpec], area: CGRect, extent: CGRect) -> CIImage? {
+        guard let context = CGContext(data: nil, width: Int(area.width), height: Int(area.height),
+                                      bitsPerComponent: 8, bytesPerRow: 0,
+                                      space: CGColorSpaceCreateDeviceGray(), bitmapInfo: CGImageAlphaInfo.none.rawValue) else { return nil }
+        context.setFillColor(gray: 0, alpha: 1)
+        context.fill(CGRect(origin: .zero, size: area.size))
+        context.translateBy(x: extent.minX - area.minX, y: extent.maxY - area.minY)
+        context.scaleBy(x: 1, y: -1)
+        context.setFillColor(gray: 1, alpha: 1)
+        for spec in specs {
+            let rect = CGRect(x: spec.rect.minX * extent.width, y: spec.rect.minY * extent.height,
+                              width: spec.rect.width * extent.width, height: spec.rect.height * extent.height)
+            context.addPath(spec.shape.path(in: rect, vertices: spec.vertices))
+            context.fillPath()
+        }
+        guard let image = context.makeImage() else { return nil }
+        return CIImage(cgImage: image).transformed(by: CGAffineTransform(translationX: area.minX, y: area.minY))
     }
 
     /// The whole of `ciImage` pixellated — and, for `.blur`, then blurred.

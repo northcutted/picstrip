@@ -475,6 +475,87 @@ final class PicStripUITests: XCTestCase {
 
     // MARK: - Wide displays (iPhone Duo, unfolded)
 
+    @MainActor
+    func testCustomRegionShapesCanBeChangedAndTheirOutlineEdited() async throws {
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
+        app.launch()
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30))
+        edit.tap()
+        app.buttons["addCenteredRedactionButton"].tap()
+        app.buttons["editRegionStyleButton"].tap()
+        let circle = app.buttons["shapeButton-circle"]
+        XCTAssertTrue(circle.waitForExistence(timeout: 5))
+        circle.tap()
+        XCTAssertTrue(circle.isSelected)
+        app.buttons["shapeButton-oval"].tap()
+        app.buttons["shapeButton-custom"].tap()
+        app.buttons["editOutlineButton"].tap()
+        let save = app.buttons["saveOutlineButton"]
+        XCTAssertTrue(save.waitForExistence(timeout: 5))
+        XCTAssertTrue(save.isEnabled)
+        save.tap()
+        app.buttons["doneStyleButton"].tap()
+        app.buttons["editRegionStyleButton"].tap()
+        let custom = app.buttons["shapeButton-custom"]
+        XCTAssertTrue(custom.waitForExistence(timeout: 5))
+        XCTAssertTrue(custom.isSelected)
+        attachScreen("custom_region_shape")
+    }
+
+    @MainActor
+    func testSidebarCanBeHiddenAndRestoredWithoutLosingTheRegion() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Uses a wide iPad window.")
+        XCUIDevice.shared.orientation = .landscapeLeft
+        defer { XCUIDevice.shared.orientation = .portrait }
+        let app = englishApp()
+        app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+        app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
+        app.launch()
+        let edit = app.descendants(matching: .any)["editRedactionsButton"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 30))
+        edit.tap()
+        app.buttons["addCenteredRedactionButton"].tap()
+        let sidebar = app.buttons["togglePhotoSidebarButton"]
+        let photo = app.descendants(matching: .any)["metadataPhotoPreview"]
+        let originalWidth = photo.frame.width
+        sidebar.tap()
+        try await Task.sleep(for: .seconds(1))
+        XCTAssertGreaterThan(photo.frame.width, originalWidth)
+        XCTAssertFalse(app.buttons["editRegionStyleButton"].exists)
+        sidebar.tap()
+        XCTAssertTrue(app.buttons["editRegionStyleButton"].waitForExistence(timeout: 5))
+        attachScreen("sidebar_restored")
+    }
+
+    @MainActor
+    func testActiveFoldKeepsPhotoAndControlsInSeparatePanes() async throws {
+        try XCTSkipUnless(UIDevice.current.userInterfaceIdiom == .pad, "Uses the two full-size panes on iPad.")
+        XCUIDevice.shared.orientation = .portrait
+        for axis in ["horizontal", "vertical"] {
+            let app = englishApp()
+            app.launchEnvironment["PICSTRIP_DISABLE_NAME_DETECTION"] = "1"
+            app.launchEnvironment["PICSTRIP_TEST_DIVISION_AXIS"] = axis
+            app.launchEnvironment["PICSTRIP_FIXTURE"] = try stagedFixture("store_cafe", "jpg")
+            app.launch()
+            let edit = app.descendants(matching: .any)["editRedactionsButton"]
+            XCTAssertTrue(edit.waitForExistence(timeout: 30))
+            edit.tap()
+            let done = app.buttons["doneEditingRedactionsButton"]
+            XCTAssertTrue(done.waitForExistence(timeout: 5))
+            let photo = app.descendants(matching: .any)["metadataPhotoPreview"].frame
+            if axis == "vertical" {
+                XCTAssertGreaterThanOrEqual(done.frame.minX, photo.maxX + 20)
+            } else {
+                XCTAssertGreaterThanOrEqual(done.frame.minY, photo.maxY + 20)
+            }
+            attachScreen("fold_\(axis)")
+            app.terminate()
+        }
+    }
+
     /// On a display wide and tall enough — iPhone Duo's inner one, unfolded —
     /// the redaction drawer stands beside the photo.  Folding or unfolding the
     /// phone changes the size live; here an iPad, allowed the side layout, is
