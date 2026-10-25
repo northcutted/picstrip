@@ -105,7 +105,7 @@ struct VideoCleanerView: View {
             )
         }
         .sheet(item: $outlineTrack) { track in
-            let box = track.coverBox(at: model.playhead, within: model.range(of: track)) ?? track.samples.first?.box ?? CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
+            let box = track.coverBox(at: model.playhead.time, within: model.range(of: track)) ?? track.samples.first?.box ?? CGRect(x: 0.25, y: 0.25, width: 0.5, height: 0.5)
             RedactionOutlineEditor(region: {
                 var region = RedactionRegion.custom(rect: box)
                 region.vertices = track.vertices
