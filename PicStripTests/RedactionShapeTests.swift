@@ -67,6 +67,19 @@ final class RedactionShapeTests: XCTestCase {
         }
     }
 
+    func testLongTracesKeepTheirBeginningAndCurrentEndpoint() {
+        var points: [CGPoint] = []
+        for index in 0...1000 {
+            let angle = CGFloat(index) * .pi / 500
+            let point = CGPoint(x: 0.5 + 0.4 * cos(angle), y: 0.5 + 0.4 * sin(angle))
+            RedactionShape.append(point, to: &points, minimumDistance: 0)
+            XCTAssertLessThanOrEqual(points.count, 256)
+            XCTAssertEqual(points.last, point)
+        }
+        XCTAssertEqual(points.first, CGPoint(x: 0.9, y: 0.5))
+        XCTAssertTrue(RedactionShape.validVertices(points))
+    }
+
     func testShapeAndOutlineChangesUndoAndInvalidateTheRenderKey() async throws {
         let model = ScrubberViewModel()
         model.addCustomRedaction(rect: box)

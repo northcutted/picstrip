@@ -269,6 +269,17 @@ nonisolated enum RedactionShape: String, CaseIterable, Codable, Hashable {
         return abs(area) > 0.0001
     }
 
+    /// Keep the whole stroke when a long trace reaches the vertex budget.
+    /// Thinning old samples retains the start and lets the endpoint follow
+    /// the finger instead of silently truncating the rest of the outline.
+    static func append(_ point: CGPoint, to vertices: inout [CGPoint], minimumDistance: CGFloat) {
+        if let last = vertices.last, hypot(point.x - last.x, point.y - last.y) <= minimumDistance { return }
+        if vertices.count >= 256 {
+            vertices = stride(from: 0, to: vertices.count, by: 2).map { vertices[$0] }
+        }
+        vertices.append(point)
+    }
+
     /// Expands a box to equal pixel sides, then fits it within the image.
     func constrained(_ rect: CGRect, imageSize: CGSize) -> CGRect {
         guard hasEqualSides, imageSize.width > 0, imageSize.height > 0 else { return rect }

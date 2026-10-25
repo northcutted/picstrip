@@ -317,8 +317,7 @@ struct ZoomableImagePreview: View {
                         guard (0...1).contains(start.x), (0...1).contains(start.y) else { return }
                         draftVertices = [start]
                     }
-                    if draftVertices.count < 256, let last = draftVertices.last,
-                       hypot(point.x - last.x, point.y - last.y) > 0.003 { draftVertices.append(point) }
+                    RedactionShape.append(point, to: &draftVertices, minimumDistance: 0.003)
                     return
                 }
                 draftRedactionRect = drawingShape.constrained(normalizedRect(

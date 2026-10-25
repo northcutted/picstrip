@@ -124,9 +124,7 @@ struct RedactionOutlineEditor: View {
                 if !isDrawing { vertices = []; isDrawing = true }
                 let point = CGPoint(x: min(1, max(0, value.location.x / size.width)),
                                     y: min(1, max(0, value.location.y / size.height)))
-                if vertices.count < 256, vertices.last.map({ hypot($0.x - point.x, $0.y - point.y) > 0.015 }) ?? true {
-                    vertices.append(point)
-                }
+                RedactionShape.append(point, to: &vertices, minimumDistance: 0.015)
             }.onEnded { _ in isDrawing = false })
         }
     }
