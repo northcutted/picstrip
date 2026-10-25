@@ -117,7 +117,7 @@ open PicStrip.xcodeproj
 | | |
 |-|-|
 | **iOS** | 26.0+ (tap to redact needs iOS 27; name detection needs Apple Intelligence) |
-| **Xcode** | 27.0 (26.6 is the pinned compatibility build; iOS 27-only code compiles out below Swift 6.4) |
+| **Xcode** | 27.1 (27.0 still builds, but that build runs letterboxed on iPhone Duo; 26.6 is the pinned compatibility build; iOS 27-only code compiles out below Swift 6.4) |
 | **Swift** | Swift 6 language mode |
 | **Apple Developer Account** | Required for signing and the share extension's App Group |
 

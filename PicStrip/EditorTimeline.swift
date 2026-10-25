@@ -102,6 +102,8 @@ struct EditorTimeline: View {
     @State private var edgeDirection: Double = 0
     @State private var edgeScroll: Task<Void, Never>?
 
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+
     @State private var audioSelection: ClosedRange<Double>?
     @State private var isSelectingAudio = false
     @State private var hasDraggedSelection = false
@@ -183,15 +185,24 @@ struct EditorTimeline: View {
                     Image(systemName: symbol)
                         .font(.caption2.weight(.semibold))
                         .frame(width: 14)
+                        // The lanes keep their height; at accessibility sizes the
+                        // symbol alone names each one, as large as a lane allows.
+                        .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 }
-                label
-                    .font(.caption2.weight(.semibold))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                if !dynamicTypeSize.isAccessibilitySize {
+                    label
+                        .font(.caption2.weight(.semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
             }
             .foregroundStyle(.secondary)
             .frame(width: Self.labelWidth, alignment: .leading)
-            .accessibilityHidden(true)
+            // Each lane's name is a heading, so VoiceOver can go lane by lane.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(label ?? Text(verbatim: ""))
+            .accessibilityAddTraits(.isHeader)
+            .accessibilityHidden(label == nil)
             GeometryReader { geometry in
                 track(TimelineMapping(window: window, width: geometry.size.width))
             }
@@ -879,7 +890,7 @@ private struct AudioLaneAccessibility: ViewModifier {
             content
                 .accessibilityElement()
                 .accessibilityLabel("Audio")
-                .accessibilityHint("Hold and drag to select a stretch of sound.")
+                .accessibilityHint("Swipe up or down to bleep or mute a second from the playhead.")
                 .accessibilityActions {
                     ForEach(actions.indices, id: \.self) { index in
                         Button(actions[index].title, action: actions[index].perform)
