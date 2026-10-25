@@ -70,6 +70,12 @@ Use **Release Maintenance → App Store status** for a read-only refresh. Schedu
 
 Prior digest-checked observations are optional cache data. They do not authorize distribution or replace fresh Apple readback at a mutation boundary.
 
+## Export App Store settings for review
+
+Run **App Store Settings Export → Run workflow** on `main` (or `gh workflow run app-store-settings.yml --ref main`), then download the `app-store-settings-*` artifact. It is a JSON snapshot of the App Store Connect settings for an App Store optimization review: app record, categories, age rating answers, localized name/subtitle/privacy URLs, the three latest versions with their store text, release and phased-release settings, attached build, screenshot and app preview counts, pricing, territories, and in-app purchase, custom product page, product page optimization, in-app event, TestFlight, accessibility and encryption summaries.
+
+The [exporter](../../scripts/export_app_store_settings.py) sends only GET requests, using the `app-store-observe` key, and records a failing endpoint as `unavailable: <status>` instead of stopping; the run summary lists those endpoints. Because the repository is public, the export leaves out App Review and TestFlight contacts, demo account credentials, review notes text, testers and sales data, and the artifact expires after one day. App Privacy answers are not available through the API; review them in App Store Connect.
+
 ## Replacement builds
 
 PicStrip currently records a one-time replacement override in [app configuration](../../.github/ios-release.json). Confirm its exact identity in the [generated reference](reference.md#platform-and-configuration) and follow the [pinned platform replacement procedure](reference.md#platform-guides).
