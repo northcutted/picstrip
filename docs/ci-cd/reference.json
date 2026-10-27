@@ -11,6 +11,7 @@
     ".github/workflows/app-store-settings.yml",
     ".github/workflows/main.yml",
     ".github/workflows/native-canary.yml",
+    ".github/workflows/native-readiness.yml",
     ".github/workflows/observe.yml",
     ".github/workflows/pr.yml",
     ".github/workflows/promote.yml",
@@ -426,6 +427,47 @@
           "uses": null,
           "environment": "app-store-observe",
           "timeout_minutes": 15,
+          "permissions": null,
+          "secret_names": []
+        }
+      ]
+    },
+    {
+      "file": ".github/workflows/native-readiness.yml",
+      "name": "Native release readiness",
+      "triggers": {
+        "workflow_dispatch": {},
+        "pull_request": {
+          "paths": [
+            ".github/ios-release-native-platform.json",
+            ".github/ios-release.json",
+            ".github/ios-version.json",
+            ".github/workflows/native-readiness.yml",
+            "scripts/ci/workflow_policy.py",
+            "scripts/ci/tests/test_workflows.py"
+          ]
+        }
+      },
+      "inputs": {},
+      "secret_names": [],
+      "outputs": {},
+      "permissions": {
+        "contents": "read"
+      },
+      "concurrency": {
+        "group": "native-readiness-${{ github.event.pull_request.number || github.ref }}",
+        "cancel-in-progress": true
+      },
+      "jobs": [
+        {
+          "id": "rehearsal",
+          "name": "rehearsal",
+          "needs": [],
+          "condition": null,
+          "runner": null,
+          "uses": "northcutted/ios-release-workflows/.github/workflows/native-readiness.yml@20102d34e9c94cc9041cd2c04387a8bf0b81d7fb",
+          "environment": null,
+          "timeout_minutes": null,
           "permissions": null,
           "secret_names": []
         }

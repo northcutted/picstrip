@@ -53,3 +53,6 @@ Use [GitHub Actions](https://github.com/northcutted/picstrip/actions) for curren
 Read this page for orientation, [operations](ci-cd/operations.md) while shipping, and [architecture](ci-cd/architecture.md) when changing release behavior. Agents can start with the [maintenance recipe](ci-cd/maintenance.md#agent-reading-and-editing-recipe) and read only the relevant source files.
 
 Use the [1.8.0 acceptance checklist](releases/1.8.0-acceptance.md) for the current release. Dated [rehearsal evidence](archive/releases/1.7.0/release-rehearsal-2026-09-19.md) and [1.7.0 acceptance evidence](releases/1.7.0-acceptance.md) record earlier observations. They are not live release status; confirm acceptance against the selected build before submission.
+
+The [native cutover rehearsal](ci-cd/native-cutover.md) runs separately while the
+production release pin and approval gates remain in use.

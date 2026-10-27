@@ -8,16 +8,24 @@ from ios_release.yamlio import workflows as load_workflows
 
 def validate(workflows):
     pin = json.loads(Path(".github/ios-release-platform.json").read_text())
+    native_pin = json.loads(Path(".github/ios-release-native-platform.json").read_text())
     errors = []
     def check(value, message):
         if not value:
             errors.append(message)
     check(re.fullmatch(r"[a-f0-9]{40}", pin["revision"]), "Platform revision must be a full commit")
+    check(native_pin.get("repository") == pin["repository"] and re.fullmatch(r"[a-f0-9]{40}", native_pin.get("revision", "")), "Native rehearsal requires an immutable platform pin")
     for file, w in workflows.items():
         check(w.get("permissions") == {"contents": "read"}, file + ": default token must be read-only")
         check("pull_request_target" not in (w.get("on") or {}), file + ": privileged PR events forbidden")
         for name, j in w.get("jobs", {}).items():
             label = file + "/" + name
+            if file == "native-readiness.yml":
+                check(name == "rehearsal" and j.get("uses") == native_pin["repository"] + "/.github/workflows/native-readiness.yml@" + native_pin["revision"], "Native rehearsal must use its exact read-only workflow pin")
+                check(j.get("with", {}).get("platform_revision") == native_pin["revision"], "Native rehearsal signer revision drift")
+                check(not j.get("secrets") and not j.get("environment") and not j.get("permissions") and "secrets." not in json.dumps(j), "Native rehearsal must remain secret-free and read-only")
+                check(not j.get("steps"), "Native rehearsal may only call the pinned workflow")
+                continue
             if j.get("uses"):
                 check(j["uses"].startswith(pin["repository"] + "/.github/workflows/") and j["uses"].endswith("@" + pin["revision"]), label + ": reusable workflow differs from trusted platform pin")
                 check(j.get("with", {}).get("platform_revision") == pin["revision"], label + ": signer revision differs from workflow revision")
@@ -43,6 +51,10 @@ def validate(workflows):
             if file == "pr.yml":
                 check("secrets." not in json.dumps(j) and not j.get("environment") and not j.get("permissions", {}).get("id-token"), label + ": PR path must not receive secrets")
             check(not re.search(r"fastlane (request_review|app_store_stage|metadata_only|upload_testflight)|publish_release\.py", scripts), label + ": release administration belongs in pinned platform")
+    rehearsal = workflows["native-readiness.yml"]
+    check(set(rehearsal.get("on", {})) == {"pull_request", "workflow_dispatch"} and set(rehearsal.get("jobs", {})) == {"rehearsal"}, "Native rehearsal may only validate PRs or explicit dispatches")
+    config = json.loads(Path(".github/ios-release.json").read_text())
+    check(json.loads(rehearsal["jobs"]["rehearsal"].get("with", {}).get("screenshot_devices", "[]")) == config["screenshot_devices"], "Native rehearsal must cover every configured screenshot device")
     pr, main, promote, deploy = (workflows[name]["jobs"] for name in ["pr.yml", "main.yml", "promote.yml", "app-store-deploy.yml"])
     check("gems-macos" not in pr, "Platform and screenshot checks own Ruby dependency validation")
     smoke = pr["screenshots"]

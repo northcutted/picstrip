@@ -7,6 +7,20 @@ from workflow_policy import load_workflows, validate
 
 
 class WorkflowTests(unittest.TestCase):
+    def test_native_rehearsal_cannot_ship_or_receive_credentials(self):
+        for field, value in [("secrets", "inherit"), ("permissions", {"id-token": "write"}), ("environment", "production")]:
+            w = self.workflows()
+            w["native-readiness.yml"]["jobs"]["rehearsal"][field] = value
+            self.assertIn("secret-free and read-only", "\n".join(validate(w)))
+        w = self.workflows()
+        job = w["native-readiness.yml"]["jobs"]["rehearsal"]
+        job["uses"] = job["uses"].replace("native-readiness.yml@", "native-app.yml@")
+        job["with"]["screenshot_devices"] = '[]'
+        errors = "\n".join(validate(w))
+        self.assertIn("exact read-only workflow", errors)
+        self.assertIn("every configured screenshot", errors)
+
+
     def workflows(self):
         return load_workflows(".github/workflows")
 

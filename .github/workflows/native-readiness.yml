@@ -1,0 +1,27 @@
+name: Native release readiness
+on:
+  workflow_dispatch: {}
+  pull_request:
+    paths:
+      - '.github/ios-release-native-platform.json'
+      - '.github/ios-release.json'
+      - '.github/ios-version.json'
+      - '.github/workflows/native-readiness.yml'
+      - 'scripts/ci/workflow_policy.py'
+      - 'scripts/ci/tests/test_workflows.py'
+permissions:
+  contents: read
+concurrency:
+  group: native-readiness-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+jobs:
+  rehearsal:
+    uses: northcutted/ios-release-workflows/.github/workflows/native-readiness.yml@20102d34e9c94cc9041cd2c04387a8bf0b81d7fb
+    with:
+      platform_revision: 20102d34e9c94cc9041cd2c04387a8bf0b81d7fb
+      config: .github/ios-release.json
+      runner: xcode-27
+      screenshot_devices: '["iPhone 18 Pro Max", "iPad Pro 13-inch (M5)"]'
+      screenshot_scheme: PicStripScreenshots
+      screenshot_target: PicStripUITests
+      screenshot_test: PicStripUITests/PicStripUITests/testAllScreenshots
