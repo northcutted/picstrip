@@ -1,11 +1,9 @@
-PicStrip 1.8, VoiceOver ve Daha Büyük Metin ile daha kolay kullanılıyor.
+PicStrip 1.8, esnek kapatma şekilleri ve düzenleme için daha fazla alan sunuyor.
 
-• VoiceOver: Her denetimin bir etiketi var ve sürükleyerek yaptığınız her şeyin başka bir yolu da var: Bir karartmayı taşımak veya yeniden boyutlandırmak, bir videoda karartmanın ne zaman başlayıp bittiğini ayarlamak ya da zaman çizelgesinde ilerlemek için yukarı veya aşağı kaydırın.
-• PicStrip taramanın ne zaman bittiğini ve kaç bölgeyi kararttığını söyler; kamera da kadrajda hangi hassas bilgilerin olduğunu bildirir.
-• Vizörde yakınlaştırmak için yukarı veya aşağı kaydırın, görüntüyü daha aydınlık veya daha karanlık yapmak için eylemlerini kullanın. İki parmakla çift dokunarak fotoğraf çekin ya da video kaydını başlatıp durdurun.
-• Video düzenleyicide her şerit bir başlıktır; böylece doğrudan yüzlere, metinlere, nesnelere veya sese geçebilirsiniz.
-• Daha Büyük Metin: En büyük boyutlarda metin kesilmek yerine alt satıra geçer, paneller kaydırılabilir ve fotoğraf görünür kalır. Büyük hâlini görmek için bir kamera düğmesine dokunup basılı tutun.
-
-PicStrip artık iPhone Duo’da ekranın tamamını kullanıyor. Açıkken fotoğraf düzenleyici ve kamera, denetimlerini görüntünün yanında gösterir; düzenlemenin ortasında katlayıp açsanız bile hiçbir şey kaybolmaz.
+• Fotoğraf karartmaları ve videolardaki elle eklenen kapatmalar için dikdörtgen, kare, daire, oval veya özel ana hatlar seçin. Fotoğrafa özel bir ana hat çizin ya da noktalarını ayarlayın.
+• Geniş pencerelerde fotoğraf kenar çubuğunu gösterip gizleyerek görüntüye daha fazla alan açın.
+• Desteklenen katlanabilir ekranlarda fotoğraf ve kamera denetimleri, düzenleme durumunu koruyarak kitap ve masa üstü düzenlerine uyum sağlar.
+• Kameranın bulduğu hassas bilgi türlerini gerçek zamanlı görün, ardından çekimden sonra taramanın tamamını inceleyin.
+• VoiceOver etiketleri, ayarlanabilir denetimler ve duyurular ile büyük metin boyutlarında satır kaydırma ve kaydırılabilir alanlar iyileştirildi.
 
 Otomatik algılama ayrıntıları kaçırabilir. Paylaşmadan önce fotoğrafın veya videonun tamamını inceleyin.

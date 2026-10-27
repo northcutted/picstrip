@@ -1,11 +1,9 @@
-O PicStrip 1.8 ficou mais fácil de usar com o VoiceOver e o Texto Maior.
+O PicStrip 1.8 traz ocultações flexíveis e mais espaço para editar.
 
-• VoiceOver: todos os controles têm rótulo, e tudo o que você arrastaria tem outra forma de fazer: deslize para cima ou para baixo para mover ou redimensionar uma ocultação, definir quando ela começa e termina em um vídeo ou avançar pela linha do tempo.
-• O PicStrip avisa quando a análise termina e quantas áreas foram ocultadas, e a câmera diz quais dados sensíveis estão no enquadramento.
-• No visor, deslize para cima ou para baixo para aplicar zoom e use as ações dele para deixar a imagem mais clara ou mais escura. Tire uma foto, ou inicie e pare um vídeo, tocando duas vezes com dois dedos.
-• No editor de vídeo, cada faixa é um cabeçalho, para você ir direto para rostos, textos, objetos ou áudio.
-• Texto Maior: nos maiores tamanhos, o texto quebra a linha em vez de ser cortado, os painéis rolam e a foto continua visível. Toque e mantenha pressionado um botão da câmera para vê-lo maior.
-
-No iPhone Duo, o PicStrip agora usa a tela inteira. Com o iPhone aberto, o editor de fotos e a câmera mostram os controles ao lado da imagem, e você pode dobrá-lo ou desdobrá-lo no meio de uma edição sem perder nada.
+• Escolha retângulos, quadrados, círculos, ovais ou contornos personalizados para ocultar áreas em fotos e criar coberturas manuais em vídeos. Desenhe um contorno na foto ou ajuste seus pontos.
+• Mostre ou oculte a barra lateral de fotos em janelas largas para dar mais espaço à imagem.
+• Em telas dobráveis compatíveis, os controles de fotos e câmera se adaptam às posições de livro e de mesa, mantendo o estado da edição.
+• Veja em tempo real os tipos de dados sensíveis encontrados pela câmera e revise a análise completa após a captura.
+• Melhorias nos rótulos, controles ajustáveis e avisos do VoiceOver, além da quebra de linha e rolagem com tamanhos maiores de texto.
 
 A detecção automática pode deixar passar detalhes. Revise a foto ou o vídeo inteiro antes de compartilhar.

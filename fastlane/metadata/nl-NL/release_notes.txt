@@ -1,11 +1,9 @@
-PicStrip 1.8 is makkelijker te gebruiken met VoiceOver en Grotere tekst.
+PicStrip 1.8 biedt flexibele afdekkingen en meer ruimte om te bewerken.
 
-• VoiceOver: elke regelaar heeft een label, en alles wat je zou slepen kan ook anders: veeg omhoog of omlaag om een afdekking te verplaatsen of van grootte te veranderen, in te stellen wanneer een afdekking in een video begint en eindigt, of door de tijdbalk te gaan.
-• PicStrip laat weten wanneer een scan klaar is en hoeveel gebieden zijn afgedekt, en de camera vertelt welke gevoelige gegevens in beeld zijn.
-• Veeg op de zoeker omhoog of omlaag om te zoomen, en maak het beeld met de acties lichter of donkerder. Maak een foto, of start en stop een video, door met twee vingers dubbel te tikken.
-• In de video-editor is elk spoor een kop, zodat je direct naar gezichten, tekst, objecten of audio springt.
-• Grotere tekst: bij de grootste formaten loopt tekst door op de volgende regel in plaats van te worden afgekapt, kun je panelen scrollen en blijft de foto in beeld. Houd een cameraknop ingedrukt om hem groter te zien.
-
-Op de iPhone Duo gebruikt PicStrip nu het hele scherm. Uitgevouwen staan de regelaars van de foto-editor en de camera naast het beeld, en je kunt midden in een bewerking dichtvouwen of uitvouwen zonder iets kwijt te raken.
+• Kies rechthoeken, vierkanten, cirkels, ovalen of eigen omtrekken voor fotoafdekkingen en handmatige videoafdekkingen. Teken een omtrek op de foto of pas de punten aan.
+• Toon of verberg de fotozijbalk in brede vensters voor meer ruimte voor het beeld.
+• Op ondersteunde vouwbare schermen passen de foto- en cameraregelaars zich aan boek- en tafelopstellingen aan, terwijl je bewerkingsstatus behouden blijft.
+• Zie in realtime welke soorten gevoelige gegevens de camera vindt en controleer na de opname de volledige scan.
+• Verbeterde VoiceOver-labels, instelbare regelaars en aankondigingen, plus tekstomloop en scrollen bij grotere tekstgroottes.
 
 Automatische detectie kan details missen. Controleer de hele foto of video voordat je deelt.

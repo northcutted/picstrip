@@ -1,11 +1,9 @@
-PicStrip 1.8 jest łatwiejszy w obsłudze z VoiceOver i funkcją Większy tekst.
+PicStrip 1.8 oferuje elastyczne maski i więcej miejsca do edycji.
 
-• VoiceOver: każdy element sterujący ma etykietę, a wszystko, co trzeba przeciągać, da się zrobić inaczej: przesuń palcem w górę lub w dół, aby przesunąć zamazanie lub zmienić jego rozmiar, ustawić, kiedy zamazanie w wideo zaczyna się i kończy, albo poruszać się po osi czasu.
-• PicStrip informuje, kiedy skanowanie się zakończy i ile obszarów zamazano, a aparat mówi, jakie dane wrażliwe są w kadrze.
-• Na wizjerze przesuń palcem w górę lub w dół, aby zmienić zbliżenie, i użyj jego czynności, aby rozjaśnić lub przyciemnić obraz. Zrób zdjęcie albo rozpocznij i zatrzymaj nagrywanie wideo, stukając dwukrotnie dwoma palcami.
-• W edytorze wideo każda ścieżka jest nagłówkiem, więc możesz przejść od razu do twarzy, tekstu, obiektów lub dźwięku.
-• Większy tekst: przy największych rozmiarach tekst jest zawijany zamiast obcinany, panele można przewijać, a zdjęcie pozostaje widoczne. Dotknij i przytrzymaj przycisk aparatu, aby zobaczyć go w powiększeniu.
-
-Na iPhonie Duo PicStrip korzysta teraz z całego ekranu. Po rozłożeniu edytor zdjęć i aparat wyświetlają elementy sterujące obok obrazu, a w trakcie edycji możesz złożyć lub rozłożyć telefon, nic nie tracąc.
+• Wybieraj prostokątne, kwadratowe, okrągłe, owalne lub własne kontury masek na zdjęciach i ręcznych masek wideo. Narysuj kontur na zdjęciu lub dostosuj jego punkty.
+• Pokazuj lub ukrywaj panel boczny zdjęcia w szerokich oknach, aby zostawić więcej miejsca na obraz.
+• Na obsługiwanych składanych ekranach elementy sterujące zdjęciami i aparatem dostosowują się do układu książkowego i stołowego, zachowując stan edycji.
+• Zobacz na żywo, jakie rodzaje danych wrażliwych wykrywa aparat, a po zrobieniu zdjęcia sprawdź pełny wynik skanowania.
+• Ulepszone etykiety, regulowane elementy sterujące i komunikaty VoiceOver oraz zawijanie tekstu i przewijanie przy większych rozmiarach tekstu.
 
 Automatyczne wykrywanie może pomijać szczegóły. Sprawdź całe zdjęcie lub wideo przed udostępnieniem.
