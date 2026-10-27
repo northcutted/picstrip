@@ -61,6 +61,7 @@ Single-path examples evaluated by the consumer classifier. Mixed changes and fal
 | [App Store Settings Export](#app-store-settings-export) | [app-store-settings.yml](../../.github/workflows/app-store-settings.yml) | <code>workflow_dispatch</code> |
 | [Release Prep](#release-prep) | [main.yml](../../.github/workflows/main.yml) | <code>push</code>, <code>workflow_dispatch</code> |
 | [Native CLI signed canary](#native-cli-signed-canary) | [native-canary.yml](../../.github/workflows/native-canary.yml) | <code>workflow_dispatch</code> |
+| [Native release readiness](#native-release-readiness) | [native-readiness.yml](../../.github/workflows/native-readiness.yml) | <code>workflow_dispatch</code>, <code>pull_request</code> |
 | [Release Maintenance](#release-maintenance) | [observe.yml](../../.github/workflows/observe.yml) | <code>schedule</code>, <code>workflow_dispatch</code> |
 | [PR Checks](#pr-checks) | [pr.yml](../../.github/workflows/pr.yml) | <code>pull_request</code>, <code>workflow_dispatch</code> |
 | [Release](#release) | [promote.yml](../../.github/workflows/promote.yml) | <code>workflow_dispatch</code> |
@@ -160,6 +161,34 @@ Concurrency: <code>{"group":"native-cli-canary","cancel-in-progress":false}</cod
 | <code>archive</code><br>Archive PicStrip with Rust and existing signing assets | — | <code>xcode-27</code>; 60 min<br>Environment: <code>signing</code> | <code>github.ref == 'refs/heads/main'</code> |
 | <code>verify</code><br>Verify the IPA independently without signing credentials | <code>archive</code> | <code>xcode-27</code>; 30 min | — |
 | <code>observe</code><br>Read PicStrip App Store status with the native API client | — | <code>ubuntu-24.04</code>; 15 min<br>Environment: <code>app-store-observe</code> | <code>github.ref == 'refs/heads/main'</code> |
+
+### Native release readiness
+
+[Source](../../.github/workflows/native-readiness.yml) · [Actions](https://github.com/northcutted/picstrip/actions/workflows/native-readiness.yml)
+
+Triggers (cron expressions use UTC):
+
+```json
+{
+  "workflow_dispatch": {},
+  "pull_request": {
+    "paths": [
+      ".github/ios-release-native-platform.json",
+      ".github/ios-release.json",
+      ".github/ios-version.json",
+      ".github/workflows/native-readiness.yml",
+      "scripts/ci/workflow_policy.py",
+      "scripts/ci/tests/test_workflows.py"
+    ]
+  }
+}
+```
+
+Concurrency: <code>{"group":"native-readiness-${{ github.event.pull_request.number &#124;&#124; github.ref }}","cancel-in-progress":true}</code>. Default token permissions: <code>{"contents":"read"}</code>.
+
+| Job | Needs | Execution | Condition |
+| --- | --- | --- | --- |
+| <code>rehearsal</code> | — | [native-readiness.yml](https://github.com/northcutted/ios-release-workflows/blob/2882763b6d3e2d603bd749a480443bae1d5e4540/.github/workflows/native-readiness.yml) | — |
 
 ### Release Maintenance
 
