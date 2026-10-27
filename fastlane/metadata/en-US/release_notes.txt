@@ -1,11 +1,9 @@
-PicStrip 1.8 is easier to use with VoiceOver and Larger Text.
+PicStrip 1.8 adds flexible covers and more room to edit.
 
-• VoiceOver: every control is labeled, and anything you would drag has another way: swipe up or down to move or resize a cover, set when a video cover starts and ends, or step along the timeline.
-• PicStrip tells you when a scan finishes and how many areas it covered, and the camera tells you which sensitive details are in view.
-• On the viewfinder, swipe up or down to zoom, and use its actions to make the picture brighter or darker. Take a photo, or start and stop a video, with a two-finger double-tap.
-• In the video editor, each lane is a heading, so you can jump straight to faces, text, objects or audio.
-• Larger Text: at the largest sizes, text wraps instead of being cut off, panels scroll, and the photo stays in view. Touch and hold a camera button to see it larger.
-
-On iPhone Duo, PicStrip now uses the whole display. Unfolded, the photo editor and the camera put their controls beside the picture, and you can fold or unfold in the middle of an edit without losing anything.
+• Choose rectangle, square, circle, oval or custom outlines for photo redactions and manual video covers. Draw a custom photo outline or adjust its points.
+• Show or hide the photo sidebar in wide windows to make more room for the picture.
+• On supported foldable displays, photo and camera controls adapt to book and tabletop layouts while keeping your editing state.
+• See the kinds of sensitive details the camera finds in real time, then review the full scan after capture.
+• Improved VoiceOver labels, adjustable controls and announcements, plus text wrapping and scrolling at larger text sizes.
 
 Automatic detection can miss details. Please review the entire photo or video before sharing.

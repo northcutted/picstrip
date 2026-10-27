@@ -1,11 +1,9 @@
-PicStrip 1.8 è più facile da usare con VoiceOver e Testo più grande.
+PicStrip 1.8 aggiunge coperture flessibili e più spazio per modificare.
 
-• VoiceOver: ogni controllo ha un’etichetta e tutto ciò che trascineresti si può fare in un altro modo: scorri verso l’alto o verso il basso per spostare o ridimensionare una copertura, scegliere quando inizia e finisce in un video o muoverti lungo la timeline.
-• PicStrip ti dice quando la scansione è completata e quante aree ha coperto, e la fotocamera ti segnala i dati sensibili inquadrati.
-• Sul mirino, scorri verso l’alto o verso il basso per lo zoom e usa le sue azioni per rendere l’immagine più chiara o più scura. Scatta una foto, o avvia e interrompi un video, toccando due volte con due dita.
-• Nell’editor video ogni traccia è un’intestazione, così puoi passare direttamente a volti, testo, oggetti o audio.
-• Testo più grande: alle dimensioni maggiori il testo va a capo invece di essere tagliato, i pannelli scorrono e la foto resta visibile. Tieni premuto un pulsante della fotocamera per vederlo più grande.
-
-Su iPhone Duo, PicStrip ora usa tutto lo schermo. Con iPhone aperto, l’editor di foto e la fotocamera mostrano i controlli accanto all’immagine, e puoi chiuderlo o riaprirlo nel bel mezzo di una modifica senza perdere nulla.
+• Scegli rettangoli, quadrati, cerchi, ovali o contorni personalizzati per oscurare foto e coprire manualmente aree nei video. Disegna un contorno sulla foto o regola i suoi punti.
+• Mostra o nascondi la barra laterale delle foto nelle finestre ampie per lasciare più spazio all’immagine.
+• Sugli schermi pieghevoli compatibili, i controlli di foto e fotocamera si adattano alle posizioni a libro e da tavolo, mantenendo lo stato della modifica.
+• Vedi in tempo reale quali tipi di dati sensibili trova la fotocamera, poi controlla la scansione completa dopo lo scatto.
+• Etichette, controlli regolabili e annunci VoiceOver migliorati, oltre al testo a capo e allo scorrimento con dimensioni del testo maggiori.
 
 Il rilevamento automatico può perdere dettagli. Controlla l’intera foto o l’intero video prima di condividerli.

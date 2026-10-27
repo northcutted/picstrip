@@ -1,11 +1,9 @@
-PicStrip 1.8 lässt sich mit VoiceOver und „Größerer Text“ leichter bedienen.
+PicStrip 1.8 bietet flexible Abdeckungen und mehr Platz zum Bearbeiten.
 
-• VoiceOver: Jedes Bedienelement ist beschriftet, und alles, was du sonst ziehen würdest, geht auch anders: Streiche nach oben oder unten, um eine Abdeckung zu verschieben oder ihre Größe zu ändern, festzulegen, wann eine Abdeckung im Video beginnt und endet, oder dich durch die Zeitleiste zu bewegen.
-• PicStrip sagt dir, wenn ein Scan abgeschlossen ist und wie viele Bereiche verdeckt wurden, und die Kamera sagt dir, welche sensiblen Daten im Bild sind.
-• Streiche auf dem Sucher nach oben oder unten, um zu zoomen, und mach das Bild mit seinen Aktionen heller oder dunkler. Nimm ein Foto auf oder starte und stoppe ein Video, indem du mit zwei Fingern doppelt tippst.
-• Im Videoeditor ist jede Spur eine Überschrift, sodass du direkt zu Gesichtern, Text, Objekten oder Audio springen kannst.
-• Größerer Text: In den größten Schriftgrößen wird Text umbrochen statt abgeschnitten, Bereiche lassen sich scrollen, und das Foto bleibt sichtbar. Halte den Finger auf eine Taste der Kamera, um sie vergrößert zu sehen.
-
-Auf dem iPhone Duo nutzt PicStrip jetzt das ganze Display. Aufgeklappt zeigen der Fotoeditor und die Kamera ihre Bedienelemente neben dem Bild, und du kannst mitten in der Bearbeitung auf- oder zuklappen, ohne etwas zu verlieren.
+• Wähle Rechteck, Quadrat, Kreis, Oval oder eigene Umrisse für Foto-Schwärzungen und manuelle Videoabdeckungen. Zeichne einen eigenen Umriss im Foto oder passe seine Punkte an.
+• Blende die Foto-Seitenleiste in breiten Fenstern ein oder aus, um mehr Platz für das Bild zu schaffen.
+• Auf unterstützten faltbaren Displays passen sich Foto- und Kamerasteuerung an Buch- und Tischansichten an. Dein Bearbeitungsstand bleibt erhalten.
+• Sieh in Echtzeit, welche Arten sensibler Daten die Kamera erkennt, und prüfe nach der Aufnahme den vollständigen Scan.
+• Verbesserte VoiceOver-Beschriftungen, anpassbare Regler und Ansagen sowie Textumbruch und Scrollen bei größeren Schriftgrößen.
 
 Die automatische Erkennung kann Details übersehen. Prüfe vor dem Teilen bitte das ganze Foto oder Video.

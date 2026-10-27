@@ -1,11 +1,9 @@
-O PicStrip 1.8 está mais fácil de utilizar com o VoiceOver e o Texto maior.
+O PicStrip 1.8 traz ocultações flexíveis e mais espaço para editar.
 
-• VoiceOver: todos os controlos têm etiqueta, e tudo o que arrastaria pode ser feito de outra forma: passe o dedo para cima ou para baixo para mover ou redimensionar uma ocultação, definir quando começa e termina num vídeo ou avançar na linha cronológica.
-• O PicStrip avisa quando a análise termina e quantas áreas foram ocultadas, e a câmara indica que dados sensíveis estão no enquadramento.
-• No visor, passe o dedo para cima ou para baixo para fazer zoom e use as respetivas ações para tornar a imagem mais clara ou mais escura. Tire uma fotografia, ou inicie e pare um vídeo, tocando duas vezes com dois dedos.
-• No editor de vídeo, cada faixa é um cabeçalho, para poder ir diretamente para rostos, texto, objetos ou áudio.
-• Texto maior: nos tamanhos maiores, o texto passa para a linha seguinte em vez de ser cortado, os painéis deslocam-se e a fotografia continua visível. Mantenha o dedo num botão da câmara para o ver maior.
-
-No iPhone Duo, o PicStrip passa a utilizar o ecrã inteiro. Com o iPhone aberto, o editor de fotografias e a câmara mostram os controlos ao lado da imagem, e pode dobrá-lo ou desdobrá-lo a meio de uma edição sem perder nada.
+• Escolha retângulos, quadrados, círculos, ovais ou contornos personalizados para ocultar áreas em fotografias e criar coberturas manuais em vídeos. Desenhe um contorno na fotografia ou ajuste os seus pontos.
+• Mostre ou oculte a barra lateral das fotografias em janelas largas para dar mais espaço à imagem.
+• Em ecrãs dobráveis compatíveis, os controlos de fotografias e câmara adaptam-se às posições de livro e de mesa, mantendo o estado da edição.
+• Veja em tempo real os tipos de dados sensíveis encontrados pela câmara e reveja a análise completa após a captura.
+• Melhorias nas etiquetas, controlos ajustáveis e avisos do VoiceOver, além da mudança de linha e deslocação com tamanhos maiores de texto.
 
 A deteção automática pode deixar passar detalhes. Reveja a fotografia ou o vídeo completo antes de partilhar.

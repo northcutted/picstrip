@@ -1,11 +1,9 @@
-PicStrip 1.8 est plus facile à utiliser avec VoiceOver et Texte plus grand.
+PicStrip 1.8 propose des masques flexibles et plus de place pour retoucher.
 
-• VoiceOver : chaque commande a un libellé, et tout ce que vous feriez glisser peut se faire autrement : balayez vers le haut ou le bas pour déplacer ou redimensionner un masque, choisir quand un masque commence et se termine dans une vidéo, ou avancer dans la chronologie.
-• PicStrip vous indique quand l’analyse est terminée et combien de zones ont été masquées, et l’appareil photo vous signale les données sensibles dans le cadre.
-• Sur le viseur, balayez vers le haut ou le bas pour zoomer, et utilisez ses actions pour rendre l’image plus claire ou plus sombre. Prenez une photo, ou démarrez et arrêtez une vidéo, en touchant deux fois avec deux doigts.
-• Dans l’éditeur vidéo, chaque piste est un titre : passez directement aux visages, au texte, aux objets ou à l’audio.
-• Texte plus grand : aux plus grandes tailles, le texte passe à la ligne au lieu d’être coupé, les panneaux défilent et la photo reste visible. Maintenez le doigt sur un bouton de l’appareil photo pour l’afficher en grand.
-
-Sur l’iPhone Duo, PicStrip utilise désormais tout l’écran. Déplié, l’iPhone affiche les commandes de l’éditeur de photos et de l’appareil photo à côté de l’image, et vous pouvez le plier ou le déplier en pleine retouche sans rien perdre.
+• Choisissez des rectangles, carrés, cercles, ovales ou contours personnalisés pour masquer les photos et couvrir manuellement des zones vidéo. Dessinez un contour sur la photo ou ajustez ses points.
+• Affichez ou masquez la barre latérale des photos dans les fenêtres larges pour laisser plus de place à l’image.
+• Sur les écrans pliables compatibles, les commandes photo et caméra s’adaptent aux positions livre et posée sur une table, tout en conservant votre état de retouche.
+• Voyez en temps réel les types de données sensibles repérés par la caméra, puis vérifiez l’analyse complète après la prise de vue.
+• Amélioration des libellés, commandes réglables et annonces VoiceOver, ainsi que du retour à la ligne et du défilement avec les grandes tailles de texte.
 
 La détection automatique peut manquer des détails. Vérifiez l’intégralité de la photo ou de la vidéo avant de la partager.

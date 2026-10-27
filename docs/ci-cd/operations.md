@@ -24,7 +24,7 @@ To request preparation manually, run `gh workflow run main.yml --ref main`. This
 
 ## Prepare an App Store submission
 
-1. Finish device acceptance on the exact TestFlight build. For the current remediation, use the [1.7.0 acceptance checklist](../releases/1.7.0-acceptance.md#final-acceptance-checklist).
+1. Finish device acceptance on the exact TestFlight build using the [1.8.0 acceptance checklist](../releases/1.8.0-acceptance.md#device-acceptance-before-submission).
 2. Run **Release** with **Prepare App Store submission** and the successful TestFlight run URL. The platform verifies both handoffs and reads back the Apple build before reusing it, without another transfer.
 3. Follow the resulting **App Store Deploy (internal)** run. Publication verifies all evidence before publishing an immutable GitHub release; deployment stages that exact build, metadata, screenshots, and supported declarations.
 4. Inspect staging's build identity, metadata differences, screenshot coverage, and release policy. Approve the protected **production** job only when ready to request Apple review. Apple's review and eventual availability remain separate service states.
@@ -78,6 +78,6 @@ The [exporter](../../scripts/export_app_store_settings.py) sends only GET reques
 
 ## Replacement builds
 
-PicStrip currently records a one-time replacement override in [app configuration](../../.github/ios-release.json). Confirm its exact identity in the [generated reference](reference.md#platform-and-configuration) and follow the [pinned platform replacement procedure](reference.md#platform-guides).
+PicStrip currently uses normal version advancement. Historical 1.7.0 replacement records remain in the [release archive](../archive/releases/1.7.0/).
 
-Remove the override in a reviewed follow-up only after the replacement transition is verified complete and normal version advancement should resume. A tools upgrade or a new successful build does not establish completion.
+For a deliberate replacement, review any override in [app configuration](../../.github/ios-release.json), confirm its exact identity in the [generated reference](reference.md#platform-and-configuration), and follow the [pinned platform replacement procedure](reference.md#platform-guides). A tools upgrade or a new successful build does not establish completion of a replacement transition.

@@ -1,11 +1,9 @@
-PicStrip 1.8 är enklare att använda med VoiceOver och Större text.
+PicStrip 1.8 ger flexibla maskeringar och mer plats att redigera.
 
-• VoiceOver: alla reglage har etiketter, och allt du annars skulle dra går att göra på ett annat sätt: svep uppåt eller nedåt för att flytta en maskering eller ändra dess storlek, ställa in när en maskering i en video börjar och slutar eller stega längs tidslinjen.
-• PicStrip berättar när sökningen är klar och hur många områden som maskerades, och kameran berättar vilka känsliga uppgifter som finns i bild.
-• Svep uppåt eller nedåt på sökaren för att zooma och använd dess åtgärder för att göra bilden ljusare eller mörkare. Ta en bild, eller starta och stoppa en video, genom att dubbeltrycka med två fingrar.
-• I videoredigeraren är varje spår en rubrik, så att du kan hoppa direkt till ansikten, text, objekt eller ljud.
-• Större text: i de största storlekarna radbryts texten i stället för att klippas av, panelerna går att rulla och bilden syns hela tiden. Håll fingret på en kameraknapp för att se den större.
-
-På iPhone Duo använder PicStrip nu hela skärmen. När telefonen är utfälld visas fotoredigerarens och kamerans reglage bredvid bilden, och du kan fälla ihop eller ut den mitt i en redigering utan att något försvinner.
+• Välj rektanglar, kvadrater, cirklar, ovaler eller egna konturer för maskeringar i foton och manuella maskeringar i videor. Rita en kontur på fotot eller justera dess punkter.
+• Visa eller dölj fotosidofältet i breda fönster för att ge bilden mer utrymme.
+• På vikbara skärmar som stöds anpassas foto- och kamerareglagen till bok- och bordslägen, samtidigt som redigeringsläget bevaras.
+• Se i realtid vilka typer av känsliga uppgifter kameran hittar och granska sedan hela sökningen efter fotograferingen.
+• Förbättrade VoiceOver-etiketter, justerbara reglage och meddelanden samt radbrytning och rullning vid större textstorlekar.
 
 Automatisk upptäckt kan missa detaljer. Granska hela bilden eller videon innan du delar.
