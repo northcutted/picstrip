@@ -16,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 jobs:
   rehearsal:
-    uses: northcutted/ios-release-workflows/.github/workflows/native-readiness.yml@20102d34e9c94cc9041cd2c04387a8bf0b81d7fb
+    uses: northcutted/ios-release-workflows/.github/workflows/native-readiness.yml@421f12e474f11ace03c765a7a38c6666a2230730
     with:
-      platform_revision: 20102d34e9c94cc9041cd2c04387a8bf0b81d7fb
+      platform_revision: 421f12e474f11ace03c765a7a38c6666a2230730
       config: .github/ios-release.json
       runner: xcode-27
       screenshot_devices: '["iPhone 18 Pro Max", "iPad Pro 13-inch (M5)"]'

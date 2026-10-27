@@ -188,7 +188,7 @@ Concurrency: <code>{"group":"native-readiness-${{ github.event.pull_request.numb
 
 | Job | Needs | Execution | Condition |
 | --- | --- | --- | --- |
-| <code>rehearsal</code> | — | [native-readiness.yml](https://github.com/northcutted/ios-release-workflows/blob/20102d34e9c94cc9041cd2c04387a8bf0b81d7fb/.github/workflows/native-readiness.yml) | — |
+| <code>rehearsal</code> | — | [native-readiness.yml](https://github.com/northcutted/ios-release-workflows/blob/421f12e474f11ace03c765a7a38c6666a2230730/.github/workflows/native-readiness.yml) | — |
 
 ### Release Maintenance
 
