@@ -85,9 +85,9 @@ Pillow==13.0.0 \
     --hash=sha256:ff3fe9eb621fbb9db4c4be33ab946f6bac5f98ab50ca8d3260503653656c961b \
     --hash=sha256:ffea6b2986a797c84b6d1d27d4f43e0b83c73fc16281a930891cd237cf0d08fe
 
-arabic-reshaper==3.0.1 \
-    --hash=sha256:41c5adc2420f85758eada7e880251c4b6a2adbd83377bd27e5d4eba71f648bc7 \
-    --hash=sha256:a0d9b2a9fa29b5f2c1d705f407adf6ca4242405b9cac0e5cc09e6c4f3f8fb68c
+arabic-reshaper==3.1.0 \
+    --hash=sha256:87f9a3634ca64f67a18d04593eadb3a148794233ba408fbb625649feedcdd0e0 \
+    --hash=sha256:ab71c16c18550443e07e7d3e99f30cf076fb84acc081118a3d6001c09d5b5fff
 
 python-bidi==0.6.12 \
     --hash=sha256:0312a644c1f68e697bcc48a76646d447d1376604381df1fece1efafe683f5360 \
